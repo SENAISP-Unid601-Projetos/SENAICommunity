@@ -24,6 +24,8 @@ public class Professor {
     private String fotoPerfil;
     private Date dataNascimento;
     private String bio;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date dataCadastro;
 
     // Contato
     @OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)

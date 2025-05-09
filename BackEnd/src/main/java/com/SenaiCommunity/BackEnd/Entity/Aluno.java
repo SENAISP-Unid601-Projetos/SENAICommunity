@@ -1,11 +1,14 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -24,7 +27,8 @@ public class Aluno {
     private LocalDate dataNascimento;
     private List<Telefone> telefone;
     private String statusConta; // Ex: "Ativo", "Inativo"
-    private LocalDate dataCadastro;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date dataCadastro;
 
     // Relacionamentos (exemplos)
     private Projeto projeto;
