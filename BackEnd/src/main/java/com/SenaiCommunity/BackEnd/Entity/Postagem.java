@@ -4,31 +4,42 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.boot.autoconfigure.security.SecurityDataConfiguration;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Entity
 @Data
-
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
 public class Postagem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String conteudoTexto;
-    private String imagemUrl;
-    private LocalDateTime dataPublicacao;
+    private String titulo;
+
+    @Lob
+    private String conteudo;
+
+    private String tipo; // "PROJETO" ou "DUVIDA"
+
+    private LocalDateTime dataPostagem;
 
     @ManyToOne
-    private Usuario autor; // Pode ser Aluno ou Professor
+    @JoinColumn(name = "autor_id")
+    private Usuario autor;
 
-    @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL)
-    private List<Curtida> curtidas;
-
-    @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comentario> comentarios;
+
+    @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ImagemPostagem> imagens;
+
+    // Se for um projeto, linka aqui (opcional)
+    @OneToOne
+    @JoinColumn(name = "projeto_id")
+    private Projeto projeto;
 }
 

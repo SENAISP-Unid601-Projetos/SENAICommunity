@@ -15,13 +15,16 @@ public class Comentario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String texto;
+    private String conteudo;
+
     private LocalDateTime dataComentario;
 
     @ManyToOne
+    @JoinColumn(name = "autor_id")
     private Usuario autor;
 
     @ManyToOne
+    @JoinColumn(name = "postagem_id")
     private Postagem postagem;
 }
 
