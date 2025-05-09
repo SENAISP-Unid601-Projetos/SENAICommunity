@@ -24,7 +24,7 @@ public class Projeto {
         private String status; //PLANEJADO, EM_ANDAMENTO, CONCLUIDO
 
         // Relacionamentos
-        @ManyToOne
+        @ManyToMany
         private Professor professor;
 
         @OneToOne(mappedBy = "projeto")
