@@ -15,10 +15,14 @@ import java.util.List;
 @Entity
 public class Grupos {
 
-    private long id_grupo;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String nome;
     private String descricao;
-    private LocalDate data_criacao;
+    private LocalDate dataCriacao;
 
     @OneToOne
     @JoinColumn(name = "projeto_id")
