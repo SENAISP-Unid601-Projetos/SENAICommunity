@@ -28,6 +28,7 @@ public class Projeto {
     @JoinColumn(name = "autor_id")
     private Usuario autor;
 
+
     // Comentários feitos na postagem
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comentario> comentarios;
