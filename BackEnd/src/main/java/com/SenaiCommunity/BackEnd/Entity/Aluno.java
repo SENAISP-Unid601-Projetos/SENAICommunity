@@ -24,8 +24,7 @@ public class Aluno {
     private LocalDate dataNascimento;
     private List<Telefone> telefone;
     private String statusConta; // Ex: "Ativo", "Inativo"
-    private LocalDate
-            dataCadastro;
+    private LocalDate dataCadastro;
 
     // Relacionamentos (exemplos)
     private Projeto projeto;

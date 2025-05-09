@@ -25,12 +25,26 @@ public class Projeto {
 
         // Relacionamentos
         @ManyToMany
-        private Professor professor;
+        @JoinTable(
+                name = "projeto_professores",
+                joinColumns = @JoinColumn(name = "projeto_id"),
+                inverseJoinColumns = @JoinColumn(name = "professor_id")
+        )
+        private List<Professor> professores;
 
-        @OneToOne(mappedBy = "projeto")
+
+    @OneToOne(mappedBy = "projeto")
         private Grupos grupo;
 
         @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL)
         private List<Avaliacoes> avaliacoes;
+
+    @ManyToMany
+    @JoinTable(
+            name = "projeto_alunos",
+            joinColumns = @JoinColumn(name = "projeto_id"),
+            inverseJoinColumns = @JoinColumn(name = "aluno_id")
+    )
+    private List<Aluno> alunos;
 
 }
