@@ -22,7 +22,6 @@ public class Projeto {
         private Date dataInicio;
         private Date dataEntrega;
         private String status; //PLANEJADO, EM_ANDAMENTO, CONCLUIDO
-        private String imagemCapa; // Caminho da imagem ou URL
         private List<String> imagensProjeto; // Imagens do projeto
 
         // Relacionamentos
