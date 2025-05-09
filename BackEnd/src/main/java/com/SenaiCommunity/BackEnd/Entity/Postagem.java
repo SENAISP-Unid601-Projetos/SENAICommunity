@@ -25,6 +25,8 @@ public class Postagem {
 
     private String tipo; // "PROJETO" ou "DUVIDA"
 
+    private String urlImagem;
+
     private LocalDateTime dataPostagem;
 
     @ManyToOne
@@ -33,9 +35,6 @@ public class Postagem {
 
     @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comentario> comentarios;
-
-    @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ImagemPostagem> imagens;
 
     // Se for um projeto, linka aqui (opcional)
     @OneToOne
