@@ -1,4 +1,7 @@
 package com.SenaiCommunity.BackEnd.Repository;
 
-public interface CurtidaRepository {
+import com.SenaiCommunity.BackEnd.Entity.Curtida;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CurtidaRepository extends JpaRepository<Curtida, Long> {
 }
