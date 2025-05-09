@@ -3,43 +3,23 @@ package com.SenaiCommunity.BackEnd.Entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-public class Professor {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+public class Professor extends Usuario {
 
-    // Dados pessoais
-    private String nomeCompleto;
-    private String email;
-    private String senha;
-    private String fotoPerfil;
-    private Date dataNascimento;
-    private String bio;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataCadastro;
-
-    // Contato
-    @OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Telefone> telefones;
-
-    // Acadêmico/profissional
     private String formacao;
     private String areaAtuacao;
 
-    // Sistema
-    private String tipoUsuario;
+    @OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Telefone> telefones;
 
-    //Relacionamentos
-    @OneToMany(mappedBy = "professor")
+    @ManyToMany(mappedBy = "professores")
     private List<Projeto> projetosOrientados;
-
 }

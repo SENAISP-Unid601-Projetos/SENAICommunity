@@ -1,37 +1,31 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-public class Aluno {
-    private Long id;
-    private String nomeCompleto;
-    private String email;
-    private String senha;
+public class Aluno extends Usuario {
+
     private String matricula;
     private String curso;
     private String periodo;
-    private String fotoPerfilUrl;
-    private LocalDate dataNascimento;
+    private String statusConta;
+
+    @OneToMany
     private List<Telefone> telefone;
-    private String statusConta; // Ex: "Ativo", "Inativo"
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataCadastro;
 
-    // Relacionamentos (exemplos)
-    private Projeto projeto;
-    private  MensagensChat mensagens;
+    @ManyToMany(mappedBy = "alunos")
+    private List<Projeto> projetos;
 
+    @OneToMany(mappedBy = "aluno")
+    private List<Avaliacoes> avaliacoes;
 }
