@@ -28,7 +28,7 @@ public class Grupos {
     private List<Participacao> participacoes;
 
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
-    private List<Publicacao> publicacoes;
+    private List<Postagem> postagens;
 
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
     private List<MensagensGrupo> mensagens;
