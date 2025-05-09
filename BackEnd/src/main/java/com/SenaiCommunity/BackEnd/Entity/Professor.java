@@ -17,9 +17,6 @@ public class Professor extends Usuario {
     private String formacao;
     private String areaAtuacao;
 
-    @OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Telefone> telefones;
-
     @ManyToMany(mappedBy = "professores")
     private List<Projeto> projetosOrientados;
 }

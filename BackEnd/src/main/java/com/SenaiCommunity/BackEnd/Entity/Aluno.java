@@ -20,9 +20,6 @@ public class Aluno extends Usuario {
     private String periodo;
     private String statusConta;
 
-    @OneToMany
-    private List<Telefone> telefone;
-
     @ManyToMany(mappedBy = "alunos")
     private List<Projeto> projetos;
 
