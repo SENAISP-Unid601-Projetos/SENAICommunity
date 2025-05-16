@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +13,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
+@JsonIgnoreProperties({"projetosOrientados", "postagens", "participacoes", "telefones"})
 public class Professor extends Usuario {
 
     private String formacao;

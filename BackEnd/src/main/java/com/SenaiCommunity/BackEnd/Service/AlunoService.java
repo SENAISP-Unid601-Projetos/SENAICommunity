@@ -28,7 +28,7 @@ public class AlunoService {
 
     public Aluno atualizar(Long id, Aluno novoAluno) {
         return alunoRepository.findById(id).map(aluno -> {
-            aluno.setNomeCompleto(novoAluno.getNomeCompleto());
+            aluno.setNome(novoAluno.getNome());
             aluno.setCurso(novoAluno.getCurso());
             aluno.setPeriodo(novoAluno.getPeriodo());
             aluno.setStatusConta(novoAluno.getStatusConta());

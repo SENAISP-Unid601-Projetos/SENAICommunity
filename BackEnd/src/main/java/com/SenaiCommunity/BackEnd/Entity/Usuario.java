@@ -16,7 +16,7 @@ public abstract class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nomeCompleto;
+    private String nome;
     private String email;
     private String senha;
     private String fotoPerfil;

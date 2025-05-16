@@ -27,7 +27,7 @@ public class ProfessorService {
 
     public Professor atualizar(Long id, Professor novoProfessor) {
         return professorRepository.findById(id).map(professor -> {
-            professor.setNomeCompleto(novoProfessor.getNomeCompleto());
+            professor.setNome(novoProfessor.getNome());
             professor.setFormacao(novoProfessor.getFormacao());
             professor.setAreaAtuacao(novoProfessor.getAreaAtuacao());
             professor.setEmail(novoProfessor.getEmail());

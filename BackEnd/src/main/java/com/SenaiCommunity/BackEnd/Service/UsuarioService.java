@@ -22,7 +22,7 @@ public class UsuarioService {
     public void cadastrarUsuario(UsuarioCadastroDto dto) {
         if (dto.getCodigoSn() != null && !dto.getCodigoSn().isEmpty()) {
             Professor professor = new Professor();
-            professor.setNomeCompleto(dto.getNomeCompleto());
+            professor.setNome(dto.getNomeCompleto());
             professor.setEmail(dto.getEmail());
             professor.setSenha(dto.getSenha()); // Faça encode se estiver usando PasswordEncoder
             professor.setFotoPerfil(dto.getFotoPerfil());
@@ -32,7 +32,7 @@ public class UsuarioService {
             professorRepository.save(professor);
         } else if (dto.getMatricula() != null && !dto.getMatricula().isEmpty()) {
             Aluno aluno = new Aluno();
-            aluno.setNomeCompleto(dto.getNomeCompleto());
+            aluno.setNome(dto.getNomeCompleto());
             aluno.setEmail(dto.getEmail());
             aluno.setSenha(dto.getSenha()); // Faça encode se estiver usando PasswordEncoder
             aluno.setFotoPerfil(dto.getFotoPerfil());
@@ -64,7 +64,7 @@ public class UsuarioService {
 
     public Aluno atualizarAluno(Long id, Aluno novoAluno) {
         return alunoRepository.findById(id).map(aluno -> {
-            aluno.setNomeCompleto(novoAluno.getNomeCompleto());
+            aluno.setNome(novoAluno.getNome());
             aluno.setCurso(novoAluno.getCurso());
             aluno.setPeriodo(novoAluno.getPeriodo());
             aluno.setStatusConta(novoAluno.getStatusConta());
@@ -74,7 +74,7 @@ public class UsuarioService {
 
     public Professor atualizarProfessor(Long id, Professor novoProfessor) {
         return professorRepository.findById(id).map(prof -> {
-            prof.setNomeCompleto(novoProfessor.getNomeCompleto());
+            prof.setNome(novoProfessor.getNome());
             prof.setFormacao(novoProfessor.getFormacao());
             prof.setAreaAtuacao(novoProfessor.getAreaAtuacao());
             return professorRepository.save(prof);
