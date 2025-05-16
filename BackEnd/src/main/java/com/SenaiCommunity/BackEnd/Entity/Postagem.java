@@ -40,5 +40,10 @@ public class Postagem {
     @OneToOne
     @JoinColumn(name = "projeto_id")
     private Projeto projeto;
+
+    @ManyToOne
+    @JoinColumn(name = "grupo_id")
+    private Grupos grupos;
+
 }
 

@@ -24,4 +24,9 @@ public class MensagemPrivada {
     private String conteudo;
 
     private LocalDateTime dataHora;
+
+    @ManyToOne
+    @JoinColumn(name = "chat_id")
+    private ChatPrivado chat;
+
 }

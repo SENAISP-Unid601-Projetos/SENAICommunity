@@ -29,9 +29,10 @@ public class Projeto {
     private Usuario autor;
 
 
-    // Comentários feitos na postagem
-    @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comentario> comentarios;
+    @OneToMany(mappedBy = "projeto")
+    private List<Postagem> postagens;
+
+
 
     // Professores interessados/orientadores
     @ManyToMany

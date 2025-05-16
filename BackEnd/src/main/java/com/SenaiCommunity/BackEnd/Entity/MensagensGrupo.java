@@ -31,4 +31,9 @@ public class MensagensGrupo {
             dataHora = LocalDateTime.now(); // Define a data e hora atual quando a mensagem é criada
         }
     }
+
+    @ManyToOne
+    @JoinColumn(name = "grupo_id")
+    private Grupos grupos;
+
 }

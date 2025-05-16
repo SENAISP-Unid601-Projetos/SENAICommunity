@@ -28,13 +28,13 @@ public class Grupos {
     @JoinColumn(name = "projeto_id")
     private Projeto projeto;
 
-    @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "grupos", cascade = CascadeType.ALL)
     private List<Participacao> participacoes;
 
-    @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "grupos", cascade = CascadeType.ALL)
     private List<Postagem> postagens;
 
-    @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "grupos", cascade = CascadeType.ALL)
     private List<MensagensGrupo> mensagens;
 
 }
