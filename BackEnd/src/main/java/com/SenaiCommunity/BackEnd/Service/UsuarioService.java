@@ -3,58 +3,81 @@ package com.SenaiCommunity.BackEnd.Service;
 import com.SenaiCommunity.BackEnd.Dto.UsuarioCadastroDto;
 import com.SenaiCommunity.BackEnd.Entity.Aluno;
 import com.SenaiCommunity.BackEnd.Entity.Professor;
-import com.SenaiCommunity.BackEnd.Entity.Usuario;
-import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.SenaiCommunity.BackEnd.Repository.AlunoRepository;
+import com.SenaiCommunity.BackEnd.Repository.ProfessorRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final AlunoRepository alunoRepository;
+    private final ProfessorRepository professorRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    public Usuario cadastrarUsuario(UsuarioCadastroDto dto) {
-        // Verifica se email já existe
-        Optional<Usuario> existente = usuarioRepository.findByEmail(dto.getEmail());
-        if (existente.isPresent()) {
-            throw new IllegalArgumentException("Email já cadastrado");
-        }
-
-        Usuario usuario;
-
+    @Transactional
+    public void cadastrarUsuario(UsuarioCadastroDto dto) {
         if (dto.getCodigoSn() != null && !dto.getCodigoSn().isEmpty()) {
-            // Criar Professor
             Professor professor = new Professor();
-            professor.setCodigoSn(dto.getCodigoSn());
-            usuario = professor;
+            professor.setNomeCompleto(dto.getNomeCompleto());
+            professor.setEmail(dto.getEmail());
+            professor.setSenha(dto.getSenha()); // Faça encode se estiver usando PasswordEncoder
+            professor.setFotoPerfil(dto.getFotoPerfil());
+            professor.setTipoUsuario("PROFESSOR");
+            professor.setFormacao("");
+            professor.setAreaAtuacao("");
+            professorRepository.save(professor);
         } else if (dto.getMatricula() != null && !dto.getMatricula().isEmpty()) {
-            // Criar Aluno
             Aluno aluno = new Aluno();
-            aluno.setMatricula(dto.getMatricula());
-            usuario = aluno;
+            aluno.setNomeCompleto(dto.getNomeCompleto());
+            aluno.setEmail(dto.getEmail());
+            aluno.setSenha(dto.getSenha()); // Faça encode se estiver usando PasswordEncoder
+            aluno.setFotoPerfil(dto.getFotoPerfil());
+            aluno.setTipoUsuario("ALUNO");
+            aluno.setCurso("");
+            aluno.setPeriodo("");
+            aluno.setStatusConta("ATIVO");
+            alunoRepository.save(aluno);
         } else {
-            throw new IllegalArgumentException("Informe código SN para professor ou matrícula para aluno");
+            throw new IllegalArgumentException("É necessário fornecer Código SN (professor) ou Matrícula (aluno).");
         }
-
-        usuario.setNomeCompleto(dto.getNomeCompleto());
-        usuario.setEmail(dto.getEmail());
-        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
-        usuario.setFotoPerfil(dto.getFotoPerfil());
-        usuario.setDataCadastro(LocalDateTime.now());
-        usuario.setTipoUsuario((usuario instanceof Professor) ? "PROFESSOR" : "ALUNO");
-
-        return usuarioRepository.save(usuario);
     }
 
-    public Optional<Usuario> buscarPorEmail(String email) {
-        return usuarioRepository.findByEmail(email);
+    public Optional<Aluno> getAlunoById(Long id) {
+        return alunoRepository.findById(id);
+    }
+
+    public Optional<Professor> getProfessorById(Long id) {
+        return professorRepository.findById(id);
+    }
+
+    public void deletarAluno(Long id) {
+        alunoRepository.deleteById(id);
+    }
+
+    public void deletarProfessor(Long id) {
+        professorRepository.deleteById(id);
+    }
+
+    public Aluno atualizarAluno(Long id, Aluno novoAluno) {
+        return alunoRepository.findById(id).map(aluno -> {
+            aluno.setNomeCompleto(novoAluno.getNomeCompleto());
+            aluno.setCurso(novoAluno.getCurso());
+            aluno.setPeriodo(novoAluno.getPeriodo());
+            aluno.setStatusConta(novoAluno.getStatusConta());
+            return alunoRepository.save(aluno);
+        }).orElseThrow(() -> new RuntimeException("Aluno não encontrado."));
+    }
+
+    public Professor atualizarProfessor(Long id, Professor novoProfessor) {
+        return professorRepository.findById(id).map(prof -> {
+            prof.setNomeCompleto(novoProfessor.getNomeCompleto());
+            prof.setFormacao(novoProfessor.getFormacao());
+            prof.setAreaAtuacao(novoProfessor.getAreaAtuacao());
+            return professorRepository.save(prof);
+        }).orElseThrow(() -> new RuntimeException("Professor não encontrado."));
     }
 }
