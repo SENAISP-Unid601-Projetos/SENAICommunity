@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class ChatPrivadoDto {
+    private long id;
     private Aluno aluno;
     private Professor professor;
 }

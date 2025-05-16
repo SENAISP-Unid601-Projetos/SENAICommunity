@@ -20,20 +20,16 @@ public class ChatPrivadoService {
 
     public ChatPrivado fromDTO(ChatPrivadoDto chatprivadoDto){
         ChatPrivado chatprivado = new ChatPrivado();
-        chatprivado.setAluno(chatprivadoDto.get);
-        chatprivado.setDescricao(chatprivadoDto.getDescricao());
-        chatprivado.setDataCriacao(chatprivadoDto.getDataCriacao());
-        chatprivado.setProjeto(chatprivadoDto.getProjeto());
+        chatprivado.setAluno(chatprivadoDto.getAluno());
+        chatprivado.setProfessor(chatprivadoDto.getProfessor());
         return chatprivado;
     }
 
     public ChatPrivadoDto toDTO(ChatPrivado chatprivado){
-        ChatPrivadoDto chatprivadoDTO = new ChatPrivado()Dto();
+        ChatPrivadoDto chatprivadoDTO = new ChatPrivadoDto();
         chatprivadoDTO.setId(chatprivado.getId());
-        chatprivadoDTO.setNome(chatprivado.getNome());
-        chatprivadoDTO.setDescricao(chatprivado.getDescricao());
-        chatprivadoDTO.setDataCriacao(chatprivado.getDataCriacao());
-        chatprivadoDTO.setProjeto(chatprivado.getProjeto());
+        chatprivadoDTO.setAluno(chatprivado.getAluno());
+        chatprivadoDTO.setProfessor(chatprivado.getProfessor());
         return chatprivadoDTO;
     }
 
@@ -41,15 +37,10 @@ public class ChatPrivadoService {
         return chatprivadorepository.findAll();
     }
 
-    public List<ChatPrivado> getByNome(String nome){
-        return chatprivadorepository.findAllByNome(nome);
-
-    }
-
     public Optional<ChatPrivadoDto> getById(Long id){
         Optional<ChatPrivado> optionalChatPrivado = chatprivadorepository.findById(id);
-        if(ChatPrivado.isPresent()){
-            return Optional.of(this.toDTO(ChatPrivado.get()));
+        if(optionalChatPrivado.isPresent()){
+            return Optional.of(this.toDTO(optionalChatPrivado.get()));
         }else {
             return Optional.empty();
         }
@@ -59,21 +50,6 @@ public class ChatPrivadoService {
         ChatPrivado chatprivado = this.fromDTO(chatprivadoDTO);
         ChatPrivado chatprivadoBd = chatprivadorepository.save(chatprivado);
         return this.toDTO(chatprivadoBd);
-    }
-
-    public Optional<ChatPrivadoDto> updateChatPrivado(Long id, ChatPrivadoDto chatprivadoDTO){
-        Optional<ChatPrivado> optionalChatPrivado = chatprivadorepository.findById(id);
-        if(ChatPrivado.isPresent()){
-            ChatPrivado chatprivado = ChatPrivado.get();
-            chatprivado.setNome(chatprivadoDTO.getNome());
-            chatprivado.setDescricao(chatprivadoDTO.getDescricao());
-            chatprivado.setDataCriacao(chatprivadoDTO.getDataCriacao());
-            ChatPrivado chatprivadoUpdate = chatprivadorepository.save(chatprivado);
-
-            return Optional.of(this.toDTO(chatprivadoUpdate));
-        }else {
-            return Optional.empty();
-        }
     }
 
     public boolean delete(Long id){
