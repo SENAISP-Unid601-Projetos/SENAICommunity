@@ -2,7 +2,9 @@ package com.SenaiCommunity.BackEnd.Service;
 
 import com.SenaiCommunity.BackEnd.Dto.GruposDto;
 import com.SenaiCommunity.BackEnd.Entity.Grupos;
+import com.SenaiCommunity.BackEnd.Entity.Participacao;
 import com.SenaiCommunity.BackEnd.Repository.GruposRepository;
+import com.SenaiCommunity.BackEnd.Repository.ParticipacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,8 @@ import java.util.Optional;
 public class GruposService {
     @Autowired
     private GruposRepository gruposrepository;
+    @Autowired
+    private ParticipacaoRepository participacaorepository;
 
     public Grupos fromDTO(GruposDto gruposDto){
         Grupos grupos = new Grupos();
@@ -70,6 +74,21 @@ public class GruposService {
         }else {
             return Optional.empty();
         }
+    }
+    public boolean addParticipacaoGrupo(Long id, Long idParticipacao){
+        Optional<Grupos> optionalGrupos = gruposrepository.findById(id);
+        if(!optionalGrupos.isPresent()){
+            return  false;
+        }
+        Optional<Participacao> optionalParticipacao = participacaorepository.findById(id);
+        if(!optionalParticipacao.isPresent()){
+            return  false;
+        }
+        Grupos grupos = optionalGrupos.get();
+        Participacao participacao = optionalParticipacao.get();
+        participacao.setGrupos(grupos);
+        participacaorepository.save(participacao);
+        return true;
     }
     public boolean delete(Long id){
         if(gruposrepository.existsById(id)){
