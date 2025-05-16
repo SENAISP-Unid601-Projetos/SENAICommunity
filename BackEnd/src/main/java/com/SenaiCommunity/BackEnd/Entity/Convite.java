@@ -24,7 +24,7 @@ public class Convite {
 
     @ManyToOne
     @JoinColumn(name = "id_grupo", nullable = false)
-    private Grupos grupo;
+    private Grupos grupos;
 
     @Enumerated(EnumType.STRING)
     private StatusConvite status;
