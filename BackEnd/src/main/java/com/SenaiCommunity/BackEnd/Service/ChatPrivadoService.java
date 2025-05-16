@@ -1,12 +1,8 @@
 package com.SenaiCommunity.BackEnd.Service;
 
 import com.SenaiCommunity.BackEnd.Dto.ChatPrivadoDto;
-import com.SenaiCommunity.BackEnd.Entity.ChatPrivadoDto;
 import com.SenaiCommunity.BackEnd.Entity.ChatPrivado;
-import com.SenaiCommunity.BackEnd.Entity.Participacao;
-import com.SenaiCommunity.BackEnd.Entity.ChatPrivadoRepository;
 import com.SenaiCommunity.BackEnd.Repository.ChatPrivadoRepository;
-import com.SenaiCommunity.BackEnd.Repository.ParticipacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
