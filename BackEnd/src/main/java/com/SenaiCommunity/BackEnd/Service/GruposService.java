@@ -16,15 +16,20 @@ public class GruposService {
 
     public Grupos fromDTO(GruposDto gruposDto){
         Grupos grupos = new Grupos();
-    
-
+        grupos.setNome(gruposDto.getNome());
+        grupos.setDescricao(gruposDto.getDescricao());
+        grupos.setDataCriacao(gruposDto.getDataCriacao());
+        grupos.setProjeto(gruposDto.getProjeto());
         return grupos;
     }
 
     public GruposDto toDTO(Grupos grupos){
         GruposDto gruposDTO = new GruposDto();
-
-
+        gruposDTO.setId(grupos.getId());
+        gruposDTO.setNome(grupos.getNome());
+        gruposDTO.setDescricao(grupos.getDescricao());
+        gruposDTO.setDataCriacao(grupos.getDataCriacao());
+        gruposDTO.setProjeto(grupos.getProjeto());
         return gruposDTO;
     }
 
@@ -34,7 +39,7 @@ public class GruposService {
 
     public List<Grupos> getByNome(String nome){
         return gruposrepository.findAllByNome(nome);
-//        return livrorepository.findById(id).map(this::toDTO);
+
     }
 
     public Optional<GruposDto> getById(Long id){
@@ -44,7 +49,6 @@ public class GruposService {
         }else {
             return Optional.empty();
         }
-//        return gruposrepository.findById(id).map(this::toDTO);
     }
 
     public GruposDto saveDto(GruposDto gruposDTO){
@@ -58,9 +62,8 @@ public class GruposService {
         if(optionalGrupos.isPresent()){
             Grupos grupos = optionalGrupos.get();
             grupos.setNome(gruposDTO.getNome());
-            grupos.setSobrenome(gruposDTO.getSobrenome());
-            grupos.setCpf(gruposDTO.getCpf());
-
+            grupos.setDescricao(gruposDTO.getDescricao());
+            grupos.setDataCriacao(gruposDTO.getDataCriacao());
             Grupos gruposUpdate = gruposrepository.save(grupos);
 
             return Optional.of(this.toDTO(gruposUpdate));
