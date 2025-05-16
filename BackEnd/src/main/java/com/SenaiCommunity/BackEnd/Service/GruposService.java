@@ -90,6 +90,24 @@ public class GruposService {
         participacaorepository.save(participacao);
         return true;
     }
+
+    public boolean removerParticipacaoGrupo(Long id, Long idParticipacao){
+
+        Optional<Participacao> optionalParticipacao = participacaorepository.findById(idParticipacao);
+        if(!optionalParticipacao.isPresent()){
+            return false;
+        }
+
+        Participacao participacao = optionalParticipacao.get();
+
+        if (participacao.getGrupos() != null && participacao.getGrupos().getId() == id) {
+            participacao.setGrupos(null);
+            participacaorepository.save(participacao);
+            return true;
+        }
+        return false;
+    }
+
     public boolean delete(Long id){
         if(gruposrepository.existsById(id)){
             gruposrepository.deleteById(id);

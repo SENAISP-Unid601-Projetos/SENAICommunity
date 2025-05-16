@@ -53,6 +53,23 @@ public class GruposController {
             return ResponseEntity.notFound().build();
         }
     }
+    @PutMapping("/{id}/participacao-add/{idParticipcao}")
+    public ResponseEntity<String> addParticipacaoTurma(@PathVariable Long id, @PathVariable Long idAluno){
+        if(gruposService.addParticipacaoGrupo(id, idAluno)){
+            return ResponseEntity.ok("Aluno adicionado com sucesso");
+        }else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aluno não encontrado");
+        }
+    }
+
+    @PutMapping("/{id}/participacao-remove/{idAluno}")
+    public ResponseEntity<String> removerParticipcaoGrupo(@PathVariable Long id, @PathVariable Long idAluno){
+        if(gruposService.removerParticipacaoGrupo(id, idAluno)){
+            return ResponseEntity.ok("Aluno removido do grupo com sucesso");
+        }else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro ao remover aluno do grupo");
+        }
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id){
