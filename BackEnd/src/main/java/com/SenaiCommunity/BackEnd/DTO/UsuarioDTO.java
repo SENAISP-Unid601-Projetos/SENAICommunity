@@ -17,6 +17,7 @@ import java.util.List;
 public class UsuarioDTO {
     private Long id;
     private String nomeCompleto;
+    private String cpf;
     private String email;
     private String fotoPerfil;
     private Date dataNascimento;

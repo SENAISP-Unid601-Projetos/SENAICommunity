@@ -18,6 +18,7 @@ public class Professor extends Usuario {
 
     private String formacao;
     private String areaAtuacao;
+    @Column(unique = true)
     private String codigoSn;
 
     @ManyToMany(mappedBy = "professores")

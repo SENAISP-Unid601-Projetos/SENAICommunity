@@ -17,7 +17,10 @@ public abstract class Usuario {
     private Long id;
 
     private String nome;
+    @Column(unique = true)
     private String email;
+    @Column(unique = true)
+    private String cpf;
     private String senha;
     private String fotoPerfil;
     private Date dataNascimento;

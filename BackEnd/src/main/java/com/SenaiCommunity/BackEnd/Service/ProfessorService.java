@@ -4,6 +4,7 @@ import com.SenaiCommunity.BackEnd.Entity.Professor;
 import com.SenaiCommunity.BackEnd.Entity.Participacao;
 import com.SenaiCommunity.BackEnd.Entity.Professor;
 import com.SenaiCommunity.BackEnd.Repository.ProfessorRepository;
+import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,9 @@ import java.util.Optional;
 public class ProfessorService {
     @Autowired
     private ProfessorRepository professorrepository;
+
+    @Autowired
+    private UsuarioRepository usuariorepository;
 
     public Professor fromDTO(ProfessorDTO professorDto){
         Professor professor = new Professor();
@@ -71,6 +75,13 @@ public class ProfessorService {
     }
 
     public ProfessorDTO saveDto(ProfessorDTO professorDTO){
+        if (usuariorepository.existsByEmail(professorDTO.getEmail())) {
+            throw new RuntimeException("Email já cadastrado");
+        }
+
+        if (usuariorepository.existsByCpf(professorDTO.getCpf())) {
+            throw new RuntimeException("CPF já cadastrado");
+        }
         Professor professor = this.fromDTO(professorDTO);
         Professor professorBd = professorrepository.save(professor);
         return this.toDTO(professorBd);
