@@ -1,46 +1,60 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
-import com.SenaiCommunity.BackEnd.Entity.Aluno;
+import com.SenaiCommunity.BackEnd.DTO.AlunoEntradaDTO;
+import com.SenaiCommunity.BackEnd.DTO.AlunoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Service.AlunoService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/alunos")
-@RequiredArgsConstructor
+@RequestMapping("/alunos")
 public class AlunoController {
 
-    private final AlunoService alunoService;
+    @Autowired
+    private AlunoService alunoService;
 
-    @PostMapping
-    public ResponseEntity<Aluno> salvar(@RequestBody Aluno aluno) {
-        return ResponseEntity.ok(alunoService.salvar(aluno));
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<AlunoSaidaDTO> cadastrarAluno(
+            @RequestParam String nome,
+            @RequestParam String email,
+            @RequestParam String senha,
+            @RequestParam String curso,
+            @RequestParam String periodo,
+            @RequestParam(required = false) MultipartFile foto // opcional
+    ) {
+        AlunoEntradaDTO dto = new AlunoEntradaDTO();
+        dto.setNome(nome);
+        dto.setEmail(email);
+        dto.setSenha(senha);
+        dto.setCurso(curso);
+        dto.setPeriodo(periodo);
+
+        return ResponseEntity.ok(alunoService.criarAlunoComFoto(dto, foto));
     }
 
+
     @GetMapping
-    public ResponseEntity<List<Aluno>> listarTodos() {
+    public ResponseEntity<List<AlunoSaidaDTO>> listarTodos() {
         return ResponseEntity.ok(alunoService.listarTodos());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Aluno> buscarPorId(@PathVariable Long id) {
-        return alunoService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<AlunoSaidaDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(alunoService.buscarPorId(id));
     }
 
-
     @PutMapping("/{id}")
-    public ResponseEntity<Aluno> atualizar(@PathVariable Long id, @RequestBody Aluno alunoAtualizado) {
-        return ResponseEntity.ok(alunoService.atualizar(id, alunoAtualizado));
+    public ResponseEntity<AlunoSaidaDTO> atualizarAluno(@PathVariable Long id, @RequestBody AlunoEntradaDTO dto) {
+        return ResponseEntity.ok(alunoService.atualizarAluno(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        alunoService.deletar(id);
+    public ResponseEntity<Void> deletarAluno(@PathVariable Long id) {
+        alunoService.deletarAluno(id);
         return ResponseEntity.noContent().build();
     }
 }

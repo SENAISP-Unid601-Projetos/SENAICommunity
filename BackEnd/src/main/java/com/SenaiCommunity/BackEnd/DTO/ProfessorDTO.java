@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class ProfessorDTO extends UsuarioDTO {
+public class ProfessorDTO {
     private String formacao;
     private String areaAtuacao;
     private String codigoSn;
