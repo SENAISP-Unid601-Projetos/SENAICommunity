@@ -1,9 +1,9 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.AvaliacoesDTO;
+import com.SenaiCommunity.BackEnd.Entity.Avaliacoes;
 import com.SenaiCommunity.BackEnd.Service.AvaliacoesService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,20 +13,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AvaliacoesController {
 
-    private final AvaliacoesService avaliacoesService;
+    private final AvaliacoesService avaliacaoService;
 
     @PostMapping
-    public ResponseEntity<AvaliacoesDTO> criar(@RequestBody AvaliacoesDTO dto) {
-        return ResponseEntity.ok(avaliacoesService.salvar(dto));
+    public Avaliacoes criar(@RequestBody AvaliacoesDTO dto) {
+        return avaliacaoService.criarAvaliacao(dto);
     }
 
     @GetMapping
-    public ResponseEntity<List<AvaliacoesDTO>> listar() {
-        return ResponseEntity.ok(avaliacoesService.listarTodos());
+    public List<Avaliacoes> listar() {
+        return avaliacaoService.listarTodas();
     }
 
-    @GetMapping("/projeto/{projetoId}")
-    public ResponseEntity<List<AvaliacoesDTO>> listarPorProjeto(@PathVariable Long projetoId) {
-        return ResponseEntity.ok(avaliacoesService.listarPorProjeto(projetoId));
+    @GetMapping("/projeto/{id}")
+    public List<Avaliacoes> listarPorProjeto(@PathVariable Long id) {
+        return avaliacaoService.listarPorProjeto(id);
     }
 }

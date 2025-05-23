@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Service;
 
+import com.SenaiCommunity.BackEnd.DTO.AvaliacaoDTO;
 import com.SenaiCommunity.BackEnd.DTO.AvaliacoesDTO;
 import com.SenaiCommunity.BackEnd.Entity.Avaliacoes;
 import com.SenaiCommunity.BackEnd.Entity.Projeto;
@@ -7,12 +8,11 @@ import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.AvaliacoesRepository;
 import com.SenaiCommunity.BackEnd.Repository.ProjetoRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,47 +22,28 @@ public class AvaliacoesService {
     private final UsuarioRepository usuarioRepository;
     private final ProjetoRepository projetoRepository;
 
-    public AvaliacoesDTO salvar(AvaliacoesDTO dto) {
-        Avaliacoes avaliacao = new Avaliacoes();
-        avaliacao.setEstrelas(dto.getEstrelas());
-        avaliacao.setDataAvaliacao(dto.getDataAvaliacao());
-        avaliacao.setComentario(dto.getComentario());
-
+    public Avaliacoes criarAvaliacao(AvaliacoesDTO dto) {
         Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         Projeto projeto = projetoRepository.findById(dto.getProjetoId())
-                .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Projeto não encontrado"));
 
+        Avaliacoes avaliacao = new Avaliacoes();
+        avaliacao.setEstrelas(dto.getEstrelas());
+        avaliacao.setComentario(dto.getComentario());
+        avaliacao.setDataAvaliacao(LocalDate.now());
         avaliacao.setUsuario(usuario);
         avaliacao.setProjeto(projeto);
 
-        Avaliacoes salvo = avaliacoesRepository.save(avaliacao);
-        return toDTO(salvo);
+        return avaliacoesRepository.save(avaliacao);
     }
 
-    public List<AvaliacoesDTO> listarTodos() {
-        return avaliacoesRepository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+    public List<Avaliacoes> listarTodas() {
+        return avaliacoesRepository.findAll();
     }
 
-    public List<AvaliacoesDTO> listarPorProjeto(Long projetoId) {
-        return avaliacoesRepository.findByProjetoId(projetoId)
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    private AvaliacoesDTO toDTO(Avaliacoes avaliacao) {
-        AvaliacoesDTO dto = new AvaliacoesDTO();
-        dto.setId(avaliacao.getId());
-        dto.setEstrelas(avaliacao.getEstrelas());
-        dto.setDataAvaliacao(avaliacao.getDataAvaliacao());
-        dto.setComentario(avaliacao.getComentario());
-        dto.setUsuarioId(avaliacao.getUsuario().getId());
-        dto.setProjetoId(avaliacao.getProjeto().getId());
-        return dto;
+    public List<Avaliacoes> listarPorProjeto(Long projetoId) {
+        return avaliacoesRepository.findByProjetoId(projetoId);
     }
 }
