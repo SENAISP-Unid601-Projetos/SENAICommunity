@@ -145,7 +145,7 @@ function renderProjetosParticipo() {
       card.className = 'project-card';
       card.style.cursor = 'pointer';
       card.onclick = () => {
-        window.location.href = `detalhe-projeto.html?id=${projeto.id}`;
+        window.location.href = `chatProjeto.html?id=${projeto.id}`;
       };
       card.innerHTML = `
         <button class="project-options-btn" title="Opções" onclick="event.stopPropagation();"><i class="fas fa-ellipsis-h"></i></button>
