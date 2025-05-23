@@ -1,6 +1,6 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
-import com.SenaiCommunity.BackEnd.Dto.GruposDto;
+import com.SenaiCommunity.BackEnd.DTO.GruposDTO;
 import com.SenaiCommunity.BackEnd.Entity.Grupos;
 import com.SenaiCommunity.BackEnd.Service.GruposService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +19,8 @@ public class GruposController {
     private GruposService gruposService;
 
     @PostMapping
-    public ResponseEntity<GruposDto> created(@RequestBody GruposDto gruposDto){
-        GruposDto grupos = gruposService.saveDto(gruposDto);
+    public ResponseEntity<GruposDTO> created(@RequestBody GruposDTO gruposDto){
+        GruposDTO grupos = gruposService.saveDto(gruposDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(grupos);
     }
 
@@ -35,8 +35,8 @@ public class GruposController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GruposDto> getById(@PathVariable Long id){
-        Optional<GruposDto> gruposDTO = gruposService.getById(id);
+    public ResponseEntity<GruposDTO> getById(@PathVariable Long id){
+        Optional<GruposDTO> gruposDTO = gruposService.getById(id);
         if(gruposDTO.isPresent()){
             return ResponseEntity.ok(gruposDTO.get());
         }else {
@@ -45,8 +45,8 @@ public class GruposController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GruposDto> update(@PathVariable Long id, @RequestBody GruposDto gruposDTO){
-        Optional<GruposDto> gruposDTOOptional = gruposService.updateGrupos(id, gruposDTO);
+    public ResponseEntity<GruposDTO> update(@PathVariable Long id, @RequestBody GruposDTO gruposDTO){
+        Optional<GruposDTO> gruposDTOOptional = gruposService.updateGrupos(id, gruposDTO);
         if (gruposDTOOptional.isPresent()){
             return ResponseEntity.ok(gruposDTOOptional.get());
         }else {

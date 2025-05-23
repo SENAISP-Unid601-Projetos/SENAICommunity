@@ -1,4 +1,4 @@
-package com.SenaiCommunity.BackEnd.Dto;
+package com.SenaiCommunity.BackEnd.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class AlunoDto extends UsuarioDto {
+public class AlunoDTO extends UsuarioDTO {
 
     private String matricula;
     private String curso;

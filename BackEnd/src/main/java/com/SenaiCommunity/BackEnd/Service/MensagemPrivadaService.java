@@ -1,7 +1,7 @@
 package com.SenaiCommunity.BackEnd.Service;
 
 
-import com.SenaiCommunity.BackEnd.Dto.MensagemPrivadaDto;
+import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaDTO;
 import com.SenaiCommunity.BackEnd.Entity.*;
 import com.SenaiCommunity.BackEnd.Repository.MensagemPrivadaRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +25,7 @@ public class MensagemPrivadaService {
     @Autowired
     private ChatPrivadoRepository chatPrivadoRepository;
 
-    public MensagemPrivadaDto enviarMensagem(MensagemPrivadaDto dto) {
+    public MensagemPrivadaDTO enviarMensagem(MensagemPrivadaDTO dto) {
         Usuario remetente = usuarioRepository.findById(dto.getRemetenteId()).orElseThrow();
         Usuario destinatario = usuarioRepository.findById(dto.getDestinatarioId()).orElseThrow();
         ChatPrivado chat = chatPrivadoRepository.findById(dto.getChatId()).orElseThrow();
@@ -44,14 +43,14 @@ public class MensagemPrivadaService {
         return dto;
     }
 
-    public List<MensagemPrivadaDto> listarPorChat(Long chatId) {
+    public List<MensagemPrivadaDTO> listarPorChat(Long chatId) {
         ChatPrivado chat = chatPrivadoRepository.findById(chatId).orElseThrow();
         List<MensagemPrivada> mensagens = repository.findByChat(chat);
         return mensagens.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    private MensagemPrivadaDto toDTO(MensagemPrivada msg) {
-        MensagemPrivadaDto dto = new MensagemPrivadaDto();
+    private MensagemPrivadaDTO toDTO(MensagemPrivada msg) {
+        MensagemPrivadaDTO dto = new MensagemPrivadaDTO();
         dto.setId(msg.getId());
         dto.setConteudo(msg.getConteudo());
         dto.setRemetenteId(msg.getRemetente().getId());

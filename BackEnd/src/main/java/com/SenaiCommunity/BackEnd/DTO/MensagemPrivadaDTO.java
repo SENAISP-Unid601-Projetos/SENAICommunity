@@ -1,11 +1,11 @@
-package com.SenaiCommunity.BackEnd.Dto;
+package com.SenaiCommunity.BackEnd.DTO;
 
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-public class MensagemPrivadaDto {
+public class MensagemPrivadaDTO {
     private Long id;
     private Long remetenteId;
     private Long destinatarioId;

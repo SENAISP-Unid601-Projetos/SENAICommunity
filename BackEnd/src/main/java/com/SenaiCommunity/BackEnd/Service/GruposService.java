@@ -1,6 +1,6 @@
 package com.SenaiCommunity.BackEnd.Service;
 
-import com.SenaiCommunity.BackEnd.Dto.GruposDto;
+import com.SenaiCommunity.BackEnd.DTO.GruposDTO;
 import com.SenaiCommunity.BackEnd.Entity.Grupos;
 import com.SenaiCommunity.BackEnd.Entity.Participacao;
 import com.SenaiCommunity.BackEnd.Repository.GruposRepository;
@@ -18,7 +18,7 @@ public class GruposService {
     @Autowired
     private ParticipacaoRepository participacaorepository;
 
-    public Grupos fromDTO(GruposDto gruposDto){
+    public Grupos fromDTO(GruposDTO gruposDto){
         Grupos grupos = new Grupos();
         grupos.setNome(gruposDto.getNome());
         grupos.setDescricao(gruposDto.getDescricao());
@@ -27,8 +27,8 @@ public class GruposService {
         return grupos;
     }
 
-    public GruposDto toDTO(Grupos grupos){
-        GruposDto gruposDTO = new GruposDto();
+    public GruposDTO toDTO(Grupos grupos){
+        GruposDTO gruposDTO = new GruposDTO();
         gruposDTO.setId(grupos.getId());
         gruposDTO.setNome(grupos.getNome());
         gruposDTO.setDescricao(grupos.getDescricao());
@@ -46,7 +46,7 @@ public class GruposService {
 
     }
 
-    public Optional<GruposDto> getById(Long id){
+    public Optional<GruposDTO> getById(Long id){
         Optional<Grupos> optionalGrupos = gruposrepository.findById(id);
         if(optionalGrupos.isPresent()){
             return Optional.of(this.toDTO(optionalGrupos.get()));
@@ -55,13 +55,13 @@ public class GruposService {
         }
     }
 
-    public GruposDto saveDto(GruposDto gruposDTO){
+    public GruposDTO saveDto(GruposDTO gruposDTO){
         Grupos grupos = this.fromDTO(gruposDTO);
         Grupos gruposBd = gruposrepository.save(grupos);
         return this.toDTO(gruposBd);
     }
 
-    public Optional<GruposDto> updateGrupos(Long id, GruposDto gruposDTO){
+    public Optional<GruposDTO> updateGrupos(Long id, GruposDTO gruposDTO){
         Optional<Grupos> optionalGrupos = gruposrepository.findById(id);
         if(optionalGrupos.isPresent()){
             Grupos grupos = optionalGrupos.get();

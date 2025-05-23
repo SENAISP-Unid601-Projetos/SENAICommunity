@@ -1,6 +1,6 @@
 package com.SenaiCommunity.BackEnd.Service;
 
-import com.SenaiCommunity.BackEnd.Dto.UsuarioCadastroDto;
+import com.SenaiCommunity.BackEnd.DTO.UsuarioCadastroDTO;
 import com.SenaiCommunity.BackEnd.Entity.Aluno;
 import com.SenaiCommunity.BackEnd.Entity.Professor;
 import com.SenaiCommunity.BackEnd.Repository.AlunoRepository;
@@ -19,7 +19,7 @@ public class UsuarioService {
     private final ProfessorRepository professorRepository;
 
     @Transactional
-    public void cadastrarUsuario(UsuarioCadastroDto dto) {
+    public void cadastrarUsuario(UsuarioCadastroDTO dto) {
         if (dto.getCodigoSn() != null && !dto.getCodigoSn().isEmpty()) {
             Professor professor = new Professor();
             professor.setNome(dto.getNomeCompleto());

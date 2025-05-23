@@ -1,4 +1,4 @@
-package com.SenaiCommunity.BackEnd.Dto;
+package com.SenaiCommunity.BackEnd.DTO;
 
 
 import lombok.AllArgsConstructor;
@@ -11,7 +11,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioDto {
+public class UsuarioDTO {
     private Long id;
     private String nomeCompleto;
     private String email;

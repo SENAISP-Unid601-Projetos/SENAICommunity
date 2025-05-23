@@ -1,8 +1,7 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
-import com.SenaiCommunity.BackEnd.Dto.ChatPrivadoDto;
+import com.SenaiCommunity.BackEnd.DTO.ChatPrivadoDTO;
 import com.SenaiCommunity.BackEnd.Entity.ChatPrivado;
-import com.SenaiCommunity.BackEnd.Service.ChatPrivadoService;
 import com.SenaiCommunity.BackEnd.Service.ChatPrivadoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,8 +19,8 @@ public class ChatPrivadoController {
     private ChatPrivadoService chatprivadoservice;
 
     @PostMapping
-    public ResponseEntity<ChatPrivadoDto> created(@RequestBody ChatPrivadoDto chatprivadoDto){
-        ChatPrivadoDto chatprivado = chatprivadoservice.saveDto(chatprivadoDto);
+    public ResponseEntity<ChatPrivadoDTO> created(@RequestBody ChatPrivadoDTO chatprivadoDto){
+        ChatPrivadoDTO chatprivado = chatprivadoservice.saveDto(chatprivadoDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(chatprivado);
     }
 
@@ -31,8 +30,8 @@ public class ChatPrivadoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ChatPrivadoDto> getById(@PathVariable Long id){
-        Optional<ChatPrivadoDto> chatprivadoDTO = chatprivadoservice.getById(id);
+    public ResponseEntity<ChatPrivadoDTO> getById(@PathVariable Long id){
+        Optional<ChatPrivadoDTO> chatprivadoDTO = chatprivadoservice.getById(id);
         if(chatprivadoDTO.isPresent()){
             return ResponseEntity.ok(chatprivadoDTO.get());
         }else {

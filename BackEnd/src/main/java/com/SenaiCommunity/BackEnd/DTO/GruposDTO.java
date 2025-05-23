@@ -1,4 +1,4 @@
-package com.SenaiCommunity.BackEnd.Dto;
+package com.SenaiCommunity.BackEnd.DTO;
 
 import com.SenaiCommunity.BackEnd.Entity.Projeto;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class GruposDto {
+public class GruposDTO {
     private Long id;
     private String nome;
     private String descricao;
