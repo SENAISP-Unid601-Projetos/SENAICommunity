@@ -90,7 +90,7 @@ function renderMeusProjetos() {
 
       // Redirecionamento ao clicar no card
       card.onclick = () => {
-        window.location.href = `detalhe-projeto.html?id=${projeto.id}`;
+        window.location.href = `chatProjeto.html?id=${projeto.id}`;
       };
 
       card.innerHTML = `
