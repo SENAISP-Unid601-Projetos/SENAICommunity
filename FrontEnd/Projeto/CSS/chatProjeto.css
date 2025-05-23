@@ -1,31 +1,61 @@
 :root {
+  /* Dark Theme Default */
   --bg-primary: #0d1117;
   --bg-secondary: #161b22;
   --bg-tertiary: #21262d;
   --bg-quaternary: #30363d;
   --text-primary: #f0f6fc;
   --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
   --accent-primary: #58a6ff;
   --accent-secondary: #1f6feb;
   --highlight: #f78166;
+  --online: #3fb950;
+  --away: #d29922;
   --danger: #f85149;
   --success: #238636;
   --border-color: #30363d;
-  --card-radius: 14px;
-  --shadow: 0 6px 30px rgba(0,0,0,0.12);
-  --shadow-card: 0 2px 24px #0d1117a0;
-  --transition: all 0.22s cubic-bezier(.4,1.6,.7,1);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --card-radius: 8px;
+  --transition: all 0.3s ease;
+}
+
+[data-theme="light"] {
+  --bg-primary: #f0f2f5;
+  --bg-secondary: #fff;
+  --bg-tertiary: #f7f8fa;
+  --bg-quaternary: #e4e6eb;
+  --text-primary: #1c1e21;
+  --text-secondary: #65676b;
+  --text-tertiary: #8d949e;
+  --accent-primary: #1877f2;
+  --accent-secondary: #166fe5;
+  --highlight: #fa383e;
+  --online: #31a24c;
+  --away: #f7b928;
+  --danger: #fa383e;
+  --success: #31a24c;
+  --border-color: #cfd2d6;
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  --card-radius: 8px;
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
-  margin: 0;
+  line-height: 1.6;
   transition: var(--transition);
 }
 
-/* Topbar igual principal */
+/* Header */
 .topbar {
   display: flex;
   align-items: center;
@@ -38,12 +68,42 @@ body {
   z-index: 1000;
   box-shadow: var(--shadow);
 }
-.header-left { display: flex; align-items: center; gap: 1rem; }
-.menu-toggle { display: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; }
-.logo { font-size: 1.5rem; font-weight: 700; color: var(--accent-primary);}
-.highlight { color: var(--highlight); }
-.search { position: relative; flex: 0.5; min-width: 200px; display: flex; align-items: center; }
-.search i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.menu-toggle {
+  display: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.highlight { color: var(--highlight); font-weight: 600; }
+
+.search {
+  position: relative;
+  flex: 0.5;
+  min-width: 200px;
+}
+
+.search i {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+}
+
 .search input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
@@ -53,7 +113,19 @@ body {
   color: var(--text-primary);
   font-size: 0.875rem;
 }
-.nav-icons { display: flex; align-items: center; gap: 0.5rem; }
+
+.search input:focus {
+  outline: none;
+  background-color: var(--bg-secondary);
+  box-shadow: 0 0 0 2px var(--accent-primary);
+}
+
+.nav-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .nav-icon {
   position: relative;
   padding: 0.75rem;
@@ -61,45 +133,127 @@ body {
   cursor: pointer;
   transition: var(--transition);
 }
-.nav-icon:hover { background-color: var(--bg-tertiary);}
-.badge {
-  position: absolute; top: 0; right: 0;
-  background: var(--danger); color: #fff;
-  border-radius: 50%; width: 16px; height: 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.65rem; font-weight: bold;
-}
-.theme-toggle { cursor: pointer; padding: 0.75rem; border-radius: 50%; transition: var(--transition);}
-.user-dropdown { position: relative;}
-.user {
-  display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem;
-  border-radius: 20px; cursor: pointer; transition: var(--transition);
-}
-.profile-pic { width: 32px; height: 32px; border-radius: 50%; overflow: hidden;}
-.profile-pic img { width: 100%; height: 100%; object-fit: cover;}
-.dropdown-menu {
-  position: absolute; top: 100%; right: 0; width: 200px;
-  background-color: var(--bg-secondary); border: 1px solid var(--border-color);
-  border-radius: 6px; padding: 0.5rem 0; box-shadow: var(--shadow); display: none; z-index: 100;
-}
-.dropdown-menu a {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.75rem 1rem; color: var(--text-primary);
-  text-decoration: none; transition: var(--transition);
-}
-.dropdown-menu a:hover { background: var(--bg-tertiary); }
 
+.nav-icon:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.nav-icon i {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--danger);
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: bold;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.theme-toggle {
+  cursor: pointer;
+  padding: 0.75rem;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.theme-toggle:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.user-dropdown {
+  position: relative;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.user:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.profile-pic {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.profile-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 200px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.5rem 0;
+  box-shadow: var(--shadow);
+  display: none;
+  z-index: 100;
+}
+
+.dropdown-menu a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.dropdown-menu a:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.dropdown-menu a i {
+  width: 20px;
+  text-align: center;
+}
+
+/* Chat Layout */
 .chat-container {
   display: flex;
   height: calc(100vh - 70px);
   background: var(--bg-primary);
-  max-width: 2000px;
+  max-width: 1800px;
   margin: 0 auto;
   gap: 1rem;
   padding: 0 1rem;
 }
+
 .chat-sidebar {
-  width: 400px;
+  width: 340px;
   background: var(--bg-secondary);
   border-radius: var(--card-radius);
   display: flex;
@@ -107,7 +261,9 @@ body {
   box-shadow: var(--shadow);
   margin: 1rem 0 1rem 1rem;
   border: 1.5px solid var(--border-color);
+  min-width: 220px;
 }
+
 .sidebar-header {
   display: flex;
   align-items: center;
@@ -115,12 +271,14 @@ body {
   gap: 1.2rem;
   padding: 1.2rem 1.3rem 1.1rem 1.3rem;
 }
+
 .sidebar-header h2 {
   font-size: 1.17rem;
   font-weight: 600;
   color: var(--accent-primary);
   margin: 0;
 }
+
 .add-group-btn {
   background: var(--accent-primary);
   border: none;
@@ -133,6 +291,7 @@ body {
   box-shadow: var(--shadow);
 }
 .add-group-btn:hover { background: var(--accent-secondary); }
+
 .sidebar-search {
   display: flex; align-items: center; position: relative;
   padding: 0.7rem 1.2rem 0.4rem 1.2rem;
@@ -267,6 +426,7 @@ body {
   width: 38px; height: 38px; border-radius: 13px; background: var(--bg-tertiary);
   object-fit: cover; box-shadow: 0 1px 6px #58a6ff1d;
 }
+.message-bubble { display: flex; flex-direction: column; position: relative; }
 .message-content {
   background: var(--bg-tertiary); border-radius: 17px 17px 17px 5px; padding: 0.9rem 1.25rem;
   font-size: 1.03rem; color: #fff; box-shadow: 0 2px 10px #0d11171a;
@@ -282,6 +442,20 @@ body {
 .message-meta {
   font-size: 0.82rem; color: #99c7ca;
   margin: 3px 13px 0 13px; user-select: none; font-weight: 500; letter-spacing: 0.02em;
+}
+
+/* --- AJUSTES DE CORES DAS MENSAGENS NO TEMA LIGHT --- */
+[data-theme="light"] .message-content {
+  background: #f4f6fa;
+  color: #222;
+  border: 1.5px solid #e4e6eb;
+  box-shadow: 0 2px 8px #d1d9e6;
+}
+[data-theme="light"] .message-row.me .message-content {
+  background: var(--accent-primary);
+  color: #fff;
+  border: 1.5px solid var(--accent-secondary);
+  box-shadow: 0 2px 12px #c6dfff;
 }
 
 .chat-input-area {
@@ -319,6 +493,7 @@ body {
     border-radius: 0;
     border-right: none; 
     border-bottom: 2px solid var(--border-color);
+    min-width: 0;
   }
   .chat-main { 
     margin: 0;

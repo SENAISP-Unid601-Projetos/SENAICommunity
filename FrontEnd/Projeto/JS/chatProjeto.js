@@ -188,6 +188,33 @@ document.addEventListener('click', () => {
   document.querySelectorAll('.dropdown-menu').forEach(menu => menu.style.display = 'none');
 });
 
+// ----- Tema dark/light -----
+const themeToggle = document.querySelector('.theme-toggle');
+const body = document.body;
+
+// Carrega tema salvo ou padrão dark
+function setTheme(theme) {
+  body.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  if (themeToggle) {
+    themeToggle.innerHTML = theme === 'dark'
+      ? '<i class="fas fa-moon"></i>'
+      : '<i class="fas fa-sun"></i>';
+  }
+}
+
+// Inicialização do tema
+const savedTheme = localStorage.getItem('theme') || 'dark';
+setTheme(savedTheme);
+
+if (themeToggle) {
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = body.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+  });
+}
+
 // Inicialização
 renderGroupsList();
 renderChatHeader();

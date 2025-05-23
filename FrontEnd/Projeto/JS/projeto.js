@@ -60,8 +60,6 @@ function showNotification(message, type = "info") {
 function renderMeusProjetos() {
   const container = document.getElementById('meus-projetos');
   let emptyState = document.getElementById('sem-meus-projetos');
-
-  // Cria o emptyState se não existir
   if (!emptyState) {
     emptyState = document.createElement('div');
     emptyState.className = 'empty-state';
@@ -75,10 +73,7 @@ function renderMeusProjetos() {
     `;
     container.appendChild(emptyState);
   }
-
-  // Remove apenas os cards de projeto, mantendo emptyState
   container.querySelectorAll('.project-card').forEach(card => card.remove());
-
   if (meusProjetos.length === 0) {
     emptyState.style.display = 'block';
   } else {
@@ -87,12 +82,9 @@ function renderMeusProjetos() {
       const card = document.createElement('div');
       card.className = 'project-card';
       card.style.cursor = 'pointer';
-
-      // Redirecionamento ao clicar no card
       card.onclick = () => {
         window.location.href = `chatProjeto.html?id=${projeto.id}`;
       };
-
       card.innerHTML = `
         <button class="project-options-btn" title="Opções" onclick="event.stopPropagation();"><i class="fas fa-ellipsis-h"></i></button>
         <div class="project-header">
@@ -113,8 +105,6 @@ function renderMeusProjetos() {
       container.appendChild(card);
     });
   }
-
-  // Religa o botão "Criar Projeto" do emptyState
   const btnCriarPrimeiroProjeto = document.getElementById('criar-primeiro-projeto');
   if (btnCriarPrimeiroProjeto) btnCriarPrimeiroProjeto.onclick = openModal;
 }
@@ -122,7 +112,6 @@ function renderMeusProjetos() {
 function renderProjetosParticipo() {
   const container = document.getElementById('projetos-participo');
   let emptyState = document.getElementById('sem-projetos-participo');
-
   if (!emptyState) {
     emptyState = document.createElement('div');
     emptyState.className = 'empty-state';
@@ -133,9 +122,7 @@ function renderProjetosParticipo() {
     `;
     container.appendChild(emptyState);
   }
-
   container.querySelectorAll('.project-card').forEach(card => card.remove());
-
   if (projetosParticipo.length === 0) {
     emptyState.style.display = 'block';
   } else {
@@ -171,7 +158,6 @@ function renderProjetosParticipo() {
 function renderConvites() {
   const container = document.getElementById('lista-convites');
   let emptyState = document.getElementById('sem-convites');
-
   if (!emptyState) {
     emptyState = document.createElement('div');
     emptyState.className = 'empty-state';
@@ -182,9 +168,7 @@ function renderConvites() {
     `;
     container.appendChild(emptyState);
   }
-
   container.querySelectorAll('.invite-card').forEach(card => card.remove());
-
   if (convites.length === 0) {
     emptyState.style.display = 'block';
   } else {
