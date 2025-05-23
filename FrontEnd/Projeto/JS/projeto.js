@@ -86,8 +86,15 @@ function renderMeusProjetos() {
     meusProjetos.forEach(projeto => {
       const card = document.createElement('div');
       card.className = 'project-card';
+      card.style.cursor = 'pointer';
+
+      // Redirecionamento ao clicar no card
+      card.onclick = () => {
+        window.location.href = `detalhe-projeto.html?id=${projeto.id}`;
+      };
+
       card.innerHTML = `
-        <button class="project-options-btn" title="Opções"><i class="fas fa-ellipsis-h"></i></button>
+        <button class="project-options-btn" title="Opções" onclick="event.stopPropagation();"><i class="fas fa-ellipsis-h"></i></button>
         <div class="project-header">
           <img class="creator-avatar" src="${projeto.criador.avatar}" title="Criador" alt="Criador">
           <span class="project-title">${projeto.nome}</span>
@@ -98,8 +105,8 @@ function renderMeusProjetos() {
             ${projeto.membros.map(m => `<img class="member-avatar" src="${m.avatar}" title="${m.nome}">`).join('')}
           </div>
           <div class="project-actions">
-            <button title="Editar"><i class="fas fa-edit"></i></button>
-            <button title="Excluir" onclick="deleteProjeto(${projeto.id})"><i class="fas fa-trash"></i></button>
+            <button title="Editar" onclick="event.stopPropagation();"><i class="fas fa-edit"></i></button>
+            <button title="Excluir" onclick="deleteProjeto(${projeto.id});event.stopPropagation();"><i class="fas fa-trash"></i></button>
           </div>
         </div>
       `;
@@ -136,8 +143,12 @@ function renderProjetosParticipo() {
     projetosParticipo.forEach(projeto => {
       const card = document.createElement('div');
       card.className = 'project-card';
+      card.style.cursor = 'pointer';
+      card.onclick = () => {
+        window.location.href = `detalhe-projeto.html?id=${projeto.id}`;
+      };
       card.innerHTML = `
-        <button class="project-options-btn" title="Opções"><i class="fas fa-ellipsis-h"></i></button>
+        <button class="project-options-btn" title="Opções" onclick="event.stopPropagation();"><i class="fas fa-ellipsis-h"></i></button>
         <div class="project-header">
           <img class="creator-avatar" src="${projeto.criador.avatar}" title="Criador" alt="Criador">
           <span class="project-title">${projeto.nome}</span>
@@ -148,7 +159,7 @@ function renderProjetosParticipo() {
             ${projeto.membros.map(m => `<img class="member-avatar" src="${m.avatar}" title="${m.nome}">`).join('')}
           </div>
           <div class="project-actions">
-            <button title="Sair do Projeto" onclick="leaveProjeto(${projeto.id})"><i class="fas fa-sign-out-alt"></i></button>
+            <button title="Sair do Projeto" onclick="leaveProjeto(${projeto.id});event.stopPropagation();"><i class="fas fa-sign-out-alt"></i></button>
           </div>
         </div>
       `;
