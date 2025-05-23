@@ -80,7 +80,7 @@ public class GruposService {
         if(!optionalGrupos.isPresent()){
             return  false;
         }
-        Optional<Participacao> optionalParticipacao = participacaorepository.findById(id);
+        Optional<Participacao> optionalParticipacao = participacaorepository.findById(idParticipacao);
         if(!optionalParticipacao.isPresent()){
             return  false;
         }
