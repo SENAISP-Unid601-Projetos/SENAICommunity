@@ -1,6 +1,7 @@
 package com.SenaiCommunity.BackEnd.Service;
 
-import com.SenaiCommunity.BackEnd.Dto.ProjetoDTO;
+
+import com.SenaiCommunity.BackEnd.DTO.ProjetoDTO;
 import com.SenaiCommunity.BackEnd.Entity.Aluno;
 import com.SenaiCommunity.BackEnd.Entity.Professor;
 import com.SenaiCommunity.BackEnd.Entity.Projeto;

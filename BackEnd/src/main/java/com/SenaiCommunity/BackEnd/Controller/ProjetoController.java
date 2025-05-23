@@ -1,6 +1,7 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
-import com.SenaiCommunity.BackEnd.Dto.ProjetoDTO;
+
+import com.SenaiCommunity.BackEnd.DTO.ProjetoDTO;
 import com.SenaiCommunity.BackEnd.Service.ProjetoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
