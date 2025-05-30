@@ -106,6 +106,7 @@ public class AlunoService {
         dto.setId(aluno.getId());
         dto.setNome(aluno.getNome());
         dto.setEmail(aluno.getEmail());
+        dto.setSenha(aluno.getSenha());
         dto.setFotoPerfil(aluno.getFotoPerfil());
         dto.setCurso(aluno.getCurso());
         dto.setPeriodo(aluno.getPeriodo());
