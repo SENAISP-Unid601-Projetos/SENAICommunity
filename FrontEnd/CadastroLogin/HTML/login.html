@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | SenaiComunnity</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../CSS/cadastro.css">
+    <link rel="stylesheet" href="../CSS/login.css">
+</head>
+<body>
+    <div class="tech-background"></div>
+    
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo">
+                    <i class="fas fa-code"></i>
+                    <span>Senai<span class="highlight">Comunnity</span></span>
+                </div>
+                <h1>Bem-vindo de volta</h1>
+                <p class="subtext">Faça login para acessar sua conta</p>
+            </div>
+            
+            <form id="loginForm" class="auth-form">
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" placeholder="Email" required>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Senha" id="loginPassword" required>
+                    <button type="button" class="toggle-password">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                
+                <div class="auth-options">
+                    <label class="checkbox">
+                        <input type="checkbox" id="rememberMe">
+                        <span class="checkmark"></span>
+                        Lembrar de mim
+                    </label>
+                    <a href="#" class="text-link">Esqueceu a senha?</a>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <span class="btn-text">Entrar</span>
+                </button>
+                
+                <div class="auth-footer">
+                    <p>Não tem uma conta? <a href="cadastro.html" class="text-link">Cadastre-se</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="theme-toggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <script src="../JS/background.js"></script>
+    <script src="../JS/login-cadastro.js"></script>
+</body>
+</html>
