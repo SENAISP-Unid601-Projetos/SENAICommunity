@@ -1,25 +1,24 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
-public class Aluno extends Usuario {
+public class Professor extends Usuario {
 
-    private String curso;
-    private String periodo;
+    private String formacao;
+    private String areaAtuacao;
+    private String codigoSn;
 
-    @ManyToMany(mappedBy = "alunos")
-    private List<Projeto> projetos;
-
-
+    @ManyToMany(mappedBy = "professores")
+    private List<Projeto> projetosOrientados;
 }
