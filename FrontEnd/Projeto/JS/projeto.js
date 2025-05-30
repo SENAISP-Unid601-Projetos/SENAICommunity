@@ -48,17 +48,20 @@ function showNotification(message, type = "info") {
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
   notification.textContent = message;
-  notificationCenter.appendChild(notification);
-  setTimeout(() => notification.classList.add('show'), 10);
-  setTimeout(() => {
-    notification.classList.remove('show');
-    setTimeout(() => notification.remove(), 350);
-  }, 3000);
+  if (notificationCenter) {
+    notificationCenter.appendChild(notification);
+    setTimeout(() => notification.classList.add('show'), 10);
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => notification.remove(), 350);
+    }, 3000);
+  }
 }
 
 // RENDERIZAÇÃO DOS PROJETOS
 function renderMeusProjetos() {
   const container = document.getElementById('meus-projetos');
+  if (!container) return;
   let emptyState = document.getElementById('sem-meus-projetos');
   if (!emptyState) {
     emptyState = document.createElement('div');
@@ -82,9 +85,9 @@ function renderMeusProjetos() {
       const card = document.createElement('div');
       card.className = 'project-card';
       card.style.cursor = 'pointer';
-      card.onclick = () => {
+      card.addEventListener('click', () => {
         window.location.href = `chatProjeto.html?id=${projeto.id}`;
-      };
+      });
       card.innerHTML = `
         <button class="project-options-btn" title="Opções" onclick="event.stopPropagation();"><i class="fas fa-ellipsis-h"></i></button>
         <div class="project-header">
@@ -106,11 +109,12 @@ function renderMeusProjetos() {
     });
   }
   const btnCriarPrimeiroProjeto = document.getElementById('criar-primeiro-projeto');
-  if (btnCriarPrimeiroProjeto) btnCriarPrimeiroProjeto.onclick = openModal;
+  if (btnCriarPrimeiroProjeto) btnCriarPrimeiroProjeto.addEventListener('click', openModal);
 }
 
 function renderProjetosParticipo() {
   const container = document.getElementById('projetos-participo');
+  if (!container) return;
   let emptyState = document.getElementById('sem-projetos-participo');
   if (!emptyState) {
     emptyState = document.createElement('div');
@@ -131,9 +135,9 @@ function renderProjetosParticipo() {
       const card = document.createElement('div');
       card.className = 'project-card';
       card.style.cursor = 'pointer';
-      card.onclick = () => {
+      card.addEventListener('click', () => {
         window.location.href = `chatProjeto.html?id=${projeto.id}`;
-      };
+      });
       card.innerHTML = `
         <button class="project-options-btn" title="Opções" onclick="event.stopPropagation();"><i class="fas fa-ellipsis-h"></i></button>
         <div class="project-header">
@@ -157,6 +161,7 @@ function renderProjetosParticipo() {
 
 function renderConvites() {
   const container = document.getElementById('lista-convites');
+  if (!container) return;
   let emptyState = document.getElementById('sem-convites');
   if (!emptyState) {
     emptyState = document.createElement('div');
@@ -243,7 +248,7 @@ let convidados = [];
 function openModal() {
   if (modal) {
     modal.style.display = 'flex';
-    if (inputBuscaUsuario) inputBuscaUsuario.value = '';
+    if (inputBuscaUsuario && (inputBuscaUsuario instanceof HTMLInputElement || inputBuscaUsuario instanceof HTMLTextAreaElement)) inputBuscaUsuario.value = '';
     if (listaUsuarios) {
       listaUsuarios.innerHTML = '';
       listaUsuarios.classList.remove('active');
@@ -254,19 +259,22 @@ function openModal() {
 }
 function closeModalFn() {
   if (modal) modal.style.display = 'none';
-  if (formCriarProjeto) formCriarProjeto.reset();
+  if (formCriarProjeto && formCriarProjeto instanceof HTMLFormElement) formCriarProjeto.reset();
   convidados = [];
   renderConvidados();
 }
 if (btnCriarProjeto) btnCriarProjeto.addEventListener('click', openModal);
 if (criarPrimeiroProjeto) criarPrimeiroProjeto.addEventListener('click', openModal);
 if (closeModal) closeModal.addEventListener('click', closeModalFn);
-if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModalFn(); });
+if (modal) modal.addEventListener('click', function(e) { if (e.target === modal) closeModalFn(); });
 
 // Buscar usuários para convite
 if (inputBuscaUsuario) {
   inputBuscaUsuario.addEventListener('input', function() {
-    const query = this.value.trim().toLowerCase();
+    let query = '';
+    if (inputBuscaUsuario instanceof HTMLInputElement || inputBuscaUsuario instanceof HTMLTextAreaElement) {
+      query = inputBuscaUsuario.value.trim().toLowerCase();
+    }
     if (!query) {
       if (listaUsuarios) {
         listaUsuarios.innerHTML = '';
@@ -293,14 +301,17 @@ if (inputBuscaUsuario) {
       `).join('');
       listaUsuarios.classList.add('active');
 
-      listaUsuarios.querySelectorAll('.user-result').forEach(el => {
-        el.addEventListener('click', () => {
-          const userId = parseInt(el.getAttribute('data-id'));
+      listaUsuarios.querySelectorAll('.user-result').forEach(function(el) {
+        el.addEventListener('click', function() {
+          const userIdAttr = el.getAttribute('data-id');
+          const userId = userIdAttr ? parseInt(userIdAttr) : 0;
           const user = allUsers.find(u => u.id === userId);
           if (user && !convidados.some(c => c.id === user.id)) {
             convidados.push(user);
             renderConvidados();
-            inputBuscaUsuario.value = '';
+            if (inputBuscaUsuario instanceof HTMLInputElement || inputBuscaUsuario instanceof HTMLTextAreaElement) {
+              inputBuscaUsuario.value = '';
+            }
             listaUsuarios.classList.remove('active');
             listaUsuarios.innerHTML = '';
           }
@@ -318,9 +329,10 @@ function renderConvidados() {
       <button class="remove-invite" title="Remover convidado" data-id="${u.id}">&times;</button>
     </div>
   `).join('');
-  listaConvidados.querySelectorAll('.remove-invite').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const userId = parseInt(btn.getAttribute('data-id'));
+  listaConvidados.querySelectorAll('.remove-invite').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const userIdAttr = btn.getAttribute('data-id');
+      const userId = userIdAttr ? parseInt(userIdAttr) : 0;
       convidados = convidados.filter(c => c.id !== userId);
       renderConvidados();
     });
@@ -329,10 +341,18 @@ function renderConvidados() {
 
 // Criar projeto (mock)
 if (formCriarProjeto) {
-  formCriarProjeto.addEventListener('submit', (e) => {
+  formCriarProjeto.addEventListener('submit', function(e) {
     e.preventDefault();
-    const nome = formCriarProjeto.querySelector('input').value.trim();
-    const descricao = formCriarProjeto.querySelector('textarea').value.trim();
+    let nome = '', descricao = '';
+    let nomeInput = formCriarProjeto.querySelector('input');
+    let descInput = formCriarProjeto.querySelector('textarea');
+    // @ts-ignore
+    if (nomeInput instanceof HTMLInputElement || nomeInput instanceof HTMLTextAreaElement) {
+      nome = nomeInput.value.trim();
+    }
+    if (descInput instanceof HTMLInputElement || descInput instanceof HTMLTextAreaElement) {
+      descricao = descInput.value.trim();
+    }
     if (!nome || !descricao) return;
     const newProject = {
       id: Date.now(),
@@ -344,7 +364,7 @@ if (formCriarProjeto) {
     meusProjetos.push(newProject);
 
     // Envia convites simulados para os convidados
-    convidados.forEach(u => {
+    convidados.forEach(function(u) {
       convites.push({
         id: Date.now() + Math.random(),
         nome,
@@ -356,6 +376,7 @@ if (formCriarProjeto) {
 
     renderMeusProjetos();
     renderConvites();
+    if (formCriarProjeto instanceof HTMLFormElement) formCriarProjeto.reset();
     closeModalFn();
     showNotification("Projeto criado com sucesso! Convites enviados.", "success");
   });
@@ -367,12 +388,14 @@ if (userDropdown) {
   userDropdown.addEventListener('click', function(e) {
     e.stopPropagation();
     const dropdown = this.querySelector('.dropdown-menu');
-    if (dropdown)
+    if (dropdown && dropdown instanceof HTMLElement)
       dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
   });
 }
-document.addEventListener('click', () => {
-  document.querySelectorAll('.dropdown-menu').forEach(menu => menu.style.display = 'none');
+document.addEventListener('click', function() {
+  document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+    if (menu instanceof HTMLElement) menu.style.display = 'none';
+  });
 });
 
 // Tema (dark/light)
@@ -385,7 +408,7 @@ if (themeToggle) {
     ? '<i class="fas fa-moon"></i>'
     : '<i class="fas fa-sun"></i>';
 
-  themeToggle.addEventListener('click', () => {
+  themeToggle.addEventListener('click', function() {
     const currentTheme = body.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     body.setAttribute('data-theme', newTheme);
