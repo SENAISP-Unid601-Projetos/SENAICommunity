@@ -107,6 +107,7 @@ public class ProfessorService {
         dto.setId(professor.getId());
         dto.setNome(professor.getNome());
         dto.setEmail(professor.getEmail());
+        dto.setSenha(professor.getSenha());
         dto.setFotoPerfil(professor.getFotoPerfil());
         dto.setFormacao(professor.getFormacao());
         dto.setAreaAtuacao(professor.getAreaAtuacao());
