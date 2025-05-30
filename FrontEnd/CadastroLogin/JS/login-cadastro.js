@@ -1,60 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Alternar entre mostrar/esconder senha
-    document.querySelectorAll('.toggle-password').forEach(button => {
-        button.addEventListener('click', function() {
-            const input = this.closest('.input-group').querySelector('input');
-            const icon = this.querySelector('i');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
-        });
-    });
-    
-    // Força da senha (cadastro)
-    const passwordInput = document.getElementById('registerPassword');
-    if (passwordInput) {
-        passwordInput.addEventListener('input', function() {
-            const password = this.value;
-            const strengthBar = document.querySelector('.strength-bar');
-            
-            let strength = 0;
-            
-            // Verificar requisitos
-            if (password.length >= 8) strength += 1;
-            if (/[A-Z]/.test(password)) strength += 1;
-            if (/\d/.test(password)) strength += 1;
-            if (/[^A-Za-z0-9]/.test(password)) strength += 1;
-            
-            // Atualizar barra de força
-            strengthBar.dataset.strength = Math.min(strength, 3);
-            strengthBar.style.width = `${(strength / 3) * 100}%`;
-            
-            // Atualizar cor
-            if (strength === 0) {
-                strengthBar.style.backgroundColor = '#ff4444';
-            } else if (strength === 1) {
-                strengthBar.style.backgroundColor = '#ffbb33';
-            } else {
-                strengthBar.style.backgroundColor = '#00C851';
-            }
-        });
-    }
-
-    // Mostrar nome do arquivo selecionado
-    const fotoInput = document.getElementById('foto');
-    if (fotoInput) {
-        fotoInput.addEventListener('change', function() {
-            const fileName = this.files[0] ? this.files[0].name : 'Foto de perfil (opcional)';
-            document.getElementById('file-name').textContent = fileName;
-        });
-    }
-    
-    // Alternador de tema
+    // ========== FUNCIONALIDADES GERAIS ==========
+    // Alternar tema
     const themeToggle = document.querySelector('.theme-toggle');
     if (themeToggle) {
         themeToggle.addEventListener('click', function() {
@@ -64,12 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             
-            // Atualizar ícone
             this.innerHTML = newTheme === 'dark' 
                 ? '<i class="fas fa-moon"></i>' 
                 : '<i class="fas fa-sun"></i>';
             
-            // Atualizar background
             if (typeof updateTechBackgroundTheme === 'function') {
                 updateTechBackgroundTheme(newTheme);
             }
@@ -82,99 +26,130 @@ document.addEventListener('DOMContentLoaded', function() {
             ? '<i class="fas fa-moon"></i>' 
             : '<i class="fas fa-sun"></i>';
     }
-    
-    // Validação de formulário de login
+
+    // Alternar visibilidade da senha
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.closest('.input-group').querySelector('input');
+            const icon = this.querySelector('i');
+            
+            input.type = input.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('fa-eye-slash');
+            icon.classList.toggle('fa-eye');
+        });
+    });
+
+    // ========== SISTEMA DE LOGIN ==========
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const emailInput = document.getElementById('loginEmail');
+            const passwordInput = document.getElementById('loginPassword');
             const btn = this.querySelector('button[type="submit"]');
-            const btnText = btn.querySelector('.btn-text');
-            const originalText = btnText.textContent;
             
+            // Limpar erros anteriores
+            clearErrors();
+            
+            // Ativar estado de loading
             btn.disabled = true;
-            btnText.textContent = 'Autenticando...';
-            
-            setTimeout(() => {
-                window.location.href = 'pages/dashboard.html';
-            }, 1500);
+            btn.classList.add('btn-loading');
+
+            try {
+                const response = await axios.post('http://localhost:8080/login', {
+                    email: emailInput.value,
+                    senha: passwordInput.value
+                });
+
+                if (response.data?.token) {
+                    handleSuccessfulLogin(response.data.token, emailInput.value);
+                } else {
+                    throw new Error('Resposta inválida do servidor');
+                }
+            } catch (error) {
+                handleLoginError(error, emailInput, passwordInput);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('btn-loading');
+            }
         });
     }
-    
-    // Cadastro de novo usuário
+
+    // ========== FUNÇÕES AUXILIARES ==========
+    function clearErrors() {
+        document.querySelectorAll('.input-error').forEach(el => {
+            el.classList.remove('input-error');
+        });
+        
+        const errorMsg = document.querySelector('.login-error');
+        if (errorMsg) errorMsg.remove();
+    }
+
+    function handleSuccessfulLogin(token, email) {
+        if (document.getElementById('rememberMe').checked) {
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('userEmail', email);
+        } else {
+            sessionStorage.setItem('authToken', token);
+        }
+        window.location.href = 'pages/dashboard.html';
+    }
+
+    function handleLoginError(error, emailInput, passwordInput) {
+        console.error('Erro no login:', error);
+        
+        let errorMessage = 'Erro ao fazer login. Tente novamente.';
+        if (error.response?.status === 400 || error.response?.status === 401) {
+            errorMessage = 'E-mail ou senha incorretos';
+        }
+
+        // Exibir mensagem de erro
+        const errorElement = document.createElement('div');
+        errorElement.className = 'login-error';
+        errorElement.textContent = errorMessage;
+        loginForm.insertBefore(errorElement, loginForm.lastElementChild);
+
+        // Destacar campos com erro
+        emailInput.classList.add('input-error');
+        passwordInput.classList.add('input-error');
+    }
+
+    // ========== SISTEMA DE CADASTRO ==========
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Validar senhas
-            const senha = document.getElementById('senha').value;
-            const confirmarSenha = document.getElementById('confirmarSenha').value;
-            
-            if (senha !== confirmarSenha) {
-                alert('As senhas não coincidem!');
-                return;
-            }
-            
-            // Validar termos
-            if (!document.getElementById('terms').checked) {
-                alert('Você deve aceitar os termos e condições!');
-                return;
-            }
-            
-            // Coletar dados do formulário
-            const formData = new FormData();
-            formData.append('nome', document.getElementById('nome').value);
-            formData.append('email', document.getElementById('email').value);
-            formData.append('senha', senha);
-            formData.append('curso', document.getElementById('curso').value);
-            formData.append('periodo', document.getElementById('periodo').value);
-            
-            // Adicionar foto se existir
-            const foto = document.getElementById('foto').files[0];
-            if (foto) {
-                formData.append('foto', foto);
-            }
-            
-            // Configurar botão de loading
             const btn = this.querySelector('button[type="submit"]');
-            const btnText = btn.querySelector('.btn-text');
-            const originalText = btnText.textContent;
-            
             btn.disabled = true;
-            btnText.textContent = 'Cadastrando...';
-            
+            btn.classList.add('btn-loading');
+
             try {
-                // Enviar para o back-end
-                const response = await axios.post('http://localhost:8080/alunos', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
+                const formData = new FormData();
+                formData.append('nome', document.getElementById('nome').value);
+                formData.append('email', document.getElementById('email').value);
+                formData.append('senha', document.getElementById('senha').value);
+                formData.append('curso', document.getElementById('curso').value);
+                formData.append('periodo', document.getElementById('periodo').value);
                 
-                // Sucesso - redirecionar para login
+                const foto = document.getElementById('foto').files[0];
+                if (foto) formData.append('foto', foto);
+
+                const response = await axios.post('http://localhost:8080/alunos', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+
                 alert('Cadastro realizado com sucesso!');
                 window.location.href = 'login.html';
-                
             } catch (error) {
                 console.error('Erro no cadastro:', error);
-                
-                // Tratar erros específicos
-                let errorMessage = 'Erro ao cadastrar. Tente novamente.';
-                if (error.response) {
-                    if (error.response.status === 409) {
-                        errorMessage = 'Este e-mail já está cadastrado!';
-                    } else if (error.response.status === 400) {
-                        errorMessage = 'Preencha todos os campos corretamente.';
-                    }
-                }
-                
-                alert(errorMessage);
-                
-                // Restaurar botão
+                alert(error.response?.status === 409 
+                    ? 'Este e-mail já está cadastrado!' 
+                    : 'Erro ao cadastrar. Tente novamente.');
+            } finally {
                 btn.disabled = false;
-                btnText.textContent = originalText;
+                btn.classList.remove('btn-loading');
             }
         });
     }
