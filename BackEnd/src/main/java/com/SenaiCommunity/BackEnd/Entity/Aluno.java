@@ -15,14 +15,11 @@ import java.util.List;
 @Entity
 public class Aluno extends Usuario {
 
-    private String matricula;
     private String curso;
     private String periodo;
-    private String statusConta;
 
     @ManyToMany(mappedBy = "alunos")
     private List<Projeto> projetos;
 
-    @OneToMany(mappedBy = "aluno")
-    private List<Avaliacoes> avaliacoes;
+
 }

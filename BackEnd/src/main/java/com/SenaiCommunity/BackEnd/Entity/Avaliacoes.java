@@ -25,12 +25,8 @@ public class Avaliacoes {
     private String comentario;
 
     @ManyToOne
-    @JoinColumn(name = "aluno_id")
-    private Aluno aluno;
-
-    @ManyToOne
-    @JoinColumn(name = "professor_id")
-    private Professor professor;
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
 
     @ManyToOne
     @JoinColumn(name = "projeto_id")

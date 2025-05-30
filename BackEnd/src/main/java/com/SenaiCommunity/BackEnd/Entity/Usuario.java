@@ -30,4 +30,6 @@ public abstract class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Telefone> telefones;
 
+    @OneToMany(mappedBy = "usuario")
+    private List<Avaliacoes> avaliacoes;
 }

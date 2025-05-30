@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../CSS/cadastro.css">
     <link rel="stylesheet" href="../CSS/login.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <div class="tech-background"></div>
@@ -25,17 +26,17 @@
             <form id="registerForm" class="auth-form">
                 <div class="input-group">
                     <i class="fas fa-user"></i>
-                    <input type="text" placeholder="Nome completo" required>
+                    <input type="text" id="nome" placeholder="Nome completo" required>
                 </div>
                 
                 <div class="input-group">
                     <i class="fas fa-envelope"></i>
-                    <input type="email" placeholder="Email" required>
+                    <input type="email" id="email" placeholder="Email" required>
                 </div>
                 
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
-                    <input type="password" placeholder="Senha" id="registerPassword" required>
+                    <input type="password" id="senha" placeholder="Senha" id="registerPassword" required>
                     <button type="button" class="toggle-password">
                         <i class="fas fa-eye"></i>
                     </button>
@@ -54,7 +55,25 @@
                 
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
-                    <input type="password" placeholder="Confirmar senha" required>
+                    <input type="password" id="confirmarSenha" placeholder="Confirmar senha" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-graduation-cap"></i>
+                    <input type="text" id="curso" placeholder="Curso" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-calendar-alt"></i>
+                    <input type="text" id="periodo" placeholder="Período (Ex: 3º Semestre)" required>
+                </div>
+
+                <div class="input-group file-input-group">
+                    <i class="fas fa-camera"></i>
+                    <label for="foto" class="file-upload-label">
+                        <span id="file-name">Foto de perfil (opcional)</span>
+                        <input type="file" id="foto" accept="image/*">
+                    </label>
                 </div>
                 
                 <label class="checkbox terms">

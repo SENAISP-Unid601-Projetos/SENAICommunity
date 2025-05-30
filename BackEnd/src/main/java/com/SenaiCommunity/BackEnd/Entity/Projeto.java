@@ -23,40 +23,30 @@ public class Projeto {
     private Date dataEntrega;
     private String status; // PLANEJADO, EM_ANDAMENTO, CONCLUIDO
 
-    // Autor da publicação (aluno ou professor)
-    @ManyToOne
-    @JoinColumn(name = "autor_id")
-    private Usuario autor;
-
-
-    @OneToMany(mappedBy = "projeto")
-    private List<Postagem> postagens;
-
-
-
-    // Professores interessados/orientadores
-    @ManyToMany
-    @JoinTable(
-            name = "projeto_professores",
-            joinColumns = @JoinColumn(name = "projeto_id"),
-            inverseJoinColumns = @JoinColumn(name = "professor_id")
-    )
-    private List<Professor> professores;
-
-    // Alunos participantes
-    @ManyToMany
-    @JoinTable(
-            name = "projeto_alunos",
-            joinColumns = @JoinColumn(name = "projeto_id"),
-            inverseJoinColumns = @JoinColumn(name = "aluno_id")
-    )
-    private List<Aluno> alunos;
+//    @OneToMany(mappedBy = "projeto")
+//    private List<Postagem> postagens;
 
     // Grupo de mensagens relacionado
-    @OneToOne(mappedBy = "projeto", cascade = CascadeType.ALL)
-    private Grupos grupos;
+//    @OneToOne(mappedBy = "projeto", cascade = CascadeType.ALL)
+//    private Grupos grupos;
 
     // Avaliações do projeto
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Avaliacoes> avaliacoes;
+
+    @ManyToOne
+    @JoinColumn(name = "autor_id")
+    private Usuario autor; // pode ser aluno ou professor
+
+    @ManyToMany
+    @JoinTable(name = "projeto_professores",
+            joinColumns = @JoinColumn(name = "projeto_id"),
+            inverseJoinColumns = @JoinColumn(name = "professor_id"))
+    private List<Professor> professores; // só professores aqui
+
+    @ManyToMany
+    @JoinTable(name = "projeto_alunos",
+            joinColumns = @JoinColumn(name = "projeto_id"),
+            inverseJoinColumns = @JoinColumn(name = "aluno_id"))
+    private List<Aluno> alunos; // só alunos aqui
 }

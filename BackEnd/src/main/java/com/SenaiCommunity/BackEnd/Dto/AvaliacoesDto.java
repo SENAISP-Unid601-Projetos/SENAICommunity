@@ -1,9 +1,15 @@
-package com.SenaiCommunity.BackEnd.Dto;
+package com.SenaiCommunity.BackEnd.DTO;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Data
-public class AvaliacoesDto {
+public class AvaliacoesDTO {
+    private Long id;
+    private Integer estrelas;
+    private String comentario;
+    private LocalDate dataAvaliacao;
+    private Long usuarioId;
+    private Long projetoId;
 }

@@ -1,44 +1,125 @@
 package com.SenaiCommunity.BackEnd.Service;
 
+import com.SenaiCommunity.BackEnd.DTO.AlunoEntradaDTO;
+import com.SenaiCommunity.BackEnd.DTO.AlunoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Aluno;
+import com.SenaiCommunity.BackEnd.Entity.Projeto;
 import com.SenaiCommunity.BackEnd.Repository.AlunoRepository;
-import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class AlunoService {
 
-    private final AlunoRepository alunoRepository;
+    @Autowired
+    private AlunoRepository alunoRepository;
 
-    public Aluno salvar(Aluno aluno) {
-        return alunoRepository.save(aluno);
+    public AlunoSaidaDTO criarAlunoComFoto(AlunoEntradaDTO dto, MultipartFile foto) {
+        Aluno aluno = toEntity(dto);
+        aluno.setDataCadastro(LocalDateTime.now());
+        aluno.setTipoUsuario("ALUNO");
+
+        if (foto != null && !foto.isEmpty()) {
+            try {
+                String fileName = salvarFoto(foto);
+                aluno.setFotoPerfil(fileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Erro ao salvar a foto do aluno", e);
+            }
+        } else {
+            aluno.setFotoPerfil(null); // ou "default.jpg" se tiver imagem padrão
+        }
+
+        Aluno salvo = alunoRepository.save(aluno);
+        return toDTO(salvo);
     }
 
-    public List<Aluno> listarTodos() {
-        return alunoRepository.findAll();
+    private String salvarFoto(MultipartFile foto) throws IOException {
+        String fileName = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());
+        Path caminho = Paths.get("src/main/resources/alunoPictures/" + fileName);
+        foto.transferTo(caminho);
+        return fileName;
     }
 
-    public Optional<Aluno> buscarPorId(Long id) {
-        return alunoRepository.findById(id);
+
+    public List<AlunoSaidaDTO> listarTodos() {
+        return alunoRepository.findAll()
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public Aluno atualizar(Long id, Aluno novoAluno) {
-        return alunoRepository.findById(id).map(aluno -> {
-            aluno.setNome(novoAluno.getNome());
-            aluno.setCurso(novoAluno.getCurso());
-            aluno.setPeriodo(novoAluno.getPeriodo());
-            aluno.setStatusConta(novoAluno.getStatusConta());
-            aluno.setEmail(novoAluno.getEmail());
-            aluno.setFotoPerfil(novoAluno.getFotoPerfil());
-            return alunoRepository.save(aluno);
-        }).orElseThrow(() -> new RuntimeException("Aluno não encontrado."));
+    public AlunoSaidaDTO buscarPorId(Long id) {
+        Aluno aluno = alunoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Aluno não encontrado"));
+        return toDTO(aluno);
     }
 
-    public void deletar(Long id) {
+    public AlunoSaidaDTO atualizarAluno(Long id, AlunoEntradaDTO dto) {
+        Aluno aluno = alunoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Aluno não encontrado"));
+
+        aluno.setNome(dto.getNome());
+        aluno.setEmail(dto.getEmail());
+        aluno.setSenha(dto.getSenha());
+        aluno.setFotoPerfil(dto.getFotoPerfil());
+        aluno.setCurso(dto.getCurso());
+        aluno.setPeriodo(dto.getPeriodo());
+
+        Aluno atualizado = alunoRepository.save(aluno);
+        return toDTO(atualizado);
+    }
+
+    public void deletarAluno(Long id) {
+        if (!alunoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Aluno não encontrado");
+        }
         alunoRepository.deleteById(id);
     }
+
+    // Métodos de conversão direto no service:
+
+    private Aluno toEntity(AlunoEntradaDTO dto) {
+        Aluno aluno = new Aluno();
+        aluno.setNome(dto.getNome());
+        aluno.setEmail(dto.getEmail());
+        aluno.setSenha(dto.getSenha());
+        aluno.setFotoPerfil(dto.getFotoPerfil());
+        aluno.setCurso(dto.getCurso());
+        aluno.setPeriodo(dto.getPeriodo());
+        return aluno;
+    }
+
+    private AlunoSaidaDTO toDTO(Aluno aluno) {
+        AlunoSaidaDTO dto = new AlunoSaidaDTO();
+        dto.setId(aluno.getId());
+        dto.setNome(aluno.getNome());
+        dto.setEmail(aluno.getEmail());
+        dto.setFotoPerfil(aluno.getFotoPerfil());
+        dto.setCurso(aluno.getCurso());
+        dto.setPeriodo(aluno.getPeriodo());
+        dto.setDataCadastro(aluno.getDataCadastro());
+        dto.setBio(aluno.getBio());
+
+        dto.setProjetos(
+                aluno.getProjetos() != null
+                        ? aluno.getProjetos().stream().map(Projeto::getId).collect(Collectors.toList())
+                        : new ArrayList<>()
+        );
+
+
+        return dto;
+    }
+
 }

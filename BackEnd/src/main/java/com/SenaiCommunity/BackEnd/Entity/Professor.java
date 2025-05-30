@@ -13,7 +13,6 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
-@JsonIgnoreProperties({"projetosOrientados", "postagens", "participacoes", "telefones"})
 public class Professor extends Usuario {
 
     private String formacao;

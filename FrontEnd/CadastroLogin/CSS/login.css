@@ -11,7 +11,7 @@
   background-color: var(--bg-secondary);
   border-radius: var(--card-radius);
   box-shadow: var(--shadow);
-  width: 100%;
+  width: 100%;  
   max-width: 420px;
   padding: 2.5rem;
   border: 1px solid var(--border-color);

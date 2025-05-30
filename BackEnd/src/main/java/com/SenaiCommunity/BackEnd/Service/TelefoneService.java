@@ -1,6 +1,6 @@
 package com.SenaiCommunity.BackEnd.Service;
 
-import com.SenaiCommunity.BackEnd.Dto.TelefoneDto;
+import com.SenaiCommunity.BackEnd.DTO.TelefoneDTO;
 import com.SenaiCommunity.BackEnd.Entity.Telefone;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.TelefoneRepository;
@@ -21,7 +21,7 @@ public class TelefoneService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public TelefoneDto salvar(TelefoneDto dto) {
+    public TelefoneDTO salvar(TelefoneDTO dto) {
         Telefone telefone = new Telefone();
         telefone.setNumero(dto.getNumero());
         telefone.setTipo(dto.getTipo());
@@ -34,11 +34,11 @@ public class TelefoneService {
         return dto;
     }
 
-    public List<TelefoneDto> listarPorUsuario(Long usuarioId) {
+    public List<TelefoneDTO> listarPorUsuario(Long usuarioId) {
         return telefoneRepository.findByUsuarioId(usuarioId)
                 .stream()
                 .map(t -> {
-                    TelefoneDto dto = new TelefoneDto();
+                    TelefoneDTO dto = new TelefoneDTO();
                     dto.setId(t.getId());
                     dto.setNumero(t.getNumero());
                     dto.setTipo(t.getTipo());
@@ -52,9 +52,9 @@ public class TelefoneService {
         telefoneRepository.deleteById(id);
     }
 
-    public TelefoneDto buscarPorId(Long id) {
+    public TelefoneDTO buscarPorId(Long id) {
         return telefoneRepository.findById(id).map(t -> {
-            TelefoneDto dto = new TelefoneDto();
+            TelefoneDTO dto = new TelefoneDTO();
             dto.setId(t.getId());
             dto.setNumero(t.getNumero());
             dto.setTipo(t.getTipo());
