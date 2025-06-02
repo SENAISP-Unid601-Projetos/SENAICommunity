@@ -2,6 +2,8 @@ package com.SenaiCommunity.BackEnd.DTO;
 
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 public class AlunoEntradaDTO {
 
@@ -9,7 +11,8 @@ public class AlunoEntradaDTO {
     private String email;
     private String senha;
     private String fotoPerfil;
-
+    private String bio;
     private String curso;
     private String periodo;
+    private LocalDate dataNascimento;
 }

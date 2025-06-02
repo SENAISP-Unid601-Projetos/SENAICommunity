@@ -3,6 +3,7 @@ package com.SenaiCommunity.BackEnd.Entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -17,10 +18,11 @@ public abstract class Usuario {
     private Long id;
 
     private String nome;
+    @Column(unique = true)
     private String email;
     private String senha;
     private String fotoPerfil;
-    private Date dataNascimento;
+    private LocalDate dataNascimento;
     private String bio;
 
     private LocalDateTime dataCadastro;

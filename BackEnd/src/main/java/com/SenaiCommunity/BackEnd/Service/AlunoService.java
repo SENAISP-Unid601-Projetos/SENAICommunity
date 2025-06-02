@@ -25,20 +25,53 @@ public class AlunoService {
     @Autowired
     private AlunoRepository alunoRepository;
 
+    // Métodos de conversão direto no service:
+
+    private Aluno toEntity(AlunoEntradaDTO dto) {
+        Aluno aluno = new Aluno();
+        aluno.setNome(dto.getNome());
+        aluno.setEmail(dto.getEmail());
+        aluno.setSenha(dto.getSenha());
+        aluno.setFotoPerfil(dto.getFotoPerfil());
+        aluno.setCurso(dto.getCurso());
+        aluno.setPeriodo(dto.getPeriodo());
+        return aluno;
+    }
+
+    private AlunoSaidaDTO toDTO(Aluno aluno) {
+        AlunoSaidaDTO dto = new AlunoSaidaDTO();
+        dto.setId(aluno.getId());
+        dto.setNome(aluno.getNome());
+        dto.setEmail(aluno.getEmail());
+        dto.setFotoPerfil(aluno.getFotoPerfil());
+        dto.setCurso(aluno.getCurso());
+        dto.setPeriodo(aluno.getPeriodo());
+        dto.setDataCadastro(aluno.getDataCadastro());
+        dto.setBio(aluno.getBio());
+
+        dto.setProjetos(
+                aluno.getProjetos() != null
+                        ? aluno.getProjetos().stream().map(Projeto::getId).collect(Collectors.toList())
+                        : new ArrayList<>()
+        );
+
+
+        return dto;
+    }
+
     public AlunoSaidaDTO criarAlunoComFoto(AlunoEntradaDTO dto, MultipartFile foto) {
         Aluno aluno = toEntity(dto);
         aluno.setDataCadastro(LocalDateTime.now());
         aluno.setTipoUsuario("ALUNO");
 
-        if (foto != null && !foto.isEmpty()) {
-            try {
-                String fileName = salvarFoto(foto);
-                aluno.setFotoPerfil(fileName);
-            } catch (IOException e) {
-                throw new RuntimeException("Erro ao salvar a foto do aluno", e);
-            }
-        } else {
+        if (foto == null && foto.isEmpty()) {
             aluno.setFotoPerfil(null); // ou "default.jpg" se tiver imagem padrão
+
+        }  try {
+            String fileName = salvarFoto(foto);
+            aluno.setFotoPerfil(fileName);
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar a foto do aluno", e);
         }
 
         Aluno salvo = alunoRepository.save(aluno);
@@ -87,40 +120,4 @@ public class AlunoService {
         }
         alunoRepository.deleteById(id);
     }
-
-    // Métodos de conversão direto no service:
-
-    private Aluno toEntity(AlunoEntradaDTO dto) {
-        Aluno aluno = new Aluno();
-        aluno.setNome(dto.getNome());
-        aluno.setEmail(dto.getEmail());
-        aluno.setSenha(dto.getSenha());
-        aluno.setFotoPerfil(dto.getFotoPerfil());
-        aluno.setCurso(dto.getCurso());
-        aluno.setPeriodo(dto.getPeriodo());
-        return aluno;
-    }
-
-    private AlunoSaidaDTO toDTO(Aluno aluno) {
-        AlunoSaidaDTO dto = new AlunoSaidaDTO();
-        dto.setId(aluno.getId());
-        dto.setNome(aluno.getNome());
-        dto.setEmail(aluno.getEmail());
-        dto.setSenha(aluno.getSenha());
-        dto.setFotoPerfil(aluno.getFotoPerfil());
-        dto.setCurso(aluno.getCurso());
-        dto.setPeriodo(aluno.getPeriodo());
-        dto.setDataCadastro(aluno.getDataCadastro());
-        dto.setBio(aluno.getBio());
-
-        dto.setProjetos(
-                aluno.getProjetos() != null
-                        ? aluno.getProjetos().stream().map(Projeto::getId).collect(Collectors.toList())
-                        : new ArrayList<>()
-        );
-
-
-        return dto;
-    }
-
 }
