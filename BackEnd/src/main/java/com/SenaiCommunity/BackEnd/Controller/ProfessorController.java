@@ -33,7 +33,9 @@ public class ProfessorController {
             @RequestParam(required = false) String bio,
             @RequestParam(required = false) MultipartFile foto
     ) {
+
         ProfessorEntradaDTO dto = new ProfessorEntradaDTO();
+
         dto.setNome(nome);
         dto.setEmail(email);
         dto.setSenha(senha);

@@ -4,7 +4,9 @@ import com.SenaiCommunity.BackEnd.DTO.ProfessorEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.ProfessorSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Professor;
 import com.SenaiCommunity.BackEnd.Entity.Projeto;
+import com.SenaiCommunity.BackEnd.Entity.Role;
 import com.SenaiCommunity.BackEnd.Repository.ProfessorRepository;
+import com.SenaiCommunity.BackEnd.Repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +20,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +31,9 @@ public class ProfessorService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     // Conversões
 
@@ -40,6 +46,8 @@ public class ProfessorService {
         professor.setFormacao(dto.getFormacao());
         professor.setAreaAtuacao(dto.getAreaAtuacao());
         professor.setCodigoSn(dto.getCodigoSn());
+        professor.setDataNascimento(dto.getDataNascimento());
+        professor.setBio(dto.getBio());
         return professor;
     }
 
@@ -54,6 +62,7 @@ public class ProfessorService {
         dto.setCodigoSn(professor.getCodigoSn());
         dto.setDataCadastro(professor.getDataCadastro());
         dto.setBio(professor.getBio());
+        dto.setDataNascimento(professor.getDataNascimento());
 
         dto.setProjetosOrientados(
                 professor.getProjetosOrientados() != null
@@ -68,6 +77,13 @@ public class ProfessorService {
         Professor professor = toEntity(dto);
         professor.setDataCadastro(LocalDateTime.now());
         professor.setTipoUsuario("PROFESSOR");
+
+        // Busca a role "PROFESSOR" no banco
+        Role roleProfessor = roleRepository.findByNome("PROFESSOR")
+                .orElseThrow(() -> new RuntimeException("Role PROFESSOR não encontrada"));
+
+        // Define a role (mesmo que seja um Set, terá só uma)
+        professor.setRoles(Set.of(roleProfessor));
 
         if (foto == null && foto.isEmpty()) {
             professor.setFotoPerfil(null); // ou "default.jpg"
@@ -115,6 +131,8 @@ public class ProfessorService {
         professor.setFormacao(dto.getFormacao());
         professor.setAreaAtuacao(dto.getAreaAtuacao());
         professor.setCodigoSn(dto.getCodigoSn());
+        professor.setBio(dto.getBio());
+        professor.setDataNascimento(dto.getDataNascimento());
 
         Professor atualizado = professorRepository.save(professor);
         return toDTO(atualizado);

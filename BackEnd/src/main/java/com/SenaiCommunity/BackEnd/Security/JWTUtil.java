@@ -5,10 +5,14 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.JwtParser;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JWTUtil {
@@ -24,12 +28,23 @@ public class JWTUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String gerarToken(String username) {
+    public String gerarToken(UserDetails userDetails) {
+        String role = userDetails.getAuthorities().stream()
+                .findFirst() // Se o usuário tiver múltiplas, pegue a primeira
+                .map(GrantedAuthority::getAuthority)
+                .orElse("ROLE_USER");
+
         return Jwts.builder()
-                .subject(username)
+                .subject(userDetails.getUsername())
+                .claim("role", role)
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    public String getRoleDoToken(String token) {
+        Claims claims = validarToken(token);
+        return claims != null ? claims.get("role", String.class) : null;
     }
 
     public String getEmailDoToken(String token) {

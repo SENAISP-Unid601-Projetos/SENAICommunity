@@ -1,44 +1,52 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.UsuarioLoginDTO;
-import com.SenaiCommunity.BackEnd.Entity.Professor;
-import com.SenaiCommunity.BackEnd.Entity.Usuario;
-import com.SenaiCommunity.BackEnd.Repository.ProfessorRepository;
-import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import com.SenaiCommunity.BackEnd.Security.JWTUtil;
+import com.SenaiCommunity.BackEnd.Service.UsuarioDetailsService;
+import com.SenaiCommunity.BackEnd.DTO.TokenDTO;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/autenticacao")
 public class AutenticacaoController {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private AuthenticationManager authenticationManager;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private UsuarioDetailsService userDetailsService;
 
     @Autowired
     private JWTUtil jwtUtil;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UsuarioLoginDTO dto) {
-        Optional<Usuario> usuario = usuarioRepository.findByEmail(dto.getEmail());
-
-        // Debug: mostre a senha codificada armazenada
-        System.out.println("Senha armazenada: " + usuario.get().getSenha());
-
-        if (usuario.isEmpty() || !passwordEncoder.matches(dto.getSenha(), usuario.get().getSenha())) {
-            return ResponseEntity.status(401).body("Email ou senha inválidos");
+        if (dto.getEmail() == null || dto.getSenha() == null) {
+            return ResponseEntity.badRequest().body("Email e senha são obrigatórios");
         }
 
-        String token = jwtUtil.gerarToken(usuario.get().getEmail());
-        return ResponseEntity.ok().body(token);
+        try {
+            // 1. Autenticar
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha())
+            );
+
+            // 2. Carregar usuário autenticado
+            UserDetails userDetails = userDetailsService.loadUserByUsername(dto.getEmail());
+
+            // 3. Gerar token com base no usuário
+            String token = jwtUtil.gerarToken(userDetails);
+
+            // 4. Retornar token no body
+            return ResponseEntity.ok(new TokenDTO(token));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Credenciais inválidas");
+        }
     }
 }

@@ -4,10 +4,11 @@ import com.SenaiCommunity.BackEnd.DTO.AvaliacoesDTO;
 import com.SenaiCommunity.BackEnd.Entity.Avaliacoes;
 import com.SenaiCommunity.BackEnd.Service.AvaliacoesService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@PreAuthorize("hasRole('ADMIN')")
 @RestController
 @RequestMapping("/avaliacoes")
 @RequiredArgsConstructor

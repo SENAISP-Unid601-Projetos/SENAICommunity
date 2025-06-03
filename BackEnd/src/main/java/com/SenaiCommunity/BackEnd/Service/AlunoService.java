@@ -4,9 +4,12 @@ import com.SenaiCommunity.BackEnd.DTO.AlunoEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.AlunoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Aluno;
 import com.SenaiCommunity.BackEnd.Entity.Projeto;
+import com.SenaiCommunity.BackEnd.Entity.Role;
 import com.SenaiCommunity.BackEnd.Repository.AlunoRepository;
+import com.SenaiCommunity.BackEnd.Repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +20,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,16 +29,24 @@ public class AlunoService {
     @Autowired
     private AlunoRepository alunoRepository;
 
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     // Métodos de conversão direto no service:
 
     private Aluno toEntity(AlunoEntradaDTO dto) {
         Aluno aluno = new Aluno();
         aluno.setNome(dto.getNome());
         aluno.setEmail(dto.getEmail());
-        aluno.setSenha(dto.getSenha());
+        aluno.setSenha(passwordEncoder.encode(dto.getSenha()));
         aluno.setFotoPerfil(dto.getFotoPerfil());
         aluno.setCurso(dto.getCurso());
         aluno.setPeriodo(dto.getPeriodo());
+        aluno.setBio(dto.getBio());
+        aluno.setDataNascimento(dto.getDataNascimento());
         return aluno;
     }
 
@@ -48,6 +60,7 @@ public class AlunoService {
         dto.setPeriodo(aluno.getPeriodo());
         dto.setDataCadastro(aluno.getDataCadastro());
         dto.setBio(aluno.getBio());
+        dto.setDataNascimento(aluno.getDataNascimento());
 
         dto.setProjetos(
                 aluno.getProjetos() != null
@@ -63,6 +76,13 @@ public class AlunoService {
         Aluno aluno = toEntity(dto);
         aluno.setDataCadastro(LocalDateTime.now());
         aluno.setTipoUsuario("ALUNO");
+
+        // Busca a role "PROFESSOR" no banco
+        Role roleAluno = roleRepository.findByNome("ALUNO")
+                .orElseThrow(() -> new RuntimeException("Role ALUNO não encontrada"));
+
+        // Define a role (mesmo que seja um Set, terá só uma)
+        aluno.setRoles(Set.of(roleAluno));
 
         if (foto == null && foto.isEmpty()) {
             aluno.setFotoPerfil(null); // ou "default.jpg" se tiver imagem padrão
@@ -105,10 +125,12 @@ public class AlunoService {
 
         aluno.setNome(dto.getNome());
         aluno.setEmail(dto.getEmail());
-        aluno.setSenha(dto.getSenha());
+        aluno.setSenha(passwordEncoder.encode(dto.getSenha()));
         aluno.setFotoPerfil(dto.getFotoPerfil());
         aluno.setCurso(dto.getCurso());
         aluno.setPeriodo(dto.getPeriodo());
+        aluno.setDataNascimento(dto.getDataNascimento());
+        aluno.setBio(dto.getBio());
 
         Aluno atualizado = alunoRepository.save(aluno);
         return toDTO(atualizado);
