@@ -18,21 +18,38 @@ document.addEventListener('DOMContentLoaded', function() {
             btnText.textContent = 'Autenticando...';
 
             try {
-                const response = await axios.post('http://localhost:8080/login', {
+                // Envia para o endpoint certo
+                const response = await axios.post('http://localhost:8080/autenticacao/login', {
                     email: email,
                     senha: senha
                 });
 
-                // Se der certo, salva no localStorage (pode ser o id, nome, token, etc.)
-                const usuario = response.data;
-                localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
+                // Se der certo, pega o token
+                const token = response.data.token;
 
-                // Redireciona pro dashboard
+                // Salva no localStorage (você pode salvar o token e o email, ou buscar dados depois)
+                localStorage.setItem('token', token);
+                localStorage.setItem('emailLogado', email);
+
+                alert('Login realizado com sucesso!');
+
+                // Redireciona pro dashboard ou outra página
                 window.location.href = 'pages/dashboard.html';
 
             } catch (error) {
                 console.error('Erro ao fazer login:', error);
-                alert('Email ou senha inválidos. Tente novamente.');
+
+                let errorMessage = 'Erro ao fazer login. Verifique suas credenciais.';
+
+                if (error.response) {
+                    if (error.response.status === 401) {
+                        errorMessage = 'Email ou senha inválidos.';
+                    } else if (error.response.status === 400) {
+                        errorMessage = 'Preencha todos os campos.';
+                    }
+                }
+
+                alert(errorMessage);
 
                 btn.disabled = false;
                 btnText.textContent = originalText;

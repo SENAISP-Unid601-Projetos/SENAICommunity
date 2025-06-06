@@ -2,40 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
     setupPasswordToggles();
     setupThemeToggle();
 
-    const passwordInput = document.getElementById('registerPassword');
-    if (passwordInput) {
-        passwordInput.addEventListener('input', function () {
-            const password = this.value;
-            const strengthBar = document.querySelector('.strength-bar');
-
-            let strength = 0;
-            if (password.length >= 8) strength += 1;
-            if (/[A-Z]/.test(password)) strength += 1;
-            if (/\d/.test(password)) strength += 1;
-            if (/[^A-Za-z0-9]/.test(password)) strength += 1;
-
-            strengthBar.dataset.strength = Math.min(strength, 3);
-            strengthBar.style.width = `${(strength / 3) * 100}%`;
-
-            if (strength === 0) {
-                strengthBar.style.backgroundColor = '#ff4444';
-            } else if (strength === 1) {
-                strengthBar.style.backgroundColor = '#ffbb33';
-            } else {
-                strengthBar.style.backgroundColor = '#00C851';
-            }
-        });
-    }
-
-    const fotoInput = document.getElementById('foto');
-    if (fotoInput) {
-        fotoInput.addEventListener('change', function () {
-            const fileName = this.files[0] ? this.files[0].name : 'Foto de perfil (opcional)';
-            document.getElementById('file-name').textContent = fileName;
-        });
-    }
-
     const registerForm = document.getElementById('registerForm');
+
     if (registerForm) {
         registerForm.addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -53,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            // Monta o FormData
             const formData = new FormData();
             formData.append('nome', document.getElementById('nome').value);
             formData.append('email', document.getElementById('email').value);
@@ -61,11 +30,13 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('periodo', document.getElementById('periodo').value);
             formData.append('dataNascimento', document.getElementById('dataNascimento').value);
 
+            // Verifica se a foto foi enviada
             const foto = document.getElementById('foto').files[0];
             if (foto) {
                 formData.append('foto', foto);
             }
 
+            // Altera texto do botão enquanto carrega
             const btn = this.querySelector('button[type="submit"]');
             const btnText = btn.querySelector('.btn-text');
             const originalText = btnText.textContent;
@@ -74,11 +45,17 @@ document.addEventListener('DOMContentLoaded', function() {
             btnText.textContent = 'Cadastrando...';
 
             try {
-                const response = await axios.post('http://localhost:8080/alunos', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
+                // 🚀 Envia via Axios para o back-end
+                const response = await axios.post('http://localhost:8080/cadastro/alunos', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
                 });
 
+                console.log('Cadastro realizado:', response.data);
                 alert('Cadastro realizado com sucesso!');
+
+                // Redireciona pro login após cadastro
                 window.location.href = 'login.html';
 
             } catch (error) {
@@ -97,6 +74,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.disabled = false;
                 btnText.textContent = originalText;
             }
+        });
+    }
+
+    // Atualiza nome do arquivo ao selecionar foto
+    const fotoInput = document.getElementById('foto');
+    if (fotoInput) {
+        fotoInput.addEventListener('change', function () {
+            const fileName = this.files[0] ? this.files[0].name : 'Foto de perfil (opcional)';
+            document.getElementById('file-name').textContent = fileName;
         });
     }
 });
