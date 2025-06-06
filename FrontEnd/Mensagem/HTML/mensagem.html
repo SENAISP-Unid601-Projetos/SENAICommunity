@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAI Community | Mensagens</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../../Principal/CSS/principal.css">
+    <link rel="stylesheet" href="../CSS/mensagem.css">
+</head>
+<body>
+    <div class="notification-center"></div>
+
+    <header class="topbar">
+        <div class="header-left">
+            <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+        </div>
+        <div class="search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Pesquisar projetos...">
+        </div>
+        <nav class="nav-icons">
+            <div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell"></i><span class="badge">5</span></div>
+            <div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div>
+        </nav>
+        <div class="user-dropdown">
+            <div class="user">
+                <div class="profile-pic"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"></div>
+                <span>Vinicius G.</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="#"><i class="fas fa-user"></i> Meu Perfil</a>
+                <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+                <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <nav class="nav-rail">
+            <a href="../../Principal/HTML/principal.html" class="rail-item" data-tooltip="Feed"><i class="fas fa-home"></i></a>
+            <a href="#" class="rail-item active" data-tooltip="Mensagens"><i class="fas fa-comment-dots"></i></a>
+            <a href="#" class="rail-item" data-tooltip="Vagas"><i class="fas fa-briefcase"></i></a>
+            <a href="#" class="rail-item" data-tooltip="Eventos"><i class="fas fa-calendar-check"></i></a>
+            <div class="rail-separator"></div>
+            <a href="#" class="rail-item" data-tooltip="Cursos"><i class="fas fa-graduation-cap"></i></a>
+        </nav>
+
+        <div class="chat-container">
+            <aside class="chat-sidebar">
+                <div class="sidebar-header">
+                    <h2>Conversas</h2>
+                    <button class="add-convo-btn" title="Nova conversa"><i class="fas fa-plus"></i></button>
+                </div>
+                <div class="sidebar-search">
+                    <input type="text" id="convo-search" placeholder="Buscar conversas...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="conversations-list" id="conversations-list">
+                    </div>
+            </aside>
+            <main class="chat-main">
+                <div class="chat-card">
+                    <div class="chat-header-area" id="chat-header-area">
+                        </div>
+                    <div class="chat-messages-area" id="chat-messages-area">
+                        <div class="empty-chat">Selecione uma conversa para começar.</div>
+                    </div>
+                    <form class="chat-input-area" id="chat-form" autocomplete="off">
+                        <input type="text" id="chat-input" placeholder="Digite uma mensagem..." autocomplete="off" disabled>
+                        <button type="submit" id="chat-send-btn" disabled><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script src="../../Principal/JS/principal.js"></script>
+    <script src="../JS/mensagem.js"></script>
+</body>
+</html>

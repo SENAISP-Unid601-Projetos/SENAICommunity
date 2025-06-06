@@ -1,135 +1,114 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Projetos | SENAI Community</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../CSS/projeto.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAI Community | Projetos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../Principal/CSS/principal.css">
+    <link rel="stylesheet" href="../CSS/projeto.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="header-left">
-      <div class="menu-toggle">
-        <i class="fas fa-bars"></i>
-      </div>
-      <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+    <header class="topbar">
+        <div class="header-left"><h1 class="logo"><span class="highlight">SENAI </span>Community</h1></div><div class="search"><i class="fas fa-search"></i><input type="text" placeholder="Pesquisar projetos..."></div><nav class="nav-icons"><a href="/Principal/HTML/principal.html" data-tooltip="Feed"><i class="fas fa-home"></i></a><a href="/Mensagem/HTML/mensagem.html" data-tooltip="Mensagens"><i class="fas fa-comment-dots"></i></a><div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell"></i><span class="badge">5</span></div><div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div></nav><div class="user-dropdown"><div class="user"><div class="profile-pic"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"></div><span>Vinicius G.</span><i class="fas fa-chevron-down"></i></div><div class="dropdown-menu"><a href="#"><i class="fas fa-user"></i> Meu Perfil</a><a href="#"><i class="fas fa-cog"></i> Configurações</a><a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a></div></div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="user-info">
+                <div class="avatar"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"><div class="status online"></div></div>
+                <h2>Vinicius Gallo Santos</h2><p class="user-title">Estudante de ADS</p><div class="user-stats"><div class="stat"><strong>156</strong><span>Conexões</span></div><div class="stat"><strong>24</strong><span>Projetos</span></div></div>
+            </div>
+            <nav class="menu">
+                <a href="/Principal/HTML/principal.html"><i class="fas fa-home"></i> Feed</a>
+                <a href="/Mensagem/HTML/mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
+                <a href="/Projeto/HTML/projeto.html" class="active"><i class="fas fa-users"></i> Projetos</a>
+                <a href="/Vaga/HTML/vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
+                <a href="/Evento/HTML/eventos.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+                <a href="#"><i class="fas fa-graduation-cap"></i>Cursos</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="projetos-header">
+                <div class="header-text">
+                    <h1>Explore os Projetos da Comunidade</h1>
+                    <p>Inspire-se, colabore e compartilhe suas criações com outros alunos e empresas.</p>
+                </div>
+                <button class="btn-new-project" id="btn-new-project"><i class="fas fa-plus"></i> Publicar Projeto</button>
+            </div>
+
+            <div class="projetos-filters">
+                <div class="search-projetos">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="project-search-input" placeholder="Buscar por nome ou tecnologia...">
+                </div>
+                <select id="filter-category">
+                    <option value="todos">Todas as Categorias</option>
+                    <option value="web">Desenvolvimento Web</option>
+                    <option value="mobile">Mobile</option>
+                    <option value="iot">IoT & Robótica</option>
+                    <option value="ia">Inteligência Artificial</option>
+                </select>
+            </div>
+
+            <div class="projetos-grid" id="projetos-grid">
+            </div>
+        </main>
+
+        <aside class="right-sidebar">
+            <div class="card-destaque">
+                <h3><i class="fas fa-bullhorn"></i> Buscando Colaboradores</h3>
+                <ul class="lista-colaboracao">
+                    <li><a href="#"><strong>App de Gestão Financeira</strong><span>UX/UI Designer</span></a></li>
+                    <li><a href="#"><strong>Sistema de Irrigação Automatizado</strong><span>Eng. de Software (C++)</span></a></li>
+                    <li><a href="#"><strong>Plataforma E-learning com IA</strong><span>Backend (Python/Django)</span></a></li>
+                </ul>
+            </div>
+        </aside>
     </div>
-    <div class="search">
-      <i class="fas fa-search"></i>
-      <input type="text" placeholder="Pesquisar projetos...">
-      <div class="search-results"></div>
+
+    <div class="modal-overlay" id="novo-projeto-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Cadastrar Novo Projeto</h2>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <form id="novo-projeto-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="proj-titulo">Título do Projeto</label>
+                        <input type="text" id="proj-titulo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="proj-descricao">Descrição</label>
+                        <textarea id="proj-descricao" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="proj-imagem">URL da Imagem de Capa</label>
+                        <input type="url" id="proj-imagem" placeholder="https://exemplo.com/imagem.png">
+                    </div>
+                    <div class="form-group">
+                        <label for="proj-techs">Tecnologias (separadas por vírgula)</label>
+                        <input type="text" id="proj-techs" placeholder="React, Node.js, Arduino...">
+                    </div>
+                     <div class="form-group">
+                        <label for="proj-status">Status</label>
+                        <select id="proj-status">
+                            <option value="Em Andamento">Em Andamento</option>
+                            <option value="Concluído">Concluído</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn-publish">Publicar Projeto</button>
+                </div>
+            </form>
+        </div>
     </div>
-    <nav class="nav-icons">
-      <a href="/Principal/HTML/principal.html" class="nav-link">
-        <div class="nav-icon" data-tooltip="Início">
-          <i class="fas fa-home"></i>
-        </div>
-      </a>
-      <div class="nav-icon" data-tooltip="Mensagens">
-        <i class="fas fa-comment-dots"></i>
-        <span class="badge">3</span>
-      </div>
-      <div class="nav-icon" data-tooltip="Notificações">
-        <i class="fas fa-bell"></i>
-        <span class="badge">5</span>
-      </div>
-      <div class="theme-toggle" data-tooltip="Alternar tema">
-        <i class="fas fa-moon"></i>
-      </div>
-    </nav>
-    <div class="user-dropdown">
-      <div class="user">
-        <div class="profile-pic">
-          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil">
-        </div>
-        <span>Vinicius G.</span>
-        <i class="fas fa-chevron-down"></i>
-      </div>
-      <div class="dropdown-menu">
-        <a href="#"><i class="fas fa-user"></i> Meu Perfil</a>
-        <a href="#"><i class="fas fa-cog"></i> Configurações</a>
-        <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
-      </div>
-    </div>
-  </header>
 
-  <div class="container">
-    <aside class="sidebar">
-      <nav class="menu">
-        <a href="../../Principal/HTML/principal.html"><i class="fas fa-home"></i> Feed</a>
-        <a href="#"><i class="fas fa-envelope"></i> Mensagens <span class="badge">3</span></a>
-        <a href="../HTML/projeto.html" class="active"><i class="fas fa-users"></i> Projetos</a>
-        <a href="#"><i class="fas fa-calendar-check"></i> Eventos</a>
-        <a href="#"><i class="fas fa-graduation-cap"></i> Meus Cursos</a>
-      </nav>
-    </aside>
-
-    <main class="main-content">
-      <div class="projects-header">
-        <h2><i class="fas fa-users"></i> Projetos</h2>
-        <button class="action-btn main-action" id="btn-criar-projeto">
-          <i class="fas fa-plus"></i> Criar Projeto
-        </button>
-      </div>
-
-      <section class="my-projects-section">
-        <h3>Meus Projetos</h3>
-        <div class="projects-grid" id="meus-projetos">
-          <div class="empty-state" id="sem-meus-projetos" style="display: none;">
-            <img src="https://cdn-icons-png.flaticon.com/512/5957/5957035.png" width="90" style="margin-bottom:1rem;opacity:0.8"/>
-            <p>Você ainda não criou nenhum projeto.</p>
-            <button class="action-btn" id="criar-primeiro-projeto">
-              <i class="fas fa-plus"></i> Criar Projeto
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section class="participating-projects-section">
-        <h3>Projetos que Participo</h3>
-        <div class="projects-grid" id="projetos-participo">
-          <div class="empty-state" id="sem-projetos-participo" style="display: none;">
-            <img src="https://cdn-icons-png.flaticon.com/512/5957/5957035.png" width="90" style="margin-bottom:1rem;opacity:0.8"/>
-            <p>Você ainda não está participando de nenhum projeto.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="project-invites-section">
-        <h3>Convites para Participação</h3>
-        <div class="invites-list" id="lista-convites">
-          <div class="empty-state" id="sem-convites" style="display: none;">
-            <img src="https://cdn-icons-png.flaticon.com/512/5957/5957035.png" width="90" style="margin-bottom:1rem;opacity:0.8"/>
-            <p>Você não possui convites de projetos no momento.</p>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- Modal para criar novo projeto -->
-  <div class="modal" id="modal-criar-projeto" style="display: none;">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <h3><i class="fas fa-plus"></i> Criar Novo Projeto</h3>
-      <form id="form-criar-projeto" autocomplete="off">
-        <input type="text" placeholder="Nome do projeto" required>
-        <textarea placeholder="Descrição do projeto" required></textarea>
-        <div class="invite-users-field">
-          <label>Adicionar membros</label>
-          <div class="invite-search">
-            <input type="text" id="input-busca-usuario" placeholder="Buscar colegas...">
-            <div class="invite-search-results" id="lista-usuarios"></div>
-          </div>
-          <div class="invited-list" id="lista-convidados"></div>
-        </div>
-        <button type="submit" class="action-btn main-action"><i class="fas fa-plus"></i> Criar</button>
-      </form>
-    </div>
-  </div>
-  <div class="notification-center"></div>
-  <script src="../JS/projeto.js"></script>
+    <script src="../../Principal/JS/principal.js"></script>
+    <script src="../JS/projeto.js"></script>
 </body>
 </html>
