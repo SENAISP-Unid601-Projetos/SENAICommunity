@@ -51,6 +51,11 @@ public class SecurityConfig {
                                 "/swagger-ui.html"
                         ).permitAll()
 
+                        .requestMatchers(
+                                "/alunos/**",
+                                "/professores/**"
+                        ).permitAll()
+
                         // Liberação de endpoints públicos
                         .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
 

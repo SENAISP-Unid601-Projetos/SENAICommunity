@@ -43,7 +43,7 @@ public class BackEndApplication {
 				Role role = new Role();
 				role.setNome(roleName);
 				roleRepository.save(role);
-				System.out.println("Role criada: " + roleName); 
+				System.out.println("Role criada: " + roleName);
 			}
 		}
 	}

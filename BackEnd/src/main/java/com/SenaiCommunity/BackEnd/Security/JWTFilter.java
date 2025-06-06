@@ -33,6 +33,16 @@ public class JWTFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         // Ignorar completamente o endpoint de login
+        if ("/professores/**".equals(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        // Ignorar completamente o endpoint de login
+        if ("/alunos/**".equals(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        // Ignorar completamente o endpoint de login
         if ("/autenticacao/login".equals(path)) {
             filterChain.doFilter(request, response);
             return;
