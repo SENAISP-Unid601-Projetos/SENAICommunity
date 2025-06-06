@@ -85,7 +85,7 @@ public class ProfessorService {
         // Define a role (mesmo que seja um Set, terá só uma)
         professor.setRoles(Set.of(roleProfessor));
 
-        if (foto == null && foto.isEmpty()) {
+        if (foto == null || foto.isEmpty()) {
             professor.setFotoPerfil(null); // ou "default.jpg"
         }
 

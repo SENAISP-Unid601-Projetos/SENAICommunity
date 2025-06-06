@@ -84,7 +84,7 @@ public class AlunoService {
         // Define a role (mesmo que seja um Set, terá só uma)
         aluno.setRoles(Set.of(roleAluno));
 
-        if (foto == null && foto.isEmpty()) {
+        if (foto == null || foto.isEmpty()) {
             aluno.setFotoPerfil(null); // ou "default.jpg" se tiver imagem padrão
 
         }  try {

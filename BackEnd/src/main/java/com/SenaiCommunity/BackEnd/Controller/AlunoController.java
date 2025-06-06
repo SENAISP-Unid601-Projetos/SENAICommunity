@@ -21,31 +21,6 @@ public class AlunoController {
     @Autowired
     private AlunoService alunoService;
 
-    @PostMapping(consumes = "multipart/form-data")
-    @Operation(summary = "Cadastra um novo ALUNO")
-    public ResponseEntity<AlunoSaidaDTO> cadastrarAluno(
-            @RequestParam String nome,
-            @RequestParam String email,
-            @RequestParam String senha,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataNascimento,
-            @RequestParam String curso,
-            @RequestParam String periodo,
-            @RequestParam(required = false) String bio,
-            @RequestParam(required = false) MultipartFile foto // opcional
-    ) {
-        AlunoEntradaDTO dto = new AlunoEntradaDTO();
-        dto.setNome(nome);
-        dto.setEmail(email);
-        dto.setSenha(senha);
-        dto.setCurso(curso);
-        dto.setPeriodo(periodo);
-        dto.setDataNascimento(dataNascimento);
-        dto.setBio(bio);
-
-        return ResponseEntity.ok(alunoService.criarAlunoComFoto(dto, foto));
-    }
-
-
     @GetMapping
     public ResponseEntity<List<AlunoSaidaDTO>> listarTodos() {
         return ResponseEntity.ok(alunoService.listarTodos());

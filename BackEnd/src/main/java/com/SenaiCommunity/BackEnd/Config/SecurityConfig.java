@@ -52,7 +52,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Liberação de endpoints públicos
-                        .requestMatchers(HttpMethod.POST, "/professores/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
 
                         .anyRequest().authenticated()
                 )
