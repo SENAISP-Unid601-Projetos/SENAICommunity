@@ -2,6 +2,7 @@ package com.SenaiCommunity.BackEnd.DTO;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,11 +15,11 @@ public class ProfessorSaidaDTO {
     private String fotoPerfil;
 
     private String formacao;
-    private String areaAtuacao;
     private String codigoSn;
 
     private LocalDateTime dataCadastro;
     private String bio;
+    private LocalDate dataNascimento;
 
     private List<Long> projetosOrientados;
 }

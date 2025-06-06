@@ -3,39 +3,23 @@ package com.SenaiCommunity.BackEnd.Controller;
 import com.SenaiCommunity.BackEnd.DTO.AlunoEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.AlunoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Service.AlunoService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
-
+//@PreAuthorize("hasRole('ADMIN')")
 @RestController
 @RequestMapping("/alunos")
 public class AlunoController {
 
     @Autowired
     private AlunoService alunoService;
-
-    @PostMapping(consumes = "multipart/form-data")
-    public ResponseEntity<AlunoSaidaDTO> cadastrarAluno(
-            @RequestParam String nome,
-            @RequestParam String email,
-            @RequestParam String senha,
-            @RequestParam String curso,
-            @RequestParam String periodo,
-            @RequestParam(required = false) MultipartFile foto // opcional
-    ) {
-        AlunoEntradaDTO dto = new AlunoEntradaDTO();
-        dto.setNome(nome);
-        dto.setEmail(email);
-        dto.setSenha(senha);
-        dto.setCurso(curso);
-        dto.setPeriodo(periodo);
-
-        return ResponseEntity.ok(alunoService.criarAlunoComFoto(dto, foto));
-    }
-
 
     @GetMapping
     public ResponseEntity<List<AlunoSaidaDTO>> listarTodos() {

@@ -36,12 +36,12 @@
                 
                 <div class="input-group">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="senha" placeholder="Senha" id="registerPassword" required>
+                    <input type="password" id="registerPassword" placeholder="Senha" required>
                     <button type="button" class="toggle-password">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
-                
+
                 <div class="password-strength">
                     <div class="strength-meter">
                         <div class="strength-bar" data-strength="0"></div>
@@ -66,6 +66,11 @@
                 <div class="input-group">
                     <i class="fas fa-calendar-alt"></i>
                     <input type="text" id="periodo" placeholder="Período (Ex: 3º Semestre)" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-birthday-cake"></i>
+                    <input type="date" id="dataNascimento" placeholder="Data de Nascimento" required>
                 </div>
 
                 <div class="input-group file-input-group">
@@ -97,7 +102,8 @@
         <i class="fas fa-moon"></i>
     </div>
 
-    <script src="../JS/background.js"></script>
-    <script src="../JS/login-cadastro.js"></script>
+    <script src="../JS/background.js" defer></script>
+    <script src="../JS/cadastro.js" defer></script>
+    <script src="../JS/utils.js" defer></script>
 </body>
 </html>
