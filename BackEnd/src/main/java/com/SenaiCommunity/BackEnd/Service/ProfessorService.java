@@ -82,23 +82,23 @@ public class ProfessorService {
         Role roleProfessor = roleRepository.findByNome("PROFESSOR")
                 .orElseThrow(() -> new RuntimeException("Role PROFESSOR não encontrada"));
 
-        // Define a role (mesmo que seja um Set, terá só uma)
         professor.setRoles(Set.of(roleProfessor));
 
-        if (foto == null || foto.isEmpty()) {
-            professor.setFotoPerfil(null); // ou "default.jpg"
-        }
-
-        try {
-            String fileName = salvarFoto(foto);
-            professor.setFotoPerfil(fileName);
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar a foto do professor", e);
+        if (foto != null && !foto.isEmpty()) {
+            try {
+                String fileName = salvarFoto(foto);
+                professor.setFotoPerfil(fileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Erro ao salvar a foto do professor", e);
+            }
+        } else {
+            professor.setFotoPerfil(null); // ou "default.jpg" se quiser uma imagem padrão
         }
 
         Professor salvo = professorRepository.save(professor);
         return toDTO(salvo);
     }
+
 
     private String salvarFoto(MultipartFile foto) throws IOException {
         String fileName = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());

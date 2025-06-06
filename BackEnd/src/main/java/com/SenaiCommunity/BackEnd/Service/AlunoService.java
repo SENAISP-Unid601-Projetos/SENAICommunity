@@ -77,26 +77,28 @@ public class AlunoService {
         aluno.setDataCadastro(LocalDateTime.now());
         aluno.setTipoUsuario("ALUNO");
 
-        // Busca a role "PROFESSOR" no banco
+        // Busca a role "ALUNO" no banco
         Role roleAluno = roleRepository.findByNome("ALUNO")
                 .orElseThrow(() -> new RuntimeException("Role ALUNO não encontrada"));
 
         // Define a role (mesmo que seja um Set, terá só uma)
         aluno.setRoles(Set.of(roleAluno));
 
-        if (foto == null || foto.isEmpty()) {
-            aluno.setFotoPerfil(null); // ou "default.jpg" se tiver imagem padrão
-
-        }  try {
-            String fileName = salvarFoto(foto);
-            aluno.setFotoPerfil(fileName);
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar a foto do aluno", e);
+        if (foto != null && !foto.isEmpty()) {
+            try {
+                String fileName = salvarFoto(foto);
+                aluno.setFotoPerfil(fileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Erro ao salvar a foto do aluno", e);
+            }
+        } else {
+            aluno.setFotoPerfil(null); // ou "default.jpg" se quiser uma imagem padrão
         }
 
         Aluno salvo = alunoRepository.save(aluno);
         return toDTO(salvo);
     }
+
 
     private String salvarFoto(MultipartFile foto) throws IOException {
         String fileName = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());
