@@ -45,8 +45,6 @@ public class AlunoService {
         aluno.setFotoPerfil(dto.getFotoPerfil());
         aluno.setCurso(dto.getCurso());
         aluno.setPeriodo(dto.getPeriodo());
-        aluno.setBio(dto.getBio());
-        aluno.setDataNascimento(dto.getDataNascimento());
         return aluno;
     }
 
@@ -131,8 +129,6 @@ public class AlunoService {
         aluno.setFotoPerfil(dto.getFotoPerfil());
         aluno.setCurso(dto.getCurso());
         aluno.setPeriodo(dto.getPeriodo());
-        aluno.setDataNascimento(dto.getDataNascimento());
-        aluno.setBio(dto.getBio());
 
         Aluno atualizado = alunoRepository.save(aluno);
         return toDTO(atualizado);

@@ -11,8 +11,6 @@ public class AlunoEntradaDTO {
     private String email;
     private String senha;
     private String fotoPerfil;
-    private String bio;
     private String curso;
     private String periodo;
-    private LocalDate dataNascimento;
 }

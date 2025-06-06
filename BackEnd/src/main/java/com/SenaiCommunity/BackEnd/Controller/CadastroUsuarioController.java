@@ -38,7 +38,6 @@ public class CadastroUsuarioController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataNascimento,
             @RequestParam String curso,
             @RequestParam String periodo,
-            @RequestParam(required = false) String bio,
             @RequestParam(required = false) MultipartFile foto // opcional
     ) {
         AlunoEntradaDTO dto = new AlunoEntradaDTO();
@@ -47,8 +46,6 @@ public class CadastroUsuarioController {
         dto.setSenha(senha);
         dto.setCurso(curso);
         dto.setPeriodo(periodo);
-        dto.setDataNascimento(dataNascimento);
-        dto.setBio(bio);
 
         return ResponseEntity.ok(alunoService.criarAlunoComFoto(dto, foto));
     }
@@ -64,9 +61,7 @@ public class CadastroUsuarioController {
             @RequestParam String email,
             @RequestParam String senha,
             @RequestParam String formacao,
-            @RequestParam String areaAtuacao,
             @RequestParam String codigoSn,
-            @RequestParam(required = false) String bio,
             @RequestParam(required = false) MultipartFile foto
     ) {
 
@@ -76,10 +71,8 @@ public class CadastroUsuarioController {
         dto.setEmail(email);
         dto.setSenha(senha);
         dto.setFormacao(formacao);
-        dto.setAreaAtuacao(areaAtuacao);
         dto.setCodigoSn(codigoSn);
         dto.setDataNascimento(dataNascimento);
-        dto.setBio(bio);
 
         return ResponseEntity.ok(professorService.criarProfessorComFoto(dto, foto));
     }

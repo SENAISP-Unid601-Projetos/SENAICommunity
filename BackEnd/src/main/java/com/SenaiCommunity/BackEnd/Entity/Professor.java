@@ -16,7 +16,6 @@ import java.util.List;
 public class Professor extends Usuario {
 
     private String formacao;
-    private String areaAtuacao;
     private String codigoSn;
 
     @ManyToMany(mappedBy = "professores")

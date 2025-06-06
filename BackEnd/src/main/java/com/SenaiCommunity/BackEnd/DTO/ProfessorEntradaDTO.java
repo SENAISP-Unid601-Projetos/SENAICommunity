@@ -13,8 +13,6 @@ public class ProfessorEntradaDTO {
     private String senha;
     private String fotoPerfil;
     private String formacao;
-    private String areaAtuacao;
     private String codigoSn;
     private LocalDate dataNascimento;
-    private String bio;
 }

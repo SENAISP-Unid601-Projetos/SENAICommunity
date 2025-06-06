@@ -15,7 +15,6 @@ public class ProfessorSaidaDTO {
     private String fotoPerfil;
 
     private String formacao;
-    private String areaAtuacao;
     private String codigoSn;
 
     private LocalDateTime dataCadastro;

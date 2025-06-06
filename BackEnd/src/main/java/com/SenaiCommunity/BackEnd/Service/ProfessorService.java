@@ -44,10 +44,8 @@ public class ProfessorService {
         professor.setSenha(passwordEncoder.encode(dto.getSenha()));
         professor.setFotoPerfil(dto.getFotoPerfil());
         professor.setFormacao(dto.getFormacao());
-        professor.setAreaAtuacao(dto.getAreaAtuacao());
         professor.setCodigoSn(dto.getCodigoSn());
         professor.setDataNascimento(dto.getDataNascimento());
-        professor.setBio(dto.getBio());
         return professor;
     }
 
@@ -58,7 +56,6 @@ public class ProfessorService {
         dto.setEmail(professor.getEmail());
         dto.setFotoPerfil(professor.getFotoPerfil());
         dto.setFormacao(professor.getFormacao());
-        dto.setAreaAtuacao(professor.getAreaAtuacao());
         dto.setCodigoSn(professor.getCodigoSn());
         dto.setDataCadastro(professor.getDataCadastro());
         dto.setBio(professor.getBio());
@@ -129,9 +126,7 @@ public class ProfessorService {
         professor.setSenha(passwordEncoder.encode(dto.getSenha()));
         professor.setFotoPerfil(dto.getFotoPerfil());
         professor.setFormacao(dto.getFormacao());
-        professor.setAreaAtuacao(dto.getAreaAtuacao());
         professor.setCodigoSn(dto.getCodigoSn());
-        professor.setBio(dto.getBio());
         professor.setDataNascimento(dto.getDataNascimento());
 
         Professor atualizado = professorRepository.save(professor);
