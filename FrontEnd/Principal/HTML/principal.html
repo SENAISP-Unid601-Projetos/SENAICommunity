@@ -81,12 +81,11 @@
       </div>
 
       <nav class="menu">
-        <a href="#" class="active"><i class="fas fa-home"></i> Feed</a>
+        <a href="/Principal/HTML/principal.html" class="active"><i class="fas fa-home"></i> Feed</a>
         <a href="/Mensagem/HTML/mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
         <a href="/Projeto/HTML/projeto.html"><i class="fas fa-users"></i> Projetos</a>
         <a href="/Vaga/HTML/vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
         <a href="/Evento/HTML/evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
-        <a href="#"><i class="fas fa-graduation-cap"></i>Cursos</a>
       </nav>
       
       <div class="online-friends">
@@ -127,28 +126,68 @@
     </main>
     
     <aside class="right-sidebar">
-      <div class="events">
-          </div>
-      <div class="quick-actions">
-        <div class="section-header">
-          <h3><i class="fas fa-bolt"></i> Ações Rápidas</h3>
+    
+    <div class="widget-card" id="upcoming-events-widget">
         </div>
-        <div class="actions-grid">
-          <a href="/Projeto/HTML/projeto.html">
-            <button class="action-btn">
-              <i class="fas fa-users"></i>
-              <span>Criar Projeto</span>
-            </button>
-          </a>
-          <a href="/Vaga/HTML/vaga.html">
-            <button class="action-btn">
-              <i class="fas fa-briefcase"></i>
-              <span>Ver Vagas</span>
-            </button>
-          </a>
+
+    <div class="widget-card" id="upcoming-events-widget">
         </div>
+
+    <div class="widget-card" id="who-to-follow-widget">
+        </div>
+
+    <div class="widget-card" id="featured-projects-widget">
+        </div>
+
+    <div class="widget-card" id="who-to-follow-widget">
+        <div class="widget-header">
+            <h3><i class="fas fa-user-plus"></i> Quem Seguir</h3>
+            <a href="#" class="see-all">Ver todos</a>
+        </div>
+        <div class="follow-list">
+            <div class="follow-item">
+                <div class="follow-avatar">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Ana">
+                </div>
+                <div class="follow-info">
+                    <h4>Ana Silva</h4>
+                    <span>Engenheira de Software</span>
+                </div>
+                <button class="follow-btn"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="follow-item">
+                <div class="follow-avatar">
+                    <img src="https://randomuser.me/api/portraits/men/46.jpg" alt="Carlos">
+                </div>
+                <div class="follow-info">
+                    <h4>Carlos Lima</h4>
+                    <span>Especialista em Redes</span>
+                </div>
+                <button class="follow-btn"><i class="fas fa-plus"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="quick-actions">
+      <div class="section-header">
+        <h3><i class="fas fa-bolt"></i> Ações Rápidas</h3>
       </div>
-    </aside>
+      <div class="actions-grid">
+        <a href="/Projeto/HTML/projeto.html">
+          <button class="action-btn">
+            <i class="fas fa-users"></i>
+            <span>Criar Projeto</span>
+          </button>
+        </a>
+        <a href="/Vaga/HTML/vaga.html">
+          <button class="action-btn">
+            <i class="fas fa-briefcase"></i>
+            <span>Ver Vagas</span>
+          </button>
+        </a>
+      </div>
+    </div>
+  </aside>
   </div>
 
   <div class="floating-actions">
