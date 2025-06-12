@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let widgetContent = `
             <div class="widget-header">
                 <h3><i class="fas fa-calendar-star"></i> Próximos Eventos</h3>
-                <a href="/Evento/HTML/evento.html" class="see-all">Ver todos</a>
+                <a href="evento.html" class="see-all">Ver todos</a>
             </div>
             <div class="events-preview-list">`;
         if (proximosEventos.length > 0) {
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let widgetContent = `
             <div class="widget-header">
                 <h3><i class="fas fa-lightbulb"></i> Projetos em Destaque</h3>
-                <a href="/Projeto/HTML/projeto.html" class="see-all">Ver todos</a>
+                <a href="projeto.html" class="see-all">Ver todos</a>
             </div>
             <div class="project-preview-list">`;
     
