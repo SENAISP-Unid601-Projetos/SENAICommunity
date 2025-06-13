@@ -18,8 +18,8 @@ const ChatApp = {
                 otherUser: { id: 4, nome: "Matheus B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg", online: true },
                 membros: [{ id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" }, { id: 4, nome: "Matheus B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg" }],
                 mensagens: [
-                     { autor: 4, texto: "E aí, Vinicius! Tudo certo?", hora: "14:50"},
-                     { autor: 1, texto: "Opa, tudo joia e você?", hora: "14:51"}
+                    { autor: 4, texto: "E aí, Vinicius! Tudo certo?", hora: "14:50"},
+                    { autor: 1, texto: "Opa, tudo joia e você?", hora: "14:51"}
                 ]
             },
             {
@@ -94,7 +94,10 @@ const ChatApp = {
                     messageGroup.innerHTML = `${avatarHTML}<div class="message-block"><div class="message-author-header"><strong>${user.nome.split(" ")[0]}</strong><span>${msg.hora}</span></div></div>`;
                     chatMessagesArea.appendChild(messageGroup);
                 }
-                const lastMessageBlock = chatMessagesArea.querySelector('.message-block:last-child');
+                
+                // BUG FIX: Seletor corrigido para encontrar o bloco de mensagem correto.
+                const lastMessageBlock = chatMessagesArea.querySelector('.message-group:last-child .message-block');
+
                 if(lastMessageBlock) {
                     const messageContent = document.createElement('div');
                     messageContent.className = 'message-content';
