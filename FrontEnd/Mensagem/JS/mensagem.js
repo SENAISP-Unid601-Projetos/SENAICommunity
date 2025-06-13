@@ -7,7 +7,7 @@ const ChatApp = {
             { id: 3, nome: "Ana Silva", avatar: "https://randomuser.me/api/portraits/women/33.jpg" },
             { id: 4, nome: "Matheus B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg" },
             { id: 5, nome: "Yuri Bragança", avatar: "https://randomuser.me/api/portraits/men/67.jpg" },
-            { id: 6, nome: "Juliana Costa", avatar: "https://randomuser.me/api/portraits/women/68.jpg" },
+            { id: 6, nome: "Julia Costa", avatar: "https://randomuser.me/api/portraits/women/48.jpg" },
             { id: 7, nome: "Ricardo Neves", avatar: "https://randomuser.me/api/portraits/men/78.jpg" },
             { id: 8, nome: "Beatriz Lima", avatar: "https://randomuser.me/api/portraits/women/88.jpg" }
         ],
@@ -24,9 +24,19 @@ const ChatApp = {
                 ]
             },
             {
+                id: 'g2', type: 'group', nome: "PrecisionCraft", avatar: "/img/cnc.png",
+                membros: [{ id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" },  { id: 2, nome: "Julia", avatar: "https://randomuser.me/api/portraits/men/22.jpg" }, 
+                    { id: 8, nome: "Carlos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" }, { id: 9, nome: "Laura", avatar: "https://randomuser.me/api/portraits/men/22.jpg" }
+                ],
+                mensagens: [
+                    { autor: 6, texto: "Olá Pessoal!", hora: "11:22" },
+                    
+                ]
+            },
+            {
                 id: 'dm1', type: 'dm',
-                otherUser: { id: 4, nome: "Matheus B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg", online: true },
-                membros: [{ id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" }, { id: 4, nome: "Matheus B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg" }],
+                otherUser: { id: 4, nome: "Eliezer B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg", online: true },
+                membros: [{ id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" }, { id: 4, nome: "Eliezer B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg" }],
                 mensagens: [
                     { autor: 4, texto: "E aí, Vinicius! Tudo certo?", hora: "14:50"},
                     { autor: 1, texto: "Opa, tudo joia e você?", hora: "14:51"}

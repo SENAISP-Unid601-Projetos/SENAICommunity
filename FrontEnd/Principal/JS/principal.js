@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const mockFriends = [
             { id: 2, name: "Miguel Piscki", avatar: "https://randomuser.me/api/portraits/men/22.jpg", status: "online" },
-            { id: 4, name: "Eliezer B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg", status: "away" },
+            { id: 4, name: "Eliezer B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg", status: "online" },
             { id: 5, name: "Julia Melo", avatar: "https://randomuser.me/api/portraits/women/48.jpg", status: "online" },
             { id: 6, name: "Carlos Lima", avatar: "https://randomuser.me/api/portraits/men/51.jpg", status: "away" },
             { id: 7, name: "Laura Costa", avatar: "https://randomuser.me/api/portraits/women/55.jpg", status: "online" },
