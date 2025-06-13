@@ -1,6 +1,16 @@
 const ChatApp = {
     state: {
         currentUser: { id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" },
+        allUsers: [
+            { id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" },
+            { id: 2, nome: "Miguel Piscki", avatar: "https://randomuser.me/api/portraits/men/22.jpg" },
+            { id: 3, nome: "Ana Silva", avatar: "https://randomuser.me/api/portraits/women/33.jpg" },
+            { id: 4, nome: "Matheus B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg" },
+            { id: 5, nome: "Yuri Bragança", avatar: "https://randomuser.me/api/portraits/men/67.jpg" },
+            { id: 6, nome: "Juliana Costa", avatar: "https://randomuser.me/api/portraits/women/68.jpg" },
+            { id: 7, nome: "Ricardo Neves", avatar: "https://randomuser.me/api/portraits/men/78.jpg" },
+            { id: 8, nome: "Beatriz Lima", avatar: "https://randomuser.me/api/portraits/women/88.jpg" }
+        ],
         conversations: [
             {
                 id: 'g1', type: 'group', nome: "Projeto IoT", avatar: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80",
@@ -18,14 +28,9 @@ const ChatApp = {
                 otherUser: { id: 4, nome: "Matheus B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg", online: true },
                 membros: [{ id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" }, { id: 4, nome: "Matheus B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg" }],
                 mensagens: [
-                     { autor: 4, texto: "E aí, Vinicius! Tudo certo?", hora: "14:50"},
-                     { autor: 1, texto: "Opa, tudo joia e você?", hora: "14:51"}
+                    { autor: 4, texto: "E aí, Vinicius! Tudo certo?", hora: "14:50"},
+                    { autor: 1, texto: "Opa, tudo joia e você?", hora: "14:51"}
                 ]
-            },
-            {
-                id: 'g2', type: 'group', nome: "Trabalho de ADS", avatar: "https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=400&q=80",
-                membros: [{ id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" }, { id: 5, nome: "Yuri Bragança", avatar: "https://randomuser.me/api/portraits/men/67.jpg" }],
-                mensagens: [{ autor: 5, texto: "Posso entregar o diagrama amanhã.", hora: "18:27" }]
             }
         ],
         selectedConversationId: null,
@@ -39,10 +44,15 @@ const ChatApp = {
         chatForm: document.getElementById('chat-form'),
         chatInput: document.getElementById('chat-input'),
         chatSendBtn: document.getElementById('chat-send-btn'),
-        addGroupBtn: document.querySelector('.add-convo-btn')
+        addGroupBtn: document.querySelector('.add-convo-btn'),
+        addConvoModal: document.getElementById('add-convo-modal'),
+        closeModalBtn: document.getElementById('close-modal-btn'),
+        userSearchInput: document.getElementById('user-search-input'),
+        newConvoUserList: document.getElementById('new-convo-user-list')
     },
     render: {
         conversationsList() {
+            // ... (código sem alterações)
             const { conversationsList } = ChatApp.elements;
             const { filteredConversations, selectedConversationId } = ChatApp.state;
             if (!conversationsList) return;
@@ -64,6 +74,7 @@ const ChatApp = {
             });
         },
         chatHeader() {
+            // ... (código sem alterações)
             const { chatHeaderArea } = ChatApp.elements;
             const convo = ChatApp.utils.getSelectedConversation();
             if (!chatHeaderArea) return;
@@ -76,37 +87,68 @@ const ChatApp = {
             }
             chatHeaderArea.innerHTML = headerHTML;
         },
+        
+        // FUNÇÃO DE RENDERIZAR MENSAGENS ATUALIZADA
         chatMessages() {
             const { chatMessagesArea } = ChatApp.elements;
             const convo = ChatApp.utils.getSelectedConversation();
-            if (!chatMessagesArea) return;
-            if (!convo) { chatMessagesArea.innerHTML = `<div class="empty-chat">Selecione uma conversa para começar.</div>`; return; }
+            if (!chatMessagesArea || !convo) { 
+                if(chatMessagesArea) chatMessagesArea.innerHTML = `<div class="empty-chat">Selecione uma conversa para começar.</div>`;
+                return; 
+            }
 
             chatMessagesArea.innerHTML = '';
             let lastAuthorId = null;
+            let currentMessageBlock = null;
+
             convo.mensagens.forEach(msg => {
                 const user = ChatApp.utils.getUser(convo, msg.autor);
+                const sideClass = msg.autor === ChatApp.state.currentUser.id ? 'me' : 'outro';
+
                 if (msg.autor !== lastAuthorId) {
-                    const messageGroup = document.createElement('div');
-                    const sideClass = msg.autor === ChatApp.state.currentUser.id ? 'me' : 'outro';
-                    messageGroup.className = `message-group ${sideClass}`;
-                    let avatarHTML = (sideClass === 'outro') ? `<div class="message-avatar"><img src="${user.avatar}" alt="${user.nome}"></div>` : '';
-                    messageGroup.innerHTML = `${avatarHTML}<div class="message-block"><div class="message-author-header"><strong>${user.nome.split(" ")[0]}</strong><span>${msg.hora}</span></div></div>`;
-                    chatMessagesArea.appendChild(messageGroup);
+                    const currentMessageGroup = document.createElement('div');
+                    currentMessageGroup.className = `message-group ${sideClass}`;
+                    
+                    const avatarHTML = (sideClass === 'outro') ? `<div class="message-avatar"><img src="${user.avatar}" alt="${user.nome}"></div>` : '';
+                    
+                    currentMessageBlock = document.createElement('div');
+                    currentMessageBlock.className = 'message-block';
+                    
+                    // *** A CORREÇÃO ESTÁ AQUI ***
+                    // Adiciona o cabeçalho (nome e hora) APENAS se a mensagem for de outra pessoa
+                    if (sideClass === 'outro') {
+                        const header = document.createElement('div');
+                        header.className = 'message-author-header';
+                        header.innerHTML = `<strong>${user.nome.split(" ")[0]}</strong><span>${msg.hora}</span>`;
+                        currentMessageBlock.appendChild(header);
+                    }
+
+                    if (avatarHTML) {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = avatarHTML;
+                        currentMessageGroup.appendChild(tempDiv.firstChild);
+                    }
+                    currentMessageGroup.appendChild(currentMessageBlock);
+                    
+                    chatMessagesArea.appendChild(currentMessageGroup);
                 }
-                const lastMessageBlock = chatMessagesArea.querySelector('.message-block:last-child');
-                if(lastMessageBlock) {
-                    const messageContent = document.createElement('div');
-                    messageContent.className = 'message-content';
-                    messageContent.textContent = msg.texto;
-                    lastMessageBlock.appendChild(messageContent);
+
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.innerHTML = msg.texto.replace(/\n/g, '<br>');
+
+                if (currentMessageBlock) {
+                    currentMessageBlock.appendChild(messageContent);
                 }
+                
                 lastAuthorId = msg.autor;
             });
+
             chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
         }
     },
     handlers: {
+        // ... (código sem alterações)
         selectConversation(convoId) {
             ChatApp.state.selectedConversationId = convoId;
             const { chatInput, chatSendBtn } = ChatApp.elements;
@@ -141,19 +183,100 @@ const ChatApp = {
                 return nameToSearch.toLowerCase().includes(query);
             });
             ChatApp.render.conversationsList();
+        },
+        openNewConversationModal() {
+            const { newConvoUserList, addConvoModal, userSearchInput } = ChatApp.elements;
+            if (!newConvoUserList || !addConvoModal) return;
+
+            const existingDmUserIds = ChatApp.state.conversations
+                .filter(c => c.type === 'dm')
+                .map(c => c.otherUser.id);
+            
+            const availableUsers = ChatApp.state.allUsers.filter(user => 
+                user.id !== ChatApp.state.currentUser.id && !existingDmUserIds.includes(user.id)
+            );
+
+            newConvoUserList.innerHTML = ''; 
+
+            if (availableUsers.length === 0) {
+                newConvoUserList.innerHTML = `<p style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">Não há novos usuários para conversar.</p>`;
+            } else {
+                availableUsers.forEach(user => {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'user-list-item';
+                    userItem.dataset.userId = user.id;
+                    userItem.innerHTML = `<img src="${user.avatar}" alt="${user.nome}"><span>${user.nome}</span>`;
+                    newConvoUserList.appendChild(userItem);
+                });
+            }
+            
+            userSearchInput.value = '';
+            addConvoModal.style.display = 'flex';
+            userSearchInput.focus();
+        },
+        closeNewConversationModal() {
+            const { addConvoModal } = ChatApp.elements;
+            if (addConvoModal) {
+                addConvoModal.style.display = 'none';
+            }
+        },
+        startNewDmConversation(e) {
+            const userItem = e.target.closest('.user-list-item');
+            if (!userItem) return;
+
+            const targetUserId = parseInt(userItem.dataset.userId, 10);
+            const targetUser = ChatApp.state.allUsers.find(u => u.id === targetUserId);
+            const currentUser = ChatApp.state.currentUser;
+
+            if (!targetUser) return;
+
+            const newConvoId = `dm_${currentUser.id}-${targetUser.id}`;
+            const newConversation = {
+                id: newConvoId,
+                type: 'dm',
+                otherUser: { id: targetUser.id, nome: targetUser.nome, avatar: targetUser.avatar, online: false },
+                membros: [currentUser, targetUser],
+                mensagens: []
+            };
+
+            ChatApp.state.conversations.unshift(newConversation);
+            ChatApp.state.filteredConversations = [...ChatApp.state.conversations];
+            
+            ChatApp.handlers.closeNewConversationModal();
+            ChatApp.render.conversationsList();
+            ChatApp.handlers.selectConversation(newConvoId);
+        },
+        filterAvailableUsers(e) {
+            const query = e.target.value.toLowerCase();
+            const allItems = ChatApp.elements.newConvoUserList.querySelectorAll('.user-list-item');
+            allItems.forEach(item => {
+                const userName = item.querySelector('span').textContent.toLowerCase();
+                if (userName.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         }
     },
     utils: {
+        // ... (código sem alterações)
         getSelectedConversation() {
             return ChatApp.state.conversations.find(c => c.id === ChatApp.state.selectedConversationId);
         },
         getUser(convo, userId) {
-            return convo.membros.find(m => m.id === userId) || { nome: 'Desconhecido', avatar: '' };
+            let user = convo.membros.find(m => m.id === userId);
+            if (!user) {
+                user = ChatApp.state.allUsers.find(u => u.id === userId);
+            }
+            return user || { nome: 'Desconhecido', avatar: '' };
         }
     },
     init() {
-        const { conversationsList, conversationSearch, chatForm, addGroupBtn } = this.elements;
+        // ... (código sem alterações)
         this.state.filteredConversations = [...this.state.conversations];
+        const { conversationsList, conversationSearch, chatForm, addGroupBtn, closeModalBtn, addConvoModal, newConvoUserList, userSearchInput } = this.elements;
+        
         if (conversationsList) {
             conversationsList.addEventListener('click', (e) => {
                 const card = e.target.closest('.convo-card');
@@ -167,8 +290,26 @@ const ChatApp = {
             chatForm.addEventListener('submit', (e) => this.handlers.sendMessage(e));
         }
         if (addGroupBtn) {
-            addGroupBtn.addEventListener('click', () => alert('Funcionalidade para criar nova conversa em breve!'));
+            addGroupBtn.addEventListener('click', () => this.handlers.openNewConversationModal());
         }
+        
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => this.handlers.closeNewConversationModal());
+        }
+        if (addConvoModal) {
+            addConvoModal.addEventListener('click', (e) => {
+                if (e.target === addConvoModal) {
+                    this.handlers.closeNewConversationModal();
+                }
+            });
+        }
+        if (newConvoUserList) {
+            newConvoUserList.addEventListener('click', (e) => this.handlers.startNewDmConversation(e));
+        }
+        if(userSearchInput) {
+            userSearchInput.addEventListener('input', (e) => this.handlers.filterAvailableUsers(e));
+        }
+
         this.render.conversationsList();
         this.render.chatHeader();
         this.render.chatMessages();
