@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Config;
 
+
 import com.SenaiCommunity.BackEnd.Security.JWTFilter;
 import com.SenaiCommunity.BackEnd.Service.UsuarioDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +21,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+
+import java.util.List;
+
 
 @Configuration
 @EnableWebSecurity
@@ -37,38 +45,45 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
                         .requestMatchers("/error").permitAll()
-                        // Liberação EXPLÍCITA usando caminho completo
                         .requestMatchers(new AntPathRequestMatcher("/autenticacao/login", "POST")).permitAll()
-
-                        // Liberação do Swagger
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-
                         .requestMatchers(
                                 "/alunos/**",
                                 "/professores/**"
                         ).permitAll()
-
-                        // Liberação de endpoints públicos
                         .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
-
                         .anyRequest().authenticated()
                 )
-                // Desabilitar autenticações padrão
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
-                .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, excep) ->
-                res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido ou ausente")))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(
+                        (req, res, excep) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido ou ausente")
+                ))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500")); // ou "*" se quiser liberar geral
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -81,5 +96,5 @@ public class SecurityConfig {
         builder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
         return builder.build();
     }
-
 }
+

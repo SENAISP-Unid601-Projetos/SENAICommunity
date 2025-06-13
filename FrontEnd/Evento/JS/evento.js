@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
      {
       id: 7,
       titulo: "Introdução à Cloud com AWS e Azure",
-      imagem: "https://images.unsplash.com/photo-1585241936933-be756352d702?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+      imagem: "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
       data: new Date(2025, 5, 28), // 28 de Junho de 2025
       hora: "14:00 - 18:00",
       local: "Plataforma Teams",
@@ -77,8 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     {
       id: 1,
       titulo: "Hackathon de Inteligência Artificial",
-      imagem: "https://images.unsplash.com/photo-1593349480503-685d39418f7d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-      data: new Date(2025, 5, 20), // 20 de Junho de 2025
+imagem: "https://www.aen.pr.gov.br/sites/default/arquivos_restritos/files/imagem/2024-09/hackathon_copel_11_0.jpg",      data: new Date(2025, 5, 20), // 20 de Junho de 2025
       hora: "09:00 - 18:00 (dois dias)",
       local: "Auditório Principal SENAI",
       formato: "Presencial",
