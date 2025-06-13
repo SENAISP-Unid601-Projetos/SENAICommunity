@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
         username: "Vinicius G.",
         avatar: "https://randomuser.me/api/portraits/men/32.jpg",
         title: "Estudante de ADS",
-        connections: 156,
-        projects: 24
+        connections: 11,
+        projects: 2
     };
 
     // ==================== GERENCIAMENTO DE TEMA ====================
@@ -272,8 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const mockFriends = [
             { id: 2, name: "Miguel Piscki", avatar: "https://randomuser.me/api/portraits/men/22.jpg", status: "online" },
-            { id: 3, name: "Ana Silva", avatar: "https://randomuser.me/api/portraits/women/33.jpg", status: "online" },
-            { id: 4, name: "Matheus B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg", status: "away" },
+            { id: 4, name: "Eliezer B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg", status: "away" },
             { id: 5, name: "Julia Melo", avatar: "https://randomuser.me/api/portraits/women/48.jpg", status: "online" },
             { id: 6, name: "Carlos Lima", avatar: "https://randomuser.me/api/portraits/men/51.jpg", status: "away" },
             { id: 7, name: "Laura Costa", avatar: "https://randomuser.me/api/portraits/women/55.jpg", status: "online" },
@@ -409,8 +408,30 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadInitialPosts() {
         if (!postsContainer) return;
         const mockPosts = [
-            { id: 1, author: { name: "Miguel Piscki", avatar: "https://randomuser.me/api/portraits/men/22.jpg" }, content: "Finalizamos hoje o projeto de automação industrial usando Arduino e sensores IoT. O sistema monitora temperatura, umidade e controla atuadores remotamente!", images: ["https://images.unsplash.com/photo-1558522195-e1201b090344?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"], time: "13h", likes: 24, comments: [{ author: "Ana Silva", avatar: "https://randomuser.me/api/portraits/women/33.jpg", content: "Incrível, Miguel! Poderia compartilhar o código fonte?", time: "2h atrás" }] },
-            { id: 2, author: { name: "Matheus Biancolini", avatar: "https://randomuser.me/api/portraits/men/45.jpg" }, content: "Alguém interessado em formar um grupo de estudos para a maratona de programação? Estou pensando em reunir 3-5 pessoas para treinar 2x por semana.", images: [], time: "Ontem", likes: 12, comments: [] }
+            { id: 1, author: { 
+                name: "Miguel Borges", avatar: "https://randomuser.me/api/portraits/men/22.jpg" }, 
+                content: "Finalizamos hoje o projeto de automação industrial usando Arduino e sensores IoT. O sistema monitora temperatura, umidade e controla atuadores remotamente!", 
+                images: ["/img/unnamed.png"], time: "Ontem", likes: 24, comments: [{ author: "Ana Silva", avatar: "https://randomuser.me/api/portraits/women/33.jpg", content: "Incrível, Miguel! Poderia compartilhar o código fonte?", time: "2h atrás" }] },
+            
+                { id: 2, author: { name: "Eliezer Biancolini", 
+                avatar: "https://randomuser.me/api/portraits/men/45.jpg" }, 
+                content: "Alguém interessado em formar um grupo de estudos para a maratona de programação? Estou pensando em reunir 3-5 pessoas para treinar 2x por semana.", 
+                images: [], time: "11h", likes: 11, comments: [] },
+
+                { id: 3, author: { 
+                name: "Gustavo Beltrame", avatar: "https://t4.ftcdn.net/jpg/02/24/86/95/360_F_224869519_aRaeLneqALfPNBzg0xxMZXghtvBXkfIA.jpg" }, 
+                content: "Desenvolvimento de um sistema que monitora o estoque em tempo real. A plataforma utiliza dados de consumo para prever a demanda futura e gera alertas automáticos para reposição de produtos, com o objetivo principal de otimizar o inventário, evitar perdas e reduzir custos operacionais.", 
+                images: ["/img/tiProjeto.png"], time: "12d", likes: 13, comments: [] },
+
+                { id: 4, author: { 
+                    name: "Ruth Azevedo", avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5tbMgjWv9P8gwFgrcjVgH7m8wqcTFOMpnXw&s" }, 
+                    content: "Preciso projetar um mecanismo de acionamento para um pequeno robô explorador terrestre. A ideia é um sistema de locomoção com múltiplas pernas (hexápede ou octópede) que consiga se adaptar a terrenos irregulares.", 
+                    images: ["/img/robo.png"], time: "20d", likes: 30, comments: [{ author: "Naiara Piscke", avatar: "https://img.freepik.com/fotos-gratis/retrato-de-mulher-feliz-com-tablet-digital_329181-11681.jpg?semt=ais_hybrid&w=740", content: "Este projeto de robô tem um potencial incrível para explorar terrenos difíceis!" , time: "2h atrás" }] },
+
+                    { id: 5, author: { name: "Lais Vitoria", 
+                        avatar: "https://diariodocomercio.com.br/wp-content/uploads/2022/08/mulher-na-politica-eleicoes.jpg" }, 
+                        content: "Estou buscando colaboradores com experiência em mecatrônica e eletroeletrônica para um projeto inovador. Se você tem paixão por robótica e automação, entre em contato!", 
+                        images: [], time: "21d", likes: 22, comments: [] },
         ];
         postsContainer.innerHTML = '';
         mockPosts.forEach(postData => {

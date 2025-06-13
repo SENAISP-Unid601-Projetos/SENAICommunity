@@ -6,44 +6,25 @@ document.addEventListener('DOMContentLoaded', () => {
             projetos: [
                 {
                     id: 1,
-                    titulo: "Braço Robótico com Arduino",
+                    titulo: "Projeto IoT",
                     // IMAGEM CORRIGIDA: Usando um placeholder confiável
-                    imagem: "https://placehold.co/600x400/161b22/58a6ff?text=Robótica",
-                    descricao: "Um braço robótico de 4 eixos controlado via interface web, capaz de manipular pequenos objetos.",
+                    imagem: "/img/unnamed.png",
+                    descricao: "Esta solução inovadora, baseada na plataforma Arduino, utiliza sensores IoT de precisão para monitorar em tempo real variáveis críticas como temperatura e umidade, garantindo um controle de ambiente rigoroso e eficiente.",
                     membros: [{ nome: "Ana Silva", avatar: "https://randomuser.me/api/portraits/women/33.jpg" }, { nome: "Miguel Piscki", avatar: "https://randomuser.me/api/portraits/men/22.jpg" }],
                     tecnologias: ["Arduino", "C++", "Node.js", "Servo Motor"],
                     categoria: "iot"
                 },
                 {
                     id: 2,
-                    titulo: "Plataforma de Cursos Online",
-                    // IMAGEM CORRIGIDA
-                    imagem: "https://placehold.co/600x400/161b22/f78166?text=EAD",
-                    descricao: "Uma plataforma EAD completa com upload de vídeos, quizzes e emissão de certificados.",
-                    membros: [{ nome: "Vinicius G.", avatar: "https://randomuser.me/api/portraits/men/32.jpg" }],
-                    tecnologias: ["React", "TypeScript", "Firebase", "Stripe"],
-                    categoria: "web"
+                    titulo: "Projeto: Torno CNC Modular PrecisionCraft",
+                    // IMAGEM CORRIGIDA: Usando um placeholder confiável
+                    imagem: "/img/cnc.png   ",
+                    descricao: "Este projeto é um Torno CNC Modular moderno e robusto, feito para usinagem de alta precisão. Ele é versátil, podendo trabalhar com diversos materiais e formas complexas, e é ideal para oficinas, educação e pesquisa. Seu design fácil de manter e customizar permite que os usuários o adaptem às suas necessidades.",
+                    membros: [{ nome: "Laura", avatar: "https://randomuser.me/api/portraits/women/55.jpg" }, { nome: " Carlos", avatar: "http://randomuser.me/api/portraits/men/51.jpg" }, { nome: "Julia", avatar: "https://randomuser.me/api/portraits/women/48.jpg" }],
+                    tecnologias: ["Controle Numérico Computadorizado (CNC)", "Servomotores de Precisão", "Sistemas de Guias Lineares", "Fuso de Esferas Motor", "Software CAD/CAM", "Sensores de Feedback", "Estrutura Modular"],
+                    categoria: "Engenharia Mecatrônica e Fabricação Digital"
                 },
-                {
-                    id: 3,
-                    titulo: "Reconhecimento Facial para Acesso",
-                    // IMAGEM CORRIGIDA
-                    imagem: "https://placehold.co/600x400/161b22/3fb950?text=IA",
-                    descricao: "Sistema de segurança que utiliza IA para reconhecer faces e liberar acesso a ambientes restritos.",
-                    membros: [{ nome: "Yuri Bragança", avatar: "https://randomuser.me/api/portraits/men/67.jpg" }],
-                    tecnologias: ["Python", "OpenCV", "TensorFlow"],
-                    categoria: "ia"
-                },
-                {
-                    id: 4,
-                    titulo: "App Mobile de Gestão de Tarefas",
-                    // IMAGEM CORRIGIDA
-                    imagem: "https://placehold.co/600x400/161b22/d2a8ff?text=Mobile",
-                    descricao: "Aplicativo para Android e iOS que ajuda na organização de tarefas diárias com sistema de gamificação.",
-                    membros: [{ nome: "Juliana Costa", avatar: "https://randomuser.me/api/portraits/women/44.jpg" }, { nome: "Ricardo Lima", avatar: "https://randomuser.me/api/portraits/men/50.jpg" }],
-                    tecnologias: ["Flutter", "Dart", "Firebase"],
-                    categoria: "mobile"
-                }
+                
             ],
             filteredProjetos: []
         },
