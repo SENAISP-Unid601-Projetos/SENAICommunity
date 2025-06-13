@@ -1,4 +1,4 @@
-package com.SenaiCommunity.BackEnd.DTO;
+package com.SenaiCommunity.BackEnd.Dto;
 
 import lombok.Data;
 
