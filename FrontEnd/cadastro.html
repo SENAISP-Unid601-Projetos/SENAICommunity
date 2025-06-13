@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro | Senai Community</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="CadastroLogin/CSS/cadastro.css">
+    <link rel="stylesheet" href="CadastroLogin/CSS/login.css">
+</head>
+<body>
+    <div class="tech-background"></div>
+    
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo">
+                    <i class="fas fa-code"></i>
+                    <span>Senai<span class="highlight">Comunnity</span></span>
+                </div>
+                <h1>Crie sua conta</h1>
+                <p class="subtext">Preencha seus dados para começar</p>
+            </div>
+            
+            <form id="registerForm" class="auth-form">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="nome" placeholder="Nome completo" required>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="Email" required>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="registerPassword" placeholder="Senha" required>
+                    <button type="button" class="toggle-password">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+
+                <div class="password-strength">
+                    <div class="strength-meter">
+                        <div class="strength-bar" data-strength="0"></div>
+                    </div>
+                    <div class="strength-labels">
+                        <span>Fraca</span>
+                        <span>Moderada</span>
+                        <span>Forte</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="confirmarSenha" placeholder="Confirmar senha" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-graduation-cap"></i>
+                    <input type="text" id="curso" placeholder="Curso" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-calendar-alt"></i>
+                    <input type="text" id="periodo" placeholder="Período (Ex: 3º Semestre)" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-birthday-cake"></i>
+                    <input type="date" id="dataNascimento" placeholder="Data de Nascimento" required>
+                </div>
+
+                <div class="input-group file-input-group">
+                    <i class="fas fa-camera"></i>
+                    <label for="foto" class="file-upload-label">
+                        <span id="file-name">Foto de perfil (opcional)</span>
+                        <input type="file" id="foto" accept="image/*">
+                    </label>
+                </div>
+                
+                <label class="checkbox terms">
+                    <input type="checkbox" id="terms" required>
+                    <span class="checkmark"></span>
+                    Eu concordo com os <a href="#" class="text-link">Termos</a> e <a href="#" class="text-link">Política</a>
+                </label>
+                
+                <button type="submit" class="btn btn-primary">
+                    <span class="btn-text">Cadastrar</span>
+                </button>
+                
+                <div class="auth-footer">
+                    <p>Já tem uma conta? <a href="login.html" class="text-link">Faça login</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="theme-toggle">
+        <i class="fas fa-moon"></i>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="CadastroLogin/JS/background.js" defer></script>
+    <script src="CadastroLogin/JS/cadastro.js" defer></script>
+    <script src="CadastroLogin/JS/utils.js" defer></script>
+</body>
+</html>
