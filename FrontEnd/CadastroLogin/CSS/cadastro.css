@@ -1,114 +1,245 @@
-:root {
-    /* Dark Theme Default */
-    --bg-primary: #0d1117;
-    --bg-secondary: #161b22;
-    --bg-tertiary: #21262d;
-    --bg-quaternary: #30363d;
-    --text-primary: #f0f6fc;
-    --text-secondary: #8b949e;
-    --text-tertiary: #6e7681;
-    --accent-primary: #58a6ff;
-    --accent-secondary: #1f6feb;
-    --highlight: #f85149;
-    --online: #3fb950;
-    --away: #d29922;  
-    --danger: #f85149;
-    --success: #238636;
-    --border-color: #30363d;
-    --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    --card-radius: 12px;
-    --transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  :root {
+      /* Dark Theme Default */
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --bg-quaternary: #30363d;
+      --text-primary: #f0f6fc;
+      --text-secondary: #8b949e;
+      --text-tertiary: #6e7681;
+      --accent-primary: #58a6ff;
+      --accent-secondary: #1f6feb;
+      --highlight: #f85149;
+      --online: #3fb950;
+      --away: #d29922;  
+      --danger: #f85149;
+      --success: #238636;
+      --border-color: #30363d;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      --card-radius: 12px;
+      --transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
   }
-  
+
   [data-theme="light"] {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f6f8fa;
-    --bg-tertiary: #eaeef2;
-    --bg-quaternary: #d0d7de;
-    --text-primary: #24292f;
-    --text-secondary: #57606a;
-    --text-tertiary: #6e7781;
-    --accent-primary: #0969da;
-    --accent-secondary: #1f6feb;
-    --highlight: #cf222e;
-    --online: #2da44e;
-    --away: #bf8700;
-    --danger: #cf222e;
-    --success: #2da44e;
-    --border-color: #d0d7de;
-    --shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+      --bg-primary: #ffffff;
+      --bg-secondary: #f6f8fa;
+      --bg-tertiary: #eaeef2;
+      --bg-quaternary: #d0d7de;
+      --text-primary: #24292f;
+      --text-secondary: #57606a;
+      --text-tertiary: #6e7781;
+      --accent-primary: #0969da;
+      --accent-secondary: #1f6feb;
+      --highlight: #cf222e;
+      --online: #2da44e;
+      --away: #bf8700;
+      --danger: #cf222e;
+      --success: #2da44e;
+      --border-color: #d0d7de;
+      --shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
   }
-  
+
   /* Base Styles */
   * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
   }
-  
+
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    line-height: 1.5;
-    transition: var(--transition);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      transition: var(--transition);
+      overflow-x: hidden;
   }
-  
-  /* Tech Background */
+
+  /* Tech Background - Fundo Dinâmico */
   .tech-background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-    z-index: -1;
-    overflow: hidden;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+      background: linear-gradient(-45deg, var(--bg-primary), var(--bg-secondary), var(--bg-tertiary), var(--bg-quaternary));
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
   }
-  
-  /* Animations */
+
+  /* Partículas flutuantes */
+  .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(88, 166, 255, 0.3);
+      animation: float 15s infinite linear;
+      z-index: -1;
+      filter: blur(0.5px);
+  }
+
+  /* Partículas de destaque */
+  .highlight-particle {
+      background: rgba(248, 81, 73, 0.4);
+      animation: floatRed 12s infinite linear;
+      filter: blur(0.8px);
+  }
+
+  /* Partículas pequenas */
+  .small-particle {
+      width: 3px;
+      height: 3px;
+  }
+
+  /* Partículas médias */
+  .medium-particle {
+      width: 5px;
+      height: 5px;
+  }
+
+  /* Partículas grandes */
+  .large-particle {
+      width: 7px;
+      height: 7px;
+  }
+
+  /* Linhas de conexão entre partículas */
+  .particle-connection {
+      position: absolute;
+      background: rgba(88, 166, 255, 0.1);
+      height: 1px;
+      transform-origin: left center;
+      z-index: -1;
+  }
+
+  /* Animações */
+  @keyframes gradientBG {
+      0% {
+          background-position: 0% 50%;
+      }
+      50% {
+          background-position: 100% 50%;
+      }
+      100% {
+          background-position: 0% 50%;
+      }
+  }
+
   @keyframes float {
-    0%, 100% { transform: translateY(0) translateX(0); }
-    50% { transform: translateY(-50px) translateX(50px); }
+      0%, 100% { 
+          transform: translate(0, 0); 
+          opacity: 0.7;
+      }
+      25% { 
+          transform: translate(-50px, -30px); 
+          opacity: 1;
+      }
+      50% { 
+          transform: translate(20px, -50px); 
+          opacity: 0.7;
+      }
+      75% { 
+          transform: translate(50px, 30px); 
+          opacity: 1;
+      }
   }
-  
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 0.1; }
-    50% { transform: scale(1.2); opacity: 0.3; }
-  }
-  
+
   @keyframes floatRed {
-    0% { transform: translate(0, 0); opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { transform: translate(100px, -50px); opacity: 0; }
+      0% { 
+          transform: translate(0, 0) scale(1); 
+          opacity: 0;
+      }
+      20% { 
+          opacity: 1; 
+          transform: scale(1.1);
+      }
+      50% {
+          transform: scale(1.3);
+      }
+      80% { 
+          opacity: 1; 
+          transform: scale(1.1);
+      }
+      100% { 
+          transform: translate(100px, -100px) scale(1); 
+          opacity: 0;
+      }
   }
-  
-  @keyframes redPulse {
-    0% { box-shadow: 0 0 0px var(--highlight); }
-    100% { box-shadow: 0 0 10px var(--highlight); }
+
+  @keyframes pulse {
+      0%, 100% { 
+          transform: scale(1); 
+          opacity: 0.3; 
+      }
+      50% { 
+          transform: scale(1.2); 
+          opacity: 0.6; 
+      }
   }
-  
+
+  /* Efeito de brilho nas partículas */
+  @keyframes glow {
+      0%, 100% {
+          box-shadow: 0 0 5px rgba(88, 166, 255, 0.3);
+      }
+      50% {
+          box-shadow: 0 0 15px rgba(88, 166, 255, 0.5);
+      }
+  }
+
+  .highlight-particle {
+      animation: floatRed 12s infinite linear, glow 3s infinite ease-in-out;
+  }
+
   /* Theme Toggle */
   .theme-toggle {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    width: 3rem;
-    height: 3rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
-    cursor: pointer;
-    box-shadow: var(--shadow);
-    z-index: 100;
-    transition: var(--transition);
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      z-index: 100;
+      transition: var(--transition);
   }
-  
+
   .theme-toggle:hover {
-    background-color: var(--bg-quaternary);
-    transform: scale(1.05);
+      background-color: var(--bg-quaternary);
+      transform: scale(1.05);
+  }
+
+  .theme-toggle i {
+      transition: var(--transition);
+  }
+
+  /* Efeito de transição suave para o tema */
+  body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-primary);
+      z-index: -2;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+  }
+
+  body.theme-changing::before {
+      opacity: 1;
+  }
+  .toggle-password {
+    margin-left: 2px;
+
+
+
   }

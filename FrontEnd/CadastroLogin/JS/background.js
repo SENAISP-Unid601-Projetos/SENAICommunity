@@ -1,120 +1,109 @@
-// background.js - Código atualizado e testado
 document.addEventListener('DOMContentLoaded', function() {
-    const techBackground = document.querySelector('.tech-background');
+    // Criar partículas de fundo
+    createParticles();
     
-    // Verifica se o elemento existe
-    if (!techBackground) return;
+    // Iniciar animação de gradiente
+    startGradientAnimation();
     
-    // Cores baseadas no tema
-    const getParticleColor = () => {
-        return document.documentElement.getAttribute('data-theme') === 'light' 
-            ? 'rgba(0, 0, 0, 0.05)' 
-            : 'rgba(255, 255, 255, 0.05)';
-    };
+    // Configurar tema inicial
+    setInitialTheme();
     
-    const getCircuitColor = () => {
-        return document.documentElement.getAttribute('data-theme') === 'light' 
-            ? 'rgba(207, 34, 46, 0.2)' 
-            : 'rgba(248, 81, 73, 0.1)';
-    };
-    
-    // Cria elementos de fundo
-    function createTechElements() {
-        techBackground.innerHTML = '';
-        
-        // Partículas neutras
-        for (let i = 0; i < 40; i++) {
-            createParticle();
-        }
-        
-        // Circuitos
-        for (let i = 0; i < 12; i++) {
-            createCircuit();
-        }
-        
-        // Destaques vermelhos
-        for (let i = 0; i < 8; i++) {
-            createHighlight();
-        }
-    }
-    
-    function createParticle() {
-        const particle = document.createElement('div');
-        particle.className = 'tech-particle';
-        
-        const size = Math.random() * 4 + 1;
-        Object.assign(particle.style, {
-            width: `${size}px`,
-            height: `${size}px`,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            opacity: Math.random() * 0.5 + 0.1,
-            animationDelay: `${Math.random() * 5}s`,
-            animationDuration: `${Math.random() * 15 + 10}s`,
-            backgroundColor: getParticleColor()
-        });
-        
-        techBackground.appendChild(particle);
-    }
-    
-    function createCircuit() {
-        const circuit = document.createElement('div');
-        circuit.className = 'tech-circuit';
-        
-        const size = Math.random() * 200 + 50;
-        Object.assign(circuit.style, {
-            width: `${size}px`,
-            height: `${size}px`,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            opacity: Math.random() * 0.2 + 0.05,
-            animationDelay: `${Math.random() * 3}s`,
-            borderColor: getCircuitColor()
-        });
-        
-        techBackground.appendChild(circuit);
-    }
-    
-    function createHighlight() {
-        const highlight = document.createElement('div');
-        highlight.className = 'tech-highlight';
-        
-        Object.assign(highlight.style, {
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 3}s`,
-            animationDuration: `${Math.random() * 12 + 8}s`,
-            width: `${Math.random() * 3 + 1}px`,
-            height: highlight.style.width
-        });
-        
-        techBackground.appendChild(highlight);
-    }
-    
-    // Inicializa o fundo
-    createTechElements();
-    
-    // Atualiza ao redimensionar
-    let resizeTimeout;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(createTechElements, 200);
-    });
-    
-    // Atualiza o tema
-    window.updateTechBackgroundTheme = function(theme) {
-        const particles = document.querySelectorAll('.tech-particle');
-        const circuits = document.querySelectorAll('.tech-circuit');
-        
-        const particleColor = theme === 'light' 
-            ? 'rgba(0, 0, 0, 0.05)' 
-            : 'rgba(255, 255, 255, 0.05)';
-        
-        const circuitColor = theme === 'light' 
-            ? 'rgba(207, 34, 46, 0.2)' 
-            : 'rgba(248, 81, 73, 0.1)';
-        
-        particles.forEach(p => p.style.backgroundColor = particleColor);
-        circuits.forEach(c => c.style.borderColor = circuitColor);
-    };
+    // Configurar alternador de tema
+    setupThemeToggle();
 });
+
+function createParticles() {
+    const background = document.querySelector('.tech-background');
+    const particleCount = 30;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        const size = Math.random() * 7 + 3;
+        const posX = Math.random() * 100;
+        const posY = Math.random() * 100;
+        const delay = Math.random() * 15;
+        const duration = 15 + Math.random() * 10;
+        
+        particle.classList.add('particle');
+        
+        // Definir tamanho e posição
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${posX}%`;
+        particle.style.top = `${posY}%`;
+        
+        // Definir animação
+        particle.style.animationDelay = `${delay}s`;
+        particle.style.animationDuration = `${duration}s`;
+        
+        // Adicionar classe de destaque para algumas partículas
+        if (i % 5 === 0) {
+            particle.classList.add('highlight-particle');
+            particle.style.animationDuration = `${12 + Math.random() * 6}s`;
+        }
+        
+        // Adicionar classe de tamanho
+        if (size < 4) {
+            particle.classList.add('small-particle');
+        } else if (size < 6) {
+            particle.classList.add('medium-particle');
+        } else {
+            particle.classList.add('large-particle');
+        }
+        
+        background.appendChild(particle);
+    }
+}
+
+function startGradientAnimation() {
+    // A animação é controlada pelo CSS, apenas verificamos se o elemento existe
+    const background = document.querySelector('.tech-background');
+    if (background) {
+        background.style.animation = 'gradientBG 15s ease infinite';
+    }
+}
+
+function setInitialTheme() {
+    // Verificar preferência do usuário ou usar dark theme como padrão
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const savedTheme = localStorage.getItem('theme');
+    
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    } else {
+        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
+    
+    updateThemeIcon();
+}
+
+function setupThemeToggle() {
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    updateThemeIcon();
+}
+
+function updateThemeIcon() {
+    const themeToggle = document.querySelector('.theme-toggle i');
+    if (!themeToggle) return;
+    
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    if (currentTheme === 'dark') {
+        themeToggle.classList.remove('fa-sun');
+        themeToggle.classList.add('fa-moon');
+    } else {
+        themeToggle.classList.remove('fa-moon');
+        themeToggle.classList.add('fa-sun');
+    }
+}   
