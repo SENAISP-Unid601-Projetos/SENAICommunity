@@ -47,6 +47,7 @@ public class BackEndApplication {
 			}
 		}
 	}
+
 //	@Bean
 //	public CommandLineRunner initTestUser(
 //			UsuarioRepository usuarioRepository,
@@ -65,4 +66,5 @@ public class BackEndApplication {
 //			}
 //		};
 //	}
+
 }
