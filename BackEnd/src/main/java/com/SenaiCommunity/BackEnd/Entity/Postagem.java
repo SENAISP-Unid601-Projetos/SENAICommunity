@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -23,7 +25,8 @@ public class Postagem{
     @Transient
     private String autorUsername;
 
-    private String imagemUrl; // opcional
+    @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL)
+    private List<ArquivoMidia> arquivos = new ArrayList<>();
 
 }
 

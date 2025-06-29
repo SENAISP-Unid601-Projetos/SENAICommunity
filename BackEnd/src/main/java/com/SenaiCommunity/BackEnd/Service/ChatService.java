@@ -1,5 +1,7 @@
 package com.SenaiCommunity.BackEnd.Service;
 
+import com.SenaiCommunity.BackEnd.DTO.ArquivoMidiaDTO;
+import com.SenaiCommunity.BackEnd.DTO.PostagemSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.*;
 import com.SenaiCommunity.BackEnd.Repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,29 @@ public class ChatService {
     @Autowired
     private PostagemRepository postagemRepository;
 
+    @Autowired
+    private ArquivoMidiaRepository arquivoMidiaRepository;
+
+    @Autowired
+    private ArquivoMidiaService midiaService;
+
+    public PostagemSaidaDTO toDTO(Postagem postagem) {
+        PostagemSaidaDTO dto = new PostagemSaidaDTO();
+        dto.setAutor(postagem.getAutor().getNome()); // ou .getEmail() se preferir
+        dto.setConteudo(postagem.getConteudo());
+        dto.setDataPostagem(postagem.getDataPostagem());
+
+        List<ArquivoMidiaDTO> arquivosDTO = postagem.getArquivos().stream().map(arquivo -> {
+            ArquivoMidiaDTO arq = new ArquivoMidiaDTO();
+            arq.setUrlCompleta(arquivo.getUrl());
+            arq.setTipo(arquivo.getTipo());
+            return arq;
+        }).toList();
+
+        dto.setArquivos(arquivosDTO);
+        return dto;
+    }
+
     public MensagemGrupo salvarMensagemGrupo(MensagemGrupo mensagem, Long projetoId) {
         Usuario autor = usuarioRepository.findByEmail(mensagem.getAutorUsername())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
@@ -49,11 +74,24 @@ public class ChatService {
         return mensagemPrivadaRepository.save(mensagem);
     }
 
-    public Postagem salvarPostagem(Postagem postagem) {
+    public Postagem salvarPostagem(Postagem postagem, List<String> arquivosUrl) {
         Usuario autor = usuarioRepository.findByEmail(postagem.getAutorUsername())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         postagem.setAutor(autor);
+
+        // Vincula arquivos, se existirem
+        if (arquivosUrl != null && !arquivosUrl.isEmpty()) {
+            List<ArquivoMidia> arquivos = arquivosUrl.stream().map(url -> {
+                ArquivoMidia midia = new ArquivoMidia();
+                midia.setUrl(url);
+                midia.setTipo(midiaService.detectarTipoPelaUrl(url));
+                midia.setPostagem(postagem);
+                return midia;
+            }).toList();
+            postagem.setArquivos(arquivos);
+        }
+
         return postagemRepository.save(postagem);
     }
 

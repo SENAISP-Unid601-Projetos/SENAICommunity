@@ -1,8 +1,11 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
+import com.SenaiCommunity.BackEnd.DTO.PostagemMensagemDTO;
+import com.SenaiCommunity.BackEnd.Entity.ArquivoMidia;
 import com.SenaiCommunity.BackEnd.Entity.MensagemGrupo;
 import com.SenaiCommunity.BackEnd.Entity.MensagemPrivada;
 import com.SenaiCommunity.BackEnd.Entity.Postagem;
+import com.SenaiCommunity.BackEnd.Service.ArquivoMidiaService;
 import com.SenaiCommunity.BackEnd.Service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -11,10 +14,10 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 public class ChatController {
@@ -24,6 +27,9 @@ public class ChatController {
 
     @Autowired
     private ChatService chatService;
+
+    @Autowired
+    private ArquivoMidiaService midiaService;
 
     // 🔹 CHAT DE GRUPO
     @MessageMapping("/grupo/{projetoId}")
@@ -47,16 +53,6 @@ public class ChatController {
         MensagemPrivada salva = chatService.salvarMensagemPrivada(mensagem, destinatarioId);
 
         messagingTemplate.convertAndSend("/queue/usuario/" + destinatarioId, salva);
-    }
-
-    // 🔹 POSTAGEM PÚBLICA
-    @MessageMapping("/publico")
-    @SendTo("/topic/publico")
-    public Postagem postarPublico(@Payload Postagem postagem,
-                                  Principal principal) {
-        postagem.setAutorUsername(principal.getName());
-        postagem.setDataPostagem(LocalDateTime.now());
-        return chatService.salvarPostagem(postagem);
     }
 }
 
