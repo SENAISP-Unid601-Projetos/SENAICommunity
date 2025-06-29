@@ -22,5 +22,8 @@ public class Postagem{
 
     @Transient
     private String autorUsername;
+
+    private String imagemUrl; // opcional
+
 }
 

@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -18,21 +20,22 @@ import java.util.Collections;
 import java.util.Map;
 
 @Component
-public abstract class JwtHandshakeInterceptor implements HandshakeInterceptor {
+public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
     @Autowired
     private JWTUtil jwtUtil;
 
-    public boolean beforeHandshake(HttpServletRequest request,
-                                   HttpServletResponse response,
+    @Override
+    public boolean beforeHandshake(ServerHttpRequest request,
+                                   ServerHttpResponse response,
                                    WebSocketHandler wsHandler,
                                    Map<String, Object> attributes) throws Exception {
 
-        String token = extrairToken(request);
+        HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
+        String token = extrairToken(servletRequest);
 
         if (token != null) {
             Claims claims = jwtUtil.getClaims(token);
-
             if (claims != null) {
                 String username = claims.getSubject();
                 String role = claims.get("role", String.class);
@@ -42,21 +45,21 @@ public abstract class JwtHandshakeInterceptor implements HandshakeInterceptor {
                                 Collections.singletonList(() -> role));
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
-
-                attributes.put("user", username); // disponível em controllers se quiser
+                attributes.put("user", username);
                 return true;
             }
         }
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        ((ServletServerHttpResponse) response).getServletResponse().setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         return false;
     }
 
-    public void afterHandshake(HttpServletRequest request,
-                               HttpServletResponse response,
+    @Override
+    public void afterHandshake(ServerHttpRequest request,
+                               ServerHttpResponse response,
                                WebSocketHandler wsHandler,
                                Exception exception) {
-        // Não é necessário implementar
+        // opcional
     }
 
     private String extrairToken(HttpServletRequest request) {

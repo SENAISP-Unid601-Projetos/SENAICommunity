@@ -24,7 +24,7 @@ public class Projeto {
     private String status; // PLANEJADO, EM_ANDAMENTO, CONCLUIDO
 
     @OneToMany(mappedBy = "projeto")
-    private List<Postagem> postagens;
+    private List<MensagemGrupo> mensagens;
 
     // Grupo de mensagens relacionado
 //    @OneToOne(mappedBy = "projeto", cascade = CascadeType.ALL)

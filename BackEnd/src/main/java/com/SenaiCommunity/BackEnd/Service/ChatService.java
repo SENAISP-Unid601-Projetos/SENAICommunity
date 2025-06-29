@@ -5,6 +5,8 @@ import com.SenaiCommunity.BackEnd.Repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ChatService {
 
@@ -54,4 +56,17 @@ public class ChatService {
         postagem.setAutor(autor);
         return postagemRepository.save(postagem);
     }
+
+    public List<MensagemPrivada> buscarMensagensPrivadas(Long user1, Long user2) {
+        return mensagemPrivadaRepository.findMensagensEntreUsuarios(user1, user2);
+    }
+
+    public List<MensagemGrupo> buscarMensagensDoGrupo(Long projetoId) {
+        return mensagemGrupoRepository.findByProjetoIdOrderByDataEnvioAsc(projetoId);
+    }
+
+    public List<Postagem> buscarPostagensPublicas() {
+        return postagemRepository.findTop50ByOrderByDataPostagemDesc();
+    }
+
 }
