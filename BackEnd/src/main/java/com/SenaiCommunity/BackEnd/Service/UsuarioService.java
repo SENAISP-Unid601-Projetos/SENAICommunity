@@ -1,7 +1,7 @@
 package com.SenaiCommunity.BackEnd.Service;
 
 import com.SenaiCommunity.BackEnd.DTO.UsuarioLoginDTO;
-import com.SenaiCommunity.BackEnd.DTO.UsuarioLoginResponseDTO;
+import com.SenaiCommunity.BackEnd.DTO.UsuarioLoginSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public UsuarioLoginResponseDTO login(UsuarioLoginDTO loginDTO) {
+    public UsuarioLoginSaidaDTO login(UsuarioLoginDTO loginDTO) {
         // Validar email
         if (loginDTO.getEmail() == null || loginDTO.getEmail().isBlank()) {
             throw new IllegalArgumentException("Email não pode ser vazio");
@@ -28,7 +28,7 @@ public class UsuarioService {
         }
 
         // Retornar DTO de resposta
-        return new UsuarioLoginResponseDTO(
+        return new UsuarioLoginSaidaDTO(
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),

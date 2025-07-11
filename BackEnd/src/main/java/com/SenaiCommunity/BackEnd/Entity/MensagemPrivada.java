@@ -1,12 +1,14 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
 @Entity
+@Builder
 public class MensagemPrivada {
 
     @Id
@@ -23,6 +25,6 @@ public class MensagemPrivada {
 
     private LocalDateTime dataEnvio = LocalDateTime.now();
 
-    @Transient
+    @Transient // não persistido diretamente no banco
     private String remetenteUsername;
 }
