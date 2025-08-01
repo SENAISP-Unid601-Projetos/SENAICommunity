@@ -17,7 +17,8 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-@RestController("/chat-privado")
+@RestController
+@RequestMapping("/chat-privado")
 @PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
 public class MensagemPrivadaController {
 
