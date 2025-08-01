@@ -59,6 +59,9 @@ public class SecurityConfig {
                                 "/alunos/**",
                                 "/professores/**"
                         ).permitAll()
+                        .requestMatchers(
+                                "/api/chat/**"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
                         .anyRequest().authenticated()
                 )

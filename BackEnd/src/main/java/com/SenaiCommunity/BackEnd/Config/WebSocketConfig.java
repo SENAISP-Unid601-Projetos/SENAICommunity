@@ -16,11 +16,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws-chat")
-                .addInterceptors(jwtHandshakeInterceptor)
+        registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
+                .addInterceptors(jwtHandshakeInterceptor) // ✅
                 .withSockJS();
     }
+
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {

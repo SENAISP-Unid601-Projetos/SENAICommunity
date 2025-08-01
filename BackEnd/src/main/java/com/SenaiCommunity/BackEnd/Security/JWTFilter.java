@@ -42,6 +42,13 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
+        // Ignorar completamente o endpoint restchat
+        if ("/api/chat/**".equals(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // Ignorar completamente o endpoint de login
         if ("/autenticacao/login".equals(path)) {
             filterChain.doFilter(request, response);
@@ -55,7 +62,7 @@ public class JWTFilter extends OncePerRequestFilter {
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-                if (jwtUtil.validarToken(token) != null) {
+                if (jwtUtil.validarToken(token)) {
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails, null, userDetails.getAuthorities()
@@ -69,7 +76,6 @@ public class JWTFilter extends OncePerRequestFilter {
                 }
             }
         }
-
         filterChain.doFilter(request, response);
     }
 }

@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -17,6 +18,7 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -30,29 +32,41 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                                    ServerHttpResponse response,
                                    WebSocketHandler wsHandler,
                                    Map<String, Object> attributes) throws Exception {
+        String token = null;
 
-        HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
-        String token = extrairToken(servletRequest);
+        // 1. Se for uma requisição do SockJS, extrair o parâmetro da URL
+        if (request instanceof ServletServerHttpRequest servletRequest) {
+            HttpServletRequest req = servletRequest.getServletRequest();
+            token = req.getParameter("token");
+        }
 
-        if (token != null) {
-            Claims claims = jwtUtil.getClaims(token);
-            if (claims != null) {
-                String username = claims.getSubject();
-                String role = claims.get("role", String.class);
-
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(username, null,
-                                Collections.singletonList(() -> role));
-
-                SecurityContextHolder.getContext().setAuthentication(auth);
-                attributes.put("user", username);
-                return true;
+        // 2. Tentar pegar dos headers (para casos de WebSocket puro)
+        if ((token == null || token.isEmpty()) && request.getHeaders().containsKey("Authorization")) {
+            List<String> authHeaders = request.getHeaders().get("Authorization");
+            if (authHeaders != null && !authHeaders.isEmpty()) {
+                token = authHeaders.get(0).replace("Bearer ", "");
             }
         }
 
-        ((ServletServerHttpResponse) response).getServletResponse().setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        // 3. Validar token e extrair claims
+        try {
+            if (token != null) {
+                Claims claims = jwtUtil.getClaims(token);
+                String username = claims.getSubject();
+                Long userId = claims.get("id", Long.class);
+
+                attributes.put("username", username);
+                attributes.put("id", userId);
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("Erro ao validar token no WebSocket: " + e.getMessage());
+        }
+
+        response.setStatusCode(HttpStatus.UNAUTHORIZED);
         return false;
     }
+
 
     @Override
     public void afterHandshake(ServerHttpRequest request,
