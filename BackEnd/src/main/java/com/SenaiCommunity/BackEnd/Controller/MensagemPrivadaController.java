@@ -10,6 +10,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController("/chat-privado")
+@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
 public class MensagemPrivadaController {
 
     @Autowired
