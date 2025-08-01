@@ -47,6 +47,8 @@ public class BackEndApplication {
 			}
 		}
 	}
+
+	//Metodo para criar um usuario de teste
 //	@Bean
 //	public CommandLineRunner initTestUser(
 //			UsuarioRepository usuarioRepository,
