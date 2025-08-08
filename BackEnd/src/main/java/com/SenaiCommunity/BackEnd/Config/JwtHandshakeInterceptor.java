@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Config;
 import com.SenaiCommunity.BackEnd.Security.JWTUtil;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -40,6 +41,17 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             String authHeader = servletRequest.getHeader(HttpHeaders.AUTHORIZATION);
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 token = authHeader.substring(7);
+            }
+        }
+        if (token == null) {
+            // tenta pegar do cookie
+            if (servletRequest.getCookies() != null) {
+                for (Cookie cookie : servletRequest.getCookies()) {
+                    if ("token".equals(cookie.getName())) {
+                        token = cookie.getValue();
+                        break;
+                    }
+                }
             }
         }
 

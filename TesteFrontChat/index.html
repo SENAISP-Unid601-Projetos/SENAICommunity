@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Chat Privado WebSocket</title>
 </head>
 <body>
     <h2>Chat Privado</h2>
 
     <label for="token">Token JWT:</label><br>
-    <input type="text" id="token" size="100">
+    <input type="text" id="token" size="100" />
     <button onclick="conectar()">Conectar</button><br><br>
 
     <p><strong>ID do Usuário Conectado:</strong> <span id="userId"></span></p>
 
     <label for="destinatario">ID do Destinatário:</label><br>
-    <input type="number" id="destinatario"><br><br>
+    <input type="number" id="destinatario" /><br><br>
 
     <label for="mensagem">Mensagem:</label><br>
-    <input type="text" id="mensagem" size="50">
+    <input type="text" id="mensagem" size="50" />
     <button onclick="enviarMensagem()">Enviar</button><br><br>
 
     <h3>Mensagens Recebidas:</h3>
@@ -35,35 +35,43 @@
                 alert("Informe o token JWT!");
                 return;
             }
-            
 
-            const encodedToken = encodeURIComponent(token);
-            const socket = new SockJS(`http://localhost:8080/ws?token=${encodedToken}`);
+            // Decodifica o token para pegar o userId (assumindo que está no "sub")
+            const decoded = parseJwt(token);
+            usuarioId = decoded.sub;
+            document.getElementById("userId").textContent = usuarioId;
+
+            // Passa o token na URL do SockJS para handshake no backend
+            const socket = new SockJS(`http://localhost:8080/ws?token=${encodeURIComponent(token)}`);
             stompClient = Stomp.over(socket);
 
-            stompClient.connect({}, function () {
-                const userData = parseJwt(token);
-                usuarioId = userData.id;
-                document.getElementById("userId").innerText = usuarioId;
+            document.cookie = "token=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXVzw6NvQGdtYWlsLmNvbSIsInJvbGUiOiJST0xFX0FMVU5PIiwiaWQiOjIsImV4cCI6MTc1NzI2NTkwNn0.zVewa3I48cQDd8V6tOcRP-9Ng-6iafrQpXKjztfdHBd1-AlCkczrCyL_siS2tzViV2a9SQp1BQYlnywLRU4MAQ" + token + "; path=/";
 
-                stompClient.subscribe(`/queue/usuario/${usuarioId}`, function (mensagem) {
-                    const conteudo = JSON.parse(mensagem.body);
-                    const item = document.createElement("li");
-                    item.textContent = `${conteudo.remetenteUsername}: ${conteudo.conteudo}`;
-                    document.getElementById("mensagens").appendChild(item);
-                });
+            stompClient.connect(
+                {}, // headers vazios, token já enviado na URL
+                frame => {
+                    console.log('Conectado:', frame);
 
-                console.log("Conectado como usuário ID:", usuarioId);
-            }, function (erro) {
-                console.error("Erro ao conectar:", erro);
-                alert("Erro ao conectar. Verifique o token e tente novamente.");
-            });
+                    // Assina fila privada do usuário (ajuste o destino conforme backend)
+                    stompClient.subscribe(`/queue/usuario/${usuarioId}`, function (mensagem) {
+                        const conteudo = JSON.parse(mensagem.body);
+                        const item = document.createElement("li");
+                        item.textContent = `${conteudo.remetenteUsername}: ${conteudo.conteudo}`;
+                        document.getElementById("mensagens").appendChild(item);
+                    });
+
+                    console.log("Inscrito na fila do usuário ID:", usuarioId);
+                },
+                erro => {
+                    console.error('Erro na conexão STOMP:', erro);
+                    alert("Erro ao conectar. Verifique o token e tente novamente.");
+                }
+            );
         }
 
         function enviarMensagem() {
             const destinatarioId = document.getElementById("destinatario").value.trim();
             const conteudo = document.getElementById("mensagem").value.trim();
-            const token = document.getElementById("token").value.trim();
 
             if (!stompClient || !stompClient.connected) {
                 alert("Você precisa se conectar primeiro!");
@@ -75,9 +83,13 @@
                 return;
             }
 
+            // Pega remetente do token armazenado (ou decodifica novamente)
+            const token = document.getElementById("token").value.trim();
             const remetente = parseJwt(token).sub;
 
-            stompClient.send(`/app/${destinatarioId}`, {}, JSON.stringify({
+            // Envia para o endpoint do backend (ajuste '/app/mensagem' para o seu endpoint real)
+            stompClient.send(`/app/mensagem`, {}, JSON.stringify({
+                destinatarioId: destinatarioId,
                 conteudo: conteudo,
                 remetenteUsername: remetente
             }));
@@ -85,10 +97,11 @@
             document.getElementById("mensagem").value = "";
         }
 
+        // Função para decodificar o payload JWT
         function parseJwt(token) {
             const base64Url = token.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
             return JSON.parse(jsonPayload);

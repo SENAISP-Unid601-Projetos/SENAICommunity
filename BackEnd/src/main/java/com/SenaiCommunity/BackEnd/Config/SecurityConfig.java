@@ -1,6 +1,5 @@
 package com.SenaiCommunity.BackEnd.Config;
 
-
 import com.SenaiCommunity.BackEnd.Security.JWTFilter;
 import com.SenaiCommunity.BackEnd.Service.UsuarioDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,9 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-
 import java.util.List;
-
 
 @Configuration
 @EnableWebSecurity
@@ -50,6 +47,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/autenticacao/login", "POST")).permitAll()
+                        .requestMatchers("/ws/info").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -61,6 +59,9 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/api/chat/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/eventos/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
                         .anyRequest().authenticated()
@@ -81,8 +82,6 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
-
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -100,4 +99,6 @@ public class SecurityConfig {
         return builder.build();
     }
 }
+
+
 
