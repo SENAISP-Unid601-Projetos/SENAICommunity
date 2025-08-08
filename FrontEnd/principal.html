@@ -1,192 +1,161 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SENAI Community | Feed</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="Principal/CSS/principal.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAI Community | Feed</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="Principal/CSS/principal.css">
 </head>
 <body>
-  <div class="notification-center"></div>
-  
-  <header class="topbar">
-    <div class="header-left">
-      <div class="menu-toggle">
-        <i class="fas fa-bars"></i>
-      </div>
-      <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
-    </div>
+    <div class="notification-center"></div>
     
-    <div class="search">
-      <i class="fas fa-search"></i>
-      <input type="text" placeholder="Pesquisar cursos, projetos, amigos...">
-      <div class="search-results"></div>
-    </div>
-
-    <nav class="nav-icons">
-      <div class="nav-icon" data-tooltip="Início">
-        <a href="#"><i class="fas fa-home"></i></a>
-      </div>
-      <div class="nav-icon" data-tooltip="Mensagens">
-        <a href="mensagem.html"><i class="fas fa-comment-dots"></i></a>
-        <span class="badge">3</span>
-      </div>
-      <div class="nav-icon" data-tooltip="Notificações">
-        <i class="fas fa-bell"></i>
-        <span class="badge">5</span>
-      </div>
-      <div class="theme-toggle" data-tooltip="Alternar tema">
-        <i class="fas fa-moon"></i>
-      </div>
-    </nav>
-
-    <div class="user-dropdown">
-      <div class="user">
-        <div class="profile-pic">
-          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil">
-        </div>
-        <span>Vinicius Gallo Santos</span>
-        <i class="fas fa-chevron-down"></i>
-      </div>
-      <div class="dropdown-menu">
-        <a href="#"><i class="fas fa-user"></i> Meu Perfil</a>
-        <a href="#"><i class="fas fa-cog"></i> Configurações</a>
-        <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
-      </div>
-    </div>
-  </header>
-
-  <div class="container">
-    <aside class="sidebar">
-      <div class="user-info">
-        <div class="avatar">
-          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil">
-          <div class="status online"></div>
-        </div>
-        <h2>Vinicius Gallo Santos</h2>
-        <p class="user-title">Estudante de ADS</p>
-        <div class="user-stats">
-          <div class="stat">
-            <strong>11</strong>
-            <span>Conexões</span>
-          </div>
-          <div class="stat">
-            <strong>2</strong>
-            <span>Projetos</span>
-          </div>
-        </div>
-      </div>
-
-      <nav class="menu">
-        <a href="principal.html" class="active"><i class="fas fa-home"></i> Feed</a>
-        <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
-        <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
-        <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
-        <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
-      </nav>
-      
-      <div class="online-friends">
-          </div>
-    </aside>
-
-    <main class="main-content">
-      <div class="post-creator">
-        <div class="avatar-small">
-          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil">
-        </div>
-        <input type="text" placeholder="Compartilhe seu projeto, Vinicius...">
-        <div class="post-options">
-          <button class="option-btn" data-type="photo"><i class="fas fa-image"></i></button>
-          <button class="option-btn" data-type="video"><i class="fas fa-video"></i></button>
-          <button class="option-btn" data-type="code"><i class="fas fa-code"></i></button>
-        </div>
-      </div>
-
-      <div class="posts-container">
-        <div class="post">
-          <div class="post-header">
-            <div class="post-author">
-              <div class="post-icon"><img src="https://randomuser.me/api/portraits/men/22.jpg" alt="Miguel"></div>
-              <div class="post-info"><h2>Miguel Piscki</h2><span>13h • <i class="fas fa-globe-americas"></i></span></div>
+    <header class="topbar">
+        <div class="header-left">
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
             </div>
-            <div class="post-options-btn"><i class="fas fa-ellipsis-h"></i></div>
-          </div>
-          <div class="post-text">Finalizamos hoje o projeto de automação industrial usando Arduino e sensores IoT. O sistema monitora temperatura, umidade e controla atuadores remotamente!</div>
-          <div class="post-images"><img src="img/unnamed.png" alt="Projeto"></div>
-          <div class="post-actions">
-            <button class="like-btn"><i class="far fa-thumbs-up"></i> <span>Curtir</span> <span class="count">24</span></button>
-            <button class="comment-btn"><i class="far fa-comment"></i> <span>Comentar</span> <span class="count">8</span></button>
-            <button class="share-btn"><i class="far fa-share-square"></i> <span>Compartilhar</span></button>
-          </div>
+            <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
         </div>
-      </div>
-    </main>
-    
-    <aside class="right-sidebar">
-    
-    <div class="widget-card" id="upcoming-events-widget">
+        
+        <div class="search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Pesquisar cursos, projetos, amigos...">
+            <div class="search-results"></div>
         </div>
 
-
-
-
-
-   
-    <div class="widget-card" id="who-to-follow-widget">
-        <div class="widget-header">
-            <h3><i class="fas fa-user-plus"></i> Quem Seguir</h3>
-            <a href="" class="see-all">Ver todos</a>
-        </div>
-        <div class="follow-list">
-            <div class="follow-item">
-                <div class="follow-avatar">
-                    <img src="https://randomuser.me/api/portraits/women/33.jpg" alt="Ana">
-                </div>
-                <div class="follow-info">
-                    <h4>Ana Silva</h4>
-                    <span>Engenheira de Software</span>
-                </div>
-                <button class="follow-btn"><i class="fas fa-plus"></i></button>
+        <nav class="nav-icons">
+            <div class="nav-icon" data-tooltip="Início">
+                <a href="#"><i class="fas fa-home"></i></a>
             </div>
-            <div class="follow-item">
-                <div class="follow-avatar">
-                    <img src="https://randomuser.me/api/portraits/men/46.jpg" alt="Carlos">
+            <div class="nav-icon" data-tooltip="Mensagens">
+                <a href="mensagem.html"><i class="fas fa-comment-dots"></i></a>
+                <span class="badge">3</span>
+            </div>
+            <div class="nav-icon" data-tooltip="Notificações">
+                <i class="fas fa-bell"></i>
+                <span class="badge">5</span>
+            </div>
+            <div class="theme-toggle" data-tooltip="Alternar tema">
+                <i class="fas fa-moon"></i>
+            </div>
+        </nav>
+
+        <div class="user-dropdown">
+            <div class="user">
+                <div class="profile-pic">
+                    <img src="https://via.placeholder.com/40" alt="Perfil">
                 </div>
-                <div class="follow-info">
-                    <h4>Carlos Lima</h4>
-                    <span>Especialista em Redes</span>
-                </div>
-                <button class="follow-btn"><i class="fas fa-plus"></i></button>
+                <span>Carregando...</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="#"><i class="fas fa-user"></i> Meu Perfil</a>
+                <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+                <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
             </div>
         </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="user-info">
+                <div class="avatar">
+                    <img src="https://via.placeholder.com/80" alt="Perfil">
+                    <div class="status online"></div>
+                </div>
+                <h2>Carregando...</h2>
+                <p class="user-title">Carregando...</p>
+                <div class="user-stats">
+                    <div class="stat">
+                        <strong>-</strong>
+                        <span>Conexões</span>
+                    </div>
+                    <div class="stat">
+                        <strong>-</strong>
+                        <span>Projetos</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="menu">
+                <a href="principal.html" class="active"><i class="fas fa-home"></i> Feed</a>
+                <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
+                <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
+                <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
+                <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+            </nav>
+            
+            <div class="online-friends">
+                </div>
+        </aside>
+
+        <main class="main-content">
+            <div id="create-post-modal" class="modal-overlay" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Criar Publicação</h3>
+                        <button id="close-modal-btn" class="close-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                    <form id="create-post-form">
+                        <textarea name="conteudo" placeholder="No que você está pensando?" required></textarea>
+                        <div class="modal-footer">
+                            <label for="file-input" class="file-label">
+                                <i class="fas fa-image"></i> Adicionar Mídia
+                            </label>
+                            <input type="file" id="file-input" multiple accept="image/*,video/*" style="display: none;">
+                            <button type="submit" class="submit-btn">Publicar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="post-creator">
+                <div class="avatar-small">
+                    <img src="https://via.placeholder.com/40" alt="Perfil">
+                </div>
+                <input type="text" id="post-creator-input" placeholder="Compartilhe seu projeto...">
+                 <div class="post-options">
+                    <button class="option-btn" data-type="photo"><i class="fas fa-image"></i></button>
+                    <button class="option-btn" data-type="video"><i class="fas fa-video"></i></button>
+                </div>
+            </div>
+
+            <div class="posts-container">
+                </div>
+        </main>
+        
+        <aside class="right-sidebar">
+            <div class="widget-card" id="upcoming-events-widget">
+                 </div>
+            <div class="widget-card" id="who-to-follow-widget">
+                 </div>
+        </aside>
     </div>
 
-  </aside>
-  </div>
-
-  <div class="floating-actions">
-    <button class="float-btn main-btn"><i class="fas fa-plus"></i></button>
-    <div class="float-menu">
-      <a href="projeto.html">
-        <button class="float-btn" data-action="project">
-          <i class="fas fa-file-code"></i>
-          <span class="tooltip">Novo Projeto</span>
-        </button>
-      </a>
-      <button class="float-btn" data-action="post">
-        <i class="fas fa-feather-alt"></i>
-        <span class="tooltip">Nova Postagem</span>
-      </button>
-      <button class="float-btn" data-action="event">
-        <i class="fas fa-calendar-plus"></i>
-        <span class="tooltip">Criar Evento</span>
-      </button>
+    <div class="floating-actions">
+        <button class="float-btn main-btn"><i class="fas fa-plus"></i></button>
+        <div class="float-menu">
+            <a href="projeto.html">
+                <button class="float-btn" data-action="project">
+                    <i class="fas fa-file-code"></i><span class="tooltip">Novo Projeto</span>
+                </button>
+            </a>
+            <button class="float-btn" data-action="post" id="open-post-modal-btn">
+                <i class="fas fa-feather-alt"></i><span class="tooltip">Nova Postagem</span>
+            </button>
+            <button class="float-btn" data-action="event">
+                <i class="fas fa-calendar-plus"></i><span class="tooltip">Criar Evento</span>
+            </button>
+        </div>
     </div>
-  </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
-  <script src="Principal/JS/principal.js"></script>
+    <script src="Principal/JS/principal.js"></script>
 </body>
 </html>

@@ -1,14 +1,17 @@
 package com.SenaiCommunity.BackEnd.Security;
 
+import com.SenaiCommunity.BackEnd.Entity.Usuario;
+import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import javax.crypto.SecretKey;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import io.jsonwebtoken.JwtParser;
+
+import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,27 +26,40 @@ public class JWTUtil {
     @Value("${jwt.expiration}")
     private Long expiration;
 
+    // ✅ ADIÇÃO: Injeta o repositório para buscar o usuário
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     private SecretKey getSigningKey() {
         byte[] keyBytes = Base64.getDecoder().decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    // ✅ MÉTODO MODIFICADO: Agora adiciona 'userId' e 'tipoUsuario' ao token
     public String gerarToken(UserDetails userDetails) {
-        String role = userDetails.getAuthorities().stream()
-                .findFirst() // Se o usuário tiver múltiplas, pegue a primeira
-                .map(GrantedAuthority::getAuthority)
-                .orElse("ROLE_USER");
+        // Busca o objeto Usuario completo para obter o ID e o tipo
+        Usuario usuario = usuarioRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado ao gerar token para: " + userDetails.getUsername()));
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", usuario.getId());
+        claims.put("tipoUsuario", usuario.getTipoUsuario()); // 'Aluno' ou 'Professor'
 
         return Jwts.builder()
-                .subject(userDetails.getUsername())
-                .claim("role", role)
+                .subject(userDetails.getUsername()) // O email do usuário
+                .claims(claims) // Adiciona as informações extras (ID e tipo)
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
                 .compact();
     }
 
+    // Este método não é mais necessário para a lógica principal, mas pode ser mantido
     public String getRoleDoToken(String token) {
         Claims claims = validarToken(token);
+        // O nome da claim foi alterado para tipoUsuario, mas podemos manter a compatibilidade
+        if (claims != null && claims.containsKey("tipoUsuario")) {
+            return claims.get("tipoUsuario", String.class);
+        }
         return claims != null ? claims.get("role", String.class) : null;
     }
 
