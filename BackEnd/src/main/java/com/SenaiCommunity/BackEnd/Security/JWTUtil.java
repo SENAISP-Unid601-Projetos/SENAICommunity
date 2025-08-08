@@ -65,7 +65,11 @@ public class JWTUtil {
     public Long getIdDoToken(String token) {
         try {
             Claims claims = getClaims(token);
-            return claims.get("id", Long.class);
+            Object idObj = claims.get("id");
+            if (idObj instanceof Integer) return ((Integer) idObj).longValue();
+            if (idObj instanceof Long) return (Long) idObj;
+            if (idObj instanceof String) return Long.parseLong((String)idObj);
+            return null;
         } catch (Exception e) {
             return null;
         }
@@ -73,16 +77,14 @@ public class JWTUtil {
 
     public boolean validarToken(String token) {
         try {
-            JwtParser parser = Jwts.parser().verifyWith(getSigningKey()).build();
-            Claims claims = parser.parseSignedClaims(token).getPayload();
+            Claims claims = getClaims(token);
             Date expiracao = claims.getExpiration();
             return expiracao != null && expiracao.after(new Date());
         } catch (Exception e) {
-            System.out.println("Erro ao validar token: " + e.getMessage());
+            // log aqui
             return false;
         }
     }
-
 
     public Claims getClaims(String token) {
         JwtParser parser = Jwts.parser().verifyWith(getSigningKey()).build();

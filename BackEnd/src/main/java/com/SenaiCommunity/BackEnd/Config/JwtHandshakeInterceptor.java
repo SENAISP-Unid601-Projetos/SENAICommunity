@@ -1,9 +1,6 @@
 package com.SenaiCommunity.BackEnd.Config;
-
 import com.SenaiCommunity.BackEnd.Security.JWTUtil;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,7 +15,6 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -28,70 +24,43 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     private JWTUtil jwtUtil;
 
     @Override
-    public boolean beforeHandshake(ServerHttpRequest request,
-                                   ServerHttpResponse response,
-                                   WebSocketHandler wsHandler,
-                                   Map<String, Object> attributes) throws Exception {
-        String token = null;
+    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
+                                   WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
 
-        // 1. Se for uma requisição do SockJS, extrair o parâmetro da URL
-        if (request instanceof ServletServerHttpRequest servletRequest) {
-            HttpServletRequest req = servletRequest.getServletRequest();
-            token = req.getParameter("token");
+        if (!(request instanceof ServletServerHttpRequest)) {
+            // sem servlet request (raro) - negar
+            ((ServletServerHttpResponse) response).setStatusCode(HttpStatus.UNAUTHORIZED);
+            return false;
         }
 
-        // 2. Tentar pegar dos headers (para casos de WebSocket puro)
-        if ((token == null || token.isEmpty()) && request.getHeaders().containsKey("Authorization")) {
-            List<String> authHeaders = request.getHeaders().get("Authorization");
-            if (authHeaders != null && !authHeaders.isEmpty()) {
-                token = authHeaders.get(0).replace("Bearer ", "");
+        HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
+        String token = servletRequest.getParameter("token"); // pega ?token=...
+        if (token == null) {
+            // Também tente header Authorization (caso cliente use)
+            String authHeader = servletRequest.getHeader(HttpHeaders.AUTHORIZATION);
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
             }
         }
 
-        // 3. Validar token e extrair claims
-        try {
-            if (token != null) {
-                Claims claims = jwtUtil.getClaims(token);
-                String username = claims.getSubject();
-                Long userId = claims.get("id", Long.class);
-
-                attributes.put("username", username);
-                attributes.put("id", userId);
-                return true;
-            }
-        } catch (Exception e) {
-            System.out.println("Erro ao validar token no WebSocket: " + e.getMessage());
+        if (token == null || !jwtUtil.validarToken(token)) {
+            ((ServletServerHttpResponse) response).setStatusCode(HttpStatus.UNAUTHORIZED);
+            return false;
         }
 
-        response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        return false;
+        String email = jwtUtil.getEmailDoToken(token);
+        // coloque info útil nos attributes (p.ex. principal ou email)
+        attributes.put("userEmail", email);
+
+        // opcional: setar Authentication no SecurityContext para o handshake thread
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(email, null, Collections.emptyList());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        return true;
     }
-
 
     @Override
-    public void afterHandshake(ServerHttpRequest request,
-                               ServerHttpResponse response,
-                               WebSocketHandler wsHandler,
-                               Exception exception) {
-        // opcional
-    }
+    public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response,
+                               WebSocketHandler wsHandler, Exception exception) {}
 
-    private String extrairToken(HttpServletRequest request) {
-        // 1. Header padrão Authorization: Bearer xxx.yyy.zzz
-        String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-
-        // 2. Query string (ws://.../ws-chat?token=...)
-        String query = request.getQueryString();
-        if (query != null && query.contains("token=")) {
-            for (String param : query.split("&")) {
-                if (param.startsWith("token=")) {
-                    return param.substring(6);
-                }
-            }
-        }
-        return null;
-    }
 }
