@@ -63,4 +63,8 @@ public class JWTUtil {
         }
     }
 
+    public Claims getClaims(String token) {
+        return validarToken(token);
+    }
+
 }

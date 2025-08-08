@@ -46,4 +46,5 @@ public class ProjetoController {
         projetoService.deletar(id);
         return ResponseEntity.noContent().build();
     }
+
 }
