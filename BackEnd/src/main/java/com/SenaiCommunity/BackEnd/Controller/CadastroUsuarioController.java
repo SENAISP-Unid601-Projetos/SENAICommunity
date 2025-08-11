@@ -50,9 +50,6 @@ public class CadastroUsuarioController {
         return ResponseEntity.ok(alunoService.criarAlunoComFoto(dto, foto));
     }
 
-
-
-
     @PostMapping(path = "/professores", consumes = "multipart/form-data")
     @Operation(summary = "Cadastra um novo PROFESSOR")
     public ResponseEntity<ProfessorSaidaDTO> criar(
