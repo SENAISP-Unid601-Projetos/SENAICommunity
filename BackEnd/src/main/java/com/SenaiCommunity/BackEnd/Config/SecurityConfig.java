@@ -47,19 +47,21 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/autenticacao/login", "POST")).permitAll()
-                        .requestMatchers("/ws/info").permitAll()
+                        .requestMatchers("/ws/**").permitAll() // Permitir acesso ao endpoint WebSocket
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        .requestMatchers(
-                                "/alunos/**",
-                                "/professores/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/api/chat/**"
-                        ).permitAll()
+                        // Correção: Removido permitAll() para que o JWTFilter e o @PreAuthorize possam proteger essas rotas.
+                        // As regras de permissão para cadastro de alunos/professores devem ser mais específicas se necessário.
+                        // .requestMatchers(
+                        //         "/alunos/**",
+                        //         "/professores/**"
+                        // ).permitAll()
+                        // .requestMatchers(
+                        //         "/api/chat/**"
+                        // ).permitAll()
                         .requestMatchers(
                                 "/api/eventos/**"
                         ).permitAll()
@@ -78,7 +80,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500")); // ou "*" se quiser liberar geral
+        // Ajuste para permitir múltiplas origens, se necessário, ou mantenha a sua.
+        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -99,6 +102,3 @@ public class SecurityConfig {
         return builder.build();
     }
 }
-
-
-

@@ -29,27 +29,21 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
-
         String path = request.getServletPath();
 
-        // Ignorar completamente o endpoint de login
-        if ("/professores/**".equals(path)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        // Ignorar completamente o endpoint de login
-        if ("/alunos/**".equals(path)) {
+        // Correção: Usar startsWith para ignorar endpoints com padrões
+        if (path.startsWith("/professores/") || path.startsWith("/alunos/")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Ignorar completamente o endpoint restchat
-        if ("/api/chat/**".equals(path)) {
+        // Correção: Usar startsWith para ignorar endpoints com padrões
+        if (path.startsWith("/api/chat/")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Ignorar completamente o endpoint de login
+        // Manter a verificação exata para o endpoint de login
         if ("/autenticacao/login".equals(path)) {
             filterChain.doFilter(request, response);
             return;

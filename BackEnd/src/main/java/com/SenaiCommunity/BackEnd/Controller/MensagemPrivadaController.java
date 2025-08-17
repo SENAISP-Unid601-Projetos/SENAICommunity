@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/chat-privado")
@@ -38,7 +39,10 @@ public class MensagemPrivadaController {
 
         MensagemPrivada salva = mensagemPrivadaService.salvarMensagemPrivada(mensagem, destinatarioId);
 
+        // Notifica o destinatário
         messagingTemplate.convertAndSend("/queue/usuario/" + destinatarioId, salva);
+        // Notifica o próprio remetente para atualizar a UI
+        messagingTemplate.convertAndSend("/queue/usuario/" + salva.getRemetente().getId(), salva);
     }
 
     @PutMapping("/{id}")
@@ -47,10 +51,16 @@ public class MensagemPrivadaController {
                                             Principal principal) {
         try {
             MensagemPrivada atualizada = mensagemPrivadaService.editarMensagemPrivada(id, novoConteudo, principal.getName());
+
+            // Notifica tanto o destinatário quanto o remetente sobre a edição
             messagingTemplate.convertAndSend("/queue/usuario/" + atualizada.getDestinatario().getId(), atualizada);
+            messagingTemplate.convertAndSend("/queue/usuario/" + atualizada.getRemetente().getId(), atualizada);
+
             return ResponseEntity.ok(atualizada);
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
@@ -58,11 +68,21 @@ public class MensagemPrivadaController {
     public ResponseEntity<?> excluirMensagem(@PathVariable Long id,
                                              Principal principal) {
         try {
-            Long mensagemId = mensagemPrivadaService.excluirMensagemPrivada(id, principal.getName());
-            messagingTemplate.convertAndSend("/queue/usuario/" + mensagemId, Map.of("tipo", "remocao", "id", mensagemId));
+            // O serviço agora retorna a entidade completa que foi excluída
+            MensagemPrivada mensagemExcluida = mensagemPrivadaService.excluirMensagemPrivada(id, principal.getName());
+
+            // Payload da notificação
+            Map<String, Object> payload = Map.of("tipo", "remocao", "id", id);
+
+            // Correção: Notifica o destinatário e o remetente na fila de usuário correta
+            messagingTemplate.convertAndSend("/queue/usuario/" + mensagemExcluida.getDestinatario().getId(), payload);
+            messagingTemplate.convertAndSend("/queue/usuario/" + mensagemExcluida.getRemetente().getId(), payload);
+
             return ResponseEntity.ok().build();
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 }

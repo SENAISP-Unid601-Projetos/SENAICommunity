@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class MensagemPrivadaService {
@@ -44,7 +45,7 @@ public class MensagemPrivadaService {
 
     public MensagemPrivada editarMensagemPrivada(Long id, String novoConteudo, String autorUsername) {
         MensagemPrivada mensagem = mensagemPrivadaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mensagem não encontrada"));
+                .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
 
         if (!mensagem.getRemetenteUsername().equals(autorUsername)) {
             throw new SecurityException("Você não pode editar esta mensagem.");
@@ -54,16 +55,17 @@ public class MensagemPrivadaService {
         return mensagemPrivadaRepository.save(mensagem);
     }
 
-    public Long excluirMensagemPrivada(Long id, String autorUsername) {
+    // Correção: Alterado o tipo de retorno para MensagemPrivada
+    public MensagemPrivada excluirMensagemPrivada(Long id, String autorUsername) {
         MensagemPrivada mensagem = mensagemPrivadaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mensagem não encontrada"));
+                .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
 
         if (!mensagem.getRemetenteUsername().equals(autorUsername)) {
             throw new SecurityException("Você não pode excluir esta mensagem.");
         }
 
         mensagemPrivadaRepository.delete(mensagem);
-        return id;
+        return mensagem; // Retorna a entidade que foi excluída
     }
 
     public MensagemPrivada salvarMensagemPrivada(MensagemPrivada mensagem, Long destinatarioId) {

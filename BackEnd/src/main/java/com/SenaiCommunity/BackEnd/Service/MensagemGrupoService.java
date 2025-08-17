@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 
 @Service
@@ -52,7 +53,7 @@ public class MensagemGrupoService {
 
     public MensagemGrupo editarMensagemGrupo(Long id, String novoConteudo, String autorUsername) {
         MensagemGrupo mensagem = mensagemGrupoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mensagem não encontrada"));
+                .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
 
         if (!mensagem.getAutorUsername().equals(autorUsername)) {
             throw new SecurityException("Você não pode editar esta mensagem.");
@@ -62,16 +63,17 @@ public class MensagemGrupoService {
         return mensagemGrupoRepository.save(mensagem);
     }
 
-    public Long excluirMensagemGrupo(Long id, String autorUsername) {
+    // Correção: Alterado o tipo de retorno para MensagemGrupo
+    public MensagemGrupo excluirMensagemGrupo(Long id, String autorUsername) {
         MensagemGrupo mensagem = mensagemGrupoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mensagem não encontrada"));
+                .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
 
         if (!mensagem.getAutorUsername().equals(autorUsername)) {
             throw new SecurityException("Você não pode excluir esta mensagem.");
         }
 
         mensagemGrupoRepository.delete(mensagem);
-        return id;
+        return mensagem; // Retorna a entidade que foi excluída
     }
 
     public MensagemGrupo salvarMensagemGrupo(MensagemGrupo mensagem, Long projetoId) {
@@ -89,5 +91,4 @@ public class MensagemGrupoService {
     public List<MensagemGrupo> buscarMensagensDoGrupo(Long projetoId) {
         return mensagemGrupoRepository.findByProjetoIdOrderByDataEnvioAsc(projetoId);
     }
-
 }
