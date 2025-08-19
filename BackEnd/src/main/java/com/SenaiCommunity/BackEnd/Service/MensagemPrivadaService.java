@@ -8,6 +8,7 @@ import com.SenaiCommunity.BackEnd.Repository.MensagemPrivadaRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // Importe esta anotação
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,6 +23,7 @@ public class MensagemPrivadaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    // ✅ LÓGICA DE CONVERSÃO MOVIMENTADA PARA O SERVICE
     private MensagemPrivadaSaidaDTO toDTO(MensagemPrivada mensagem) {
         return MensagemPrivadaSaidaDTO.builder()
                 .id(mensagem.getId())
@@ -34,6 +36,7 @@ public class MensagemPrivadaService {
                 .build();
     }
 
+    // ✅ NOVO MÉTODO PARA CONVERTER DTO DE ENTRADA PARA ENTIDADE
     private MensagemPrivada toEntity(MensagemPrivadaEntradaDTO dto, Usuario remetente, Usuario destinatario) {
         return MensagemPrivada.builder()
                 .conteudo(dto.getConteudo())
@@ -43,6 +46,22 @@ public class MensagemPrivadaService {
                 .build();
     }
 
+    // ✅ MÉTODO PRINCIPAL ATUALIZADO PARA USAR DTOS
+    @Transactional
+    public MensagemPrivadaSaidaDTO salvarMensagemPrivada(MensagemPrivadaEntradaDTO dto, String remetenteUsername) {
+        Usuario remetente = usuarioRepository.findByEmail(remetenteUsername)
+                .orElseThrow(() -> new NoSuchElementException("Remetente não encontrado"));
+
+        Usuario destinatario = usuarioRepository.findById(dto.getDestinatarioId())
+                .orElseThrow(() -> new NoSuchElementException("Destinatário não encontrado"));
+
+        MensagemPrivada novaMensagem = toEntity(dto, remetente, destinatario);
+        MensagemPrivada mensagemSalva = mensagemPrivadaRepository.save(novaMensagem);
+
+        return toDTO(mensagemSalva);
+    }
+
+    // ... O restante dos seus métodos (editar, excluir, etc.) permanecem aqui ...
     public MensagemPrivada editarMensagemPrivada(Long id, String novoConteudo, String autorUsername) {
         MensagemPrivada mensagem = mensagemPrivadaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
@@ -55,7 +74,6 @@ public class MensagemPrivadaService {
         return mensagemPrivadaRepository.save(mensagem);
     }
 
-    // Correção: Alterado o tipo de retorno para MensagemPrivada
     public MensagemPrivada excluirMensagemPrivada(Long id, String autorUsername) {
         MensagemPrivada mensagem = mensagemPrivadaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
@@ -65,19 +83,7 @@ public class MensagemPrivadaService {
         }
 
         mensagemPrivadaRepository.delete(mensagem);
-        return mensagem; // Retorna a entidade que foi excluída
-    }
-
-    public MensagemPrivada salvarMensagemPrivada(MensagemPrivada mensagem, Long destinatarioId) {
-        Usuario remetente = usuarioRepository.findByEmail(mensagem.getRemetenteUsername())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        Usuario destinatario = usuarioRepository.findById(destinatarioId)
-                .orElseThrow(() -> new RuntimeException("Destinatário não encontrado"));
-
-        mensagem.setRemetente(remetente);
-        mensagem.setDestinatario(destinatario);
-        return mensagemPrivadaRepository.save(mensagem);
+        return mensagem;
     }
 
     public List<MensagemPrivada> buscarMensagensPrivadas(Long user1, Long user2) {

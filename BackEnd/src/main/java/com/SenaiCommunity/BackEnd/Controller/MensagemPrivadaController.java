@@ -1,6 +1,7 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
-
+import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaEntradaDTO;
+import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.MensagemPrivada;
 import com.SenaiCommunity.BackEnd.Service.MensagemPrivadaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,15 +12,14 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller; // ✅ ALTERADO DE @RestController PARA @Controller
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-@RestController
-@RequestMapping("/chat-privado")
+@Controller // ✅ ALTERADO DE @RestController PARA @Controller
 @PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
 public class MensagemPrivadaController {
 
@@ -29,60 +29,66 @@ public class MensagemPrivadaController {
     @Autowired
     private MensagemPrivadaService mensagemPrivadaService;
 
-    // 🔹 CHAT PRIVADO
-    @MessageMapping("/{destinatarioId}")
+    // ✅ ATUALIZADO PARA USAR DTOS
+    @MessageMapping("/privado/{destinatarioId}")
     public void enviarPrivado(@DestinationVariable Long destinatarioId,
-                              @Payload MensagemPrivada mensagem,
+                              @Payload MensagemPrivadaEntradaDTO dto, // <-- Recebe DTO de Entrada
                               Principal principal) {
-        mensagem.setDataEnvio(LocalDateTime.now());
-        mensagem.setRemetenteUsername(principal.getName());
 
-        MensagemPrivada salva = mensagemPrivadaService.salvarMensagemPrivada(mensagem, destinatarioId);
+        dto.setDestinatarioId(destinatarioId); // Garante que o ID do destinatário está no DTO
+
+        MensagemPrivadaSaidaDTO dtoSalvo = mensagemPrivadaService.salvarMensagemPrivada(dto, principal.getName());
 
         // Notifica o destinatário
-        messagingTemplate.convertAndSend("/queue/usuario/" + destinatarioId, salva);
+        messagingTemplate.convertAndSendToUser(String.valueOf(destinatarioId), "/queue/usuario", dtoSalvo);
+
         // Notifica o próprio remetente para atualizar a UI
-        messagingTemplate.convertAndSend("/queue/usuario/" + salva.getRemetente().getId(), salva);
+        messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/usuario", dtoSalvo);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> editarMensagem(@PathVariable Long id,
-                                            @RequestBody String novoConteudo,
-                                            Principal principal) {
-        try {
-            MensagemPrivada atualizada = mensagemPrivadaService.editarMensagemPrivada(id, novoConteudo, principal.getName());
+    // Os métodos abaixo são REST, então precisam estar em um controller com @RestController
+    // Considere mover para um controller separado ou manter @RestController e anotar os métodos @MessageMapping em uma classe @Controller separada.
+    // Por simplicidade, vamos mantê-los aqui por enquanto.
+    @RestController
+    @RequestMapping("/chat-privado")
+    public static class MensagemPrivadaRestController {
 
-            // Notifica tanto o destinatário quanto o remetente sobre a edição
-            messagingTemplate.convertAndSend("/queue/usuario/" + atualizada.getDestinatario().getId(), atualizada);
-            messagingTemplate.convertAndSend("/queue/usuario/" + atualizada.getRemetente().getId(), atualizada);
+        @Autowired
+        private MensagemPrivadaService mensagemPrivadaService;
 
-            return ResponseEntity.ok(atualizada);
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        @Autowired
+        private SimpMessagingTemplate messagingTemplate;
+
+        @PutMapping("/{id}")
+        public ResponseEntity<?> editarMensagem(@PathVariable Long id,
+                                                @RequestBody String novoConteudo,
+                                                Principal principal) {
+            try {
+                MensagemPrivada atualizada = mensagemPrivadaService.editarMensagemPrivada(id, novoConteudo, principal.getName());
+                messagingTemplate.convertAndSend("/queue/usuario/" + atualizada.getDestinatario().getId(), atualizada);
+                messagingTemplate.convertAndSend("/queue/usuario/" + atualizada.getRemetente().getId(), atualizada);
+                return ResponseEntity.ok(atualizada);
+            } catch (SecurityException e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            } catch (NoSuchElementException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
         }
-    }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> excluirMensagem(@PathVariable Long id,
-                                             Principal principal) {
-        try {
-            // O serviço agora retorna a entidade completa que foi excluída
-            MensagemPrivada mensagemExcluida = mensagemPrivadaService.excluirMensagemPrivada(id, principal.getName());
-
-            // Payload da notificação
-            Map<String, Object> payload = Map.of("tipo", "remocao", "id", id);
-
-            // Correção: Notifica o destinatário e o remetente na fila de usuário correta
-            messagingTemplate.convertAndSend("/queue/usuario/" + mensagemExcluida.getDestinatario().getId(), payload);
-            messagingTemplate.convertAndSend("/queue/usuario/" + mensagemExcluida.getRemetente().getId(), payload);
-
-            return ResponseEntity.ok().build();
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        @DeleteMapping("/{id}")
+        public ResponseEntity<?> excluirMensagem(@PathVariable Long id,
+                                                 Principal principal) {
+            try {
+                MensagemPrivada mensagemExcluida = mensagemPrivadaService.excluirMensagemPrivada(id, principal.getName());
+                Map<String, Object> payload = Map.of("tipo", "remocao", "id", id);
+                messagingTemplate.convertAndSend("/queue/usuario/" + mensagemExcluida.getDestinatario().getId(), payload);
+                messagingTemplate.convertAndSend("/queue/usuario/" + mensagemExcluida.getRemetente().getId(), payload);
+                return ResponseEntity.ok().build();
+            } catch (SecurityException e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            } catch (NoSuchElementException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
         }
     }
 }

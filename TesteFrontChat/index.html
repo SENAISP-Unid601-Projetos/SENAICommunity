@@ -17,8 +17,9 @@
         button:disabled { background-color: #ccc; cursor: not-allowed; }
         #chat-window { height: 300px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin-top: 1rem; background-color: #f9f9f9; border-radius: 4px; }
         .message { margin-bottom: 8px; padding: 5px 10px; border-radius: 4px; }
-        .message.sent { background-color: #d1e7dd; text-align: right; }
-        .message.received { background-color: #e2e3e5; }
+        .message p { margin: 4px 0; }
+        .message.sent { background-color: #d1e7dd; text-align: right; margin-left: auto; max-width: 70%;}
+        .message.received { background-color: #e2e3e5; text-align: left; margin-right: auto; max-width: 70%;}
         #status { font-weight: bold; padding: 5px 10px; border-radius: 5px; display: inline-block; }
         #status.connected { color: #155724; background-color: #d4edda; }
         #status.disconnected { color: #721c24; background-color: #f8d7da; }
@@ -52,7 +53,7 @@
     <h3>Etapa 2: Conexão WebSocket</h3>
     <div class="form-group">
         <label for="my-user-id">Seu ID de Usuário (para se inscrever na sua fila):</label>
-        <input type="number" id="my-user-id" placeholder="Ex: 1">
+        <input type="number" id="my-user-id" placeholder="Ex: 1" readonly>
     </div>
     <button id="connect-btn" onclick="connect()" disabled>2. Conectar ao Chat</button>
     <button id="disconnect-btn" onclick="disconnect()" disabled>Desconectar</button>
@@ -78,46 +79,55 @@
     let stompClient = null;
     let jwtToken = null;
 
-    // ETAPA 1: LOGIN
+    function getUserIdFromToken(token) {
+        try {
+            const payloadBase64 = token.split('.')[1];
+            const decodedJson = atob(payloadBase64);
+            const decodedPayload = JSON.parse(decodedJson);
+            return decodedPayload.id;
+        } catch (e) {
+            console.error("Não foi possível decodificar o token.", e);
+            return null;
+        }
+    }
+
     async function login() {
+        // ... (função login sem alterações)
         const backendUrl = document.getElementById('backend-url').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-
         try {
             const response = await fetch(`${backendUrl}/autenticacao/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha: password })
             });
-
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Falha no login: ${response.status} ${errorText}`);
+                throw new Error(`Falha no login: ${response.status}`);
             }
-
             const data = await response.json();
             jwtToken = data.token;
             document.getElementById('jwt-token').value = jwtToken;
             document.getElementById('connect-btn').disabled = false;
-            console.log("Login bem-sucedido. Token:", jwtToken);
-            alert("Login realizado com sucesso! Agora clique em 'Conectar ao Chat'.");
-
+            const userId = getUserIdFromToken(jwtToken);
+            if(userId) {
+                document.getElementById('my-user-id').value = userId;
+            }
+            alert("Login realizado com sucesso! Seu ID foi preenchido. Agora clique em 'Conectar'.");
         } catch (error) {
             console.error("Erro no login:", error);
             alert(error.message);
         }
     }
 
-    // ETAPA 2: CONECTAR
     function connect() {
         if (!jwtToken) {
-            alert("Faça o login primeiro para obter um token JWT.");
+            alert("Faça o login primeiro.");
             return;
         }
         const myUserId = document.getElementById('my-user-id').value;
         if (!myUserId) {
-            alert("Por favor, informe o seu ID de usuário.");
+            alert("Não foi possível obter seu ID de usuário.");
             return;
         }
 
@@ -125,23 +135,18 @@
         const socket = new SockJS(`${backendUrl}/ws?token=${jwtToken}`); 
         stompClient = Stomp.over(socket);
 
-        const headers = {
-            'Authorization': 'Bearer ' + jwtToken
-        };
+        const headers = { 'Authorization': 'Bearer ' + jwtToken };
 
         stompClient.connect(headers, function (frame) {
             console.log('Conectado: ' + frame);
             updateConnectionStatus(true);
             
-            // Inscreve-se na fila privada do usuário logado
-            const subscriptionUrl = `/queue/usuario/${myUserId}`;
+            const subscriptionUrl = `/user/queue/usuario`;
             stompClient.subscribe(subscriptionUrl, function (message) {
                 showMessage(JSON.parse(message.body));
             });
-
         }, function (error) {
             console.error('Erro de conexão:', error);
-            alert("Não foi possível conectar. Verifique o console para mais detalhes. O token pode ter expirado.");
             updateConnectionStatus(false);
         });
     }
@@ -155,6 +160,7 @@
     }
 
     function updateConnectionStatus(isConnected) {
+        // ... (função updateConnectionStatus sem alterações)
         const statusEl = document.getElementById('status');
         if (isConnected) {
             statusEl.textContent = 'Conectado';
@@ -171,23 +177,25 @@
         }
     }
 
-    // ETAPA 3: ENVIAR E RECEBER MENSAGENS
     function sendMessage() {
         const recipientId = document.getElementById('recipient-id').value;
         const messageContent = document.getElementById('message').value;
 
         if (stompClient && messageContent && recipientId) {
+            // ✅ CORREÇÃO: Monta o DTO de Entrada que o back-end espera
             const chatMessage = {
-                conteudo: messageContent
+                conteudo: messageContent,
+                destinatarioId: parseInt(recipientId) // Envia o ID no corpo da mensagem
             };
             
-            const destination = `/app/${recipientId}`;
+            const destination = `/app/privado/${recipientId}`;
+            
             stompClient.send(destination, {}, JSON.stringify(chatMessage));
             console.log(`Mensagem enviada para ${destination}:`, chatMessage);
 
             document.getElementById('message').value = '';
         } else {
-            alert("Verifique se está conectado e se preencheu o ID do destinatário e a mensagem.");
+            alert("Verifique a conexão e preencha todos os campos.");
         }
     }
 
@@ -199,35 +207,22 @@
 
         const myUserId = document.getElementById('my-user-id').value;
         
-        // Verifica se é uma notificação de remoção/edição ou uma mensagem nova
-        if (message.tipo === 'remocao') {
-             messageElement.innerHTML = `<em>Mensagem com ID ${message.id} foi removida.</em>`;
-             messageElement.style.color = 'gray';
-             messageElement.style.textAlign = 'center';
-
-        } else if (message.tipo === 'edicao') {
-            // Lógica para encontrar e atualizar a mensagem editada (simplificado aqui)
-            messageElement.innerHTML = `<em>Mensagem com ID ${message.postagem.id} foi editada para: "${message.postagem.conteudo}"</em>`;
-            messageElement.style.color = 'blue';
-            messageElement.style.textAlign = 'center';
-            
+        // ✅ CORREÇÃO: Lê os campos do MensagemPrivadaSaidaDTO
+        const senderName = message.nomeRemetente || 'Desconhecido';
+        const senderId = message.remetenteId;
+        const content = message.conteudo;
+        
+        // Define o estilo com base em quem enviou
+        if (senderId == myUserId) {
+            messageElement.classList.add('sent');
+            messageElement.innerHTML = `<strong>Você:</strong><p>${content}</p>`;
         } else {
-            // Mensagem normal
-            const senderName = message.nomeRemetente || 'Desconhecido';
-            const content = message.conteudo;
-            
-            // Define o estilo com base em quem enviou
-            if (message.remetenteId == myUserId) {
-                messageElement.classList.add('sent');
-                messageElement.innerHTML = `<strong>Você:</strong><p>${content}</p>`;
-            } else {
-                messageElement.classList.add('received');
-                messageElement.innerHTML = `<strong>${senderName}:</strong><p>${content}</p>`;
-            }
+            messageElement.classList.add('received');
+            messageElement.innerHTML = `<strong>${senderName}:</strong><p>${content}</p>`;
         }
 
         chatWindow.appendChild(messageElement);
-        chatWindow.scrollTop = chatWindow.scrollHeight; // Rola para a mensagem mais recente
+        chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 </script>
 
