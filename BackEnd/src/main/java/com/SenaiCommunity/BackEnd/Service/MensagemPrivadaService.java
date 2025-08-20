@@ -23,7 +23,6 @@ public class MensagemPrivadaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // ✅ LÓGICA DE CONVERSÃO MOVIMENTADA PARA O SERVICE
     private MensagemPrivadaSaidaDTO toDTO(MensagemPrivada mensagem) {
         return MensagemPrivadaSaidaDTO.builder()
                 .id(mensagem.getId())
@@ -33,6 +32,8 @@ public class MensagemPrivadaService {
                 .nomeRemetente(mensagem.getRemetente().getNome())
                 .destinatarioId(mensagem.getDestinatario().getId())
                 .nomeDestinatario(mensagem.getDestinatario().getNome())
+                // ✅ ADICIONE ESTA LINHA:
+                .destinatarioEmail(mensagem.getDestinatario().getEmail())
                 .build();
     }
 
@@ -48,17 +49,17 @@ public class MensagemPrivadaService {
 
     // ✅ MÉTODO PRINCIPAL ATUALIZADO PARA USAR DTOS
     @Transactional
-    public MensagemPrivadaSaidaDTO salvarMensagemPrivada(MensagemPrivadaEntradaDTO dto, String remetenteUsername) {
+    public MensagemPrivadaSaidaDTO salvarMensagemPrivada(MensagemPrivadaEntradaDTO dto, String remetenteUsername) { //
         Usuario remetente = usuarioRepository.findByEmail(remetenteUsername)
-                .orElseThrow(() -> new NoSuchElementException("Remetente não encontrado"));
+                .orElseThrow(() -> new NoSuchElementException("Remetente não encontrado")); //
 
         Usuario destinatario = usuarioRepository.findById(dto.getDestinatarioId())
-                .orElseThrow(() -> new NoSuchElementException("Destinatário não encontrado"));
+                .orElseThrow(() -> new NoSuchElementException("Destinatário não encontrado")); //
 
-        MensagemPrivada novaMensagem = toEntity(dto, remetente, destinatario);
-        MensagemPrivada mensagemSalva = mensagemPrivadaRepository.save(novaMensagem);
+        MensagemPrivada novaMensagem = toEntity(dto, remetente, destinatario); //
+        MensagemPrivada mensagemSalva = mensagemPrivadaRepository.save(novaMensagem); //
 
-        return toDTO(mensagemSalva);
+        return toDTO(mensagemSalva); //
     }
 
     // ... O restante dos seus métodos (editar, excluir, etc.) permanecem aqui ...

@@ -29,28 +29,13 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
-        String path = request.getServletPath();
 
-        // Correção: Usar startsWith para ignorar endpoints com padrões
-        if (path.startsWith("/professores/") || path.startsWith("/alunos/")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // Correção: Usar startsWith para ignorar endpoints com padrões
-        if (path.startsWith("/api/chat/")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // Manter a verificação exata para o endpoint de login
-        if ("/autenticacao/login".equals(path)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        // ✅ LÓGICA DE BYPASS REMOVIDA
+        // O SecurityConfig agora é a única fonte de verdade para quais rotas são públicas.
+        // O filtro tentará validar o token para todas as requisições que o possuírem.
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7); // Remove "Bearer "
+            String token = authHeader.substring(7);
             String email = jwtUtil.getEmailDoToken(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -65,7 +50,6 @@ public class JWTFilter extends OncePerRequestFilter {
                             new WebAuthenticationDetailsSource().buildDetails(request)
                     );
 
-                    // Define o usuário como autenticado no contexto do Spring
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }

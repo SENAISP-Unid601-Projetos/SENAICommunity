@@ -17,7 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -26,7 +25,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity // Essencial para o @PreAuthorize funcionar nas controllers
 public class SecurityConfig {
 
     @Autowired
@@ -45,43 +44,36 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Endpoints públicos
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/autenticacao/login", "POST")).permitAll()
-                        .requestMatchers("/ws/**").permitAll() // Permitir acesso ao endpoint WebSocket
+                        .requestMatchers(HttpMethod.POST, "/autenticacao/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll() // Necessário para a conexão WebSocket inicial
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        // Correção: Removido permitAll() para que o JWTFilter e o @PreAuthorize possam proteger essas rotas.
-                        // As regras de permissão para cadastro de alunos/professores devem ser mais específicas se necessário.
-                        // .requestMatchers(
-                        //         "/alunos/**",
-                        //         "/professores/**"
-                        // ).permitAll()
-                        // .requestMatchers(
-                        //         "/api/chat/**"
-                        // ).permitAll()
-                        .requestMatchers(
-                                "/api/eventos/**"
-                        ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
+
+                        // ✅ TODAS AS OUTRAS REQUISIÇÕES EXIGEM AUTENTICAÇÃO
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(
                         (req, res, excep) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido ou ausente")
                 ))
+                // Adiciona nosso filtro JWT antes do filtro padrão do Spring
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
+    // ... (o resto da classe: corsConfigurationSource, passwordEncoder, authenticationManager)
+    // Nenhuma alteração necessária nessas outras beans. Elas estão corretas.
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Ajuste para permitir múltiplas origens, se necessário, ou mantenha a sua.
-        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://localhost:3000"));
+        // Use as origens do seu frontend.
+        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://localhost:5500", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

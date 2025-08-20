@@ -63,7 +63,7 @@
     <div id="chat-box" style="display: none;">
         <div class="form-group">
             <label for="recipient-id">ID do Destinatário:</label>
-            <input type="number" id="recipient-id" placeholder="Ex: 2">
+            <input type="number" id="recipient-id" placeholder="Digite o ID e pressione Enter ou clique fora" onchange="fetchChatHistory()">
         </div>
         <div id="chat-window"></div>
         <div class="form-group" style="margin-top: 1rem;">
@@ -92,7 +92,6 @@
     }
 
     async function login() {
-        // ... (função login sem alterações)
         const backendUrl = document.getElementById('backend-url').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -122,33 +121,75 @@
 
     function connect() {
         if (!jwtToken) {
-            alert("Faça o login primeiro.");
-            return;
+            alert("Faça o login primeiro."); return;
         }
-        const myUserId = document.getElementById('my-user-id').value;
-        if (!myUserId) {
-            alert("Não foi possível obter seu ID de usuário.");
-            return;
-        }
+        console.log("Tentando conectar ao WebSocket...");
 
         const backendUrl = document.getElementById('backend-url').value;
         const socket = new SockJS(`${backendUrl}/ws?token=${jwtToken}`); 
         stompClient = Stomp.over(socket);
 
+        // Descomente a linha abaixo para silenciar os logs de debug do STOMP
+        // stompClient.debug = null;
+
         const headers = { 'Authorization': 'Bearer ' + jwtToken };
 
         stompClient.connect(headers, function (frame) {
-            console.log('Conectado: ' + frame);
+            console.log('CONECTADO COM SUCESSO: ' + frame);
             updateConnectionStatus(true);
             
-            const subscriptionUrl = `/user/queue/usuario`;
-            stompClient.subscribe(subscriptionUrl, function (message) {
-                showMessage(JSON.parse(message.body));
+            // Inscrição na fila pessoal para receber mensagens
+            stompClient.subscribe(`/user/queue/usuario`, function (message) {
+                console.log("MENSAGEM BRUTA RECEBIDA NA INSCRIÇÃO:", message);
+                const receivedMessage = JSON.parse(message.body);
+                console.log("MENSAGEM PARSEADA:", receivedMessage);
+
+                const currentRecipientId = document.getElementById('recipient-id').value;
+                const myUserId = document.getElementById('my-user-id').value;
+                const senderId = receivedMessage.remetenteId || (receivedMessage.remetente ? receivedMessage.remetente.id : null);
+
+                // Mostra a mensagem apenas se ela pertence à conversa atual (remetente é o destinatário da conversa)
+                if (senderId == currentRecipientId) {
+                     showMessage(receivedMessage);
+                } else {
+                    console.warn("Mensagem recebida de um usuário diferente da conversa atual. Ignorando exibição.", receivedMessage);
+                    // Aqui você poderia implementar uma lógica de notificação
+                }
             });
         }, function (error) {
-            console.error('Erro de conexão:', error);
+            console.error('ERRO DE CONEXÃO:', error);
             updateConnectionStatus(false);
         });
+    }
+
+    async function fetchChatHistory() {
+        const myUserId = document.getElementById('my-user-id').value;
+        const recipientId = document.getElementById('recipient-id').value;
+        const backendUrl = document.getElementById('backend-url').value;
+        const chatWindow = document.getElementById('chat-window');
+
+        chatWindow.innerHTML = '';
+        if (!myUserId || !recipientId) {
+            return;
+        }
+        console.log(`Buscando histórico entre ${myUserId} e ${recipientId}...`);
+
+        try {
+            const response = await fetch(`${backendUrl}/api/chat/privado/${myUserId}/${recipientId}`, {
+                method: 'GET', headers: { 'Authorization': 'Bearer ' + jwtToken }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao buscar histórico: ${response.status}`);
+            }
+
+            const history = await response.json();
+            history.forEach(message => showMessage(message));
+            console.log(`Histórico de ${history.length} mensagens carregado.`);
+        } catch (error) {
+            console.error('Erro ao buscar histórico:', error);
+            alert(error.message);
+        }
     }
 
     function disconnect() {
@@ -160,7 +201,6 @@
     }
 
     function updateConnectionStatus(isConnected) {
-        // ... (função updateConnectionStatus sem alterações)
         const statusEl = document.getElementById('status');
         if (isConnected) {
             statusEl.textContent = 'Conectado';
@@ -180,19 +220,25 @@
     function sendMessage() {
         const recipientId = document.getElementById('recipient-id').value;
         const messageContent = document.getElementById('message').value;
+        const myUserId = document.getElementById('my-user-id').value;
 
         if (stompClient && messageContent && recipientId) {
-            // ✅ CORREÇÃO: Monta o DTO de Entrada que o back-end espera
             const chatMessage = {
                 conteudo: messageContent,
-                destinatarioId: parseInt(recipientId) // Envia o ID no corpo da mensagem
+                destinatarioId: parseInt(recipientId),
+                // Adicionamos os dados do remetente para a exibição otimista
+                remetenteId: parseInt(myUserId), 
+                nomeRemetente: "Você" 
             };
             
             const destination = `/app/privado/${recipientId}`;
-            
+            console.log("Enviando mensagem para:", destination, chatMessage);
             stompClient.send(destination, {}, JSON.stringify(chatMessage));
-            console.log(`Mensagem enviada para ${destination}:`, chatMessage);
-
+            
+            // --- MELHORIA: EXIBIÇÃO OTIMISTA ---
+            // Mostra a mensagem na tela imediatamente, sem esperar o retorno do servidor.
+            showMessage(chatMessage);
+            
             document.getElementById('message').value = '';
         } else {
             alert("Verifique a conexão e preencha todos os campos.");
@@ -200,19 +246,16 @@
     }
 
     function showMessage(message) {
-        console.log("Mensagem recebida:", message);
         const chatWindow = document.getElementById('chat-window');
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
 
         const myUserId = document.getElementById('my-user-id').value;
         
-        // ✅ CORREÇÃO: Lê os campos do MensagemPrivadaSaidaDTO
-        const senderName = message.nomeRemetente || 'Desconhecido';
-        const senderId = message.remetenteId;
+        const senderName = message.nomeRemetente || (message.remetente ? message.remetente.nome : 'Desconhecido');
+        const senderId = message.remetenteId || (message.remetente ? message.remetente.id : null);
         const content = message.conteudo;
         
-        // Define o estilo com base em quem enviou
         if (senderId == myUserId) {
             messageElement.classList.add('sent');
             messageElement.innerHTML = `<strong>Você:</strong><p>${content}</p>`;

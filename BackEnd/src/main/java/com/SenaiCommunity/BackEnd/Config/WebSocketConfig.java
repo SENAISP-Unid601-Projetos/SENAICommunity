@@ -1,6 +1,6 @@
 package com.SenaiCommunity.BackEnd.Config;
 
-import com.SenaiCommunity.BackEnd.Security.JWTUtil;
+// Removido o import do JWTUtil pois não é mais necessário aqui
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -12,11 +12,10 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final JWTUtil jwtUtil;
+    // ✅ Removido o JWTUtil, que era usado pelo interceptor de handshake
     private final AuthChannelInterceptor authChannelInterceptor;
 
-    public WebSocketConfig(JWTUtil jwtUtil, AuthChannelInterceptor authChannelInterceptor) {
-        this.jwtUtil = jwtUtil;
+    public WebSocketConfig(AuthChannelInterceptor authChannelInterceptor) {
         this.authChannelInterceptor = authChannelInterceptor;
     }
 
@@ -30,13 +29,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("http://127.0.0.1:5500", "http://localhost:3000", "null")
-                .addInterceptors(new JwtHandshakeInterceptor(jwtUtil))
+                // ✅ Adicionei "null" como origem permitida, que pode aparecer em testes locais com arquivos abertos diretamente no navegador
+                .setAllowedOrigins("http://127.0.0.1:5500", "http://localhost:5500", "http://localhost:3000", "null")
+                // ✅ Removido o .addInterceptors(new JwtHandshakeInterceptor(jwtUtil))
                 .withSockJS();
     }
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
+        // O AuthChannelInterceptor já está fazendo todo o trabalho de autenticação
         registration.interceptors(authChannelInterceptor);
     }
 }

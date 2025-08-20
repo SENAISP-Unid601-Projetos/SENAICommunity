@@ -39,8 +39,7 @@ public class MensagemPrivadaController {
 
         MensagemPrivadaSaidaDTO dtoSalvo = mensagemPrivadaService.salvarMensagemPrivada(dto, principal.getName());
 
-        // Notifica o destinatário
-        messagingTemplate.convertAndSendToUser(String.valueOf(destinatarioId), "/queue/usuario", dtoSalvo);
+        messagingTemplate.convertAndSendToUser(dtoSalvo.getDestinatarioEmail(), "/queue/usuario", dtoSalvo);
 
         // Notifica o próprio remetente para atualizar a UI
         messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/usuario", dtoSalvo);
