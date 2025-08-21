@@ -2,36 +2,38 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Teste de Chat WebSocket</title>
+    <title>Página de Testes WebSocket</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: auto; max-width: 800px; padding: 2rem; background-color: #f8f9fa; color: #333; }
-        .container { background-color: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: auto; max-width: 900px; padding: 2rem; background-color: #f8f9fa; color: #333; }
+        .container { background-color: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 2rem; }
         h2, h3 { color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 8px; }
         .form-group { margin-bottom: 1rem; }
         label { display: block; margin-bottom: .5rem; font-weight: bold; }
-        input[type="text"], input[type="password"], input[type="number"] { width: calc(100% - 20px); padding: 10px; border-radius: 4px; border: 1px solid #ccc; }
+        input[type="text"], input[type="password"], input[type="number"], textarea, input[type="file"] { width: calc(100% - 22px); padding: 10px; border-radius: 4px; border: 1px solid #ccc; }
         button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-right: 10px; }
         button:hover { background-color: #0056b3; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
-        #chat-window { height: 300px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin-top: 1rem; background-color: #f9f9f9; border-radius: 4px; }
-        .message { margin-bottom: 8px; padding: 5px 10px; border-radius: 4px; }
+        #chat-window, #public-feed-window { height: 400px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin-top: 1rem; background-color: #f9f9f9; border-radius: 4px; }
+        .message { margin-bottom: 8px; padding: 8px 12px; border-radius: 4px; max-width: 80%; word-wrap: break-word; }
         .message p { margin: 4px 0; }
-        .message.sent { background-color: #d1e7dd; text-align: right; margin-left: auto; max-width: 70%;}
-        .message.received { background-color: #e2e3e5; text-align: left; margin-right: auto; max-width: 70%;}
+        .message.sent { background-color: #d1e7dd; text-align: left; margin-left: auto; }
+        .message.received { background-color: #e2e3e5; text-align: left; margin-right: auto; }
         #status { font-weight: bold; padding: 5px 10px; border-radius: 5px; display: inline-block; }
         #status.connected { color: #155724; background-color: #d4edda; }
         #status.disconnected { color: #721c24; background-color: #f8d7da; }
-        textarea { width: 100%; min-height: 60px; box-sizing: border-box; }
+        #jwt-token { width: 100%; min-height: 60px; box-sizing: border-box; }
+        .post-container { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px; background-color: #fff; }
+        .post-header { font-weight: bold; margin-bottom: 8px; color: #333; }
+        .post-content { margin-bottom: 10px; white-space: pre-wrap; }
+        .post-media img, .post-media video { max-width: 100%; height: auto; border-radius: 4px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Teste de Chat Privado via WebSocket</h2>
-
-    <h3>Etapa 1: Autenticação</h3>
+    <h2>Etapa 1: Autenticação</h2>
     <div class="form-group">
         <label for="backend-url">URL do Backend:</label>
         <input type="text" id="backend-url" value="http://localhost:8080">
@@ -46,21 +48,39 @@
     </div>
     <button onclick="login()">1. Login</button>
     <div class="form-group" style="margin-top: 1rem;">
-        <label for="jwt-token">Token JWT (preenchido automaticamente):</label>
+        <label for="jwt-token">Token JWT:</label>
         <textarea id="jwt-token" readonly></textarea>
     </div>
+</div>
 
-    <h3>Etapa 2: Conexão WebSocket</h3>
+<div class="container">
+    <h2>Etapa 2: Conexão WebSocket</h2>
     <div class="form-group">
-        <label for="my-user-id">Seu ID de Usuário (para se inscrever na sua fila):</label>
-        <input type="number" id="my-user-id" placeholder="Ex: 1" readonly>
+        <label for="my-user-id">Seu ID de Usuário:</label>
+        <input type="number" id="my-user-id" readonly>
     </div>
-    <button id="connect-btn" onclick="connect()" disabled>2. Conectar ao Chat</button>
+    <button id="connect-btn" onclick="connect()" disabled>2. Conectar ao WebSocket</button>
     <button id="disconnect-btn" onclick="disconnect()" disabled>Desconectar</button>
     <p>Status: <span id="status" class="disconnected">Desconectado</span></p>
+</div>
 
-    <h3>Etapa 3: Conversa</h3>
-    <div id="chat-box" style="display: none;">
+<div id="functionalities" style="display: none;">
+    <div class="container">
+        <h3>Etapa 3: Feed Público (Postagens)</h3>
+        <div class="form-group">
+            <label for="post-content">Nova Postagem:</label>
+            <textarea id="post-content" placeholder="O que você está pensando?"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="post-files">Anexar Arquivos:</label>
+            <input type="file" id="post-files" multiple>
+        </div>
+        <button onclick="createPost()">Enviar Postagem</button>
+        <div id="public-feed-window"></div>
+    </div>
+
+    <div class="container">
+        <h3>Etapa 4: Chat Privado</h3>
         <div class="form-group">
             <label for="recipient-id">ID do Destinatário:</label>
             <input type="number" id="recipient-id" placeholder="Digite o ID e pressione Enter ou clique fora" onchange="fetchChatHistory()">
@@ -70,10 +90,10 @@
             <label for="message">Sua Mensagem:</label>
             <input type="text" id="message" placeholder="Digite sua mensagem...">
         </div>
-        <button id="send-btn" onclick="sendMessage()">Enviar Mensagem</button>
+        <button onclick="sendMessage()">Enviar Mensagem</button>
     </div>
-
 </div>
+
 
 <script>
     let stompClient = null;
@@ -101,18 +121,14 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha: password })
             });
-            if (!response.ok) {
-                throw new Error(`Falha no login: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`Falha no login: ${response.status}`);
             const data = await response.json();
             jwtToken = data.token;
             document.getElementById('jwt-token').value = jwtToken;
             document.getElementById('connect-btn').disabled = false;
             const userId = getUserIdFromToken(jwtToken);
-            if(userId) {
-                document.getElementById('my-user-id').value = userId;
-            }
-            alert("Login realizado com sucesso! Seu ID foi preenchido. Agora clique em 'Conectar'.");
+            if (userId) document.getElementById('my-user-id').value = userId;
+            alert("Login realizado com sucesso! Agora clique em 'Conectar'.");
         } catch (error) {
             console.error("Erro no login:", error);
             alert(error.message);
@@ -121,75 +137,124 @@
 
     function connect() {
         if (!jwtToken) {
-            alert("Faça o login primeiro."); return;
+            alert("Faça o login primeiro.");
+            return;
         }
-        console.log("Tentando conectar ao WebSocket...");
-
         const backendUrl = document.getElementById('backend-url').value;
-        const socket = new SockJS(`${backendUrl}/ws?token=${jwtToken}`); 
+        const socket = new SockJS(`${backendUrl}/ws`);
         stompClient = Stomp.over(socket);
-
-        // Descomente a linha abaixo para silenciar os logs de debug do STOMP
-        // stompClient.debug = null;
+        stompClient.debug = null;
 
         const headers = { 'Authorization': 'Bearer ' + jwtToken };
 
-        stompClient.connect(headers, function (frame) {
+        stompClient.connect(headers, function(frame) {
             console.log('CONECTADO COM SUCESSO: ' + frame);
             updateConnectionStatus(true);
-            
-            // Inscrição na fila pessoal para receber mensagens
-            stompClient.subscribe(`/user/queue/usuario`, function (message) {
-                console.log("MENSAGEM BRUTA RECEBIDA NA INSCRIÇÃO:", message);
+
+            // ✅ INSCRIÇÃO CORRETA E UNIFICADA PARA CHAT PRIVADO
+            stompClient.subscribe(`/user/queue/usuario`, function(message) {
                 const receivedMessage = JSON.parse(message.body);
-                console.log("MENSAGEM PARSEADA:", receivedMessage);
+                console.log("Mensagem privada recebida via WS:", receivedMessage);
 
-                const currentRecipientId = document.getElementById('recipient-id').value;
                 const myUserId = document.getElementById('my-user-id').value;
-                const senderId = receivedMessage.remetenteId || (receivedMessage.remetente ? receivedMessage.remetente.id : null);
+                const currentRecipientId = document.getElementById('recipient-id').value;
+                
+                const senderId = receivedMessage.remetenteId;
+                const recipientId = receivedMessage.destinatarioId;
 
-                // Mostra a mensagem apenas se ela pertence à conversa atual (remetente é o destinatário da conversa)
-                if (senderId == currentRecipientId) {
-                     showMessage(receivedMessage);
-                } else {
-                    console.warn("Mensagem recebida de um usuário diferente da conversa atual. Ignorando exibição.", receivedMessage);
-                    // Aqui você poderia implementar uma lógica de notificação
+                // A mensagem só é exibida se pertencer à conversa que está aberta na tela
+                if ((String(senderId) === myUserId && String(recipientId) === currentRecipientId) ||
+                    (String(senderId) === currentRecipientId && String(recipientId) === myUserId)) {
+                    showMessage(receivedMessage);
                 }
             });
-        }, function (error) {
+
+            // INSCRIÇÃO PARA O FEED PÚBLICO
+            stompClient.subscribe('/topic/publico', function(message) {
+                console.log("Nova postagem recebida no tópico público:", message.body);
+                const postData = JSON.parse(message.body);
+                showPublicPost(postData);
+            });
+
+        }, function(error) {
             console.error('ERRO DE CONEXÃO:', error);
             updateConnectionStatus(false);
         });
     }
 
-    async function fetchChatHistory() {
-        const myUserId = document.getElementById('my-user-id').value;
-        const recipientId = document.getElementById('recipient-id').value;
+    async function createPost() {
         const backendUrl = document.getElementById('backend-url').value;
-        const chatWindow = document.getElementById('chat-window');
+        const content = document.getElementById('post-content').value;
+        const files = document.getElementById('post-files').files;
 
-        chatWindow.innerHTML = '';
-        if (!myUserId || !recipientId) {
+        if (!content) {
+            alert("O conteúdo da postagem não pode estar vazio.");
             return;
         }
-        console.log(`Buscando histórico entre ${myUserId} e ${recipientId}...`);
 
+        const formData = new FormData();
+        const postagemDto = { conteudo: content };
+        formData.append('postagem', new Blob([JSON.stringify(postagemDto)], { type: 'application/json' }));
+
+        if (files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+                formData.append('arquivos', files[i]);
+            }
+        }
+        
         try {
-            const response = await fetch(`${backendUrl}/api/chat/privado/${myUserId}/${recipientId}`, {
-                method: 'GET', headers: { 'Authorization': 'Bearer ' + jwtToken }
+            const response = await fetch(`${backendUrl}/postagem/upload-mensagem`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken
+                },
+                body: formData
             });
 
             if (!response.ok) {
-                throw new Error(`Erro ao buscar histórico: ${response.status}`);
+                const errorText = await response.text();
+                throw new Error(`Erro ao criar postagem: ${response.status} - ${errorText}`);
             }
 
-            const history = await response.json();
-            history.forEach(message => showMessage(message));
-            console.log(`Histórico de ${history.length} mensagens carregado.`);
+            const result = await response.json();
+            console.log('Postagem criada com sucesso:', result);
+            document.getElementById('post-content').value = '';
+            document.getElementById('post-files').value = null;
+
         } catch (error) {
-            console.error('Erro ao buscar histórico:', error);
+            console.error("Erro no fetch da postagem:", error);
             alert(error.message);
         }
+    }
+
+    function showPublicPost(post) {
+        const feedWindow = document.getElementById('public-feed-window');
+        const postElement = document.createElement('div');
+        postElement.className = 'post-container';
+
+        let mediaHtml = '<div class="post-media">';
+        if (post.urlsMidia && post.urlsMidia.length > 0) {
+            post.urlsMidia.forEach(url => {
+                if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+                    mediaHtml += `<img src="${url}" alt="Mídia da postagem">`;
+                } else if (url.match(/\.(mp4|webm|ogg)$/i)) {
+                    mediaHtml += `<video controls src="${url}"></video>`;
+                }
+            });
+        }
+        mediaHtml += '</div>';
+        
+        const dataFormatada = new Date(post.dataCriacao).toLocaleString('pt-BR');
+
+        postElement.innerHTML = `
+            <div class="post-header">
+                <strong>${post.nomeAutor}</strong> <span style="color: #6c757d; font-weight: normal;">- ${dataFormatada}</span>
+            </div>
+            <div class="post-content">${post.conteudo}</div>
+            ${mediaHtml}
+        `;
+        
+        feedWindow.prepend(postElement);
     }
 
     function disconnect() {
@@ -202,46 +267,79 @@
 
     function updateConnectionStatus(isConnected) {
         const statusEl = document.getElementById('status');
+        const functionalitiesEl = document.getElementById('functionalities');
         if (isConnected) {
             statusEl.textContent = 'Conectado';
             statusEl.className = 'connected';
             document.getElementById('disconnect-btn').disabled = false;
             document.getElementById('connect-btn').disabled = true;
-            document.getElementById('chat-box').style.display = 'block';
+            functionalitiesEl.style.display = 'block';
         } else {
             statusEl.textContent = 'Desconectado';
             statusEl.className = 'disconnected';
             document.getElementById('disconnect-btn').disabled = true;
             document.getElementById('connect-btn').disabled = (jwtToken === null);
-            document.getElementById('chat-box').style.display = 'none';
+            functionalitiesEl.style.display = 'none';
+        }
+    }
+    
+    // ==============================================
+    // FUNÇÕES DO CHAT PRIVADO
+    // ==============================================
+
+    async function fetchChatHistory() {
+        const myUserId = document.getElementById('my-user-id').value;
+        const recipientId = document.getElementById('recipient-id').value;
+        const backendUrl = document.getElementById('backend-url').value;
+        
+        const chatWindow = document.getElementById('chat-window');
+        chatWindow.innerHTML = ''; // Limpa a janela para nova conversa
+
+        if (!myUserId || !recipientId) {
+            return;
+        }
+        
+        const fetchUrl = `${backendUrl}/api/chat/privado/${myUserId}/${recipientId}`;
+        console.log(`Buscando histórico em: ${fetchUrl}`);
+
+        try {
+            const response = await fetch(fetchUrl, {
+                method: 'GET',
+                headers: { 'Authorization': 'Bearer ' + jwtToken }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao buscar histórico: ${response.status}`);
+            }
+
+            const history = await response.json();
+            console.log("Histórico recebido:", history);
+            history.forEach(message => showMessage(message));
+            
+        } catch (error) {
+            console.error('Erro no fetch do histórico:', error);
+            alert(error.message);
         }
     }
 
+    // ✅ CORREÇÃO: Função de envio simplificada
     function sendMessage() {
         const recipientId = document.getElementById('recipient-id').value;
         const messageContent = document.getElementById('message').value;
-        const myUserId = document.getElementById('my-user-id').value;
 
         if (stompClient && messageContent && recipientId) {
             const chatMessage = {
                 conteudo: messageContent,
-                destinatarioId: parseInt(recipientId),
-                // Adicionamos os dados do remetente para a exibição otimista
-                remetenteId: parseInt(myUserId), 
-                nomeRemetente: "Você" 
+                destinatarioId: parseInt(recipientId)
             };
             
             const destination = `/app/privado/${recipientId}`;
-            console.log("Enviando mensagem para:", destination, chatMessage);
             stompClient.send(destination, {}, JSON.stringify(chatMessage));
             
-            // --- MELHORIA: EXIBIÇÃO OTIMISTA ---
-            // Mostra a mensagem na tela imediatamente, sem esperar o retorno do servidor.
-            showMessage(chatMessage);
-            
+            // A exibição é feita via WebSocket, apenas limpamos o campo
             document.getElementById('message').value = '';
         } else {
-            alert("Verifique a conexão e preencha todos os campos.");
+            alert("Verifique a conexão e preencha o ID do destinatário e a mensagem.");
         }
     }
 
@@ -252,22 +350,20 @@
 
         const myUserId = document.getElementById('my-user-id').value;
         
-        const senderName = message.nomeRemetente || (message.remetente ? message.remetente.nome : 'Desconhecido');
         const senderId = message.remetenteId || (message.remetente ? message.remetente.id : null);
-        const content = message.conteudo;
+        const senderName = message.nomeRemetente || (message.remetente ? message.remetente.nome : 'Desconhecido');
         
-        if (senderId == myUserId) {
+        if (String(senderId) === myUserId) {
             messageElement.classList.add('sent');
-            messageElement.innerHTML = `<strong>Você:</strong><p>${content}</p>`;
+            messageElement.innerHTML = `<p>${message.conteudo}</p>`;
         } else {
             messageElement.classList.add('received');
-            messageElement.innerHTML = `<strong>${senderName}:</strong><p>${content}</p>`;
+            messageElement.innerHTML = `<strong>${senderName}:</strong><p>${message.conteudo}</p>`;
         }
 
         chatWindow.appendChild(messageElement);
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 </script>
-
 </body>
 </html>
