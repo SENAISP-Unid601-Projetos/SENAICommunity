@@ -32,7 +32,6 @@ public class UsuarioDetailsService implements UserDetailsService {
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getNome().toUpperCase()))
                 .toList();
 
-        return new User(usuario.getEmail(), usuario.getSenha(), authorities);
+        return new UsuarioDetailsImpl(usuario, authorities);
     }
-
 }

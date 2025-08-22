@@ -46,6 +46,7 @@ public class CadastroUsuarioController {
         dto.setSenha(senha);
         dto.setCurso(curso);
         dto.setPeriodo(periodo);
+        dto.setDataNascimento(dataNascimento);
 
         return ResponseEntity.ok(alunoService.criarAlunoComFoto(dto, foto));
     }

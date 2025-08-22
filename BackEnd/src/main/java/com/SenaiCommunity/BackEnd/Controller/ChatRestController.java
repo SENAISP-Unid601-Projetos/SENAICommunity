@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
+import com.SenaiCommunity.BackEnd.DTO.PostagemSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.MensagemGrupo;
 import com.SenaiCommunity.BackEnd.Entity.MensagemPrivada;
 import com.SenaiCommunity.BackEnd.Entity.Postagem;
@@ -40,7 +41,7 @@ public class ChatRestController {
 
     //  Histórico de postagens públicas
     @GetMapping("/publico")
-    public List<Postagem> getPostagensPublicas() {
+    public List<PostagemSaidaDTO> getPostagensPublicas() {
         return postagemService.buscarPostagensPublicas();
     }
 }
