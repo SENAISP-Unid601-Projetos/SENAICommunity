@@ -27,7 +27,7 @@
         .post-container { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px; background-color: #fff; }
         .post-header { font-weight: bold; margin-bottom: 8px; color: #333; }
         .post-content { margin-bottom: 10px; white-space: pre-wrap; }
-        .post-media img, .post-media video { max-width: 100%; height: auto; border-radius: 4px; margin-top: 10px; }
+        .post-media img, .post-media video, .post-media audio { max-width: 100%; border-radius: 4px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -72,7 +72,7 @@
             <textarea id="post-content" placeholder="O que você está pensando?"></textarea>
         </div>
         <div class="form-group">
-            <label for="post-files">Anexar Arquivos:</label>
+            <label for="post-files">Anexar Arquivos (Imagens, Vídeos, Áudios):</label>
             <input type="file" id="post-files" multiple>
         </div>
         <button onclick="createPost()">Enviar Postagem</button>
@@ -99,6 +99,7 @@
     let stompClient = null;
     let jwtToken = null;
 
+    // --- FUNÇÕES DE AUTENTICAÇÃO E UTILITÁRIAS ---
     function getUserIdFromToken(token) {
         try {
             const payloadBase64 = token.split('.')[1];
@@ -135,6 +136,7 @@
         }
     }
 
+    // --- FUNÇÕES DE CONEXÃO E WEBSOCKET ---
     function connect() {
         if (!jwtToken) {
             alert("Faça o login primeiro.");
@@ -150,111 +152,34 @@
         stompClient.connect(headers, function(frame) {
             console.log('CONECTADO COM SUCESSO: ' + frame);
             updateConnectionStatus(true);
+            
+            // ✅ ASSIM QUE CONECTAR, BUSCA O HISTÓRICO DE POSTAGENS
+            fetchPublicPosts();
 
-            // ✅ INSCRIÇÃO CORRETA E UNIFICADA PARA CHAT PRIVADO
+            // Inscrição para o CHAT PRIVADO
             stompClient.subscribe(`/user/queue/usuario`, function(message) {
                 const receivedMessage = JSON.parse(message.body);
-                console.log("Mensagem privada recebida via WS:", receivedMessage);
-
                 const myUserId = document.getElementById('my-user-id').value;
                 const currentRecipientId = document.getElementById('recipient-id').value;
-                
                 const senderId = receivedMessage.remetenteId;
                 const recipientId = receivedMessage.destinatarioId;
-
-                // A mensagem só é exibida se pertencer à conversa que está aberta na tela
                 if ((String(senderId) === myUserId && String(recipientId) === currentRecipientId) ||
                     (String(senderId) === currentRecipientId && String(recipientId) === myUserId)) {
                     showMessage(receivedMessage);
                 }
             });
 
-            // INSCRIÇÃO PARA O FEED PÚBLICO
+            // Inscrição para o FEED PÚBLICO para receber NOVAS postagens
             stompClient.subscribe('/topic/publico', function(message) {
                 console.log("Nova postagem recebida no tópico público:", message.body);
                 const postData = JSON.parse(message.body);
-                showPublicPost(postData);
+                showPublicPost(postData, true); // O 'true' indica que é para adicionar no topo
             });
 
         }, function(error) {
             console.error('ERRO DE CONEXÃO:', error);
             updateConnectionStatus(false);
         });
-    }
-
-    async function createPost() {
-        const backendUrl = document.getElementById('backend-url').value;
-        const content = document.getElementById('post-content').value;
-        const files = document.getElementById('post-files').files;
-
-        if (!content) {
-            alert("O conteúdo da postagem não pode estar vazio.");
-            return;
-        }
-
-        const formData = new FormData();
-        const postagemDto = { conteudo: content };
-        formData.append('postagem', new Blob([JSON.stringify(postagemDto)], { type: 'application/json' }));
-
-        if (files.length > 0) {
-            for (let i = 0; i < files.length; i++) {
-                formData.append('arquivos', files[i]);
-            }
-        }
-        
-        try {
-            const response = await fetch(`${backendUrl}/postagem/upload-mensagem`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + jwtToken
-                },
-                body: formData
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Erro ao criar postagem: ${response.status} - ${errorText}`);
-            }
-
-            const result = await response.json();
-            console.log('Postagem criada com sucesso:', result);
-            document.getElementById('post-content').value = '';
-            document.getElementById('post-files').value = null;
-
-        } catch (error) {
-            console.error("Erro no fetch da postagem:", error);
-            alert(error.message);
-        }
-    }
-
-    function showPublicPost(post) {
-        const feedWindow = document.getElementById('public-feed-window');
-        const postElement = document.createElement('div');
-        postElement.className = 'post-container';
-
-        let mediaHtml = '<div class="post-media">';
-        if (post.urlsMidia && post.urlsMidia.length > 0) {
-            post.urlsMidia.forEach(url => {
-                if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
-                    mediaHtml += `<img src="${url}" alt="Mídia da postagem">`;
-                } else if (url.match(/\.(mp4|webm|ogg)$/i)) {
-                    mediaHtml += `<video controls src="${url}"></video>`;
-                }
-            });
-        }
-        mediaHtml += '</div>';
-        
-        const dataFormatada = new Date(post.dataCriacao).toLocaleString('pt-BR');
-
-        postElement.innerHTML = `
-            <div class="post-header">
-                <strong>${post.nomeAutor}</strong> <span style="color: #6c757d; font-weight: normal;">- ${dataFormatada}</span>
-            </div>
-            <div class="post-content">${post.conteudo}</div>
-            ${mediaHtml}
-        `;
-        
-        feedWindow.prepend(postElement);
     }
 
     function disconnect() {
@@ -282,26 +207,18 @@
             functionalitiesEl.style.display = 'none';
         }
     }
-    
-    // ==============================================
-    // FUNÇÕES DO CHAT PRIVADO
-    // ==============================================
 
-    async function fetchChatHistory() {
-        const myUserId = document.getElementById('my-user-id').value;
-        const recipientId = document.getElementById('recipient-id').value;
+    // --- FUNÇÕES DE POSTAGEM ---
+
+    // ✅ NOVA FUNÇÃO: Busca e exibe o histórico de postagens públicas
+    async function fetchPublicPosts() {
         const backendUrl = document.getElementById('backend-url').value;
-        
-        const chatWindow = document.getElementById('chat-window');
-        chatWindow.innerHTML = ''; // Limpa a janela para nova conversa
+        const feedWindow = document.getElementById('public-feed-window');
+        feedWindow.innerHTML = ''; // Limpa o feed antes de carregar o histórico
 
-        if (!myUserId || !recipientId) {
-            return;
-        }
+        const fetchUrl = `${backendUrl}/api/chat/publico`;
+        console.log(`Buscando histórico de postagens em: ${fetchUrl}`);
         
-        const fetchUrl = `${backendUrl}/api/chat/privado/${myUserId}/${recipientId}`;
-        console.log(`Buscando histórico em: ${fetchUrl}`);
-
         try {
             const response = await fetch(fetchUrl, {
                 method: 'GET',
@@ -309,20 +226,128 @@
             });
 
             if (!response.ok) {
-                throw new Error(`Erro ao buscar histórico: ${response.status}`);
+                throw new Error(`Erro ao buscar histórico de postagens: ${response.status}`);
             }
 
+            const posts = await response.json();
+            console.log("Histórico de postagens recebido:", posts);
+            posts.forEach(post => showPublicPost(post, false)); // 'false' para adicionar no final
+
+        } catch (error) {
+            console.error('Erro no fetch do histórico de postagens:', error);
+            alert(error.message);
+        }
+    }
+
+    async function createPost() {
+        const backendUrl = document.getElementById('backend-url').value;
+        const content = document.getElementById('post-content').value;
+        const files = document.getElementById('post-files').files;
+
+        if (!content) {
+            alert("O conteúdo da postagem não pode estar vazio.");
+            return;
+        }
+
+        const formData = new FormData();
+        const postagemDto = { conteudo: content };
+        formData.append('postagem', new Blob([JSON.stringify(postagemDto)], { type: 'application/json' }));
+
+        if (files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+                formData.append('arquivos', files[i]);
+            }
+        }
+        
+        try {
+            const response = await fetch(`${backendUrl}/postagem/upload-mensagem`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + jwtToken },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Erro ao criar postagem: ${response.status} - ${errorText}`);
+            }
+
+            const result = await response.json();
+            console.log('Postagem criada com sucesso:', result);
+            document.getElementById('post-content').value = '';
+            document.getElementById('post-files').value = null;
+
+        } catch (error) {
+            console.error("Erro no fetch da postagem:", error);
+            alert(error.message);
+        }
+    }
+    
+    // ✅ FUNÇÃO ATUALIZADA para distinguir entre histórico e novas postagens
+    // e para renderizar áudios.
+    function showPublicPost(post, prepend) {
+        const feedWindow = document.getElementById('public-feed-window');
+        const postElement = document.createElement('div');
+        postElement.className = 'post-container';
+
+        let mediaHtml = '<div class="post-media">';
+        const urls = post.urlsMidia || (post.arquivos ? post.arquivos.map(a => a.url) : []);
+
+        if (urls && urls.length > 0) {
+            urls.forEach(url => {
+                if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+                    mediaHtml += `<img src="${url}" alt="Mídia da postagem">`;
+                } else if (url.match(/\.(mp4|webm|ogg)$/i)) {
+                    mediaHtml += `<video controls src="${url}"></video>`;
+                } else if (url.match(/\.(mp3|wav|m4a)$/i)) {
+                    mediaHtml += `<audio controls src="${url}"></audio>`;
+                }
+            });
+        }
+        mediaHtml += '</div>';
+        
+        const dataFormatada = new Date(post.dataCriacao || post.dataPostagem).toLocaleString('pt-BR');
+        const autor = post.nomeAutor || (post.autor ? post.autor.nome : 'Desconhecido');
+
+        postElement.innerHTML = `
+            <div class="post-header">
+                <strong>${autor}</strong> <span style="color: #6c757d; font-weight: normal;">- ${dataFormatada}</span>
+            </div>
+            <div class="post-content">${post.conteudo}</div>
+            ${mediaHtml}
+        `;
+        
+        if (prepend) {
+            feedWindow.prepend(postElement); // Adiciona novas postagens no topo
+        } else {
+            feedWindow.appendChild(postElement); // Adiciona histórico no final
+        }
+    }
+
+    // --- FUNÇÕES DO CHAT PRIVADO ---
+    async function fetchChatHistory() {
+        const myUserId = document.getElementById('my-user-id').value;
+        const recipientId = document.getElementById('recipient-id').value;
+        const backendUrl = document.getElementById('backend-url').value;
+        const chatWindow = document.getElementById('chat-window');
+        chatWindow.innerHTML = '';
+
+        if (!myUserId || !recipientId) { return; }
+        
+        const fetchUrl = `${backendUrl}/api/chat/privado/${myUserId}/${recipientId}`;
+        try {
+            const response = await fetch(fetchUrl, {
+                method: 'GET',
+                headers: { 'Authorization': 'Bearer ' + jwtToken }
+            });
+            if (!response.ok) throw new Error(`Erro ao buscar histórico: ${response.status}`);
             const history = await response.json();
-            console.log("Histórico recebido:", history);
             history.forEach(message => showMessage(message));
-            
         } catch (error) {
             console.error('Erro no fetch do histórico:', error);
             alert(error.message);
         }
     }
 
-    // ✅ CORREÇÃO: Função de envio simplificada
     function sendMessage() {
         const recipientId = document.getElementById('recipient-id').value;
         const messageContent = document.getElementById('message').value;
@@ -332,11 +357,7 @@
                 conteudo: messageContent,
                 destinatarioId: parseInt(recipientId)
             };
-            
-            const destination = `/app/privado/${recipientId}`;
-            stompClient.send(destination, {}, JSON.stringify(chatMessage));
-            
-            // A exibição é feita via WebSocket, apenas limpamos o campo
+            stompClient.send(`/app/privado/${recipientId}`, {}, JSON.stringify(chatMessage));
             document.getElementById('message').value = '';
         } else {
             alert("Verifique a conexão e preencha o ID do destinatário e a mensagem.");
@@ -349,7 +370,6 @@
         messageElement.classList.add('message');
 
         const myUserId = document.getElementById('my-user-id').value;
-        
         const senderId = message.remetenteId || (message.remetente ? message.remetente.id : null);
         const senderName = message.nomeRemetente || (message.remetente ? message.remetente.nome : 'Desconhecido');
         
@@ -365,5 +385,6 @@
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 </script>
+
 </body>
 </html>

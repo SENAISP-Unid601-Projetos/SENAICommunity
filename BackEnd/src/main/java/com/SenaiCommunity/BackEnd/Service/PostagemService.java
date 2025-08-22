@@ -89,8 +89,13 @@ public class PostagemService {
         postagemRepository.deleteById(id);
     }
 
-    public List<Postagem> buscarPostagensPublicas() {
-        return postagemRepository.findTop50ByOrderByDataPostagemDesc();
+    public List<PostagemSaidaDTO> buscarPostagensPublicas() {
+        List<Postagem> posts = postagemRepository.findTop50ByOrderByDataPostagemDesc();
+
+        // Converte cada Postagem da lista para um PostagemSaidaDTO
+        return posts.stream()
+                .map(this::toDTO) // Usa o método de conversão que você já tem!
+                .collect(Collectors.toList());
     }
 
     public Postagem buscarPorId(Long id) {
