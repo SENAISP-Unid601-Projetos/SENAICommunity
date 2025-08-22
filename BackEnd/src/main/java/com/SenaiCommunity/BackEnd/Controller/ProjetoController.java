@@ -30,9 +30,36 @@ public class ProjetoController {
     }
 
     @PostMapping
-    public ResponseEntity<ProjetoDTO> criar(@RequestBody ProjetoDTO dto) {
-        ProjetoDTO salvo = projetoService.salvar(dto);
-        return ResponseEntity.ok(salvo);
+    public ResponseEntity<?> criar(
+            @RequestParam String titulo,
+            @RequestParam String descricao,
+            @RequestParam String imagemUrl,
+            @RequestParam Integer maxMembros,
+            @RequestParam Boolean grupoPrivado,
+            @RequestParam Long autorId,
+            @RequestParam String autorNome,
+            @RequestParam List<Long> professorIds,
+            @RequestParam List<Long> alunoIds) {
+        try {
+            ProjetoDTO dto = new ProjetoDTO();
+            dto.setTitulo(titulo);
+            dto.setDescricao(descricao);
+            dto.setImagemUrl(imagemUrl);
+            dto.setMaxMembros(maxMembros);
+            dto.setGrupoPrivado(grupoPrivado);
+            dto.setAutorId(autorId);
+            dto.setAutorNome(autorNome);
+            dto.setProfessorIds(professorIds);
+            dto.setAlunoIds(alunoIds);
+
+            ProjetoDTO salvo = projetoService.salvar(dto);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Projeto criado com sucesso!",
+                    "projeto", salvo
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao criar projeto: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
@@ -51,28 +78,15 @@ public class ProjetoController {
     @PostMapping("/{projetoId}/convites")
     public ResponseEntity<?> enviarConvite(
             @PathVariable Long projetoId,
-            @RequestBody Map<String, Object> request) {
+            @RequestParam Long usuarioConvidadoId,
+            @RequestParam Long usuarioConvidadorId) {
         try {
-            Object usuarioConvidadoIdObj = request.get("usuarioConvidadoId");
-            Object usuarioConvidadorIdObj = request.get("usuarioConvidadorId");
-
-            if (usuarioConvidadoIdObj == null || usuarioConvidadorIdObj == null ||
-                    usuarioConvidadoIdObj.toString().trim().isEmpty() ||
-                    usuarioConvidadorIdObj.toString().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("usuarioConvidadoId e usuarioConvidadorId são obrigatórios e não podem estar vazios");
-            }
-
-            Long usuarioConvidadoId = Long.valueOf(usuarioConvidadoIdObj.toString().trim());
-            Long usuarioConvidadorId = Long.valueOf(usuarioConvidadorIdObj.toString().trim());
-
             if (usuarioConvidadoId <= 0 || usuarioConvidadorId <= 0) {
                 return ResponseEntity.badRequest().body("IDs devem ser números positivos");
             }
 
             projetoService.enviarConvite(projetoId, usuarioConvidadoId, usuarioConvidadorId);
-            return ResponseEntity.ok().build();
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body("IDs devem ser números válidos");
+            return ResponseEntity.ok(Map.of("message", "Convite enviado com sucesso!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
@@ -83,20 +97,10 @@ public class ProjetoController {
     @PostMapping("/convites/{conviteId}/aceitar")
     public ResponseEntity<?> aceitarConvite(
             @PathVariable Long conviteId,
-            @RequestBody Map<String, Object> request) {
+            @RequestParam Long usuarioId) {
         try {
-            Object usuarioIdObj = request.get("usuarioId");
-
-            if (usuarioIdObj == null) {
-                return ResponseEntity.badRequest().body("usuarioId é obrigatório");
-            }
-
-            Long usuarioId = Long.valueOf(usuarioIdObj.toString().trim());
-
             projetoService.aceitarConvite(conviteId, usuarioId);
-            return ResponseEntity.ok().build();
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body("usuarioId deve ser um número válido");
+            return ResponseEntity.ok(Map.of("message", "Convite aceito com sucesso! Você agora faz parte do grupo."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
@@ -111,7 +115,7 @@ public class ProjetoController {
             @RequestParam Long adminId) {
         try {
             projetoService.expulsarMembro(projetoId, membroId, adminId);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(Map.of("message", "Membro expulso do grupo com sucesso!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
@@ -123,29 +127,18 @@ public class ProjetoController {
     public ResponseEntity<?> alterarPermissao(
             @PathVariable Long projetoId,
             @PathVariable Long membroId,
-            @RequestBody Map<String, Object> request) {
+            @RequestParam String role,
+            @RequestParam Long adminId) {
         try {
-            Object roleObj = request.get("role");
-            Object adminIdObj = request.get("adminId");
-
-            if (roleObj == null || adminIdObj == null) {
-                return ResponseEntity.badRequest().body("role e adminId são obrigatórios");
-            }
-
-            String roleStr = roleObj.toString().trim();
-            Long adminId = Long.valueOf(adminIdObj.toString().trim());
-
             ProjetoMembro.RoleMembro novaRole;
             try {
-                novaRole = ProjetoMembro.RoleMembro.valueOf(roleStr.toUpperCase());
+                novaRole = ProjetoMembro.RoleMembro.valueOf(role.toUpperCase());
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body("Role inválida. Use: ADMIN, MODERADOR ou MEMBRO");
             }
 
             projetoService.alterarPermissao(projetoId, membroId, novaRole, adminId);
-            return ResponseEntity.ok().build();
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body("adminId deve ser um número válido");
+            return ResponseEntity.ok(Map.of("message", "Permissão alterada com sucesso!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
@@ -156,23 +149,13 @@ public class ProjetoController {
     @PutMapping("/{projetoId}/info")
     public ResponseEntity<?> atualizarInfoGrupo(
             @PathVariable Long projetoId,
-            @RequestBody Map<String, Object> request) {
+            @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) String descricao,
+            @RequestParam(required = false) String imagemUrl,
+            @RequestParam Long adminId) {
         try {
-            String novoTitulo = (String) request.get("titulo");
-            String novaDescricao = (String) request.get("descricao");
-            String novaImagemUrl = (String) request.get("imagemUrl");
-            Object adminIdObj = request.get("adminId");
-
-            if (adminIdObj == null) {
-                return ResponseEntity.badRequest().body("adminId é obrigatório");
-            }
-
-            Long adminId = Long.valueOf(adminIdObj.toString().trim());
-
-            projetoService.atualizarInfoGrupo(projetoId, novoTitulo, novaDescricao, novaImagemUrl, adminId);
-            return ResponseEntity.ok().build();
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body("adminId deve ser um número válido");
+            projetoService.atualizarInfoGrupo(projetoId, titulo, descricao, imagemUrl, adminId);
+            return ResponseEntity.ok(Map.of("message", "Informações do grupo atualizadas com sucesso!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
