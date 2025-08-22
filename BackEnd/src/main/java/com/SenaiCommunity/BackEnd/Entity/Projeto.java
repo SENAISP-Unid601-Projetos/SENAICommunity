@@ -26,9 +26,6 @@ public class Projeto {
     @OneToMany(mappedBy = "projeto")
     private List<MensagemGrupo> mensagens;
 
-    // Grupo de mensagens relacionado
-//    @OneToOne(mappedBy = "projeto", cascade = CascadeType.ALL)
-//    private Grupos grupos;
 
     // Avaliações do projeto
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL, orphanRemoval = true)
