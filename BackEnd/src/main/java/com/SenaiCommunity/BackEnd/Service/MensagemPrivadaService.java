@@ -30,14 +30,13 @@ public class MensagemPrivadaService {
                 .dataEnvio(mensagem.getDataEnvio())
                 .remetenteId(mensagem.getRemetente().getId())
                 .nomeRemetente(mensagem.getRemetente().getNome())
+                .remetenteEmail(mensagem.getRemetente().getEmail())
                 .destinatarioId(mensagem.getDestinatario().getId())
                 .nomeDestinatario(mensagem.getDestinatario().getNome())
-                // ✅ ADICIONE ESTA LINHA:
                 .destinatarioEmail(mensagem.getDestinatario().getEmail())
                 .build();
     }
 
-    // ✅ NOVO MÉTODO PARA CONVERTER DTO DE ENTRADA PARA ENTIDADE
     private MensagemPrivada toEntity(MensagemPrivadaEntradaDTO dto, Usuario remetente, Usuario destinatario) {
         return MensagemPrivada.builder()
                 .conteudo(dto.getConteudo())
@@ -47,7 +46,6 @@ public class MensagemPrivadaService {
                 .build();
     }
 
-    // ✅ MÉTODO PRINCIPAL ATUALIZADO PARA USAR DTOS
     @Transactional
     public MensagemPrivadaSaidaDTO salvarMensagemPrivada(MensagemPrivadaEntradaDTO dto, String remetenteUsername) { //
         Usuario remetente = usuarioRepository.findByEmail(remetenteUsername)
@@ -62,29 +60,29 @@ public class MensagemPrivadaService {
         return toDTO(mensagemSalva); //
     }
 
-    // ... O restante dos seus métodos (editar, excluir, etc.) permanecem aqui ...
-    public MensagemPrivada editarMensagemPrivada(Long id, String novoConteudo, String autorUsername) {
+    public MensagemPrivadaSaidaDTO editarMensagemPrivada(Long id, String novoConteudo, String autorUsername) {
         MensagemPrivada mensagem = mensagemPrivadaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
 
-        if (!mensagem.getRemetenteUsername().equals(autorUsername)) {
+        if (!mensagem.getRemetente().getEmail().equals(autorUsername)) {
             throw new SecurityException("Você não pode editar esta mensagem.");
         }
 
         mensagem.setConteudo(novoConteudo);
-        return mensagemPrivadaRepository.save(mensagem);
+        MensagemPrivada mensagemSalva = mensagemPrivadaRepository.save(mensagem);
+        return toDTO(mensagemSalva); // Retorna o DTO
     }
 
-    public MensagemPrivada excluirMensagemPrivada(Long id, String autorUsername) {
+    public MensagemPrivadaSaidaDTO excluirMensagemPrivada(Long id, String autorUsername) {
         MensagemPrivada mensagem = mensagemPrivadaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
 
-        if (!mensagem.getRemetenteUsername().equals(autorUsername)) {
-            throw new SecurityException("Você não pode excluir esta mensagem.");
+        if (!mensagem.getRemetente().getEmail().equals(autorUsername)) {
+            throw new SecurityException("Você не pode excluir esta mensagem.");
         }
 
         mensagemPrivadaRepository.delete(mensagem);
-        return mensagem;
+        return toDTO(mensagem); // Retorna o DTO da mensagem excluída
     }
 
     public List<MensagemPrivada> buscarMensagensPrivadas(Long user1, Long user2) {

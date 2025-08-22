@@ -32,7 +32,6 @@ public class PostagemService {
     @Autowired
     private ArquivoMidiaService midiaService;
 
-    // ✅ MÉTODO ATUALIZADO PARA RECEBER O DTO DE ENTRADA
     @Transactional
     public PostagemSaidaDTO criarPostagem(String autorUsername, PostagemEntradaDTO dto, List<MultipartFile> arquivos) {
         Usuario autor = usuarioRepository.findByEmail(autorUsername)
@@ -65,16 +64,54 @@ public class PostagemService {
     }
 
     @Transactional
-    public PostagemSaidaDTO editarPostagem(Long id, String username, String novoConteudo) {
+    public PostagemSaidaDTO editarPostagem(Long id, String username, PostagemEntradaDTO dto, List<MultipartFile> novosArquivos) {
         Postagem postagem = buscarPorId(id);
 
-        if (!postagem.getAutorUsername().equals(username)) {
+        if (!postagem.getAutor().getEmail().equals(username)) {
             throw new SecurityException("Você não pode editar esta postagem.");
         }
 
-        postagem.setConteudo(novoConteudo);
-        Postagem atualizada = postagemRepository.save(postagem);
+        // 1. Atualiza o conteúdo do texto
+        postagem.setConteudo(dto.getConteudo());
 
+        // 2. Remove arquivos antigos, se solicitado
+        if (dto.getUrlsMidia() != null && !dto.getUrlsMidia().isEmpty()) {
+            List<ArquivoMidia> arquivosParaRemover = new ArrayList<>();
+            for (String url : dto.getUrlsMidia()) {
+                postagem.getArquivos().stream()
+                        .filter(midia -> midia.getUrl().equals(url))
+                        .findFirst()
+                        .ifPresent(arquivosParaRemover::add);
+            }
+
+            for (ArquivoMidia midia : arquivosParaRemover) {
+                try {
+                    midiaService.deletar(midia.getUrl());
+                    postagem.getArquivos().remove(midia);
+                } catch (IOException e) {
+                    System.err.println("Erro ao deletar arquivo do Cloudinary: " + midia.getUrl());
+                }
+            }
+        }
+
+        // 3. Adiciona novos arquivos, se enviados
+        if (novosArquivos != null && !novosArquivos.isEmpty()) {
+            for (MultipartFile file : novosArquivos) {
+                try {
+                    String url = midiaService.upload(file);
+                    ArquivoMidia midia = ArquivoMidia.builder()
+                            .url(url)
+                            .tipo(midiaService.detectarTipoPelaUrl(url))
+                            .postagem(postagem)
+                            .build();
+                    postagem.getArquivos().add(midia);
+                } catch (IOException e) {
+                    throw new RuntimeException("Erro ao fazer upload do novo arquivo: " + file.getOriginalFilename(), e);
+                }
+            }
+        }
+
+        Postagem atualizada = postagemRepository.save(postagem);
         return toDTO(atualizada);
     }
 
@@ -82,10 +119,24 @@ public class PostagemService {
     public void excluirPostagem(Long id, String username) {
         Postagem postagem = buscarPorId(id);
 
-        if (!postagem.getAutorUsername().equals(username)) {
+        if (!postagem.getAutor().getEmail().equals(username)) {
             throw new SecurityException("Você não pode excluir esta postagem.");
         }
 
+        // Deleta os arquivos associados no Cloudinary
+        if (postagem.getArquivos() != null && !postagem.getArquivos().isEmpty()) {
+            // Itera sobre uma cópia da lista para evitar problemas de modificação concorrente
+            for (ArquivoMidia midia : new ArrayList<>(postagem.getArquivos())) {
+                try {
+                    midiaService.deletar(midia.getUrl());
+                } catch (Exception e) {
+                    // Loga o erro mas continua o processo para não impedir a exclusão no banco
+                    System.err.println("AVISO: Falha ao deletar arquivo no Cloudinary: " + midia.getUrl() + ". Erro: " + e.getMessage());
+                }
+            }
+        }
+
+        // Deleta a postagem do banco de dados
         postagemRepository.deleteById(id);
     }
 

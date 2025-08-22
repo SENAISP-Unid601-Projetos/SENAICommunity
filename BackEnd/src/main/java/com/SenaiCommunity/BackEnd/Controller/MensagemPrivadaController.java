@@ -19,7 +19,7 @@ import java.security.Principal;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-@Controller // ✅ ALTERADO DE @RestController PARA @Controller
+@Controller
 @PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
 public class MensagemPrivadaController {
 
@@ -29,7 +29,6 @@ public class MensagemPrivadaController {
     @Autowired
     private MensagemPrivadaService mensagemPrivadaService;
 
-    // ✅ ATUALIZADO PARA USAR DTOS
     @MessageMapping("/privado/{destinatarioId}")
     public void enviarPrivado(@DestinationVariable Long destinatarioId,
                               @Payload MensagemPrivadaEntradaDTO dto, // <-- Recebe DTO de Entrada
@@ -47,7 +46,6 @@ public class MensagemPrivadaController {
 
     // Os métodos abaixo são REST, então precisam estar em um controller com @RestController
     // Considere mover para um controller separado ou manter @RestController e anotar os métodos @MessageMapping em uma classe @Controller separada.
-    // Por simplicidade, vamos mantê-los aqui por enquanto.
     @RestController
     @RequestMapping("/chat-privado")
     public static class MensagemPrivadaRestController {
@@ -63,9 +61,13 @@ public class MensagemPrivadaController {
                                                 @RequestBody String novoConteudo,
                                                 Principal principal) {
             try {
-                MensagemPrivada atualizada = mensagemPrivadaService.editarMensagemPrivada(id, novoConteudo, principal.getName());
-                messagingTemplate.convertAndSend("/queue/usuario/" + atualizada.getDestinatario().getId(), atualizada);
-                messagingTemplate.convertAndSend("/queue/usuario/" + atualizada.getRemetente().getId(), atualizada);
+                // Agora recebe o DTO corretamente
+                MensagemPrivadaSaidaDTO atualizada = mensagemPrivadaService.editarMensagemPrivada(id, novoConteudo, principal.getName());
+
+                // Notifica ambos os usuários usando o email (que está no DTO)
+                messagingTemplate.convertAndSendToUser(atualizada.getDestinatarioEmail(), "/queue/usuario", atualizada);
+                messagingTemplate.convertAndSendToUser(atualizada.getRemetenteEmail(), "/queue/usuario", atualizada);
+
                 return ResponseEntity.ok(atualizada);
             } catch (SecurityException e) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
@@ -78,10 +80,15 @@ public class MensagemPrivadaController {
         public ResponseEntity<?> excluirMensagem(@PathVariable Long id,
                                                  Principal principal) {
             try {
-                MensagemPrivada mensagemExcluida = mensagemPrivadaService.excluirMensagemPrivada(id, principal.getName());
+                // Agora recebe o DTO corretamente
+                MensagemPrivadaSaidaDTO mensagemExcluida = mensagemPrivadaService.excluirMensagemPrivada(id, principal.getName());
+
                 Map<String, Object> payload = Map.of("tipo", "remocao", "id", id);
-                messagingTemplate.convertAndSend("/queue/usuario/" + mensagemExcluida.getDestinatario().getId(), payload);
-                messagingTemplate.convertAndSend("/queue/usuario/" + mensagemExcluida.getRemetente().getId(), payload);
+
+                // Notifica ambos os usuários usando o email (que está no DTO)
+                messagingTemplate.convertAndSendToUser(mensagemExcluida.getDestinatarioEmail(), "/queue/usuario", payload);
+                messagingTemplate.convertAndSendToUser(mensagemExcluida.getRemetenteEmail(), "/queue/usuario", payload);
+
                 return ResponseEntity.ok().build();
             } catch (SecurityException e) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());

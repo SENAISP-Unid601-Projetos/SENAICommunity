@@ -55,19 +55,15 @@ public class SecurityConfig {
                                 "/swagger-ui.html"
                         ).permitAll()
 
-                        // ✅ TODAS AS OUTRAS REQUISIÇÕES EXIGEM AUTENTICAÇÃO
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(
                         (req, res, excep) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido ou ausente")
                 ))
-                // Adiciona nosso filtro JWT antes do filtro padrão do Spring
+                // filtro JWT antes do filtro padrão do Spring
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
-    // ... (o resto da classe: corsConfigurationSource, passwordEncoder, authenticationManager)
-    // Nenhuma alteração necessária nessas outras beans. Elas estão corretas.
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

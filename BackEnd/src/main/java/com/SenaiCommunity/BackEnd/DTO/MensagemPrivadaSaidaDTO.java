@@ -17,4 +17,5 @@ public class MensagemPrivadaSaidaDTO {
     private Long destinatarioId;
     private String nomeDestinatario;
     private String destinatarioEmail;
+    private String remetenteEmail;
 }

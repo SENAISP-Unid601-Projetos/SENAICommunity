@@ -26,7 +26,6 @@ public class MensagemGrupoService {
     @Autowired
     private MensagemGrupoRepository mensagemGrupoRepository;
 
-    // ✅ LÓGICA DE CONVERSÃO MOVIMENTADA PARA O SERVICE
     private MensagemGrupoSaidaDTO toDTO(MensagemGrupo mensagem) {
         return MensagemGrupoSaidaDTO.builder()
                 .id(mensagem.getId())
@@ -38,7 +37,6 @@ public class MensagemGrupoService {
                 .build();
     }
 
-    // ✅ NOVO MÉTODO PARA CONVERTER DTO DE ENTRADA PARA ENTIDADE
     private MensagemGrupo toEntity(MensagemGrupoEntradaDTO dto, Usuario autor, Projeto projeto) {
         return MensagemGrupo.builder()
                 .conteudo(dto.getConteudo())
@@ -48,7 +46,6 @@ public class MensagemGrupoService {
                 .build();
     }
 
-    // ✅ MÉTODO PRINCIPAL ATUALIZADO PARA USAR DTOS
     @Transactional
     public MensagemGrupoSaidaDTO salvarMensagemGrupo(MensagemGrupoEntradaDTO dto, Long projetoId, String autorUsername) {
         Usuario autor = usuarioRepository.findByEmail(autorUsername)
@@ -63,7 +60,6 @@ public class MensagemGrupoService {
         return toDTO(mensagemSalva);
     }
 
-    // ... O restante dos seus métodos (editar, excluir, etc.) permanecem aqui ...
     public MensagemGrupo editarMensagemGrupo(Long id, String novoConteudo, String autorUsername) {
         MensagemGrupo mensagem = mensagemGrupoRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));

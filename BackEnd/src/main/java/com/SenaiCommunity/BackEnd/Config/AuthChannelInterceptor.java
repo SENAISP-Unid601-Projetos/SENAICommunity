@@ -41,7 +41,7 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
             return message;
         }
 
-        // A lógica de autenticação na conexão inicial está correta
+        // A lógica de autenticação na conexão inicial
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             List<String> authorization = accessor.getNativeHeader("Authorization");
 
@@ -64,14 +64,11 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
             }
         }
 
-        // ✅ LÓGICA CORRIGIDA E SIMPLIFICADA
         // Para qualquer tipo de mensagem, se o usuário já foi associado à sessão (no CONNECT),
-        // nós garantimos que ele está disponível no SecurityContext para a thread atual.
+        // garantimos que ele está disponível no SecurityContext para a thread atual.
         if (accessor.getUser() instanceof Authentication authentication) {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
-
-        // O bloco 'else' que limpava o contexto foi removido.
 
         return message;
     }

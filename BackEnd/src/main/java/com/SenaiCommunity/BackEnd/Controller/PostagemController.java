@@ -3,6 +3,7 @@ package com.SenaiCommunity.BackEnd.Controller;
 import com.SenaiCommunity.BackEnd.DTO.PostagemEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.PostagemSaidaDTO;
 import com.SenaiCommunity.BackEnd.Service.PostagemService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class PostagemController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    // ✅ MÉTODO ATUALIZADO PARA USAR @RequestPart COM DTO E ARQUIVOS
+    //  MÉTODO USA @RequestPart COM DTO E ARQUIVOS
     @PostMapping("/upload-mensagem")
     public ResponseEntity<PostagemSaidaDTO> uploadComMensagem(
             @RequestPart("postagem") PostagemEntradaDTO dto,
@@ -39,15 +40,21 @@ public class PostagemController {
         return ResponseEntity.ok(postagemCriada);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> editarPostagem(@PathVariable Long id,
-                                            @RequestBody String novoConteudo, Principal principal) {
+    @PutMapping(path = "/{id}", consumes = "multipart/form-data") // <- Muda para multipart
+    public ResponseEntity<?> editarPostagem(
+            @PathVariable Long id,
+            @RequestPart("postagem") PostagemEntradaDTO dto, // <- Recebe o DTO
+            @RequestPart(value = "arquivos", required = false) List<MultipartFile> novosArquivos, // <- Recebe novos arquivos
+            Principal principal) {
         try {
-            PostagemSaidaDTO dto = postagemService.editarPostagem(id, principal.getName(), novoConteudo);
-            messagingTemplate.convertAndSend("/topic/publico", Map.of("tipo", "edicao", "postagem", dto));
-            return ResponseEntity.ok(dto);
+            PostagemSaidaDTO postagemAtualizada = postagemService.editarPostagem(id, principal.getName(), dto, novosArquivos);
+            // Notifica via WebSocket sobre a edição
+            messagingTemplate.convertAndSend("/topic/publico", Map.of("tipo", "edicao", "postagem", postagemAtualizada));
+            return ResponseEntity.ok(postagemAtualizada);
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
