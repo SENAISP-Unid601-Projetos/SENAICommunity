@@ -13,4 +13,5 @@ public class AlunoEntradaDTO {
     private String fotoPerfil;
     private String curso;
     private String periodo;
+    private LocalDate dataNascimento;
 }

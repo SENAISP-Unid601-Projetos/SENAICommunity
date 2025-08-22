@@ -1,8 +1,9 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
+import com.SenaiCommunity.BackEnd.DTO.PostagemEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.PostagemSaidaDTO;
-import com.SenaiCommunity.BackEnd.Service.ArquivoMidiaService;
 import com.SenaiCommunity.BackEnd.Service.PostagemService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
-
 import java.util.List;
 import java.util.Map;
 
@@ -26,32 +26,35 @@ public class PostagemController {
     private PostagemService postagemService;
 
     @Autowired
-    private ArquivoMidiaService midiaService;
-
-    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    //  MÉTODO USA @RequestPart COM DTO E ARQUIVOS
     @PostMapping("/upload-mensagem")
     public ResponseEntity<PostagemSaidaDTO> uploadComMensagem(
-            @RequestParam("mensagem") String mensagem,
-            @RequestParam(value = "arquivos", required = false) List<MultipartFile> arquivos,
+            @RequestPart("postagem") PostagemEntradaDTO dto,
+            @RequestPart(value = "arquivos", required = false) List<MultipartFile> arquivos,
             Principal principal) throws IOException {
 
-        PostagemSaidaDTO dto = postagemService.criarPostagem(principal.getName(), mensagem, arquivos);
-        messagingTemplate.convertAndSend("/topic/publico", dto);
-        return ResponseEntity.ok(dto);
+        PostagemSaidaDTO postagemCriada = postagemService.criarPostagem(principal.getName(), dto, arquivos);
+        messagingTemplate.convertAndSend("/topic/publico", postagemCriada);
+        return ResponseEntity.ok(postagemCriada);
     }
 
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> editarPostagem(@PathVariable Long id,
-                                            @RequestBody String novoConteudo, Principal principal) {
+    @PutMapping(path = "/{id}", consumes = "multipart/form-data") // <- Muda para multipart
+    public ResponseEntity<?> editarPostagem(
+            @PathVariable Long id,
+            @RequestPart("postagem") PostagemEntradaDTO dto, // <- Recebe o DTO
+            @RequestPart(value = "arquivos", required = false) List<MultipartFile> novosArquivos, // <- Recebe novos arquivos
+            Principal principal) {
         try {
-            PostagemSaidaDTO dto = postagemService.editarPostagem(id, principal.getName(), novoConteudo);
-            messagingTemplate.convertAndSend("/topic/publico", Map.of("tipo", "edicao", "postagem", dto));
-            return ResponseEntity.ok(dto);
+            PostagemSaidaDTO postagemAtualizada = postagemService.editarPostagem(id, principal.getName(), dto, novosArquivos);
+            // Notifica via WebSocket sobre a edição
+            messagingTemplate.convertAndSend("/topic/publico", Map.of("tipo", "edicao", "postagem", postagemAtualizada));
+            return ResponseEntity.ok(postagemAtualizada);
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
