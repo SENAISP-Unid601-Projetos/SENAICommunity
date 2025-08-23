@@ -24,6 +24,7 @@ public class Postagem{
     @ManyToOne
     private Usuario autor;
 
+    @Lob // Para textos mais longos
     private String conteudo;
 
     private LocalDateTime dataPostagem = LocalDateTime.now();
@@ -31,11 +32,11 @@ public class Postagem{
     @Transient
     private String autorUsername;
 
-    @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ArquivoMidia> arquivos = new ArrayList<>();
 
     @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("dataCriacao ASC") // Opcional: para os comentários virem em ordem
+    @OrderBy("dataCriacao ASC") //para os comentários virem em ordem
     private List<Comentario> comentarios = new ArrayList<>();
 
 }

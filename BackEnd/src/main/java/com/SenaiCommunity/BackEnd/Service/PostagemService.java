@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Service;
 
+import com.SenaiCommunity.BackEnd.DTO.ComentarioSaidaDTO;
 import com.SenaiCommunity.BackEnd.DTO.PostagemEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.PostagemSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.ArquivoMidia;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,22 +78,24 @@ public class PostagemService {
 
         // 2. Remove arquivos antigos, se solicitado
         if (dto.getUrlsMidia() != null && !dto.getUrlsMidia().isEmpty()) {
-            List<ArquivoMidia> arquivosParaRemover = new ArrayList<>();
-            for (String url : dto.getUrlsMidia()) {
-                postagem.getArquivos().stream()
-                        .filter(midia -> midia.getUrl().equals(url))
-                        .findFirst()
-                        .ifPresent(arquivosParaRemover::add);
-            }
+            // Cria um Set com as URLs a serem removidas para uma busca mais rápida (O(1))
+            Set<String> urlsParaRemover = Set.copyOf(dto.getUrlsMidia());
 
-            for (ArquivoMidia midia : arquivosParaRemover) {
-                try {
-                    midiaService.deletar(midia.getUrl());
-                    postagem.getArquivos().remove(midia);
-                } catch (IOException e) {
-                    System.err.println("Erro ao deletar arquivo do Cloudinary: " + midia.getUrl());
+            // Itera sobre a lista de arquivos da postagem
+            postagem.getArquivos().removeIf(arquivo -> {
+                // Verifica se a URL do arquivo atual está na lista de remoção
+                if (urlsParaRemover.contains(arquivo.getUrl())) {
+                    try {
+                        // Se estiver, deleta do serviço de nuvem (Cloudinary)
+                        midiaService.deletar(arquivo.getUrl());
+                        return true; // Retorna true para que o removeIf remova este item da lista
+                    } catch (IOException e) {
+                        System.err.println("Erro ao deletar arquivo do Cloudinary: " + arquivo.getUrl());
+                        return false; // Não remove se falhou ao deletar da nuvem, para evitar inconsistência
+                    }
                 }
-            }
+                return false; // Mantém o arquivo se a URL não estiver na lista de remoção
+            });
         }
 
         // 3. Adiciona novos arquivos, se enviados
@@ -154,10 +158,32 @@ public class PostagemService {
                 .orElseThrow(() -> new EntityNotFoundException("Postagem não encontrada"));
     }
 
+    //  MÉTODO PARA BUSCAR UMA POSTAGEM ESPECÍFICA COM COMENTÁRIOS
+    public PostagemSaidaDTO buscarPostagemPorIdComComentarios(Long id) {
+        Postagem postagem = postagemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Postagem não encontrada com o ID: " + id));
+        return toDTO(postagem); // A mágica acontece no método de conversão toDTO
+    }
+
     // Lógica de conversão Entidade -> DTO de Saída
     private PostagemSaidaDTO toDTO(Postagem postagem) {
+        // Converte a lista de entidades ArquivoMidia para uma lista de Strings (URLs)
         List<String> urls = postagem.getArquivos() != null
                 ? postagem.getArquivos().stream().map(ArquivoMidia::getUrl).collect(Collectors.toList())
+                : Collections.emptyList();
+
+        //  Converte a lista de entidades Comentario para uma lista de ComentarioSaidaDTO
+        List<ComentarioSaidaDTO> comentariosDTO = postagem.getComentarios() != null
+                ? postagem.getComentarios().stream().map(comentario ->
+                ComentarioSaidaDTO.builder()
+                        .id(comentario.getId())
+                        .conteudo(comentario.getConteudo())
+                        .dataCriacao(comentario.getDataCriacao())
+                        .autorId(comentario.getAutor().getId())
+                        .nomeAutor(comentario.getAutor().getNome())
+                        .postagemId(comentario.getPostagem().getId())
+                        .build()
+        ).collect(Collectors.toList())
                 : Collections.emptyList();
 
         return PostagemSaidaDTO.builder()
@@ -167,6 +193,7 @@ public class PostagemService {
                 .autorId(postagem.getAutor().getId())
                 .nomeAutor(postagem.getAutor().getNome())
                 .urlsMidia(urls)
+                .comentarios(comentariosDTO) //  Associa a lista de DTOs de comentários
                 .build();
     }
 

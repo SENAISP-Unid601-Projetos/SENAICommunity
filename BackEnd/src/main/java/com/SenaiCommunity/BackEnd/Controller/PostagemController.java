@@ -58,6 +58,17 @@ public class PostagemController {
         }
     }
 
+    // NOVO ENDPOINT PARA BUSCAR UMA POSTAGEM POR ID
+    @GetMapping("/{id}")
+    public ResponseEntity<PostagemSaidaDTO> buscarPostagemPorId(@PathVariable Long id) {
+        try {
+            PostagemSaidaDTO postagem = postagemService.buscarPostagemPorIdComComentarios(id);
+            return ResponseEntity.ok(postagem);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> excluirPostagem(@PathVariable Long id, Principal principal) {
         try {

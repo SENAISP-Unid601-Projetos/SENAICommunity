@@ -16,5 +16,6 @@ public class PostagemSaidaDTO {
     private Long autorId;
     private String nomeAutor;
     private List<String> urlsMidia;
+    private List<ComentarioSaidaDTO> comentarios;
 
 }
