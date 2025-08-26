@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class ComentarioService {
@@ -34,20 +37,24 @@ public class ComentarioService {
     @Transactional
     public ComentarioSaidaDTO criarComentario(Long postagemId, String autorUsername, ComentarioEntradaDTO dto) {
         Usuario autor = usuarioRepository.findByEmail(autorUsername)
-                .orElseThrow(() -> new NoSuchElementException("Usuário autor do comentário não encontrado"));
-
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
         Postagem postagem = postagemRepository.findById(postagemId)
-                .orElseThrow(() -> new EntityNotFoundException("Postagem com ID " + postagemId + " não encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Postagem não encontrada"));
 
         Comentario novoComentario = Comentario.builder()
                 .conteudo(dto.getConteudo())
-                .dataCriacao(LocalDateTime.now())
                 .autor(autor)
                 .postagem(postagem)
                 .build();
 
-        Comentario comentarioSalvo = comentarioRepository.save(novoComentario);
+        // Se for uma resposta, associa ao comentário pai
+        if (dto.getParentId() != null) {
+            Comentario parent = comentarioRepository.findById(dto.getParentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Comentário pai não encontrado"));
+            novoComentario.setParent(parent);
+        }
 
+        Comentario comentarioSalvo = comentarioRepository.save(novoComentario);
         return toDTO(comentarioSalvo);
     }
 
@@ -91,10 +98,31 @@ public class ComentarioService {
         return toDTO(comentario);
     }
 
-    /**
-     * Converte uma entidade Comentario para um ComentarioSaidaDTO.
-     */
+
+    @Transactional
+    public ComentarioSaidaDTO destacarComentario(Long comentarioId, String username) {
+        Comentario comentario = comentarioRepository.findById(comentarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Comentário não encontrado"));
+
+        // Regra de segurança: Apenas o autor da postagem pode destacar
+        if (!comentario.getPostagem().getAutor().getEmail().equals(username)) {
+            throw new SecurityException("Acesso negado: Apenas o autor da postagem pode destacar comentários.");
+        }
+
+        // Alterna o estado de "destacado"
+        comentario.setDestacado(!comentario.isDestacado());
+        Comentario comentarioSalvo = comentarioRepository.save(comentario);
+        return toDTO(comentarioSalvo);
+    }
+
+
     private ComentarioSaidaDTO toDTO(Comentario comentario) {
+        if (comentario == null) return null;
+
+        List<ComentarioSaidaDTO> repliesDTO = comentario.getReplies() != null ?
+                comentario.getReplies().stream().map(this::toDTO).collect(Collectors.toList()) :
+                Collections.emptyList();
+
         return ComentarioSaidaDTO.builder()
                 .id(comentario.getId())
                 .conteudo(comentario.getConteudo())
@@ -102,6 +130,10 @@ public class ComentarioService {
                 .autorId(comentario.getAutor().getId())
                 .nomeAutor(comentario.getAutor().getNome())
                 .postagemId(comentario.getPostagem().getId())
+                .parentId(comentario.getParent() != null ? comentario.getParent().getId() : null)
+                .replyingToName(comentario.getParent() != null ? comentario.getParent().getAutor().getNome() : null)
+                .destacado(comentario.isDestacado())
+                .replies(repliesDTO)
                 .build();
     }
 }

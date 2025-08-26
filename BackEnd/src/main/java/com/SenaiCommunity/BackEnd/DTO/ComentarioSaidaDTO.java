@@ -3,6 +3,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -13,4 +14,8 @@ public class ComentarioSaidaDTO {
     private Long autorId;
     private String nomeAutor;
     private Long postagemId;
+    private Long parentId;
+    private boolean destacado;
+    private List<ComentarioSaidaDTO> replies; // Para as respostas aninhadas
+    private String replyingToName; // Nome do autor do comentário pai
 }

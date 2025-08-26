@@ -47,6 +47,20 @@ public class ComentarioController {
         @Autowired
         private SimpMessagingTemplate messagingTemplate;
 
+        @PutMapping("/{id}/destacar")
+        public ResponseEntity<?> destacarComentario(@PathVariable Long id, Principal principal) {
+            try {
+                ComentarioSaidaDTO comentarioAtualizado = comentarioService.destacarComentario(id, principal.getName());
+                // Notifica o tópico que o comentário foi atualizado (agora com a flag 'destacado')
+                messagingTemplate.convertAndSend("/topic/postagem/" + comentarioAtualizado.getPostagemId() + "/comentarios", comentarioAtualizado);
+                return ResponseEntity.ok(comentarioAtualizado);
+            } catch (SecurityException e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            } catch (EntityNotFoundException | NoSuchElementException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
+        }
+
         // Endpoint para editar um comentário
         @PutMapping("/{id}")
         public ResponseEntity<?> editarComentario(@PathVariable Long id,
