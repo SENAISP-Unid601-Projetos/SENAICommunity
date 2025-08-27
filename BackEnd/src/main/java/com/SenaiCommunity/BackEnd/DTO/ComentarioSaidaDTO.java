@@ -16,6 +16,5 @@ public class ComentarioSaidaDTO {
     private Long postagemId;
     private Long parentId;
     private boolean destacado;
-    private List<ComentarioSaidaDTO> replies; // Para as respostas aninhadas
     private String replyingToName; // Nome do autor do comentário pai
 }

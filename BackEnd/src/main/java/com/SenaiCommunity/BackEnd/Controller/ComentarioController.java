@@ -27,18 +27,33 @@ public class ComentarioController {
     @Autowired
     private ComentarioService comentarioService;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     // --- PARTE WEBSOCKET (para criar comentários em tempo real) ---
     @MessageMapping("/postagem/{postagemId}/comentar")
     @SendTo("/topic/postagem/{postagemId}/comentarios")
     public ComentarioSaidaDTO novoComentario(@DestinationVariable Long postagemId,
                                              @Payload ComentarioEntradaDTO comentarioDTO,
                                              Principal principal) {
-        return comentarioService.criarComentario(postagemId, principal.getName(), comentarioDTO);
+        ComentarioSaidaDTO novoComentario = comentarioService.criarComentario(postagemId, principal.getName(), comentarioDTO);
+
+        // Se for uma resposta, notificar também o tópico específico do comentário pai
+        if (comentarioDTO.getParentId() != null) {
+            Map<String, Object> payload = Map.of(
+                    "tipo", "nova_resposta",
+                    "comentario", novoComentario,
+                    "postagemId", postagemId
+            );
+            messagingTemplate.convertAndSend("/topic/comentario/" + comentarioDTO.getParentId() + "/respostas", payload);
+        }
+
+        return novoComentario;
     }
 
     // --- PARTE REST (endpoints para editar/excluir) ---
     @RestController
-    @RequestMapping("/comentarios") // Define o caminho base para os endpoints REST de comentários
+    @RequestMapping("/comentarios")
     public static class ComentarioRestController {
 
         @Autowired
@@ -51,8 +66,16 @@ public class ComentarioController {
         public ResponseEntity<?> destacarComentario(@PathVariable Long id, Principal principal) {
             try {
                 ComentarioSaidaDTO comentarioAtualizado = comentarioService.destacarComentario(id, principal.getName());
-                // Notifica o tópico que o comentário foi atualizado (agora com a flag 'destacado')
-                messagingTemplate.convertAndSend("/topic/postagem/" + comentarioAtualizado.getPostagemId() + "/comentarios", comentarioAtualizado);
+
+                // Notifica o tópico da postagem e o tópico específico do comentário
+                Map<String, Object> payload = Map.of(
+                        "tipo", "destaque",
+                        "comentario", comentarioAtualizado,
+                        "postagemId", comentarioAtualizado.getPostagemId()
+                );
+
+                messagingTemplate.convertAndSend("/topic/postagem/" + comentarioAtualizado.getPostagemId() + "/comentarios", payload);
+
                 return ResponseEntity.ok(comentarioAtualizado);
             } catch (SecurityException e) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
@@ -61,7 +84,6 @@ public class ComentarioController {
             }
         }
 
-        // Endpoint para editar um comentário
         @PutMapping("/{id}")
         public ResponseEntity<?> editarComentario(@PathVariable Long id,
                                                   @RequestBody String novoConteudo,
@@ -69,8 +91,15 @@ public class ComentarioController {
             try {
                 ComentarioSaidaDTO comentarioAtualizado = comentarioService.editarComentario(id, principal.getName(), novoConteudo);
 
-                // Notifica o tópico da postagem que o comentário foi atualizado
-                messagingTemplate.convertAndSend("/topic/postagem/" + comentarioAtualizado.getPostagemId() + "/comentarios", comentarioAtualizado);
+                // Notifica o tópico da postagem e o tópico específico do comentário
+                Map<String, Object> payload = Map.of(
+                        "tipo", "edicao",
+                        "comentario", comentarioAtualizado,
+                        "postagemId", comentarioAtualizado.getPostagemId()
+                );
+
+                messagingTemplate.convertAndSend("/topic/postagem/" + comentarioAtualizado.getPostagemId() + "/comentarios", payload);
+                messagingTemplate.convertAndSend("/topic/comentario/" + id + "/respostas", payload);
 
                 return ResponseEntity.ok(comentarioAtualizado);
             } catch (SecurityException e) {
@@ -80,17 +109,21 @@ public class ComentarioController {
             }
         }
 
-        // Endpoint para excluir um comentário
         @DeleteMapping("/{id}")
         public ResponseEntity<?> excluirComentario(@PathVariable Long id, Principal principal) {
             try {
                 ComentarioSaidaDTO comentarioExcluido = comentarioService.excluirComentario(id, principal.getName());
-
                 Long postagemId = comentarioExcluido.getPostagemId();
-                Map<String, Object> payload = Map.of("tipo", "remocao", "id", id);
 
-                // Notifica o tópico da postagem que o comentário foi removido
+                Map<String, Object> payload = Map.of(
+                        "tipo", "remocao",
+                        "id", id,
+                        "postagemId", postagemId
+                );
+
+                // Notifica o tópico da postagem e o tópico específico do comentário
                 messagingTemplate.convertAndSend("/topic/postagem/" + postagemId + "/comentarios", payload);
+                messagingTemplate.convertAndSend("/topic/comentario/" + id + "/respostas", payload);
 
                 return ResponseEntity.ok().build();
             } catch (SecurityException e) {

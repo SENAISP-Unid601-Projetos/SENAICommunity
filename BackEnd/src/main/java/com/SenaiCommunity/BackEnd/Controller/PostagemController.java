@@ -28,7 +28,6 @@ public class PostagemController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    //  MÉTODO USA @RequestPart COM DTO E ARQUIVOS
     @PostMapping("/upload-mensagem")
     public ResponseEntity<PostagemSaidaDTO> uploadComMensagem(
             @RequestPart("postagem") PostagemEntradaDTO dto,
@@ -36,20 +35,28 @@ public class PostagemController {
             Principal principal) throws IOException {
 
         PostagemSaidaDTO postagemCriada = postagemService.criarPostagem(principal.getName(), dto, arquivos);
+
+        // Garantir que os comentários venham ordenados (destacados primeiro, depois por data)
+        postagemCriada = postagemService.ordenarComentarios(postagemCriada);
+
         messagingTemplate.convertAndSend("/topic/publico", postagemCriada);
         return ResponseEntity.ok(postagemCriada);
     }
 
-    @PutMapping(path = "/{id}", consumes = "multipart/form-data") // <- Muda para multipart
+    @PutMapping(path = "/{id}", consumes = "multipart/form-data")
     public ResponseEntity<?> editarPostagem(
             @PathVariable Long id,
-            @RequestPart("postagem") PostagemEntradaDTO dto, // <- Recebe o DTO
-            @RequestPart(value = "arquivos", required = false) List<MultipartFile> novosArquivos, // <- Recebe novos arquivos
+            @RequestPart("postagem") PostagemEntradaDTO dto,
+            @RequestPart(value = "arquivos", required = false) List<MultipartFile> novosArquivos,
             Principal principal) {
         try {
             PostagemSaidaDTO postagemAtualizada = postagemService.editarPostagem(id, principal.getName(), dto, novosArquivos);
-            // Notifica via WebSocket sobre a edição
-            messagingTemplate.convertAndSend("/topic/publico", Map.of("tipo", "edicao", "postagem", postagemAtualizada));
+
+            // Garantir que os comentários venham ordenados
+            postagemAtualizada = postagemService.ordenarComentarios(postagemAtualizada);
+
+            Map<String, Object> payload = Map.of("tipo", "edicao", "postagem", postagemAtualizada);
+            messagingTemplate.convertAndSend("/topic/publico", payload);
             return ResponseEntity.ok(postagemAtualizada);
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
@@ -58,11 +65,14 @@ public class PostagemController {
         }
     }
 
-    // NOVO ENDPOINT PARA BUSCAR UMA POSTAGEM POR ID
     @GetMapping("/{id}")
     public ResponseEntity<PostagemSaidaDTO> buscarPostagemPorId(@PathVariable Long id) {
         try {
             PostagemSaidaDTO postagem = postagemService.buscarPostagemPorIdComComentarios(id);
+
+            // Garantir que os comentários venham ordenados
+            postagem = postagemService.ordenarComentarios(postagem);
+
             return ResponseEntity.ok(postagem);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();

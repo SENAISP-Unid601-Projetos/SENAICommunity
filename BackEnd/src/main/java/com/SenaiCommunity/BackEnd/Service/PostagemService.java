@@ -77,9 +77,9 @@ public class PostagemService {
         postagem.setConteudo(dto.getConteudo());
 
         // 2. Remove arquivos antigos, se solicitado
-        if (dto.getUrlsMidia() != null && !dto.getUrlsMidia().isEmpty()) {
+        if (dto.getUrlsParaRemover() != null && !dto.getUrlsParaRemover().isEmpty()) {
             // Cria um Set com as URLs a serem removidas para uma busca mais rápida (O(1))
-            Set<String> urlsParaRemover = Set.copyOf(dto.getUrlsMidia());
+            Set<String> urlsParaRemover = Set.copyOf(dto.getUrlsParaRemover());
 
             // Itera sobre a lista de arquivos da postagem
             postagem.getArquivos().removeIf(arquivo -> {
@@ -158,6 +158,23 @@ public class PostagemService {
                 .orElseThrow(() -> new EntityNotFoundException("Postagem não encontrada"));
     }
 
+    public PostagemSaidaDTO ordenarComentarios(PostagemSaidaDTO postagem) {
+        if (postagem.getComentarios() != null && !postagem.getComentarios().isEmpty()) {
+            // Ordenar comentários: destacados primeiro, depois por data
+            List<ComentarioSaidaDTO> comentariosOrdenados = postagem.getComentarios().stream()
+                    .sorted((a, b) -> {
+                        if (a.isDestacado() != b.isDestacado()) {
+                            return Boolean.compare(b.isDestacado(), a.isDestacado()); // Destacados primeiro
+                        }
+                        return a.getDataCriacao().compareTo(b.getDataCriacao()); // Mais antigos primeiro
+                    })
+                    .collect(Collectors.toList());
+
+            postagem.setComentarios(comentariosOrdenados);
+        }
+        return postagem;
+    }
+
     //  MÉTODO PARA BUSCAR UMA POSTAGEM ESPECÍFICA COM COMENTÁRIOS
     public PostagemSaidaDTO buscarPostagemPorIdComComentarios(Long id) {
         Postagem postagem = postagemRepository.findById(id)
@@ -182,6 +199,9 @@ public class PostagemService {
                         .autorId(comentario.getAutor().getId())
                         .nomeAutor(comentario.getAutor().getNome())
                         .postagemId(comentario.getPostagem().getId())
+                        .parentId(comentario.getParent() != null ? comentario.getParent().getId() : null)
+                        .replyingToName(comentario.getParent() != null ? comentario.getParent().getAutor().getNome() : null)
+                        .destacado(comentario.isDestacado())
                         .build()
         ).collect(Collectors.toList())
                 : Collections.emptyList();
@@ -193,7 +213,7 @@ public class PostagemService {
                 .autorId(postagem.getAutor().getId())
                 .nomeAutor(postagem.getAutor().getNome())
                 .urlsMidia(urls)
-                .comentarios(comentariosDTO) //  Associa a lista de DTOs de comentários
+                .comentarios(comentariosDTO)
                 .build();
     }
 

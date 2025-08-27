@@ -168,11 +168,10 @@
     </div>
 </div>
 
-
 <script>
     let stompClient = null;
     let jwtToken = null;
-    const activeSubscriptions = {}; 
+    const activeSubscriptions = {};
 
     // --- FUNÇÕES DE AUTENTICAÇÃO E UTILITÁRIAS ---
     function getUserIdFromToken(token) {
@@ -246,8 +245,7 @@
                 if (payload.tipo === 'remocao') {
                     postElement?.remove();
                 } else if (payload.tipo === 'edicao') {
-                    postElement?.remove();
-                    showPublicPost(payload.postagem, true);
+                    fetchAndReplacePost(payload.postagem.id);
                 } else { 
                     if(!postElement) showPublicPost(payload, true);
                 }
@@ -327,8 +325,8 @@
         }
     }
     
-    function showPublicPost(post, prepend) {
-        const feedWindow = document.getElementById('public-feed-window');
+    // Função para criar elemento de postagem
+    function createPostElement(post) {
         const postElement = document.createElement('div');
         postElement.className = 'post-container';
         postElement.id = `post-${post.id}`;
@@ -351,17 +349,30 @@
                 <button class="action-btn danger" onclick="deletePost(${post.id})">Excluir</button>
             </div>` : '';
 
+        // Renderizar comentários com destaque e respostas
         let commentsHtml = `
             <div class="comments-section">
                 <h4>Comentários</h4>
                 <div class="comments-list" id="comentarios-${post.id}">`;
+        
         if(post.comentarios && post.comentarios.length > 0) {
+            // Filtrar comentários raiz (sem parentId)
             const rootComments = post.comentarios.filter(c => !c.parentId);
-            const sortedComments = rootComments.sort((a, b) => b.destacado - a.destacado || new Date(b.dataCriacao) - new Date(a.dataCriacao));
+            
+            // Ordenar comentários: destacados primeiro, depois por data (mais antigos primeiro)
+            const sortedComments = rootComments.sort((a, b) => {
+                if (a.destacado !== b.destacado) {
+                    return b.destacado - a.destacado; // Desta cados primeiro
+                }
+                return new Date(a.dataCriacao) - new Date(b.dataCriacao); // Mais antigos primeiro
+            });
+
+            // Renderizar cada comentário raiz com suas respostas
             sortedComments.forEach(comment => {
                 commentsHtml += renderCommentWithReplies(comment, post.autorId, post.comentarios);
             });
         }
+        
         commentsHtml += `</div>
             <div class="comment-form">
                 <input type="text" id="comment-input-${post.id}" placeholder="Adicione um comentário...">
@@ -377,11 +388,38 @@
             ${commentsHtml}
         `;
         
-        if (prepend) { feedWindow.prepend(postElement); } 
-        else { feedWindow.appendChild(postElement); }
         subscribeToComments(post.id);
+        return postElement;
     }
-    
+
+    function showPublicPost(post, prepend) {
+        const feedWindow = document.getElementById('public-feed-window');
+        const postElement = createPostElement(post);
+        if (prepend) {
+            feedWindow.prepend(postElement);
+        } else {
+            feedWindow.appendChild(postElement);
+        }
+    }
+
+    async function fetchAndReplacePost(postId) {
+        try {
+            const response = await fetch(`${document.getElementById('backend-url').value}/postagem/${postId}`, {
+                headers: { 'Authorization': 'Bearer ' + jwtToken }
+            });
+            if (!response.ok) return;
+            const updatedPost = await response.json();
+            
+            const oldPostElement = document.getElementById(`post-${postId}`);
+            if (oldPostElement) {
+                const newPostElement = createPostElement(updatedPost);
+                oldPostElement.replaceWith(newPostElement);
+            }
+        } catch (e) {
+            console.error("Falha ao recarregar post:", e);
+        }
+    }
+
     async function deletePost(postId) {
         if (!confirm('Tem certeza que deseja excluir esta postagem?')) return;
         try {
@@ -451,23 +489,20 @@
             activeSubscriptions[topic] = subscription;
         }
     }
-    
-    async function fetchAndReplacePost(postId) {
-        try {
-            const response = await fetch(`${document.getElementById('backend-url').value}/postagem/${postId}`, {
-                headers: { 'Authorization': 'Bearer ' + jwtToken }
-            });
-            if (!response.ok) return;
-            const post = await response.json();
-            document.getElementById(`post-${postId}`)?.remove();
-            showPublicPost(post, true);
-        } catch (e) { console.error("Falha ao recarregar post:", e); }
-    }
 
     function renderCommentWithReplies(comment, postAuthorId, allComments) {
         let commentHtml = renderComment(comment, postAuthorId);
-        const replies = allComments.filter(reply => reply.parentId === comment.id)
-                                 .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao));
+        
+        // Filtrar respostas para este comentário
+        const replies = allComments
+            .filter(reply => reply.parentId === comment.id)
+            .sort((a, b) => {
+                if (a.destacado !== b.destacado) {
+                    return b.destacado - a.destacado;
+                }
+                return new Date(a.dataCriacao) - new Date(b.dataCriacao);
+            });
+
         if (replies.length > 0) {
             commentHtml += `<div class="comment-replies">`;
             replies.forEach(reply => {
@@ -488,7 +523,7 @@
         if (isAuthor || isPostOwner) {
             actionsHtml = `<div class="comment-actions">`;
             if (isAuthor) {
-                actionsHtml += `<button class="action-btn" onclick='openEditCommentModal(${comment.id}, \`${comment.conteudo}\`)'>E</button>`;
+                actionsHtml += `<button class="action-btn" onclick='openEditCommentModal(${comment.id}, \`${comment.conteudo.replace(/`/g, '\\`')}\`)'>E</button>`;
             }
             if (isAuthor || isPostOwner) {
                 actionsHtml += `<button class="action-btn danger" onclick="deleteComment(${comment.id})">X</button>`;
@@ -549,6 +584,12 @@
         } catch (error) {
             alert(error.message);
         }
+    }
+
+    function openEditCommentModal(commentId, currentContent) {
+        document.getElementById('edit-comment-id').value = commentId;
+        document.getElementById('edit-comment-content').value = currentContent;
+        openModal('editCommentModal');
     }
 
     async function submitCommentEdit() {
@@ -635,7 +676,7 @@
             messageElement.classList.add('sent');
             actionsHtml = `
                 <div class="message-actions">
-                    <button class="action-btn" onclick='openEditMessageModal(${message.id}, \`${message.conteudo}\`)'>E</button>
+                    <button class="action-btn" onclick='openEditMessageModal(${message.id}, \`${message.conteudo.replace(/`/g, '\\`')}\`)'>E</button>
                     <button class="action-btn danger" onclick="deletePrivateMessage(${message.id})">X</button>
                 </div>`;
         } else {
@@ -691,7 +732,12 @@
     // --- FUNÇÕES DO MODAL ---
     function openModal(modalId) { document.getElementById(modalId).style.display = 'block'; }
     function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+    
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }
 </script>
-
 </body>
 </html>

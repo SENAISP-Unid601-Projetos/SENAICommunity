@@ -133,7 +133,6 @@ public class ComentarioService {
                 .parentId(comentario.getParent() != null ? comentario.getParent().getId() : null)
                 .replyingToName(comentario.getParent() != null ? comentario.getParent().getAutor().getNome() : null)
                 .destacado(comentario.isDestacado())
-                .replies(repliesDTO)
                 .build();
     }
 }
