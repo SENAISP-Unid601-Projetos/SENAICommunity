@@ -20,7 +20,7 @@ import java.security.Principal;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-@Controller // ✅ ALTERADO DE @RestController PARA @Controller
+@Controller
 @PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
 public class MensagemGrupoController {
 
@@ -30,7 +30,7 @@ public class MensagemGrupoController {
     @Autowired
     private MensagemGrupoService mensagemGrupoService;
 
-    // ✅ ATUALIZADO PARA USAR DTOS
+
     @MessageMapping("/grupo/{projetoId}")
     @SendTo("/topic/grupo/{projetoId}")
     public MensagemGrupoSaidaDTO enviarParaGrupo(@DestinationVariable Long projetoId,

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class MensagemGrupoService {
@@ -80,7 +81,12 @@ public class MensagemGrupoService {
         return mensagem;
     }
 
-    public List<MensagemGrupo> buscarMensagensDoGrupo(Long projetoId) {
-        return mensagemGrupoRepository.findByProjetoIdOrderByDataEnvioAsc(projetoId);
+    public List<MensagemGrupoSaidaDTO> buscarMensagensPorProjeto(Long projetoId) {
+        List<MensagemGrupo> mensagens = mensagemGrupoRepository.findByProjetoIdOrderByDataEnvioAsc(projetoId);
+
+        // Converte a lista de entidades para uma lista de DTOs antes de retornar
+        return mensagens.stream()
+                .map(this::toDTO) // Usa o método toDTO que você já criou
+                .collect(Collectors.toList());
     }
 }
