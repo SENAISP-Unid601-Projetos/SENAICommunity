@@ -178,4 +178,18 @@ public class ProjetoController {
             return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
         }
     }
+
+    @DeleteMapping("/{projetoId}/info")
+    public ResponseEntity<?> deletarProjeto(
+            @PathVariable Long projetoId,
+            @RequestParam Long adminId) {
+        try {
+            projetoService.deletar(projetoId, adminId);
+            return ResponseEntity.ok(Map.of("message", "Projeto deletado com sucesso! Todos os membros foram removidos automaticamente."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
 }

@@ -335,6 +335,20 @@ public class ProjetoService {
                 membro.getRole() == ProjetoMembro.RoleMembro.MODERADOR);
     }
 
+    @Transactional
+    public void deletar(Long id, Long adminId) {
+        Projeto projeto = projetoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado com id: " + id));
+
+        // Verificar se o usuário é admin do projeto
+        if (!isAdmin(id, adminId)) {
+            throw new IllegalArgumentException("Apenas administradores podem deletar o projeto");
+        }
+
+        // Deletar o projeto (cascade irá remover membros automaticamente)
+        projetoRepository.deleteById(id);
+    }
+
     public void deletar(Long id) {
         if (!projetoRepository.existsById(id)) {
             throw new EntityNotFoundException("Projeto não encontrado com id: " + id);
