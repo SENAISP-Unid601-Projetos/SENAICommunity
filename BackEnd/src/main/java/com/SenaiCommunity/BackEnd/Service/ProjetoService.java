@@ -10,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.util.StringUtils;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProjetoService {
+
+    private static final String UPLOAD_DIR = "uploads/projeto-pictures/";
 
     @Autowired
     private ProjetoRepository projetoRepository;
@@ -76,9 +80,16 @@ public class ProjetoService {
 
         if (foto != null && !foto.isEmpty()) {
             try {
+                System.out.println("[DEBUG] Iniciando upload da imagem: " + foto.getOriginalFilename());
+                System.out.println("[DEBUG] Tamanho do arquivo: " + foto.getSize() + " bytes");
+
                 String fileName = salvarFoto(foto);
                 projeto.setImagemUrl(fileName);
+
+                System.out.println("[DEBUG] Imagem salva com sucesso: " + fileName);
             } catch (IOException e) {
+                System.err.println("[ERROR] Erro ao salvar a foto do projeto: " + e.getMessage());
+                e.printStackTrace();
                 throw new RuntimeException("Erro ao salvar a foto do projeto", e);
             }
         } else if (dto.getImagemUrl() != null) {
@@ -345,8 +356,12 @@ public class ProjetoService {
             throw new IllegalArgumentException("Apenas administradores podem deletar o projeto");
         }
 
+        System.out.println("[DEBUG] Deletando projeto ID: " + id + " por admin ID: " + adminId);
+
         // Deletar o projeto (cascade irá remover membros automaticamente)
         projetoRepository.deleteById(id);
+
+        System.out.println("[DEBUG] Projeto deletado com sucesso");
     }
 
     public void deletar(Long id) {
@@ -432,9 +447,46 @@ public class ProjetoService {
     }
 
     private String salvarFoto(MultipartFile foto) throws IOException {
-        String fileName = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());
-        Path caminho = Paths.get("src/main/resources/projetoPictures/" + fileName);
-        foto.transferTo(caminho);
+        if (foto.isEmpty()) {
+            throw new IOException("Arquivo de imagem está vazio");
+        }
+
+        // Validar tipo de arquivo
+        String contentType = foto.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IOException("Arquivo deve ser uma imagem válida");
+        }
+
+        // Criar nome único para o arquivo
+        String originalFilename = foto.getOriginalFilename();
+        if (originalFilename == null) {
+            originalFilename = "image.jpg";
+        }
+
+        String cleanFilename = StringUtils.cleanPath(originalFilename);
+        String fileName = System.currentTimeMillis() + "_" + cleanFilename;
+
+        // Criar diretório se não existir
+        Path uploadPath = Paths.get(UPLOAD_DIR);
+        if (!Files.exists(uploadPath)) {
+            System.out.println("[DEBUG] Criando diretório de upload: " + uploadPath.toAbsolutePath());
+            Files.createDirectories(uploadPath);
+        }
+
+        // Caminho completo do arquivo
+        Path filePath = uploadPath.resolve(fileName);
+
+        System.out.println("[DEBUG] Salvando arquivo em: " + filePath.toAbsolutePath());
+
+        // Salvar arquivo
+        try {
+            Files.copy(foto.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("[DEBUG] Arquivo salvo com sucesso");
+        } catch (IOException e) {
+            System.err.println("[ERROR] Erro ao salvar arquivo: " + e.getMessage());
+            throw new IOException("Erro ao salvar arquivo no servidor", e);
+        }
+
         return fileName;
     }
 
