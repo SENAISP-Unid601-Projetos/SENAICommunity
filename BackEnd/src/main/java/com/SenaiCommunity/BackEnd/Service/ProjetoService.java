@@ -7,6 +7,11 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,7 +50,7 @@ public class ProjetoService {
     }
 
     @Transactional
-    public ProjetoDTO salvar(ProjetoDTO dto) {
+    public ProjetoDTO salvar(ProjetoDTO dto, MultipartFile foto) {
         Projeto projeto = new Projeto();
         boolean isNovoGrupo = dto.getId() == null;
 
@@ -60,7 +65,6 @@ public class ProjetoService {
         projeto.setDataEntrega(dto.getDataEntrega());
         projeto.setStatus(dto.getStatus());
 
-        projeto.setImagemUrl(dto.getImagemUrl());
         projeto.setMaxMembros(dto.getMaxMembros() != null ? dto.getMaxMembros() : 50);
         projeto.setGrupoPrivado(dto.getGrupoPrivado() != null ? dto.getGrupoPrivado() : false);
 
@@ -98,6 +102,8 @@ public class ProjetoService {
 
         return converterParaDTO(salvo);
     }
+
+
 
     @Transactional
     public void enviarConvite(Long projetoId, Long usuarioConvidadoId, Long usuarioConvidadorId) {
@@ -339,5 +345,12 @@ public class ProjetoService {
         }).collect(Collectors.toList()));
 
         return dto;
+    }
+
+    private String salvarFoto(MultipartFile foto) throws IOException {
+        String fileName = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());
+        Path caminho = Paths.get("src/main/resources/projetoPictures/" + fileName);
+        foto.transferTo(caminho);
+        return fileName;
     }
 }

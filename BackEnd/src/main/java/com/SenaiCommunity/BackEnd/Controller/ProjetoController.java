@@ -4,8 +4,10 @@ import com.SenaiCommunity.BackEnd.DTO.ProjetoDTO;
 import com.SenaiCommunity.BackEnd.Entity.ProjetoMembro;
 import com.SenaiCommunity.BackEnd.Service.ProjetoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -29,22 +31,21 @@ public class ProjetoController {
         return ResponseEntity.ok(dto);
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> criar(
             @RequestParam String titulo,
             @RequestParam String descricao,
-            @RequestParam String imagemUrl,
             @RequestParam Integer maxMembros,
             @RequestParam Boolean grupoPrivado,
             @RequestParam Long autorId,
             @RequestParam String autorNome,
             @RequestParam List<Long> professorIds,
-            @RequestParam List<Long> alunoIds) {
+            @RequestParam List<Long> alunoIds,
+            @RequestPart(required = false) MultipartFile foto) {
         try {
             ProjetoDTO dto = new ProjetoDTO();
             dto.setTitulo(titulo);
             dto.setDescricao(descricao);
-            dto.setImagemUrl(imagemUrl);
             dto.setMaxMembros(maxMembros);
             dto.setGrupoPrivado(grupoPrivado);
             dto.setAutorId(autorId);
@@ -52,7 +53,7 @@ public class ProjetoController {
             dto.setProfessorIds(professorIds);
             dto.setAlunoIds(alunoIds);
 
-            ProjetoDTO salvo = projetoService.salvar(dto);
+            ProjetoDTO salvo = projetoService.salvar(dto, foto);
             return ResponseEntity.ok(Map.of(
                     "message", "Projeto criado com sucesso!",
                     "projeto", salvo
@@ -65,7 +66,7 @@ public class ProjetoController {
     @PutMapping("/{id}")
     public ResponseEntity<ProjetoDTO> atualizar(@PathVariable Long id, @RequestBody ProjetoDTO dto) {
         dto.setId(id);
-        ProjetoDTO atualizado = projetoService.salvar(dto);
+        ProjetoDTO atualizado = projetoService.salvar(dto, null);
         return ResponseEntity.ok(atualizado);
     }
 
