@@ -48,6 +48,12 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/autenticacao/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/alunos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/professores/**").permitAll()
                         .requestMatchers("/ws/**").permitAll() // Necessário para a conexão WebSocket inicial
                         .requestMatchers(
                                 "/v3/api-docs/**",
