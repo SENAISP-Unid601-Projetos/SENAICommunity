@@ -45,4 +45,7 @@ public abstract class Usuario {
     )
     private Set<Role> roles = new HashSet<>();
 
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Curtida> curtidas;
+
 }

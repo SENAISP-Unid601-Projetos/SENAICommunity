@@ -10,6 +10,7 @@ import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -183,28 +184,62 @@ public class PostagemService {
     }
 
     // Lógica de conversão Entidade -> DTO de Saída
+    // Em PostagemService.java
+
     private PostagemSaidaDTO toDTO(Postagem postagem) {
         // Converte a lista de entidades ArquivoMidia para uma lista de Strings (URLs)
         List<String> urls = postagem.getArquivos() != null
                 ? postagem.getArquivos().stream().map(ArquivoMidia::getUrl).collect(Collectors.toList())
                 : Collections.emptyList();
 
-        //  Converte a lista de entidades Comentario para uma lista de ComentarioSaidaDTO
+        // Lógica para obter o ID do usuário logado (usado tanto para a postagem quanto para os comentários)
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        final Long usuarioLogadoId = usuarioRepository.findByEmail(username)
+                .map(Usuario::getId)
+                .orElse(null);
+
+        // --- INÍCIO DA CORREÇÃO ---
+        // A lógica de cálculo das curtidas do comentário foi movida para dentro do .map()
         List<ComentarioSaidaDTO> comentariosDTO = postagem.getComentarios() != null
-                ? postagem.getComentarios().stream().map(comentario ->
-                ComentarioSaidaDTO.builder()
-                        .id(comentario.getId())
-                        .conteudo(comentario.getConteudo())
-                        .dataCriacao(comentario.getDataCriacao())
-                        .autorId(comentario.getAutor().getId())
-                        .nomeAutor(comentario.getAutor().getNome())
-                        .postagemId(comentario.getPostagem().getId())
-                        .parentId(comentario.getParent() != null ? comentario.getParent().getId() : null)
-                        .replyingToName(comentario.getParent() != null ? comentario.getParent().getAutor().getNome() : null)
-                        .destacado(comentario.isDestacado())
-                        .build()
-        ).collect(Collectors.toList())
+                ? postagem.getComentarios().stream().map(comentario -> {
+
+            // 1. Calcular o total de curtidas para CADA comentário
+            int totalCurtidasComentario = comentario.getCurtidas() != null ? comentario.getCurtidas().size() : 0;
+
+            // 2. Verificar se o usuário logado curtiu CADA comentário
+            boolean curtidoPeloUsuarioComentario = false;
+            if (usuarioLogadoId != null && comentario.getCurtidas() != null) {
+                curtidoPeloUsuarioComentario = comentario.getCurtidas().stream()
+                        .anyMatch(curtida -> curtida.getUsuario().getId().equals(usuarioLogadoId));
+            }
+
+            // 3. Construir o DTO do comentário com todos os campos
+            return ComentarioSaidaDTO.builder()
+                    .id(comentario.getId())
+                    .conteudo(comentario.getConteudo())
+                    .dataCriacao(comentario.getDataCriacao())
+                    .autorId(comentario.getAutor().getId())
+                    .nomeAutor(comentario.getAutor().getNome())
+                    .postagemId(comentario.getPostagem().getId())
+                    .parentId(comentario.getParent() != null ? comentario.getParent().getId() : null)
+                    .replyingToName(comentario.getParent() != null ? comentario.getParent().getAutor().getNome() : null)
+                    .destacado(comentario.isDestacado())
+                    .totalCurtidas(totalCurtidasComentario)
+                    .curtidoPeloUsuario(curtidoPeloUsuarioComentario)
+                    .build();
+
+        }).collect(Collectors.toList())
                 : Collections.emptyList();
+        // --- FIM DA CORREÇÃO ---
+
+
+        // Lógica para as curtidas da POSTAGEM (esta parte já estava correta)
+        int totalCurtidasPostagem = postagem.getCurtidas() != null ? postagem.getCurtidas().size() : 0;
+        boolean curtidoPeloUsuarioPostagem = false;
+        if (usuarioLogadoId != null && postagem.getCurtidas() != null) {
+            curtidoPeloUsuarioPostagem = postagem.getCurtidas().stream()
+                    .anyMatch(c -> c.getUsuario().getId().equals(usuarioLogadoId));
+        }
 
         return PostagemSaidaDTO.builder()
                 .id(postagem.getId())
@@ -214,6 +249,8 @@ public class PostagemService {
                 .nomeAutor(postagem.getAutor().getNome())
                 .urlsMidia(urls)
                 .comentarios(comentariosDTO)
+                .totalCurtidas(totalCurtidasPostagem)
+                .curtidoPeloUsuario(curtidoPeloUsuarioPostagem)
                 .build();
     }
 

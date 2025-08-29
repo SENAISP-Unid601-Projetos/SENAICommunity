@@ -10,6 +10,7 @@ import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +44,7 @@ public class ComentarioService {
 
         Comentario novoComentario = Comentario.builder()
                 .conteudo(dto.getConteudo())
+                .dataCriacao(LocalDateTime.now()) // Definindo a data de criação
                 .autor(autor)
                 .postagem(postagem)
                 .build();
@@ -82,7 +84,7 @@ public class ComentarioService {
     @Transactional
     public ComentarioSaidaDTO excluirComentario(Long comentarioId, String username) {
         Comentario comentario = comentarioRepository.findById(comentarioId)
-                .orElseThrow(() -> new EntityNotFoundException("Comentário не encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Comentário não encontrado"));
 
         String autorComentarioEmail = comentario.getAutor().getEmail();
         String autorPostagemEmail = comentario.getPostagem().getAutor().getEmail();
@@ -92,10 +94,11 @@ public class ComentarioService {
             throw new SecurityException("Acesso negado: Você não tem permissão para excluir este comentário.");
         }
 
+        // Primeiro criamos o DTO de retorno, pois após a exclusão perderemos os dados.
+        ComentarioSaidaDTO dtoDeRetorno = toDTO(comentario);
         comentarioRepository.delete(comentario);
 
-        // Retorna o DTO do comentário excluído para que o controller possa notificar o tópico correto.
-        return toDTO(comentario);
+        return dtoDeRetorno;
     }
 
 
@@ -119,9 +122,31 @@ public class ComentarioService {
     private ComentarioSaidaDTO toDTO(Comentario comentario) {
         if (comentario == null) return null;
 
-        List<ComentarioSaidaDTO> repliesDTO = comentario.getReplies() != null ?
-                comentario.getReplies().stream().map(this::toDTO).collect(Collectors.toList()) :
-                Collections.emptyList();
+        // --- INÍCIO DA LÓGICA DE CÁLCULO DAS CURTIDAS (CORREÇÃO) ---
+
+        // 1. Obter o ID do usuário logado (se houver)
+        Long usuarioLogadoId = null;
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        // Evita erro caso a requisição seja anônima (pouco provável com PreAuthorize, mas é uma boa prática)
+        if (!"anonymousUser".equals(username)) {
+            Usuario usuarioLogado = usuarioRepository.findByEmail(username).orElse(null);
+            if (usuarioLogado != null) {
+                usuarioLogadoId = usuarioLogado.getId();
+            }
+        }
+
+        // 2. Calcular o total de curtidas
+        int totalCurtidasComentario = comentario.getCurtidas() != null ? comentario.getCurtidas().size() : 0;
+
+        // 3. Verificar se o usuário logado curtiu este comentário
+        boolean curtidoPeloUsuarioComentario = false;
+        if (usuarioLogadoId != null && comentario.getCurtidas() != null) {
+            final Long finalUsuarioLogadoId = usuarioLogadoId; // Variável precisa ser final ou efetivamente final para usar no lambda
+            curtidoPeloUsuarioComentario = comentario.getCurtidas().stream()
+                    .anyMatch(curtida -> curtida.getUsuario().getId().equals(finalUsuarioLogadoId));
+        }
+
+        // --- FIM DA LÓGICA DE CÁLCULO DAS CURTIDAS ---
 
         return ComentarioSaidaDTO.builder()
                 .id(comentario.getId())
@@ -133,6 +158,8 @@ public class ComentarioService {
                 .parentId(comentario.getParent() != null ? comentario.getParent().getId() : null)
                 .replyingToName(comentario.getParent() != null ? comentario.getParent().getAutor().getNome() : null)
                 .destacado(comentario.isDestacado())
+                .totalCurtidas(totalCurtidasComentario)
+                .curtidoPeloUsuario(curtidoPeloUsuarioComentario)
                 .build();
     }
 }

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -38,6 +39,9 @@ public class Postagem{
     @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("dataCriacao ASC") //para os comentários virem em ordem
     private List<Comentario> comentarios = new ArrayList<>();
+
+    @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Curtida> curtidas;
 
 }
 

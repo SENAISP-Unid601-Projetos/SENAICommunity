@@ -17,4 +17,6 @@ public class ComentarioSaidaDTO {
     private Long parentId;
     private boolean destacado;
     private String replyingToName; // Nome do autor do comentário pai
+    private int totalCurtidas;
+    private boolean curtidoPeloUsuario;
 }

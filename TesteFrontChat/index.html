@@ -48,6 +48,46 @@
         .reply-info { font-size: 0.8em; color: #6c757d; margin-bottom: 4px; }
         .reply-info strong { color: #0056b3; }
         .highlight-badge { font-size: 0.8em; color: #856404; background-color: #fff3cd; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
+        
+        /* <<< NOVOS ESTILOS PARA CURTIDAS >>> */
+        .actions-bar {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Aumenta o espaçamento entre os botões */
+        }
+        .like-btn {
+            background: none;
+            border: 1px solid #ccc;
+            color: #555;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .like-btn.liked {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+            font-weight: bold;
+        }
+        .like-count {
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+        }
+        .comment-actions-footer {
+             display: flex;
+             align-items: center;
+             gap: 15px;
+             margin-top: 10px;
+        }
+
         /* Estilos do Modal */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
         .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; }
@@ -325,6 +365,36 @@
         }
     }
     
+    // <<< NOVA FUNÇÃO PARA CURTIDAS >>>
+    async function toggleLike(postagemId, comentarioId) {
+        if (!jwtToken) {
+            alert("Você precisa estar conectado para curtir.");
+            return;
+        }
+        const backendUrl = document.getElementById('backend-url').value;
+        const body = {};
+        if (postagemId) body.postagemId = postagemId;
+        if (comentarioId) body.comentarioId = comentarioId;
+
+        try {
+            const response = await fetch(`${backendUrl}/curtidas/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+            if (!response.ok) {
+                throw new Error(`Erro ao processar curtida: ${await response.text()}`);
+            }
+            // A UI será atualizada via WebSocket, então não precisamos fazer nada aqui.
+        } catch (error) {
+            console.error("Erro no toggleLike:", error);
+            alert(error.message);
+        }
+    }
+
     // Função para criar elemento de postagem
     function createPostElement(post) {
         const postElement = document.createElement('div');
@@ -348,6 +418,14 @@
                 <button class="action-btn" onclick='openEditPostModal(${post.id}, ${JSON.stringify(urls)})'>Editar</button>
                 <button class="action-btn danger" onclick="deletePost(${post.id})">Excluir</button>
             </div>` : '';
+        
+        // <<< NOVA BARRA DE AÇÕES PARA A POSTAGEM >>>
+        const postActionsBar = `
+            <div class="actions-bar">
+                <button class="like-btn ${post.curtidoPeloUsuario ? 'liked' : ''}" onclick="toggleLike(${post.id}, null)">
+                    ❤️ <span class="like-count">${post.totalCurtidas}</span>
+                </button>
+            </div>`;
 
         // Renderizar comentários com destaque e respostas
         let commentsHtml = `
@@ -356,18 +434,15 @@
                 <div class="comments-list" id="comentarios-${post.id}">`;
         
         if(post.comentarios && post.comentarios.length > 0) {
-            // Filtrar comentários raiz (sem parentId)
             const rootComments = post.comentarios.filter(c => !c.parentId);
             
-            // Ordenar comentários: destacados primeiro, depois por data (mais antigos primeiro)
             const sortedComments = rootComments.sort((a, b) => {
                 if (a.destacado !== b.destacado) {
-                    return b.destacado - a.destacado; // Desta cados primeiro
+                    return b.destacado - a.destacado;
                 }
-                return new Date(a.dataCriacao) - new Date(b.dataCriacao); // Mais antigos primeiro
+                return new Date(a.dataCriacao) - new Date(b.dataCriacao);
             });
 
-            // Renderizar cada comentário raiz com suas respostas
             sortedComments.forEach(comment => {
                 commentsHtml += renderCommentWithReplies(comment, post.autorId, post.comentarios);
             });
@@ -385,6 +460,7 @@
             <div class="post-header"><strong>${post.nomeAutor}</strong> - ${dataFormatada}</div>
             <div class="post-content" id="post-content-${post.id}">${post.conteudo}</div>
             ${mediaHtml}
+            ${postActionsBar}
             ${commentsHtml}
         `;
         
@@ -493,7 +569,6 @@
     function renderCommentWithReplies(comment, postAuthorId, allComments) {
         let commentHtml = renderComment(comment, postAuthorId);
         
-        // Filtrar respostas para este comentário
         const replies = allComments
             .filter(reply => reply.parentId === comment.id)
             .sort((a, b) => {
@@ -543,6 +618,15 @@
         if(comment.destacado){
             highlightBadge = `<span class="highlight-badge">Destacado pelo criador</span>`;
         }
+        
+        // <<< NOVA BARRA DE AÇÕES PARA O COMENTÁRIO >>>
+        const commentActionsFooter = `
+            <div class="comment-actions-footer">
+                <button class="like-btn ${comment.curtidoPeloUsuario ? 'liked' : ''}" onclick="toggleLike(null, ${comment.id})">
+                    ❤️ <span class="like-count">${comment.totalCurtidas}</span>
+                </button>
+                <button class="action-btn" style="font-size:12px; padding: 4px 8px;" onclick="toggleReplyForm(${comment.id})">Responder</button>
+            </div>`;
 
         return `
             <div class="comment-container ${comment.destacado ? 'destacado' : ''}" id="comment-${comment.id}">
@@ -550,7 +634,7 @@
                 <div class="comment-header"><strong>${comment.nomeAutor}</strong> ${highlightBadge} - ${dataFormatada}</div>
                 ${replyInfoHtml}
                 <p class="comment-content">${comment.conteudo}</p>
-                <button class="action-btn" style="font-size:12px; padding: 4px 8px;" onclick="toggleReplyForm(${comment.id})">Responder</button>
+                ${commentActionsFooter}
                 <div class="reply-form" id="reply-form-${comment.id}">
                     <input type="text" id="reply-input-${comment.id}" placeholder="Escreva sua resposta...">
                     <button onclick="sendComment(${comment.postagemId}, ${comment.id})">Enviar</button>
