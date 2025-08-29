@@ -8,6 +8,34 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="Principal/CSS/principal.css">
+    
+    <style>
+        .post {
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+        .post-author-avatar img { width: 45px; height: 45px; border-radius: 50%; }
+        .post-author-info strong { font-size: 1rem; }
+        .post-author-info span { font-size: 0.8rem; color: var(--text-secondary-color); }
+        .post-content { margin-bottom: 1rem; white-space: pre-wrap; word-wrap: break-word; }
+        .post-media img, .post-media video { max-width: 100%; border-radius: 8px; margin-top: 10px; }
+        .post-actions { display: flex; gap: 20px; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 1rem; }
+        .post-actions .action-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary-color); font-size: 1rem; display: flex; align-items: center; gap: 5px; }
+        .post-actions .action-btn.liked { color: #007bff; font-weight: bold; }
+        .comments-section { margin-top: 1.5rem; }
+        .comment-form { display: flex; gap: 10px; margin-top: 1rem; }
+        .comment-form input { flex-grow: 1; background-color: var(--input-bg-color); border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 15px; color: var(--text-primary-color); }
+        .comment-form button { background: #007bff; color: white; border: none; border-radius: 20px; padding: 0 15px; cursor: pointer; }
+        .comment { margin-top: 1rem; display: flex; gap: 10px; }
+        .comment-avatar img { width: 35px; height: 35px; border-radius: 50%; }
+        .comment-body { background-color: var(--background-color); padding: 10px 15px; border-radius: 15px; flex-grow: 1; }
+        .comment-body strong { font-size: 0.9rem; }
+        .comment-body p { margin: 5px 0; font-size: 0.95rem; }
+    </style>
 </head>
 <body>
     <div class="notification-center"></div>
@@ -46,9 +74,9 @@
         <div class="user-dropdown">
             <div class="user">
                 <div class="profile-pic">
-                    <img src="https://via.placeholder.com/40" alt="Perfil">
+                    <img src="https://via.placeholder.com/40" alt="Perfil" id="topbar-user-img">
                 </div>
-                <span>Carregando...</span>
+                <span id="topbar-user-name">Carregando...</span>
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div class="dropdown-menu">
@@ -63,18 +91,18 @@
         <aside class="sidebar">
             <div class="user-info">
                 <div class="avatar">
-                    <img src="https://via.placeholder.com/80" alt="Perfil">
+                    <img src="https://via.placeholder.com/80" alt="Perfil" id="sidebar-user-img">
                     <div class="status online"></div>
                 </div>
-                <h2>Carregando...</h2>
-                <p class="user-title">Carregando...</p>
+                <h2 id="sidebar-user-name">Carregando...</h2>
+                <p class="user-title" id="sidebar-user-title">Carregando...</p>
                 <div class="user-stats">
                     <div class="stat">
-                        <strong>-</strong>
+                        <strong id="connections-count">-</strong>
                         <span>Conexões</span>
                     </div>
                     <div class="stat">
-                        <strong>-</strong>
+                        <strong id="projects-count">-</strong>
                         <span>Projetos</span>
                     </div>
                 </div>
@@ -105,7 +133,7 @@
                             <label for="file-input" class="file-label">
                                 <i class="fas fa-image"></i> Adicionar Mídia
                             </label>
-                            <input type="file" id="file-input" multiple accept="image/*,video/*" style="display: none;">
+                            <input type="file" id="file-input" name="arquivos" multiple accept="image/*,video/*" style="display: none;">
                             <button type="submit" class="submit-btn">Publicar</button>
                         </div>
                     </form>
@@ -114,7 +142,7 @@
             
             <div class="post-creator">
                 <div class="avatar-small">
-                    <img src="https://via.placeholder.com/40" alt="Perfil">
+                    <img src="https://via.placeholder.com/40" alt="Perfil" id="post-creator-img">
                 </div>
                 <input type="text" id="post-creator-input" placeholder="Compartilhe seu projeto...">
                  <div class="post-options">
@@ -153,9 +181,8 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/Principal/JS/principal.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-
-    <script src="Principal/JS/principal.js"></script>
 </body>
 </html>
