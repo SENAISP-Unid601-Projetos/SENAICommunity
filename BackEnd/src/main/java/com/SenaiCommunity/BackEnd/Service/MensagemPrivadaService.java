@@ -8,6 +8,12 @@ import com.SenaiCommunity.BackEnd.Repository.MensagemPrivadaRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // Importe esta anotação
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,8 +34,10 @@ public class MensagemPrivadaService {
                 .dataEnvio(mensagem.getDataEnvio())
                 .remetenteId(mensagem.getRemetente().getId())
                 .nomeRemetente(mensagem.getRemetente().getNome())
+                .remetenteEmail(mensagem.getRemetente().getEmail())
                 .destinatarioId(mensagem.getDestinatario().getId())
                 .nomeDestinatario(mensagem.getDestinatario().getNome())
+                .destinatarioEmail(mensagem.getDestinatario().getEmail())
                 .build();
     }
 
@@ -42,43 +50,50 @@ public class MensagemPrivadaService {
                 .build();
     }
 
-    public MensagemPrivada editarMensagemPrivada(Long id, String novoConteudo, String autorUsername) {
-        MensagemPrivada mensagem = mensagemPrivadaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mensagem não encontrada"));
+    @Transactional
+    public MensagemPrivadaSaidaDTO salvarMensagemPrivada(MensagemPrivadaEntradaDTO dto, String remetenteUsername) { //
+        Usuario remetente = usuarioRepository.findByEmail(remetenteUsername)
+                .orElseThrow(() -> new NoSuchElementException("Remetente não encontrado")); //
 
-        if (!mensagem.getRemetenteUsername().equals(autorUsername)) {
+        Usuario destinatario = usuarioRepository.findById(dto.getDestinatarioId())
+                .orElseThrow(() -> new NoSuchElementException("Destinatário não encontrado")); //
+
+        MensagemPrivada novaMensagem = toEntity(dto, remetente, destinatario); //
+        MensagemPrivada mensagemSalva = mensagemPrivadaRepository.save(novaMensagem); //
+
+        return toDTO(mensagemSalva); //
+    }
+
+    public MensagemPrivadaSaidaDTO editarMensagemPrivada(Long id, String novoConteudo, String autorUsername) {
+        MensagemPrivada mensagem = mensagemPrivadaRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
+
+        if (!mensagem.getRemetente().getEmail().equals(autorUsername)) {
             throw new SecurityException("Você não pode editar esta mensagem.");
         }
 
         mensagem.setConteudo(novoConteudo);
-        return mensagemPrivadaRepository.save(mensagem);
+        MensagemPrivada mensagemSalva = mensagemPrivadaRepository.save(mensagem);
+        return toDTO(mensagemSalva); // Retorna o DTO
     }
 
-    public Long excluirMensagemPrivada(Long id, String autorUsername) {
+    public MensagemPrivadaSaidaDTO excluirMensagemPrivada(Long id, String autorUsername) {
         MensagemPrivada mensagem = mensagemPrivadaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mensagem não encontrada"));
+                .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
 
-        if (!mensagem.getRemetenteUsername().equals(autorUsername)) {
-            throw new SecurityException("Você não pode excluir esta mensagem.");
+        if (!mensagem.getRemetente().getEmail().equals(autorUsername)) {
+            throw new SecurityException("Você не pode excluir esta mensagem.");
         }
 
         mensagemPrivadaRepository.delete(mensagem);
-        return id;
+        return toDTO(mensagem); // Retorna o DTO da mensagem excluída
     }
 
-    public MensagemPrivada salvarMensagemPrivada(MensagemPrivada mensagem, Long destinatarioId) {
-        Usuario remetente = usuarioRepository.findByEmail(mensagem.getRemetenteUsername())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        Usuario destinatario = usuarioRepository.findById(destinatarioId)
-                .orElseThrow(() -> new RuntimeException("Destinatário não encontrado"));
-
-        mensagem.setRemetente(remetente);
-        mensagem.setDestinatario(destinatario);
-        return mensagemPrivadaRepository.save(mensagem);
-    }
-
-    public List<MensagemPrivada> buscarMensagensPrivadas(Long user1, Long user2) {
-        return mensagemPrivadaRepository.findMensagensEntreUsuarios(user1, user2);
+    public List<MensagemPrivadaSaidaDTO> buscarMensagensPrivadas(Long user1, Long user2) {
+        List<MensagemPrivada> mensagens = mensagemPrivadaRepository.findMensagensEntreUsuarios(user1, user2);
+        // Converte a lista de entidades para uma lista de DTOs antes de retornar
+        return mensagens.stream()
+                .map(this::toDTO) // Usa o método toDTO que você já criou
+                .collect(Collectors.toList());
     }
 }

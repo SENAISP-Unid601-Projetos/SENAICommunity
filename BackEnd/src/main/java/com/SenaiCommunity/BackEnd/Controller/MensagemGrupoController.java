@@ -1,10 +1,9 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
+import com.SenaiCommunity.BackEnd.DTO.MensagemGrupoEntradaDTO;
+import com.SenaiCommunity.BackEnd.DTO.MensagemGrupoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.MensagemGrupo;
-import com.SenaiCommunity.BackEnd.Repository.MensagemGrupoRepository;
-import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import com.SenaiCommunity.BackEnd.Service.MensagemGrupoService;
-import com.SenaiCommunity.BackEnd.Service.MensagemPrivadaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,22 +13,16 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller; // ✅ ALTERADO DE @RestController PARA @Controller
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
-@RestController
-@RequestMapping("/mensagens/grupo")
+@Controller
 @PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
 public class MensagemGrupoController {
-
-    @Autowired
-    private MensagemGrupoRepository mensagemGrupoRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -37,19 +30,26 @@ public class MensagemGrupoController {
     @Autowired
     private MensagemGrupoService mensagemGrupoService;
 
-    // 🔹 CHAT DE GRUPO
-    @MessageMapping("/{projetoId}")
+    @MessageMapping("/grupo/{projetoId}")
     @SendTo("/topic/grupo/{projetoId}")
-    public MensagemGrupo enviarParaGrupo(@DestinationVariable Long projetoId,
-                                         @Payload MensagemGrupo mensagem,
-                                         Principal principal) {
-        mensagem.setDataEnvio(LocalDateTime.now());
-        mensagem.setAutorUsername(principal.getName());
-        return mensagemGrupoService.salvarMensagemGrupo(mensagem, projetoId);
+    public MensagemGrupoSaidaDTO enviarParaGrupo(@DestinationVariable Long projetoId,
+                                                 @Payload MensagemGrupoEntradaDTO dto, // <-- Recebe DTO de Entrada
+                                                 Principal principal) {
+        return mensagemGrupoService.salvarMensagemGrupo(dto, projetoId, principal.getName());
     }
 
+    // Classe interna para os endpoints REST
+    @RestController
+    @RequestMapping("/mensagens/grupo")
+    public static class MensagemGrupoRestController {
 
-    @PutMapping("/{id}")
+        @Autowired
+        private MensagemGrupoService mensagemGrupoService;
+
+        @Autowired
+        private SimpMessagingTemplate messagingTemplate;
+
+        @PutMapping("/{id}")
         public ResponseEntity<?> editarMensagem(@PathVariable Long id,
                                                 @RequestBody String novoConteudo,
                                                 Principal principal) {
@@ -59,18 +59,24 @@ public class MensagemGrupoController {
                 return ResponseEntity.ok(mensagemAtualizada);
             } catch (SecurityException e) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+
+            } catch (NoSuchElementException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
             }
         }
 
         @DeleteMapping("/{id}")
         public ResponseEntity<?> excluirMensagem(@PathVariable Long id, Principal principal) {
             try {
-                Long mensagemId = mensagemGrupoService.excluirMensagemGrupo(id, principal.getName());
-                messagingTemplate.convertAndSend("/topic/grupo/" + id, Map.of("tipo", "remocao", "id", mensagemId));
+                MensagemGrupo mensagemExcluida = mensagemGrupoService.excluirMensagemGrupo(id, principal.getName());
+                Long projetoId = mensagemExcluida.getProjeto().getId();
+                messagingTemplate.convertAndSend("/topic/grupo/" + projetoId, Map.of("tipo", "remocao", "id", id));
                 return ResponseEntity.ok().build();
             } catch (SecurityException e) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            } catch (NoSuchElementException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
             }
         }
+    }
 }
-

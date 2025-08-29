@@ -2,6 +2,7 @@ package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.UsuarioLoginDTO;
 import com.SenaiCommunity.BackEnd.Security.JWTUtil;
+import com.SenaiCommunity.BackEnd.Service.UsuarioDetailsImpl;
 import com.SenaiCommunity.BackEnd.Service.UsuarioDetailsService;
 import com.SenaiCommunity.BackEnd.DTO.TokenDTO;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,11 +38,13 @@ public class AutenticacaoController {
                     new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha())
             );
 
-            // 2. Carregar usuário autenticado
             UserDetails userDetails = userDetailsService.loadUserByUsername(dto.getEmail());
 
-            // 3. Gerar token com base no usuário
-            String token = jwtUtil.gerarToken(userDetails);
+            // Pegando o id
+            Long id = ((UsuarioDetailsImpl) userDetails).getId();
+
+            // Gerar token com ID como claim personalizada
+            String token = jwtUtil.gerarToken(userDetails, id);
 
             // 4. Retornar token no body
             return ResponseEntity.ok(new TokenDTO(token));

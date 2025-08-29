@@ -45,6 +45,7 @@ public class AlunoService {
         aluno.setFotoPerfil(dto.getFotoPerfil());
         aluno.setCurso(dto.getCurso());
         aluno.setPeriodo(dto.getPeriodo());
+        aluno.setDataNascimento(dto.getDataNascimento());
         return aluno;
     }
 
