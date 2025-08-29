@@ -8,7 +8,11 @@
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: auto; max-width: 900px; padding: 2rem; background-color: #f8f9fa; color: #333; }
         .container { background-color: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+<<<<<<< HEAD
         h2, h3 { color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+=======
+        h2, h3, h4 { color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+>>>>>>> back
         .form-group { margin-bottom: 1rem; }
         label { display: block; margin-bottom: .5rem; font-weight: bold; }
         input[type="text"], input[type="password"], input[type="number"], textarea, input[type="file"] { width: calc(100% - 22px); padding: 10px; border-radius: 4px; border: 1px solid #ccc; }
@@ -17,10 +21,17 @@
         button.danger { background-color: #dc3545; }
         button.danger:hover { background-color: #c82333; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
+<<<<<<< HEAD
         #chat-window, #public-feed-window { height: 400px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin-top: 1rem; background-color: #f9f9f9; border-radius: 4px; }
         .message, .post-container { position: relative; }
         .message-actions, .post-actions { position: absolute; top: 5px; right: 5px; display: none; background-color: rgba(255,255,255,0.8); padding: 3px; border-radius: 5px;}
         .message:hover .message-actions, .post-container:hover .post-actions { display: block; }
+=======
+        #chat-window, #public-feed-window { height: 500px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin-top: 1rem; background-color: #f9f9f9; border-radius: 4px; }
+        .message, .post-container, .comment-container { position: relative; }
+        .message-actions, .post-actions, .comment-actions { position: absolute; top: 5px; right: 5px; display: none; background-color: rgba(255,255,255,0.8); padding: 3px; border-radius: 5px;}
+        .message:hover .message-actions, .post-container:hover .post-actions, .comment-container:hover .comment-actions { display: block; }
+>>>>>>> back
         .action-btn { font-size: 10px; padding: 2px 5px; margin: 0 2px; cursor: pointer; border-radius: 3px; }
         .message { margin-bottom: 8px; padding: 8px 12px; border-radius: 4px; max-width: 80%; word-wrap: break-word; }
         .message p { margin: 4px 0; }
@@ -34,6 +45,63 @@
         .post-header { font-weight: bold; margin-bottom: 8px; color: #333; }
         .post-content { margin-bottom: 10px; white-space: pre-wrap; }
         .post-media img, .post-media video, .post-media audio { max-width: 100%; border-radius: 4px; margin-top: 10px; display: block;}
+<<<<<<< HEAD
+=======
+        .comments-section { margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
+        .comment-container { background-color: #f8f9fa; padding: 8px; border-radius: 5px; margin-bottom: 8px; border-left: 2px solid #ddd; padding-left: 10px; }
+        .comment-header { font-size: 0.9em; color: #6c757d; }
+        .comment-content { font-size: 0.95em; }
+        .comment-form { display: flex; margin-top: 10px; }
+        .comment-form input { flex-grow: 1; margin-right: 10px; }
+        .comment-form button { font-size: 14px; padding: 5px 10px; }
+        .comment-replies { margin-left: 25px; border-left: 2px solid #e9ecef; padding-left: 15px; }
+        .reply-form { margin-left: 25px; margin-top: 5px; display: none; }
+        .destacado { background-color: #fffbe6 !important; border-left-color: #ffc107 !important; }
+        .action-btn.highlight { background-color: #ffc107; color: black; border-color: #ffc107; }
+        .reply-info { font-size: 0.8em; color: #6c757d; margin-bottom: 4px; }
+        .reply-info strong { color: #0056b3; }
+        .highlight-badge { font-size: 0.8em; color: #856404; background-color: #fff3cd; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
+        
+        /* <<< NOVOS ESTILOS PARA CURTIDAS >>> */
+        .actions-bar {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Aumenta o espaçamento entre os botões */
+        }
+        .like-btn {
+            background: none;
+            border: 1px solid #ccc;
+            color: #555;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .like-btn.liked {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+            font-weight: bold;
+        }
+        .like-count {
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+        }
+        .comment-actions-footer {
+             display: flex;
+             align-items: center;
+             gap: 15px;
+             margin-top: 10px;
+        }
+
+>>>>>>> back
         /* Estilos do Modal */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
         .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; }
@@ -83,7 +151,11 @@
             <textarea id="post-content" placeholder="O que você está pensando?"></textarea>
         </div>
         <div class="form-group">
+<<<<<<< HEAD
             <label for="post-files">Anexar Arquivos:</label>
+=======
+            <label for="post-files">Anexar Arquivos (Imagens, Vídeos, Áudios):</label>
+>>>>>>> back
             <input type="file" id="post-files" multiple>
         </div>
         <button onclick="createPost()">Enviar Postagem</button>
@@ -141,10 +213,29 @@
     </div>
 </div>
 
+<<<<<<< HEAD
+=======
+<div id="editCommentModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('editCommentModal')">&times;</span>
+        <h3>Editar Comentário</h3>
+        <input type="hidden" id="edit-comment-id">
+        <div class="form-group">
+            <label for="edit-comment-content">Conteúdo:</label>
+            <textarea id="edit-comment-content"></textarea>
+        </div>
+        <button onclick="submitCommentEdit()">Salvar Alterações</button>
+    </div>
+</div>
+>>>>>>> back
 
 <script>
     let stompClient = null;
     let jwtToken = null;
+<<<<<<< HEAD
+=======
+    const activeSubscriptions = {};
+>>>>>>> back
 
     // --- FUNÇÕES DE AUTENTICAÇÃO E UTILITÁRIAS ---
     function getUserIdFromToken(token) {
@@ -193,11 +284,18 @@
         const headers = { 'Authorization': 'Bearer ' + jwtToken };
 
         stompClient.connect(headers, function(frame) {
+<<<<<<< HEAD
             console.log('CONECTADO COM SUCESSO: ' + frame);
             updateConnectionStatus(true);
             fetchPublicPosts();
 
             // Inscrição para o CHAT PRIVADO
+=======
+            console.log('CONECTADO COM SUCESSO');
+            updateConnectionStatus(true);
+            fetchPublicPosts();
+
+>>>>>>> back
             stompClient.subscribe(`/user/queue/usuario`, function(message) {
                 const payload = JSON.parse(message.body);
                 if (payload.tipo === 'remocao') {
@@ -212,6 +310,7 @@
                 }
             });
 
+<<<<<<< HEAD
             // Inscrição para o FEED PÚBLICO
             stompClient.subscribe('/topic/publico', function(message) {
                 const payload = JSON.parse(message.body);
@@ -229,6 +328,20 @@
                 }
             });
 
+=======
+            stompClient.subscribe('/topic/publico', function(message) {
+                const payload = JSON.parse(message.body);
+                const postElement = document.getElementById(`post-${payload.postagemId || payload.id}`);
+                
+                if (payload.tipo === 'remocao') {
+                    postElement?.remove();
+                } else if (payload.tipo === 'edicao') {
+                    fetchAndReplacePost(payload.postagem.id);
+                } else { 
+                    if(!postElement) showPublicPost(payload, true);
+                }
+            });
+>>>>>>> back
         }, function(error) {
             console.error('ERRO DE CONEXÃO:', error);
             updateConnectionStatus(false);
@@ -236,6 +349,13 @@
     }
 
     function disconnect() {
+<<<<<<< HEAD
+=======
+        for (const topic in activeSubscriptions) {
+            activeSubscriptions[topic].unsubscribe();
+            delete activeSubscriptions[topic];
+        }
+>>>>>>> back
         if (stompClient !== null) { stompClient.disconnect(); }
         updateConnectionStatus(false);
         console.log("Desconectado");
@@ -261,6 +381,7 @@
 
     // --- FUNÇÕES DE POSTAGEM ---
     async function fetchPublicPosts() {
+<<<<<<< HEAD
         const backendUrl = document.getElementById('backend-url').value;
         const feedWindow = document.getElementById('public-feed-window');
         feedWindow.innerHTML = ''; 
@@ -275,6 +396,19 @@
             posts.forEach(post => showPublicPost(post, false));
         } catch (error) {
             console.error('Erro no fetch do histórico de postagens:', error);
+=======
+        const feedWindow = document.getElementById('public-feed-window');
+        feedWindow.innerHTML = '';
+        try {
+            const response = await fetch(`${document.getElementById('backend-url').value}/api/chat/publico`, {
+                method: 'GET',
+                headers: { 'Authorization': 'Bearer ' + jwtToken }
+            });
+            if (!response.ok) throw new Error(`Erro: ${response.status}`);
+            const posts = await response.json();
+            posts.forEach(post => showPublicPost(post, false));
+        } catch (error) {
+>>>>>>> back
             alert(error.message);
         }
     }
@@ -283,6 +417,7 @@
         const backendUrl = document.getElementById('backend-url').value;
         const content = document.getElementById('post-content').value;
         const files = document.getElementById('post-files').files;
+<<<<<<< HEAD
         if (!content) { alert("O conteúdo da postagem não pode estar vazio."); return; }
 
         const formData = new FormData();
@@ -295,6 +430,14 @@
             }
         }
         
+=======
+        if (!content && files.length === 0) { alert("A postagem precisa de conteúdo ou arquivos."); return; }
+        const formData = new FormData();
+        formData.append('postagem', new Blob([JSON.stringify({ conteudo: content })], { type: 'application/json' }));
+        for (let i = 0; i < files.length; i++) {
+            formData.append('arquivos', files[i]);
+        }
+>>>>>>> back
         try {
             const response = await fetch(`${backendUrl}/postagem/upload-mensagem`, {
                 method: 'POST',
@@ -302,15 +445,22 @@
                 body: formData
             });
             if (!response.ok) throw new Error(`Erro ao criar postagem: ${await response.text()}`);
+<<<<<<< HEAD
             
             document.getElementById('post-content').value = '';
             document.getElementById('post-files').value = null;
         } catch (error) {
             console.error("Erro no fetch da postagem:", error);
+=======
+            document.getElementById('post-content').value = '';
+            document.getElementById('post-files').value = null;
+        } catch (error) {
+>>>>>>> back
             alert(error.message);
         }
     }
     
+<<<<<<< HEAD
     function showPublicPost(post, prepend) {
         const feedWindow = document.getElementById('public-feed-window');
         const postElement = document.createElement('div');
@@ -330,10 +480,57 @@
                 }
             });
         }
+=======
+    // <<< NOVA FUNÇÃO PARA CURTIDAS >>>
+    async function toggleLike(postagemId, comentarioId) {
+        if (!jwtToken) {
+            alert("Você precisa estar conectado para curtir.");
+            return;
+        }
+        const backendUrl = document.getElementById('backend-url').value;
+        const body = {};
+        if (postagemId) body.postagemId = postagemId;
+        if (comentarioId) body.comentarioId = comentarioId;
+
+        try {
+            const response = await fetch(`${backendUrl}/curtidas/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+            if (!response.ok) {
+                throw new Error(`Erro ao processar curtida: ${await response.text()}`);
+            }
+            // A UI será atualizada via WebSocket, então não precisamos fazer nada aqui.
+        } catch (error) {
+            console.error("Erro no toggleLike:", error);
+            alert(error.message);
+        }
+    }
+
+    // Função para criar elemento de postagem
+    function createPostElement(post) {
+        const postElement = document.createElement('div');
+        postElement.className = 'post-container';
+        postElement.id = `post-${post.id}`;
+        postElement.dataset.authorId = post.autorId;
+
+        let mediaHtml = '<div class="post-media">';
+        const urls = post.urlsMidia || [];
+        urls.forEach(url => {
+            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) { mediaHtml += `<img src="${url}">`; } 
+            else if (url.match(/\.(mp4|webm|ogg)$/i)) { mediaHtml += `<video controls src="${url}"></video>`; } 
+            else if (url.match(/\.(mp3|wav|m4a)$/i)) { mediaHtml += `<audio controls src="${url}"></audio>`; }
+        });
+>>>>>>> back
         mediaHtml += '</div>';
         
         const dataFormatada = new Date(post.dataCriacao).toLocaleString('pt-BR');
         const myUserId = document.getElementById('my-user-id').value;
+<<<<<<< HEAD
         
         let actionsHtml = '';
         if (String(post.autorId) === myUserId) {
@@ -354,13 +551,95 @@
             ${mediaHtml}
         `;
         
+=======
+        let actionsHtml = (String(post.autorId) === myUserId) ? `
+            <div class="post-actions">
+                <button class="action-btn" onclick='openEditPostModal(${post.id}, ${JSON.stringify(urls)})'>Editar</button>
+                <button class="action-btn danger" onclick="deletePost(${post.id})">Excluir</button>
+            </div>` : '';
+        
+        // <<< NOVA BARRA DE AÇÕES PARA A POSTAGEM >>>
+        const postActionsBar = `
+            <div class="actions-bar">
+                <button class="like-btn ${post.curtidoPeloUsuario ? 'liked' : ''}" onclick="toggleLike(${post.id}, null)">
+                    ❤️ <span class="like-count">${post.totalCurtidas}</span>
+                </button>
+            </div>`;
+
+        // Renderizar comentários com destaque e respostas
+        let commentsHtml = `
+            <div class="comments-section">
+                <h4>Comentários</h4>
+                <div class="comments-list" id="comentarios-${post.id}">`;
+        
+        if(post.comentarios && post.comentarios.length > 0) {
+            const rootComments = post.comentarios.filter(c => !c.parentId);
+            
+            const sortedComments = rootComments.sort((a, b) => {
+                if (a.destacado !== b.destacado) {
+                    return b.destacado - a.destacado;
+                }
+                return new Date(a.dataCriacao) - new Date(b.dataCriacao);
+            });
+
+            sortedComments.forEach(comment => {
+                commentsHtml += renderCommentWithReplies(comment, post.autorId, post.comentarios);
+            });
+        }
+        
+        commentsHtml += `</div>
+            <div class="comment-form">
+                <input type="text" id="comment-input-${post.id}" placeholder="Adicione um comentário...">
+                <button onclick="sendComment(${post.id}, null)">Enviar</button>
+            </div>
+        </div>`;
+
+        postElement.innerHTML = `
+            ${actionsHtml}
+            <div class="post-header"><strong>${post.nomeAutor}</strong> - ${dataFormatada}</div>
+            <div class="post-content" id="post-content-${post.id}">${post.conteudo}</div>
+            ${mediaHtml}
+            ${postActionsBar}
+            ${commentsHtml}
+        `;
+        
+        subscribeToComments(post.id);
+        return postElement;
+    }
+
+    function showPublicPost(post, prepend) {
+        const feedWindow = document.getElementById('public-feed-window');
+        const postElement = createPostElement(post);
+>>>>>>> back
         if (prepend) {
             feedWindow.prepend(postElement);
         } else {
             feedWindow.appendChild(postElement);
         }
     }
+<<<<<<< HEAD
     
+=======
+
+    async function fetchAndReplacePost(postId) {
+        try {
+            const response = await fetch(`${document.getElementById('backend-url').value}/postagem/${postId}`, {
+                headers: { 'Authorization': 'Bearer ' + jwtToken }
+            });
+            if (!response.ok) return;
+            const updatedPost = await response.json();
+            
+            const oldPostElement = document.getElementById(`post-${postId}`);
+            if (oldPostElement) {
+                const newPostElement = createPostElement(updatedPost);
+                oldPostElement.replaceWith(newPostElement);
+            }
+        } catch (e) {
+            console.error("Falha ao recarregar post:", e);
+        }
+    }
+
+>>>>>>> back
     async function deletePost(postId) {
         if (!confirm('Tem certeza que deseja excluir esta postagem?')) return;
         try {
@@ -369,7 +648,10 @@
                 headers: { 'Authorization': 'Bearer ' + jwtToken }
             });
             if (!response.ok) throw new Error(`Erro ao excluir postagem: ${response.status}`);
+<<<<<<< HEAD
             console.log(`Postagem ${postId} excluída.`);
+=======
+>>>>>>> back
         } catch (error) {
             alert(error.message);
         }
@@ -379,7 +661,10 @@
         const postContent = document.getElementById(`post-content-${postId}`).innerText;
         document.getElementById('edit-post-id').value = postId;
         document.getElementById('edit-post-content').value = postContent;
+<<<<<<< HEAD
 
+=======
+>>>>>>> back
         const mediaListDiv = document.getElementById('edit-post-media-list');
         mediaListDiv.innerHTML = '';
         if (mediaUrls && mediaUrls.length > 0) {
@@ -389,8 +674,12 @@
                     <div>
                         <input type="checkbox" id="remove-media-${filename}" name="urlsParaRemover" value="${url}">
                         <label for="remove-media-${filename}">${filename}</label>
+<<<<<<< HEAD
                     </div>
                 `;
+=======
+                    </div>`;
+>>>>>>> back
             });
         } else {
             mediaListDiv.innerHTML = 'Nenhuma mídia anexada.';
@@ -402,6 +691,7 @@
         const postId = document.getElementById('edit-post-id').value;
         const content = document.getElementById('edit-post-content').value;
         const newFiles = document.getElementById('edit-post-files').files;
+<<<<<<< HEAD
         
         const urlsParaRemover = [];
         document.querySelectorAll('#edit-post-media-list input[type="checkbox"]:checked').forEach(checkbox => {
@@ -416,6 +706,14 @@
             formData.append('arquivos', newFiles[i]);
         }
         
+=======
+        const urlsParaRemover = Array.from(document.querySelectorAll('#edit-post-media-list input:checked')).map(cb => cb.value);
+        const formData = new FormData();
+        formData.append('postagem', new Blob([JSON.stringify({ conteudo: content, urlsParaRemover })], { type: 'application/json' }));
+        for (let i = 0; i < newFiles.length; i++) {
+            formData.append('arquivos', newFiles[i]);
+        }
+>>>>>>> back
         try {
             const response = await fetch(`${document.getElementById('backend-url').value}/postagem/${postId}`, {
                 method: 'PUT',
@@ -430,6 +728,160 @@
         }
     }
 
+<<<<<<< HEAD
+=======
+    // --- FUNÇÕES DE COMENTÁRIOS ---
+    function subscribeToComments(postId) {
+        if (stompClient && stompClient.connected) {
+            const topic = `/topic/postagem/${postId}/comentarios`;
+            if (activeSubscriptions[topic]) return;
+            const subscription = stompClient.subscribe(topic, function(message) {
+                fetchAndReplacePost(postId);
+            });
+            activeSubscriptions[topic] = subscription;
+        }
+    }
+
+    function renderCommentWithReplies(comment, postAuthorId, allComments) {
+        let commentHtml = renderComment(comment, postAuthorId);
+        
+        const replies = allComments
+            .filter(reply => reply.parentId === comment.id)
+            .sort((a, b) => {
+                if (a.destacado !== b.destacado) {
+                    return b.destacado - a.destacado;
+                }
+                return new Date(a.dataCriacao) - new Date(b.dataCriacao);
+            });
+
+        if (replies.length > 0) {
+            commentHtml += `<div class="comment-replies">`;
+            replies.forEach(reply => {
+                commentHtml += renderCommentWithReplies(reply, postAuthorId, allComments);
+            });
+            commentHtml += `</div>`;
+        }
+        return commentHtml;
+    }
+    
+    function renderComment(comment, postAuthorId) {
+        const myUserId = document.getElementById('my-user-id').value;
+        const dataFormatada = new Date(comment.dataCriacao).toLocaleString('pt-BR');
+        let actionsHtml = '';
+        const isAuthor = String(comment.autorId) === myUserId;
+        const isPostOwner = String(postAuthorId) === myUserId;
+
+        if (isAuthor || isPostOwner) {
+            actionsHtml = `<div class="comment-actions">`;
+            if (isAuthor) {
+                actionsHtml += `<button class="action-btn" onclick='openEditCommentModal(${comment.id}, \`${comment.conteudo.replace(/`/g, '\\`')}\`)'>E</button>`;
+            }
+            if (isAuthor || isPostOwner) {
+                actionsHtml += `<button class="action-btn danger" onclick="deleteComment(${comment.id})">X</button>`;
+            }
+            if (isPostOwner) {
+                 actionsHtml += `<button class="action-btn highlight" onclick="highlightComment(${comment.id})">★</button>`;
+            }
+            actionsHtml += `</div>`;
+        }
+        
+        let replyInfoHtml = '';
+        if (comment.replyingToName) {
+            replyInfoHtml = `<div class="reply-info">Respondendo a <strong>${comment.replyingToName}</strong></div>`;
+        }
+        
+        let highlightBadge = '';
+        if(comment.destacado){
+            highlightBadge = `<span class="highlight-badge">Destacado pelo criador</span>`;
+        }
+        
+        // <<< NOVA BARRA DE AÇÕES PARA O COMENTÁRIO >>>
+        const commentActionsFooter = `
+            <div class="comment-actions-footer">
+                <button class="like-btn ${comment.curtidoPeloUsuario ? 'liked' : ''}" onclick="toggleLike(null, ${comment.id})">
+                    ❤️ <span class="like-count">${comment.totalCurtidas}</span>
+                </button>
+                <button class="action-btn" style="font-size:12px; padding: 4px 8px;" onclick="toggleReplyForm(${comment.id})">Responder</button>
+            </div>`;
+
+        return `
+            <div class="comment-container ${comment.destacado ? 'destacado' : ''}" id="comment-${comment.id}">
+                ${actionsHtml}
+                <div class="comment-header"><strong>${comment.nomeAutor}</strong> ${highlightBadge} - ${dataFormatada}</div>
+                ${replyInfoHtml}
+                <p class="comment-content">${comment.conteudo}</p>
+                ${commentActionsFooter}
+                <div class="reply-form" id="reply-form-${comment.id}">
+                    <input type="text" id="reply-input-${comment.id}" placeholder="Escreva sua resposta...">
+                    <button onclick="sendComment(${comment.postagemId}, ${comment.id})">Enviar</button>
+                </div>
+            </div>`;
+    }
+    
+    function sendComment(postId, parentId) {
+        const inputId = parentId ? `reply-input-${parentId}` : `comment-input-${postId}`;
+        const input = document.getElementById(inputId);
+        const content = input.value.trim();
+        if(stompClient && content) {
+            stompClient.send(`/app/postagem/${postId}/comentar`, {}, JSON.stringify({ conteudo: content, parentId: parentId || null }));
+            input.value = '';
+            if(parentId) toggleReplyForm(parentId);
+        }
+    }
+    
+    function toggleReplyForm(commentId) {
+        const form = document.getElementById(`reply-form-${commentId}`);
+        form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+    }
+    
+    async function highlightComment(commentId) {
+        try {
+            const response = await fetch(`${document.getElementById('backend-url').value}/comentarios/${commentId}/destacar`, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + jwtToken }
+            });
+            if (!response.ok) throw new Error(`Erro ao destacar comentário: ${await response.text()}`);
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function openEditCommentModal(commentId, currentContent) {
+        document.getElementById('edit-comment-id').value = commentId;
+        document.getElementById('edit-comment-content').value = currentContent;
+        openModal('editCommentModal');
+    }
+
+    async function submitCommentEdit() {
+        const commentId = document.getElementById('edit-comment-id').value;
+        const content = document.getElementById('edit-comment-content').value;
+        try {
+            const response = await fetch(`${document.getElementById('backend-url').value}/comentarios/${commentId}`, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + jwtToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify(content)
+            });
+            if (!response.ok) throw new Error(`Erro ao editar comentário: ${await response.text()}`);
+            closeModal('editCommentModal');
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    async function deleteComment(commentId) {
+        if (!confirm('Tem certeza?')) return;
+        try {
+            const response = await fetch(`${document.getElementById('backend-url').value}/comentarios/${commentId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + jwtToken }
+            });
+            if (!response.ok) throw new Error(`Erro ao excluir comentário: ${response.status}`);
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+>>>>>>> back
     // --- FUNÇÕES DO CHAT PRIVADO ---
     async function fetchChatHistory() {
         const myUserId = document.getElementById('my-user-id').value;
@@ -437,7 +889,10 @@
         const chatWindow = document.getElementById('chat-window');
         chatWindow.innerHTML = '';
         if (!myUserId || !recipientId) { return; }
+<<<<<<< HEAD
         
+=======
+>>>>>>> back
         try {
             const response = await fetch(`${document.getElementById('backend-url').value}/api/chat/privado/${myUserId}/${recipientId}`, {
                 method: 'GET',
@@ -454,7 +909,10 @@
     function sendMessage() {
         const recipientId = document.getElementById('recipient-id').value;
         const messageContent = document.getElementById('message').value;
+<<<<<<< HEAD
 
+=======
+>>>>>>> back
         if (stompClient && messageContent && recipientId) {
             const chatMessage = {
                 conteudo: messageContent,
@@ -474,7 +932,10 @@
              existingElement.querySelector('p').innerText = message.conteudo;
              return;
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> back
         const messageElement = document.createElement('div');
         messageElement.className = 'message';
         messageElement.id = `message-${message.id}`;
@@ -488,6 +949,7 @@
             messageElement.classList.add('sent');
             actionsHtml = `
                 <div class="message-actions">
+<<<<<<< HEAD
                     <button class="action-btn" onclick='openEditMessageModal(${message.id}, "${message.conteudo}")'>E</button>
                     <button class="action-btn danger" onclick="deletePrivateMessage(${message.id})">X</button>
                 </div>
@@ -496,12 +958,23 @@
             messageElement.classList.add('received');
         }
 
+=======
+                    <button class="action-btn" onclick='openEditMessageModal(${message.id}, \`${message.conteudo.replace(/`/g, '\\`')}\`)'>E</button>
+                    <button class="action-btn danger" onclick="deletePrivateMessage(${message.id})">X</button>
+                </div>`;
+        } else {
+            messageElement.classList.add('received');
+        }
+>>>>>>> back
         messageElement.innerHTML = `
             ${actionsHtml}
             <strong>${senderName}:</strong>
             <p>${message.conteudo}</p>
         `;
+<<<<<<< HEAD
 
+=======
+>>>>>>> back
         chatWindow.appendChild(messageElement);
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
@@ -509,7 +982,11 @@
     async function deletePrivateMessage(messageId) {
         if(!confirm('Tem certeza?')) return;
         try {
+<<<<<<< HEAD
             const response = await fetch(`${document.getElementById('backend-url').value}/chat-privado/${messageId}`, {
+=======
+            const response = await fetch(`${document.getElementById('backend-url').value}/api/chat/privado/${messageId}`, {
+>>>>>>> back
                 method: 'DELETE',
                 headers: { 'Authorization': 'Bearer ' + jwtToken }
             });
@@ -528,9 +1005,14 @@
     async function submitMessageEdit() {
         const messageId = document.getElementById('edit-message-id').value;
         const content = document.getElementById('edit-message-content').value;
+<<<<<<< HEAD
         
         try {
             const response = await fetch(`${document.getElementById('backend-url').value}/chat-privado/${messageId}`, {
+=======
+        try {
+            const response = await fetch(`${document.getElementById('backend-url').value}/api/chat/privado/${messageId}`, {
+>>>>>>> back
                 method: 'PUT',
                 headers: { 
                     'Authorization': 'Bearer ' + jwtToken,
@@ -548,6 +1030,15 @@
     // --- FUNÇÕES DO MODAL ---
     function openModal(modalId) { document.getElementById(modalId).style.display = 'block'; }
     function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+<<<<<<< HEAD
+=======
+    
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }
+>>>>>>> back
 </script>
 </body>
 </html>

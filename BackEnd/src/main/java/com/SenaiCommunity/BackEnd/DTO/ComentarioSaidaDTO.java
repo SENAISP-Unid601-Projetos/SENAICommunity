@@ -1,5 +1,4 @@
 package com.SenaiCommunity.BackEnd.DTO;
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,19 +7,16 @@ import java.util.List;
 
 @Data
 @Builder
-public class PostagemSaidaDTO {
-
+public class ComentarioSaidaDTO {
     private Long id;
     private String conteudo;
     private LocalDateTime dataCriacao;
     private Long autorId;
     private String nomeAutor;
-    private List<String> urlsMidia;
-<<<<<<< HEAD
-=======
-    private List<ComentarioSaidaDTO> comentarios;
+    private Long postagemId;
+    private Long parentId;
+    private boolean destacado;
+    private String replyingToName; // Nome do autor do comentário pai
     private int totalCurtidas;
     private boolean curtidoPeloUsuario;
->>>>>>> back
-
 }

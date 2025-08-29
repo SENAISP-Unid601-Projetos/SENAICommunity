@@ -3,9 +3,17 @@ package com.SenaiCommunity.BackEnd.Service;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+<<<<<<< HEAD
 
 import java.util.Collection;
 
+=======
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+
+
+>>>>>>> back
 public class UsuarioDetailsImpl implements UserDetails {
 
     private final Long id;

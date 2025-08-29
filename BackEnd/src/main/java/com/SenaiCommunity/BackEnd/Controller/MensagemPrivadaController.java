@@ -47,7 +47,11 @@ public class MensagemPrivadaController {
     // Os métodos abaixo são REST, então precisam estar em um controller com @RestController
     // Considere mover para um controller separado ou manter @RestController e anotar os métodos @MessageMapping em uma classe @Controller separada.
     @RestController
+<<<<<<< HEAD
     @RequestMapping("/chat-privado")
+=======
+    @RequestMapping("/api/chat/privado")
+>>>>>>> back
     public static class MensagemPrivadaRestController {
 
         @Autowired
