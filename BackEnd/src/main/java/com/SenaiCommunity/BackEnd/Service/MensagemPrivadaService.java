@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional; // Importe esta
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class MensagemPrivadaService {
@@ -85,7 +86,11 @@ public class MensagemPrivadaService {
         return toDTO(mensagem); // Retorna o DTO da mensagem excluída
     }
 
-    public List<MensagemPrivada> buscarMensagensPrivadas(Long user1, Long user2) {
-        return mensagemPrivadaRepository.findMensagensEntreUsuarios(user1, user2);
+    public List<MensagemPrivadaSaidaDTO> buscarMensagensPrivadas(Long user1, Long user2) {
+        List<MensagemPrivada> mensagens = mensagemPrivadaRepository.findMensagensEntreUsuarios(user1, user2);
+        // Converte a lista de entidades para uma lista de DTOs antes de retornar
+        return mensagens.stream()
+                .map(this::toDTO) // Usa o método toDTO que você já criou
+                .collect(Collectors.toList());
     }
 }
