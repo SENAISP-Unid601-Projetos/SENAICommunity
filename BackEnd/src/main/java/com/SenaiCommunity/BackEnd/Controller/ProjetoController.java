@@ -38,7 +38,6 @@ public class ProjetoController {
             @RequestParam Integer maxMembros,
             @RequestParam Boolean grupoPrivado,
             @RequestParam Long autorId,
-            @RequestParam String autorNome,
             @RequestParam List<Long> professorIds,
             @RequestParam List<Long> alunoIds,
             @RequestPart(required = false) MultipartFile foto) {
@@ -49,13 +48,12 @@ public class ProjetoController {
             dto.setMaxMembros(maxMembros);
             dto.setGrupoPrivado(grupoPrivado);
             dto.setAutorId(autorId);
-            dto.setAutorNome(autorNome);
             dto.setProfessorIds(professorIds);
             dto.setAlunoIds(alunoIds);
 
             ProjetoDTO salvo = projetoService.salvar(dto, foto);
             return ResponseEntity.ok(Map.of(
-                    "message", "Projeto criado com sucesso!",
+                    "message", "Projeto criado com sucesso! Convites enviados automaticamente para professores e alunos.",
                     "projeto", salvo
             ));
         } catch (Exception e) {
@@ -109,6 +107,20 @@ public class ProjetoController {
         }
     }
 
+    @PostMapping("/convites/{conviteId}/recusar")
+    public ResponseEntity<?> recusarConvite(
+            @PathVariable Long conviteId,
+            @RequestParam Long usuarioId) {
+        try {
+            projetoService.recusarConvite(conviteId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Convite recusado com sucesso."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{projetoId}/membros/{membroId}")
     public ResponseEntity<?> expulsarMembro(
             @PathVariable Long projetoId,
@@ -153,9 +165,12 @@ public class ProjetoController {
             @RequestParam(required = false) String titulo,
             @RequestParam(required = false) String descricao,
             @RequestParam(required = false) String imagemUrl,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer maxMembros,
+            @RequestParam(required = false) Boolean grupoPrivado,
             @RequestParam Long adminId) {
         try {
-            projetoService.atualizarInfoGrupo(projetoId, titulo, descricao, imagemUrl, adminId);
+            projetoService.atualizarInfoGrupo(projetoId, titulo, descricao, imagemUrl, status, maxMembros, grupoPrivado, adminId);
             return ResponseEntity.ok(Map.of("message", "Informações do grupo atualizadas com sucesso!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
