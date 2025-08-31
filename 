@@ -1,0 +1,695 @@
+[33mcommit 9fe75e7242cbe88b83d81ab8dd874955b103030d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mComentarioPostagem[m[33m, [m[1;31morigin/ComentarioPostagem[m[33m)[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Aug 29 10:19:55 2025 -0300
+
+    PatchCorreção
+
+[33mcommit f2320a98e4bf87f8e1f4287013328648bb7a7b1f[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Thu Aug 28 23:53:41 2025 -0300
+
+    UpdCurtidas
+
+[33mcommit 4c7ba0677430d33d58bcb9f3a6461d684a69cec2[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Wed Aug 27 10:25:40 2025 -0300
+
+    PatchComentárioDestaqueResposta
+
+[33mcommit 7e9346859f8cf953f5563fca9b7ba29f8dce3ebb[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Tue Aug 26 10:59:33 2025 -0300
+
+    UpdComentarioDestaqueResposta
+
+[33mcommit a4aad04bfdc2c4860ecac870268ac3317cb5cc79[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Aug 22 23:54:10 2025 -0300
+
+    UpdComentarioFuncional
+
+[33mcommit 0aee53e6c41cec76432d6045929207438197e182[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Aug 22 17:26:43 2025 -0300
+
+    Upd1Comentario
+
+[33mcommit 93f73bea65384cd1fc3d36a3849bda96a88a1434[m[33m ([m[1;31morigin/back[m[33m)[m
+Merge: 579f8cf 77ef602
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Aug 22 15:42:21 2025 -0300
+
+    Merge pull request #29 from SENAISP-Unid601-Projetos/BuildChats
+    
+    IntegraçãoBuildChats
+
+[33mcommit 77ef602e01c1374c000a137b99e2f25581608b68[m[33m ([m[1;31morigin/BuildChats[m[33m, [m[1;32mBuildChats[m[33m)[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Aug 22 11:20:08 2025 -0300
+
+    UpdPostagem
+
+[33mcommit e0076b34e7400e3dd4070869347b4edd8f886810[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Thu Aug 21 23:49:04 2025 -0300
+
+    PostagemFuncionando
+
+[33mcommit 94651e995f04bc944c8c2208665e6966c0d7e172[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Thu Aug 21 11:31:35 2025 -0300
+
+    TesteUpload
+
+[33mcommit aa3dba756b2e31840c54c62c53244a10f6ed3e1c[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Tue Aug 19 23:48:28 2025 -0300
+
+    ChatPrivado100%Funcional
+
+[33mcommit a623383e9efa9094c2e6a3e06de5693c30297281[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Tue Aug 19 11:14:15 2025 -0300
+
+    ChatPrivadoFuncionando
+
+[33mcommit b8f43767809e94257d28f333402b3a6acb282f55[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Sun Aug 17 20:23:06 2025 -0300
+
+    UpdC/Gemini
+
+[33mcommit 1d4a850ae8ee9fab36d1642b18551e8e16a7d5e2[m
+Merge: 925f5cb 579f8cf
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Aug 8 17:29:06 2025 -0300
+
+    UpdQuaseConect
+
+[33mcommit 925f5cb9b35aca133a4c5a04d63bc9bbe49c1e11[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Aug 8 15:40:40 2025 -0300
+
+    Upd
+
+[33mcommit 579f8cfbd0d0571377299383720f4fad45591dcb[m
+Merge: ec25041 8ab12e2
+Author: Matheus <matheussantosdelimabrito@gmail.com>
+Date:   Fri Aug 8 15:32:29 2025 -0300
+
+    Merge pull request #26 from SENAISP-Unid601-Projetos/EventosBACK
+    
+    Eventos back
+
+[33mcommit 8ab12e296e6d1c616f26bc0e4fe9ea63eb2bb92f[m[33m ([m[1;31morigin/EventosBACK[m[33m)[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri Aug 8 15:32:49 2025 -0300
+
+    feito pronto
+
+[33mcommit faf2e25510af32c598a26f36b8a33c323ad62684[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri Aug 8 15:22:18 2025 -0300
+
+    pronto para teste
+
+[33mcommit 2267e4ba91c3cb41d8358e9c9ae54f514b92a9f4[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Aug 1 17:28:36 2025 -0300
+
+    UpdToken
+
+[33mcommit 194b1e65ca32e8db57ee2a5430d4f072eb74fd92[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Aug 1 14:53:21 2025 -0300
+
+    UP
+
+[33mcommit ec25041b0171b60204334c4c4d1b9bcbfde90dc1[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Aug 1 14:32:03 2025 -0300
+
+    UpdMerge
+
+[33mcommit 8c50d330711033c04e8305c5aee61b97c8292b43[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Jul 11 15:23:34 2025 -0300
+
+    ChatsSeparadosFaseTeste
+
+[33mcommit b97b65da14a315a503440074aba694c0f25b6c65[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Sun Jun 29 18:30:50 2025 -0300
+
+    CriacaoBasicaChatsUploadPostagem
+
+[33mcommit 68d37249d1a5d992622e3ef82c49371676dad6ef[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Sat Jun 28 23:30:53 2025 -0300
+
+    UpdHistóricoMensagens
+
+[33mcommit 7b5a554340343fed8937c2d0e7a4e7ff079c425a[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Sat Jun 28 22:40:37 2025 -0300
+
+    Upd1Chats
+
+[33mcommit c0eb7f22b6bcded6bea97b60a659ff370e9f7b8f[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Thu Jun 26 16:40:45 2025 -0300
+
+    Ajustes
+
+[33mcommit 4d58eaa11c3c0478f482eca6eb445b9f50dade05[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Jun 6 17:18:37 2025 -0300
+
+    UpdExpiraçãoToken
+
+[33mcommit 387d3528e042a43798f16ad0a3f5b838d2d76767[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Jun 6 16:49:59 2025 -0300
+
+    CorsIntegradoAoSpringSecurity
+
+[33mcommit 725db4109a7d209eededeb0fd4dbee2f7f5d3568[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri Jun 6 15:10:59 2025 -0300
+
+    UsuarioFinal
+
+[33mcommit 70ecd24a26c83023016b536979e4011578958c4f[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri Jun 6 14:59:41 2025 -0300
+
+    UsuarioFinal
+
+[33mcommit c6b598fbb4a3842555bdffc5445d8de93bf139c5[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Jun 6 14:41:47 2025 -0300
+
+    LiberaçãoDasRotasAlunosProfessores
+
+[33mcommit d8c65008480532c8b7afbbe09e14dc17891aa3a5[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Jun 6 14:16:10 2025 -0300
+
+    RolesAutomaticas
+
+[33mcommit 52b7395e0562241746e1a5e354b5e2d4b33d2bcb[m[33m ([m[1;31morigin/LoginUsuarioSpringSecurity[m[33m)[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Jun 6 14:06:51 2025 -0300
+
+    FnLoginCadastroBugFotoNull
+
+[33mcommit d386f0b29002ec074b9adfe80f195ca14cd24909[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Mon Jun 2 22:59:47 2025 -0300
+
+    UpdSpringSecurity
+
+[33mcommit 9017537342584c886bb1079276c53f457e14450b[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Sun Jun 1 22:06:54 2025 -0300
+
+    LoginUsuarioSpringSecurity
+
+[33mcommit 9c124e347badf1bc60af0e77ce5118f25288505c[m
+Merge: 71f16c3 2620a4e
+Author: Yuri Santos <yurisantsboy2007@gmail.com>
+Date:   Fri May 30 17:10:42 2025 -0300
+
+    Merge pull request #21 from SENAISP-Unid601-Projetos/back
+    
+    Login Usuario
+
+[33mcommit 2620a4eece3896d87db5dcb9298229c0479ad1dc[m
+Merge: b563f60 7442bc9
+Author: Yuri Santos <yurisantsboy2007@gmail.com>
+Date:   Fri May 30 17:09:42 2025 -0300
+
+    Merge pull request #20 from SENAISP-Unid601-Projetos/LoginUsuario
+    
+    Login Usuario
+
+[33mcommit 7442bc92341f4a2f6f964450d4c9de8cd431be98[m[33m ([m[1;31morigin/LoginUsuario[m[33m)[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 30 17:09:25 2025 -0300
+
+    Login Usuario
+
+[33mcommit 71f16c30fe1054b34d538155ff3332be1fe5581d[m
+Merge: b38c64d b563f60
+Author: Matheus <matheussantosdelimabrito@gmail.com>
+Date:   Fri May 30 16:24:33 2025 -0300
+
+    Merge pull request #14 from SENAISP-Unid601-Projetos/back
+    
+    BackUsuario
+
+[33mcommit b563f600301ffdfe317832fe20b3f57071fb9f94[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri May 30 15:29:10 2025 -0300
+
+    professor
+
+[33mcommit f67b33df6e93a5ce8f9a450a9cd13dc3e6257d71[m
+Author: matheusslb <matheussantosdelimabirto@gmail.com>
+Date:   Fri May 23 17:11:50 2025 -0300
+
+    up
+
+[33mcommit 8e90044abc2462984885a6447d0ac47caf311067[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 23 17:09:32 2025 -0300
+
+    Aluno Final
+
+[33mcommit bed93b0b050e2a27c2ae5a5f0392c48d996cb81c[m
+Author: matheusslb <matheussantosdelimabirto@gmail.com>
+Date:   Fri May 23 15:18:00 2025 -0300
+
+    projeto
+
+[33mcommit d4f02fc30f7dbe5fd69299c46b38ca725b2e7c0c[m
+Author: matheusslb <matheussantosdelimabirto@gmail.com>
+Date:   Fri May 23 14:58:06 2025 -0300
+
+    ajustes
+
+[33mcommit a030c595fb864f985da874876efc2eafbeb17da5[m
+Author: matheusslb <matheussantosdelimabirto@gmail.com>
+Date:   Fri May 23 14:47:28 2025 -0300
+
+    ava
+
+[33mcommit 9b5bd53f5e46e7653063469175c4405cd7ceff08[m
+Author: matheusslb <matheussantosdelimabirto@gmail.com>
+Date:   Fri May 23 14:46:46 2025 -0300
+
+    avaliacoes
+
+[33mcommit d46ba684931386b0fe32242fee2a608b91bc54a6[m
+Author: matheusslb <matheussantosdelimabirto@gmail.com>
+Date:   Fri May 23 14:30:05 2025 -0300
+
+    Avaliacoes
+
+[33mcommit 1378a9349305ee31dcfe2305fe11b5165f26bc47[m
+Author: matheusslb <matheussantosdelimabirto@gmail.com>
+Date:   Fri May 23 14:13:17 2025 -0300
+
+    DTO
+
+[33mcommit 716a2a769ea07e4e01188f2498a11e3de9dc3658[m
+Author: matheusslb <matheussantosdelimabirto@gmail.com>
+Date:   Fri May 23 13:47:34 2025 -0300
+
+    release comentarios
+
+[33mcommit a30b570d1ae827f3fc91e7a0ad033f1422808f84[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 16 17:28:15 2025 -0300
+
+    UpdComentario
+
+[33mcommit dab38676d2cab496aa2d4b5cd59333b047c2a1c8[m
+Author: MykyBalb <mykaelbalbino06@gmail.com>
+Date:   Fri May 16 16:54:16 2025 -0300
+
+    upMensaPriv
+
+[33mcommit 9fd87188c1cdb4b3efac6a2bbde015b75f3b5ecc[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 16 16:46:30 2025 -0300
+
+    update back
+
+[33mcommit 76f0a4677c884c8f27f4e86741f8009f90ab322b[m
+Author: MykyBalb <mykaelbalbino06@gmail.com>
+Date:   Fri May 16 16:43:09 2025 -0300
+
+    up up up
+
+[33mcommit 8862a904f8d11ed096718b33a046a0bcb4db2676[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 16 16:42:37 2025 -0300
+
+    UpdChatPrivadoFinal
+
+[33mcommit eacdfe3a22d95fdda3febd1887b2601873676e29[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 16 16:23:22 2025 -0300
+
+    UpdChatPrivado
+
+[33mcommit 43be95d2ccc2c595a414cb030efc8c4462cbc82a[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 16 15:37:39 2025 -0300
+
+    update back
+
+[33mcommit 4f8a82a666c418a7d82247776e369feddbfd69c0[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 16 15:28:36 2025 -0300
+
+    UpdAll
+
+[33mcommit 57de0bc7e90a0163265485b1690ea9fefe38f839[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 16 15:16:34 2025 -0300
+
+    update back
+
+[33mcommit 29cace1bbb0d759b6c2c57cb9c2d71e6e0474e28[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 16 15:09:02 2025 -0300
+
+    UpdGruposParticipacao
+
+[33mcommit ffb4b2fe69766ca5969470ff0283d15dff87bd7f[m
+Author: MykyBalb <mykaelbalbino06@gmail.com>
+Date:   Fri May 16 15:07:51 2025 -0300
+
+    mensagem priv
+
+[33mcommit 0718036d215c9705121fc13b5f318f5e801fe660[m
+Author: MykyBalb <mykaelbalbino06@gmail.com>
+Date:   Fri May 16 15:03:55 2025 -0300
+
+    convite
+
+[33mcommit f81022d7caf82d51ec711e08129e8dfacfc8c59b[m
+Merge: d7f133e 49857b8
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 16 14:54:02 2025 -0300
+
+    Merge branch 'back' of https://github.com/SENAISP-Unid601-Projetos/SENAICommunity into back
+
+[33mcommit d7f133ec699172ed7ad8861423109dd0e877ce13[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 16 14:53:53 2025 -0300
+
+    update back
+
+[33mcommit 49857b89dd8485561d1251b4827357ac3a258d65[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 16 14:47:55 2025 -0300
+
+    Upd5
+
+[33mcommit 2ae50799e3352d51b8f4d557c584d68fdab70340[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 16 14:31:27 2025 -0300
+
+    DTOs UsuarioLogin
+
+[33mcommit d50d3de490d7b91c59eee40dbfd777fd8096c57a[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 16 14:31:41 2025 -0300
+
+    UpdEntityChatPrivado
+
+[33mcommit a033cd1e673c424458ca73d0987044cf5e55b181[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 16 14:28:29 2025 -0300
+
+    DTOs UsuarioCadastro
+
+[33mcommit f96c3663b3908a8c32dc1a94423638c52986e8a2[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 16 14:24:53 2025 -0300
+
+    UpdGrupos
+
+[33mcommit fd17ee3d15ba2f8f9854d7ec93e761d703419019[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 16 14:17:26 2025 -0300
+
+    DTOs Aluno, Usuario, Professor
+
+[33mcommit 07a1f3154db8cc4d6dbe4530fd22845bfc3a1c14[m
+Author: MykyBalb <mykaelbalbino06@gmail.com>
+Date:   Fri May 16 14:15:13 2025 -0300
+
+    upda
+
+[33mcommit 40beb2c6086832d5bfe224dc8a2c73c7c3da9c41[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 9 17:26:47 2025 -0300
+
+    UpdMetadeServiceGrupos
+
+[33mcommit 82c264b1036bddfa6a4a2ebaf6559371b9154253[m
+Merge: e5be8f8 80ea340
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 9 17:13:21 2025 -0300
+
+    Merge branch 'back' of https://github.com/SENAISP-Unid601-Projetos/SENAICommunity into back
+
+[33mcommit 80ea3408da0784f1ac365c00235f269931b3951e[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri May 9 17:12:58 2025 -0300
+
+    controller
+
+[33mcommit e5be8f84ae1fcb17cd1be26e5ec8196c0c5fbe3b[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 9 17:12:55 2025 -0300
+
+    update services
+
+[33mcommit 7a96c85b5983f805f178c7909ab0bbded0a67131[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 9 17:11:17 2025 -0300
+
+    update repositorys
+
+[33mcommit 422d76d4dad1014e2783e6fa8a05f61e376d2fd4[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 9 17:09:55 2025 -0300
+
+    update repositorys
+
+[33mcommit 9d5aa3b40f1e304a4b8db7ffc49cf5136a9e4990[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 9 17:04:23 2025 -0300
+
+    update
+
+[33mcommit 56a1afe8f58beef746c88f86e49cb9b5a42bd062[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 9 16:56:38 2025 -0300
+
+    UpdBack
+
+[33mcommit df98cd4897cafe4d6209463c71d1fbc8cbbf40a0[m
+Merge: 33ea2f5 43954ea
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 9 16:43:53 2025 -0300
+
+    Merge remote-tracking branch 'origin/back' into back
+    
+    # Conflicts:
+    #       BackEnd/src/main/java/com/SenaiCommunity/BackEnd/Entity/Grupos.java
+
+[33mcommit 33ea2f5d449c3cc20049db26f9dbd3e0661dcd07[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 9 16:43:10 2025 -0300
+
+    UpdBack
+
+[33mcommit 43954ea5643e0a2df856b23f5fa2a6312307463c[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 9 16:27:03 2025 -0300
+
+    up
+
+[33mcommit dfae45d0f4215f650f0d6984d05e3937d137ac25[m
+Merge: 0d6855b 235ef1a
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 9 16:20:44 2025 -0300
+
+    Up
+
+[33mcommit 0d6855b6161de78485c511ef0f07e2db004d1983[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 9 16:18:23 2025 -0300
+
+    UpdEntidadesBack
+
+[33mcommit 235ef1a5bec4298c9fb6999ae8123d8e3cf801f3[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 9 15:44:55 2025 -0300
+
+    update
+
+[33mcommit 5efbb26156db9a77462399f02657bbf59c290a24[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 9 15:43:50 2025 -0300
+
+    update
+
+[33mcommit 9c2185c2ac4ac77640352c4491a98e228dd7a3d1[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri May 9 15:29:35 2025 -0300
+
+    upChat
+
+[33mcommit 920db7c2a1bc1f936c7562329cb997eb6a855cda[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 9 15:18:55 2025 -0300
+
+    update
+
+[33mcommit c7a28ffe91e7c74d45c0f3bb0300e8925b943172[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 9 15:17:04 2025 -0300
+
+    update
+
+[33mcommit 2d10ac3c8fb332c5201be22a3235d900ba8854d9[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri May 9 15:05:36 2025 -0300
+
+    ajustes
+
+[33mcommit 03bfa9b9497f3b8b61a3ce8820048520866252b7[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri May 9 15:01:03 2025 -0300
+
+    fecho projeto2.0
+
+[33mcommit f476d134fe8246beee2943ec3c5ebae17590e8af[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri May 9 14:58:25 2025 -0300
+
+    fechou projeto
+
+[33mcommit b940ddd653d57c9d22033c9a632064103cdce6af[m
+Author: YuriSantxz07 <yurisantsboy2007@gmail.com>
+Date:   Fri May 9 14:55:13 2025 -0300
+
+    update
+
+[33mcommit 785bfb2dd59931d058a2e0625ce640fcab978886[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri May 9 14:48:57 2025 -0300
+
+    manytomany
+
+[33mcommit f01b18aaf8047acea60c01dd3965dd59e81b60ac[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri May 9 14:45:13 2025 -0300
+
+    entity Projeto
+
+[33mcommit 66d5e72d601d6dd650a5a1b676f0004c989fa126[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 9 14:31:36 2025 -0300
+
+    UpdBack
+
+[33mcommit d82150802e44d8622ea34bdb27924a1ff7685c51[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri May 9 14:03:09 2025 -0300
+
+    UpdService1Back
+
+[33mcommit 7c1af2f8a488cf3b4743a33ca3062b606d56828e[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri Apr 25 17:13:17 2025 -0300
+
+    realese
+
+[33mcommit 3d9474f4bf266efe4c0d5791c347812fd48b2560[m
+Merge: befda61 317e9a6
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Apr 25 17:10:45 2025 -0300
+
+    Merge branch 'back' of https://github.com/SENAISP-Unid601-Projetos/SENAICommunity into back
+
+[33mcommit 317e9a6da729cfc581ad21ea546fcfa1b9c2ad46[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri Apr 25 17:10:27 2025 -0300
+
+    UpMat
+
+[33mcommit befda615b01f9aff1968e4b279f12deadedc9a25[m
+Merge: 3573834 c03a056
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Apr 25 17:08:46 2025 -0300
+
+    Merge branch 'back' of https://github.com/SENAISP-Unid601-Projetos/SENAICommunity into back
+    
+    # Conflicts:
+    #       BackEnd/src/main/java/com/SenaiCommunity/BackEnd/Entity/Professor.java
+
+[33mcommit 3573834c74b1fa2588171eb3235232bd79ec0e3c[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Apr 25 17:07:35 2025 -0300
+
+    UpdBiel
+
+[33mcommit c03a0562bdeb7160ab15c06a5e0a8b3568be0a7a[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri Apr 25 17:06:21 2025 -0300
+
+    UpMat
+
+[33mcommit 793c82e51c353b9d95cabf36e276b67e6d3fc009[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Apr 25 16:18:51 2025 -0300
+
+    Upd1Biel
+
+[33mcommit b38c64d64b603299790804bd07c92ffb4b8dbc4f[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Apr 25 16:01:49 2025 -0300
+
+    Upd3
+
+[33mcommit a0b38cf33d19f1821411ac8553ed17e3a0f11a9f[m
+Merge: cc512a2 54ec7ea
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Apr 25 15:37:27 2025 -0300
+
+    Merge branch 'main' into Biel
+
+[33mcommit 54ec7ea33d6bc59e2d262d1d0ed243935fb788ca[m
+Merge: ddaa113 db899fa
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri Apr 25 15:36:05 2025 -0300
+
+    algums ajustes
+
+[33mcommit db899fae16a22a6c2cfe71a00fee072bc8ec7de8[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri Apr 25 15:34:36 2025 -0300
+
+    alguns ajustes
+
+[33mcommit cc512a2edfa36f7e9e9b0cd6ce9c1fa19799e0ea[m
+Author: GabrielPiscke <gabrielmateuspiscke@gmail.com>
+Date:   Fri Apr 25 15:31:01 2025 -0300
+
+    Upd1
+
+[33mcommit b405c876506bf4203007aedc729c7abc734bdf74[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri Apr 25 15:25:36 2025 -0300
+
+    projeto inicial
+
+[33mcommit ddaa1137017fb64fe6b13f38ed2bf2403b656230[m
+Author: matheusslb <matheussantosdelimabrito@gmail.com>
+Date:   Fri Apr 25 15:19:30 2025 -0300
+
+    projeto
+
+[33mcommit a9e928057124a2ec721257ce6ec20774ea5a18f1[m
+Author: Rafael Selvagio <159262857+professor-rafael-selvagio@users.noreply.github.com>
+Date:   Fri Mar 28 15:21:09 2025 -0300
+
+    Initial commit

@@ -11,9 +11,9 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
     @Override
     protected void configureInbound(MessageSecurityMetadataSourceRegistry messages) {
         messages
-                .simpTypeMatchers(SimpMessageType.CONNECT).permitAll() // Permite a conexão, pois o handshake já foi validado
-                .simpDestMatchers("/app/**").authenticated() // Protege o envio de mensagens
-                .anyMessage().authenticated(); // Protege outras ações como SUBSCRIBE
+                .simpTypeMatchers(SimpMessageType.CONNECT).permitAll()
+                .simpDestMatchers("/app/**").authenticated()
+                .anyMessage().authenticated();
     }
 
     @Override

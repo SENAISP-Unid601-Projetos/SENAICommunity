@@ -15,20 +15,25 @@ public class UsuarioSaidaDTO {
     private String nome;
     private String email;
     private String tipoUsuario;
-    private String urlFotoPerfil; // Usaremos um nome mais genérico para a URL
+    private String urlFotoPerfil;
     private String bio;
     private LocalDate dataNascimento;
     private LocalDateTime dataCadastro;
 
-    // Construtor que converte a entidade Usuario para este DTO
     public UsuarioSaidaDTO(Usuario usuario) {
         this.id = usuario.getId();
         this.nome = usuario.getNome();
         this.email = usuario.getEmail();
         this.tipoUsuario = usuario.getTipoUsuario();
-        this.urlFotoPerfil = "/usuarios/foto/" + usuario.getFotoPerfil(); // Exemplo de como montar a URL completa
         this.bio = usuario.getBio();
         this.dataNascimento = usuario.getDataNascimento();
         this.dataCadastro = usuario.getDataCadastro();
+
+        String nomeFoto = usuario.getFotoPerfil();
+        if (nomeFoto != null && !nomeFoto.isBlank()) {
+            this.urlFotoPerfil = "/api/arquivos/" + nomeFoto;
+        } else {
+            this.urlFotoPerfil = "/images/default-avatar.png";
+        }
     }
 }

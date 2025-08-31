@@ -4,6 +4,7 @@ import com.SenaiCommunity.BackEnd.DTO.UsuarioAtualizacaoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -13,6 +14,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -23,6 +25,10 @@ public class UsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    //Injeta o mesmo caminho do application.properties aqui
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     /**
      * Busca o usuário logado a partir do objeto Authentication.
@@ -90,8 +96,14 @@ public class UsuarioService {
 
     private String salvarFoto(MultipartFile foto) throws IOException {
         String nomeArquivo = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());
-        Path caminho = Paths.get("src/main/resources/alunoPictures/" + nomeArquivo);
+
+        Path caminho = Paths.get(uploadDir).resolve(nomeArquivo).normalize();
+
+        // Cria o diretório se ele não existir
+        Files.createDirectories(caminho.getParent());
+
         foto.transferTo(caminho);
         return nomeArquivo;
     }
+
 }
