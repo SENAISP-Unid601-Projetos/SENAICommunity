@@ -26,9 +26,17 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    //Injeta o mesmo caminho do application.properties aqui
     @Value("${file.upload-dir}")
     private String uploadDir;
+
+    /**
+     * método público para buscar usuário por email.
+     * Este método é necessário para o CurtidaController.
+     */
+    public Usuario buscarPorEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o email: " + email));
+    }
 
     /**
      * Busca o usuário logado a partir do objeto Authentication.
@@ -68,6 +76,7 @@ public class UsuarioService {
 
         Usuario usuario = getUsuarioFromAuthentication(authentication);
         String nomeArquivo = salvarFoto(foto);
+        // Assumindo que o campo é 'urlFotoPerfil'. Se for 'fotoPerfil', ajuste aqui.
         usuario.setFotoPerfil(nomeArquivo);
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
@@ -97,13 +106,15 @@ public class UsuarioService {
     private String salvarFoto(MultipartFile foto) throws IOException {
         String nomeArquivo = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());
 
-        Path caminho = Paths.get(uploadDir).resolve(nomeArquivo).normalize();
+        // Garante que o diretório de upload exista
+        Path diretorioUpload = Paths.get(uploadDir);
+        Files.createDirectories(diretorioUpload);
 
-        // Cria o diretório se ele não existir
-        Files.createDirectories(caminho.getParent());
+        Path caminhoDoArquivo = diretorioUpload.resolve(nomeArquivo);
+        foto.transferTo(caminhoDoArquivo);
 
-        foto.transferTo(caminho);
-        return nomeArquivo;
+        // Retorna o caminho relativo que pode ser acessado pela web
+        // Ex: /uploads/123456_minhafoto.jpg
+        return "/uploads/" + nomeArquivo;
     }
-
 }

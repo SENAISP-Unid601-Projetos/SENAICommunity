@@ -9,32 +9,35 @@ import com.SenaiCommunity.BackEnd.Repository.CurtidaRepository;
 import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class CurtidaService {
+
     @Autowired
     private CurtidaRepository curtidaRepository;
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private PostagemRepository postagemRepository;
-    @Autowired private ComentarioRepository comentarioRepository;
-    @Autowired private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PostagemRepository postagemRepository;
+
+    @Autowired
+    private ComentarioRepository comentarioRepository;
 
     @Transactional
-    public void toggleCurtida(String username, Long postagemId, Long comentarioId) {
+    public Long toggleCurtida(String username, Long postagemId, Long comentarioId) {
         Usuario usuario = usuarioRepository.findByEmail(username)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        Long postIdParaNotificar = null;
-
         if (postagemId != null) {
             // Lógica para curtir/descurtir postagem
+            // CORREÇÃO: Chamando o método correto do repositório com os IDs
             Optional<Curtida> curtidaExistente = curtidaRepository.findByUsuarioIdAndPostagemId(usuario.getId(), postagemId);
 
             if (curtidaExistente.isPresent()) {
@@ -42,30 +45,32 @@ public class CurtidaService {
             } else {
                 Postagem postagem = postagemRepository.findById(postagemId)
                         .orElseThrow(() -> new EntityNotFoundException("Postagem não encontrada"));
-                Curtida novaCurtida = Curtida.builder().usuario(usuario).postagem(postagem).build();
+                Curtida novaCurtida = new Curtida();
+                novaCurtida.setUsuario(usuario);
+                novaCurtida.setPostagem(postagem);
                 curtidaRepository.save(novaCurtida);
             }
-            postIdParaNotificar = postagemId;
+            return postagemId;
 
         } else if (comentarioId != null) {
             // Lógica para curtir/descurtir comentário
+            // CORREÇÃO: Chamando o método correto do repositório com os IDs
             Optional<Curtida> curtidaExistente = curtidaRepository.findByUsuarioIdAndComentarioId(usuario.getId(), comentarioId);
+
             Comentario comentario = comentarioRepository.findById(comentarioId)
                     .orElseThrow(() -> new EntityNotFoundException("Comentário não encontrado"));
 
             if (curtidaExistente.isPresent()) {
                 curtidaRepository.delete(curtidaExistente.get());
             } else {
-                Curtida novaCurtida = Curtida.builder().usuario(usuario).comentario(comentario).build();
+                Curtida novaCurtida = new Curtida();
+                novaCurtida.setUsuario(usuario);
+                novaCurtida.setComentario(comentario);
                 curtidaRepository.save(novaCurtida);
             }
-            postIdParaNotificar = comentario.getPostagem().getId();
-        }
-
-        // Notifica o frontend que algo mudou na postagem
-        if (postIdParaNotificar != null) {
-            messagingTemplate.convertAndSend("/topic/postagem/" + postIdParaNotificar + "/comentarios",
-                    Map.of("tipo", "atualizacao_curtida", "postagemId", postIdParaNotificar));
+            return comentario.getPostagem().getId();
+        } else {
+            throw new IllegalArgumentException("É necessário fornecer postagemId ou comentarioId.");
         }
     }
 }

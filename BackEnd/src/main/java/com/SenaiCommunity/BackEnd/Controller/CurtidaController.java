@@ -1,7 +1,9 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.CurtidaEntradaDTO;
+import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Service.CurtidaService;
+import com.SenaiCommunity.BackEnd.Service.UsuarioService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,19 +27,23 @@ public class CurtidaController {
     private CurtidaService curtidaService;
 
     @Autowired
+    private UsuarioService usuarioService;
+
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/toggle")
     public ResponseEntity<?> toggleCurtida(@RequestBody CurtidaEntradaDTO dto, Principal principal) {
         try {
-            curtidaService.toggleCurtida(principal.getName(), dto.getPostagemId(), dto.getComentarioId());
+            Long postagemIdParaNotificar = curtidaService.toggleCurtida(principal.getName(), dto.getPostagemId(), dto.getComentarioId());
 
-            // 2. ENVIAR NOTIFICAÇÃO PARA O TÓPICO PÚBLICO
-            // O frontend vai receber isso e chamar a função que recarrega a postagem.
-            if (dto.getPostagemId() != null) {
+            Usuario autorDaAcao = usuarioService.buscarPorEmail(principal.getName());
+
+            if (postagemIdParaNotificar != null) {
                 Map<String, Object> payload = Map.of(
                         "tipo", "atualizacao_curtida",
-                        "id", dto.getPostagemId() // Enviamos o ID da postagem que foi atualizada
+                        "id", postagemIdParaNotificar,
+                        "autorAcaoId", autorDaAcao.getId()
                 );
                 messagingTemplate.convertAndSend("/topic/publico", payload);
             }
