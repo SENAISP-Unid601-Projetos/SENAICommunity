@@ -55,8 +55,6 @@ body {
   line-height: 1.6;
 }
 
-/* ... (Todo o CSS anterior de .topbar, .search, etc. permanece igual) ... */
-
 /* Header Styles */
 .topbar {
   display: flex;
@@ -341,7 +339,7 @@ body {
   text-align: center;
 }
 
-/* ... (O resto do seu CSS de .main-content, .post, .comments, etc., continua aqui) ... */
+/* Main Content */
 .main-content {
   display: flex;
   flex-direction: column;
@@ -360,68 +358,6 @@ body {
   box-shadow: var(--shadow);
 }
 
-.post-options-menu {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--card-radius);
-    box-shadow: var(--shadow);
-    z-index: 10;
-    overflow: hidden;
-
-    /* Esconde o menu por padrão */
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.2s ease-in-out;
-}
-
-/* Mostra o menu quando o mouse passa sobre QUALQUER LUGAR do post */
-.post:hover .post-options-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* Estilo para cada botão dentro do menu */
-.options-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 0.6rem 1rem; /* Padding ligeiramente menor */
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    cursor: pointer;
-    font-size: 0.875rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color); /* Linha separadora */
-}
-
-.options-item:last-child {
-    border-bottom: none; /* Remove a linha do último item */
-}
-
-.options-item:hover {
-    background-color: var(--bg-tertiary);
-}
-
-.options-item.danger {
-    color: var(--danger);
-}
-
-.options-item.danger:hover {
-    background-color: rgba(248, 81, 73, 0.1); /* Fundo vermelho sutil no hover */
-}
-
-.options-item i {
-    width: 16px;
-    text-align: center;
-}
 .post-header {
   display: flex;
   justify-content: space-between;
@@ -434,12 +370,22 @@ body {
   align-items: center;
   gap: 0.75rem;
 }
-.post-author-avatar img {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  object-fit: cover;
+
+/* --- CORREÇÃO DA FOTO DO AUTOR DO POST --- */
+.post-author-avatar {
+    width: 45px;
+    height: 45px;
+    flex-shrink: 0; /* Impede que o contêiner encolha */
+    border-radius: 50%;
+    overflow: hidden;
 }
+.post-author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+/* --- FIM DA CORREÇÃO DA FOTO --- */
+
 .post-author-info {
   display: flex;
   flex-direction: column;
@@ -452,6 +398,8 @@ body {
   font-size: 0.8rem;
   color: var(--text-secondary);
 }
+
+/* Botão de três pontos (Posts e Comentários) */
 .post-options-btn {
   width: 36px;
   height: 36px;
@@ -464,6 +412,72 @@ body {
   align-items: center;
   justify-content: center;
 }
+
+/* --- NOVOS ESTILOS PARA MENUS DE OPÇÕES (POSTS E COMENTÁRIOS) --- */
+.post-options {
+    position: relative; /* Contexto para o menu dropdown */
+}
+
+.options-menu {
+    position: absolute;
+    display: none; /* Controlado por JS para aparecer no clique */
+    width: 180px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow);
+    z-index: 10;
+    overflow: hidden;
+    padding: 0.25rem 0;
+}
+
+/* Posicionamento do menu do POST */
+.post-options .options-menu {
+    top: 100%; /* Abaixo do botão */
+    right: 0;
+}
+
+/* Posicionamento do menu do COMENTÁRIO */
+.comment .options-menu {
+    top: 30px; /* Abaixo do botão do comentário */
+    right: 5px;
+}
+
+/* Estilo para cada botão dentro do menu */
+.options-menu button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.6rem 1rem;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.875rem;
+    text-align: left;
+    transition: var(--transition);
+}
+
+.options-menu button:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.options-menu button.danger {
+    color: var(--danger);
+}
+
+.options-menu button.danger:hover {
+    background-color: rgba(248, 81, 73, 0.1);
+}
+
+.options-menu button i {
+    width: 16px;
+    text-align: center;
+}
+/* --- FIM DOS NOVOS ESTILOS --- */
+
+
 .post-content {
   margin-bottom: 1rem;
   white-space: pre-wrap;
@@ -783,7 +797,6 @@ body {
 }
 
 /* Modais, Notificações, etc. */
-/* ... (Todo o resto do CSS permanece o mesmo) ... */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.3s ease; }
 .modal-content { background-color: var(--bg-secondary); padding: 2rem; border-radius: var(--card-radius); width: 90%; max-width: 500px; box-shadow: var(--shadow); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem; }

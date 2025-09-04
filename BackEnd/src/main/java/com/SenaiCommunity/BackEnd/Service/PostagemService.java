@@ -251,6 +251,7 @@ public class PostagemService {
                 .urlsMidia(urls)
                 .comentarios(comentariosDTO)
                 .totalCurtidas(totalCurtidasPostagem)
+                .urlFotoAutor(postagem.getAutor().getFotoPerfil())
                 .curtidoPeloUsuario(curtidoPeloUsuarioPostagem)
                 .build();
     }

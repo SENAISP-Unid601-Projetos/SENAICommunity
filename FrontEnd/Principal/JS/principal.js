@@ -200,61 +200,80 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    function createPostElement(post) {
-        const postElement = document.createElement('div');
-        postElement.className = 'post';
-        postElement.id = `post-${post.id}`;
-        const autorNome = post.autor?.nome || post.nomeAutor || 'Usuário Desconhecido';
-        const autorAvatar = post.autor?.urlFotoPerfil ? `${backendUrl}${post.autor.urlFotoPerfil}` : `${backendUrl}/images/default-avatar.png`;
-        const dataFormatada = new Date(post.dataCriacao).toLocaleString('pt-BR');
-        const autorIdDoPost = post.autor?.id || post.autorId;
-        const isAuthor = currentUser && autorIdDoPost == currentUser.id;
-        let mediaHtml = '';
-        if (post.urlsMidia && post.urlsMidia.length > 0) {
-            mediaHtml = `<div class="post-media">${post.urlsMidia.map(url => {
-                const fullMediaUrl = url.startsWith('http') ? url : `${backendUrl}${url}`;
-                if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) return `<img src="${fullMediaUrl}" alt="Mídia">`;
-                if (url.match(/\.(mp4|webm|ogg)$/i)) return `<video controls src="${fullMediaUrl}"></video>`;
-                return '';
-            }).join('')}</div>`;
-        }
-        const rootComments = (post.comentarios || []).filter(c => !c.parentId);
-        let commentsHtml = rootComments.sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao)).map(comment => renderCommentWithReplies(comment, post.comentarios, post)).join('');
-        let optionsMenu = '';
-        if (isAuthor) {
-            optionsMenu = `
-                <div class="post-options">
-                    <button class="post-options-btn" onclick="event.stopPropagation(); window.openPostMenu(${post.id})"><i class="fas fa-ellipsis-h"></i></button>
-                    <div class="options-menu" id="post-menu-${post.id}" onclick="event.stopPropagation();">
-                        <button onclick="window.openEditPostModal(${post.id}, '${post.conteudo.replace(/'/g, "\\'")}')"><i class="fas fa-pen"></i> Editar</button>
-                        <button class="danger" onclick="window.deletePost(${post.id})"><i class="fas fa-trash"></i> Excluir</button>
-                    </div>
-                </div>
-            `;
-        }
-        postElement.innerHTML = `
-            <div class="post-header">
-                <div class="post-author-details">
-                    <div class="post-author-avatar"><img src="${autorAvatar}" alt="${autorNome}"></div>
-                    <div class="post-author-info"><strong>${autorNome}</strong><span>${dataFormatada}</span></div>
-                </div>
-                ${optionsMenu}
-            </div>
-            <div class="post-content"><p>${post.conteudo}</p></div>
-            ${mediaHtml}
-            <div class="post-actions">
-                <button class="action-btn ${post.curtidoPeloUsuario ? 'liked' : ''}" onclick="window.toggleLike(event, ${post.id}, null)"><i class="fas fa-heart"></i> <span id="like-count-post-${post.id}">${post.totalCurtidas || 0}</span></button>
-                <button class="action-btn" onclick="window.toggleComments(${post.id})"><i class="fas fa-comment"></i> <span>${post.comentarios?.length || 0}</span></button>
-            </div>
-            <div class="comments-section" id="comments-section-${post.id}" style="display: none;">
-                <div class="comments-list">${commentsHtml}</div>
-                <div class="comment-form">
-                    <input type="text" id="comment-input-${post.id}" placeholder="Adicione um comentário..."><button onclick="window.sendComment(${post.id}, null)"><i class="fas fa-paper-plane"></i></button>
+   function createPostElement(post) {
+    // --- INÍCIO DO CÓDIGO DE DEPURAÇÃO ---
+    console.log("--- Depurando Post ID:", post.id, "---");
+    console.log("Objeto 'post' completo recebido:", post);
+    // --- FIM DO CÓDIGO DE DEPURAÇÃO ---
+
+    const postElement = document.createElement('div');
+    postElement.className = 'post';
+    postElement.id = `post-${post.id}`;
+
+    const autorNome = post.autor?.nome || post.nomeAutor || 'Usuário Desconhecido';
+    const autorIdDoPost = post.autor?.id || post.autorId;
+
+    const avatarPath = post.autor?.urlFotoPerfil || post.urlFotoAutor;
+    const autorAvatar = avatarPath
+        ? `${backendUrl}${avatarPath}`
+        : `${backendUrl}/images/default-avatar.png`;
+    
+    // --- CÓDIGO DE DEPURAÇÃO ADICIONAL ---
+    console.log("URL da foto encontrada (autorAvatar):", autorAvatar);
+    // --- FIM DO CÓDIGO DE DEPURAÇÃO ---
+
+    const dataFormatada = new Date(post.dataCriacao).toLocaleString('pt-BR');
+    const isAuthor = currentUser && autorIdDoPost == currentUser.id;
+
+    let mediaHtml = '';
+    if (post.urlsMidia && post.urlsMidia.length > 0) {
+        mediaHtml = `<div class="post-media">${post.urlsMidia.map(url => {
+            const fullMediaUrl = url.startsWith('http') ? url : `${backendUrl}${url}`;
+            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) return `<img src="${fullMediaUrl}" alt="Mídia">`;
+            if (url.match(/\.(mp4|webm|ogg)$/i)) return `<video controls src="${fullMediaUrl}"></video>`;
+            return '';
+        }).join('')}</div>`;
+    }
+
+    const rootComments = (post.comentarios || []).filter(c => !c.parentId);
+    let commentsHtml = rootComments.sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao)).map(comment => renderCommentWithReplies(comment, post.comentarios, post)).join('');
+
+    let optionsMenu = '';
+    if (isAuthor) {
+        optionsMenu = `
+            <div class="post-options">
+                <button class="post-options-btn" onclick="event.stopPropagation(); window.openPostMenu(${post.id})"><i class="fas fa-ellipsis-h"></i></button>
+                <div class="options-menu" id="post-menu-${post.id}" onclick="event.stopPropagation();">
+                    <button onclick="window.openEditPostModal(${post.id}, '${post.conteudo.replace(/'/g, "\\'")}')"><i class="fas fa-pen"></i> Editar</button>
+                    <button class="danger" onclick="window.deletePost(${post.id})"><i class="fas fa-trash"></i> Excluir</button>
                 </div>
             </div>
         `;
-        return postElement;
     }
+
+    postElement.innerHTML = `
+        <div class="post-header">
+            <div class="post-author-details">
+                <div class="post-author-avatar"><img src="${autorAvatar}" alt="${autorNome}"></div>
+                <div class="post-author-info"><strong>${autorNome}</strong><span>${dataFormatada}</span></div>
+            </div>
+            ${optionsMenu}
+        </div>
+        <div class="post-content"><p>${post.conteudo}</p></div>
+        ${mediaHtml}
+        <div class="post-actions">
+            <button class="action-btn ${post.curtidoPeloUsuario ? 'liked' : ''}" onclick="window.toggleLike(event, ${post.id}, null)"><i class="fas fa-heart"></i> <span id="like-count-post-${post.id}">${post.totalCurtidas || 0}</span></button>
+            <button class="action-btn" onclick="window.toggleComments(${post.id})"><i class="fas fa-comment"></i> <span>${post.comentarios?.length || 0}</span></button>
+        </div>
+        <div class="comments-section" id="comments-section-${post.id}" style="display: none;">
+            <div class="comments-list">${commentsHtml}</div>
+            <div class="comment-form">
+                <input type="text" id="comment-input-${post.id}" placeholder="Adicione um comentário..."><button onclick="window.sendComment(${post.id}, null)"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    `;
+    return postElement;
+}
 
     function showPublicPost(post, prepend = false) {
         if (elements.postsContainer) {
