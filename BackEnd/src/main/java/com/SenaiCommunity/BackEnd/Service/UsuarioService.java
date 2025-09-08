@@ -115,6 +115,6 @@ public class UsuarioService {
 
         // Retorna o caminho relativo que pode ser acessado pela web
         // Ex: /uploads/123456_minhafoto.jpg
-        return "/uploads/" + nomeArquivo;
+        return "/api/arquivos/" + nomeArquivo;
     }
 }

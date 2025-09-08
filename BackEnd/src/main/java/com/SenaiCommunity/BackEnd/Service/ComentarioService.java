@@ -154,6 +154,7 @@ public class ComentarioService {
                 .conteudo(comentario.getConteudo())
                 .dataCriacao(comentario.getDataCriacao())
                 .autorId(comentario.getAutor().getId())
+                .urlFotoAutor(comentario.getAutor().getFotoPerfil())
                 .nomeAutor(comentario.getAutor().getNome())
                 .postagemId(comentario.getPostagem().getId())
                 .parentId(comentario.getParent() != null ? comentario.getParent().getId() : null)

@@ -48,7 +48,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/autenticacao/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
-                        // ✅ ADICIONADO PARA PERMITIR ACESSO PÚBLICO A IMAGENS E ARQUIVOS
                         .requestMatchers("/images/**", "/api/arquivos/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",

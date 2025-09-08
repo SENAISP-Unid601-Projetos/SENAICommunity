@@ -35,9 +35,25 @@ public class CurtidaService {
         Usuario usuario = usuarioRepository.findByEmail(username)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        if (postagemId != null) {
+        if (comentarioId != null) {
+            // Lógica para curtir/descurtir comentário
+            Optional<Curtida> curtidaExistente = curtidaRepository.findByUsuarioIdAndComentarioId(usuario.getId(), comentarioId);
+
+            Comentario comentario = comentarioRepository.findById(comentarioId)
+                    .orElseThrow(() -> new EntityNotFoundException("Comentário não encontrado"));
+
+            if (curtidaExistente.isPresent()) {
+                curtidaRepository.delete(curtidaExistente.get());
+            } else {
+                Curtida novaCurtida = new Curtida();
+                novaCurtida.setUsuario(usuario);
+                novaCurtida.setComentario(comentario);
+                curtidaRepository.save(novaCurtida);
+            }
+            return comentario.getPostagem().getId(); // Retorna o ID da postagem pai para notificação
+
+        } else if (postagemId != null) {
             // Lógica para curtir/descurtir postagem
-            // CORREÇÃO: Chamando o método correto do repositório com os IDs
             Optional<Curtida> curtidaExistente = curtidaRepository.findByUsuarioIdAndPostagemId(usuario.getId(), postagemId);
 
             if (curtidaExistente.isPresent()) {
@@ -52,23 +68,6 @@ public class CurtidaService {
             }
             return postagemId;
 
-        } else if (comentarioId != null) {
-            // Lógica para curtir/descurtir comentário
-            // CORREÇÃO: Chamando o método correto do repositório com os IDs
-            Optional<Curtida> curtidaExistente = curtidaRepository.findByUsuarioIdAndComentarioId(usuario.getId(), comentarioId);
-
-            Comentario comentario = comentarioRepository.findById(comentarioId)
-                    .orElseThrow(() -> new EntityNotFoundException("Comentário não encontrado"));
-
-            if (curtidaExistente.isPresent()) {
-                curtidaRepository.delete(curtidaExistente.get());
-            } else {
-                Curtida novaCurtida = new Curtida();
-                novaCurtida.setUsuario(usuario);
-                novaCurtida.setComentario(comentario);
-                curtidaRepository.save(novaCurtida);
-            }
-            return comentario.getPostagem().getId();
         } else {
             throw new IllegalArgumentException("É necessário fornecer postagemId ou comentarioId.");
         }

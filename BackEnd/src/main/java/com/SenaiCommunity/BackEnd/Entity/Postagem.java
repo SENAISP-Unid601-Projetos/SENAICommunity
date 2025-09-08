@@ -30,8 +30,6 @@ public class Postagem{
 
     private LocalDateTime dataPostagem = LocalDateTime.now();
 
-    private String urlFotoAutor;
-
     @Transient
     private String autorUsername;
 
