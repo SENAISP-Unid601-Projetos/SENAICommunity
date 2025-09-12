@@ -119,6 +119,8 @@ public class AlunoService {
 
         Path caminhoDoArquivo = diretorioDeUpload.resolve(nomeArquivo);
         foto.transferTo(caminhoDoArquivo);
+
+        // Retorna APENAS o nome do arquivo
         return nomeArquivo;
     }
 

@@ -9,6 +9,9 @@
   <link rel="stylesheet" href="./Principal/CSS/principal.css">
 
   <script src="./Principal/JS/principal.js" defer></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>  
 </head>
 <body>
   <div class="notification-center"></div>
@@ -55,7 +58,7 @@
     <div class="user-dropdown">
       <div class="user">
         <div class="profile-pic">
-          <img src="./img/perfil.png" alt="Perfil">
+          <img src="./img/perfil.png" alt="Perfil" id="topbar-user-img">
         </div>
         
         <i class="fas fa-chevron-down"></i>
@@ -72,11 +75,11 @@
     <aside class="sidebar">
       <div class="user-info">
         <div class="avatar">
-          <img src="./img/perfil.png" alt="Perfil">
+          <img src="./img/perfil.png" alt="Perfil" id="sidebar-user-img">
           <div class="status online"></div>
         </div>
-        <h2>Usuário Temporário</h2>
-        <p class="user-title">Sem Curso</p>
+        <h2 id="sidebar-user-name">Usuário Temporário</h2>
+        <p class="user-title" id="sidebar-user-title">Sem Curso</p>
         <div class="user-stats">
           <div class="stat">
             <strong>3</strong>
@@ -106,7 +109,7 @@
         <div class="post-creator-simple">
             <div class="post-creator-trigger">
                 <div class="post-icon">
-                    <img src="./img/perfil.png" alt="Vinicius G.">
+                    <img src="./img/perfil.png" alt="Perfil">
                 </div>
                 <input type="text" placeholder="Começar publicação" readonly>
             </div>
@@ -122,6 +125,9 @@
                     <h3>Criar Publicação</h3>
                 </div>
                 <textarea class="editor-textarea" placeholder="No que você está pensando, Usuário?"></textarea>
+                <div class="media-input-container">
+                  <input type="file" id="post-media-input" accept="image/*,video/*" style="display:none;">
+                </div>
                 <div class="media-preview-container"></div>
             </div>
             <div class="post-editor-footer">
