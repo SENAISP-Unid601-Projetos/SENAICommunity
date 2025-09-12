@@ -97,7 +97,7 @@ public class ComentarioController {
                                                   @RequestBody ComentarioEntradaDTO dto,
                                                   Principal principal) {
             try {
-                ComentarioSaidaDTO comentarioAtualizado = comentarioService.editarComentario(id, principal.getName(), dto);
+                ComentarioSaidaDTO comentarioAtualizado = comentarioService.editarComentario(id, principal.getName(),dto.getConteudo());
                 Long postagemId = comentarioAtualizado.getPostagemId();
 
                 // Notifica o tópico da postagem e o tópico específico do comentário
