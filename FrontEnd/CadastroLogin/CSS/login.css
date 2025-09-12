@@ -277,3 +277,50 @@
     font-size: 0.875rem;
     color: var(--text-secondary);
 }
+
+/* --- NOVOS ESTILOS PARA LOGIN SOCIAL --- */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.divider:not(:empty)::before {
+    margin-right: .5em;
+}
+
+.divider:not(:empty)::after {
+    margin-left: .5em;
+}
+
+.btn-google {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.btn-google:hover {
+    background-color: var(--bg-quaternary);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+}
+
+.btn-google i {
+    color: var(--accent-primary);
+}
+
+/* Garante que o ícone do Google tenha a cor correta em todos os temas */
+[data-theme="light"] .btn-google i {
+    color: var(--accent-primary);
+}

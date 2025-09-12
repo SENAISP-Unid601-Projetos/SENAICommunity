@@ -7,7 +7,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CadastroLogin/CSS/cadastro.css">
     <link rel="stylesheet" href="CadastroLogin/CSS/login.css">
-
+    <style>
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div class="tech-background"></div>
@@ -52,11 +65,19 @@
                      <span class="btn-text">Entrar</span>
                      <span class="spinner"></span>
                  </button>
-                
-                <div class="auth-footer">
-                    <p>Não tem uma conta? <a href="cadastro.html" class="text-link">Cadastre-se</a></p>
-                </div>
             </form>
+            
+            <div class="divider">
+                <span>ou</span>
+            </div>
+            <div id="google-signin-button" class="btn btn-google">
+                <i class="fab fa-google"></i>
+                Entrar com Google
+            </div>
+            
+            <div class="auth-footer">
+                <p>Não tem uma conta? <a href="cadastro.html" class="text-link">Cadastre-se</a></p>
+            </div>
         </div>
     </div>
 
@@ -65,9 +86,7 @@
     </div>
         
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script src="CadastroLogin/JS/background.js" defer></script>
     <script src="CadastroLogin/JS/login.js" defer></script>
     <script src="CadastroLogin/JS/utils.js" defer></script>

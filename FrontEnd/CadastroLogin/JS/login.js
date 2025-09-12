@@ -3,6 +3,69 @@ document.addEventListener('DOMContentLoaded', function() {
     setupThemeToggle();
 
     const loginForm = document.getElementById('loginForm');
+    const backendUrl = 'http://localhost:8080';
+    const googleClientId = '1055449517512-gq7f7doogo5e8vmaq84vgrabsk1q5f5k.apps.googleusercontent.com'; // Use seu próprio Client ID
+    
+    // Inicializa o Google Sign-In SDK
+    function initGoogle() {
+        if (typeof google !== 'undefined' && google.accounts) {
+            google.accounts.id.initialize({
+                client_id: googleClientId,
+                callback: handleGoogleCredentialResponse,
+                auto_select: false, // Previna seleção automática na primeira vez
+            });
+            // Renderiza o botão no seu elemento div
+            google.accounts.id.renderButton(
+                document.getElementById('google-signin-button'),
+                { theme: 'outline', size: 'large', text: 'signin_with', width: 388 } // Customiza a aparência
+            );
+        }
+    }
+    initGoogle();
+
+
+    // Função de callback que recebe o token do Google
+    async function handleGoogleCredentialResponse(response) {
+        const btn = document.getElementById('google-signin-button');
+        if (!btn) return;
+        
+        // --- MODIFICAÇÃO PARA O SPINNER ---
+        btn.disabled = true;
+        btn.classList.add('loading');
+        
+        try {
+            const backendResponse = await axios.post(`${backendUrl}/autenticacao/login/google`, {
+                token: response.credential
+            });
+            
+            const token = backendResponse.data.token;
+            localStorage.setItem('token', token);
+            
+            await Swal.fire({
+                icon: 'success',
+                title: 'Login com Google realizado!',
+                text: 'Você será redirecionado em breve.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            
+            window.location.href = 'principal.html';
+            
+        } catch (error) {
+            console.error('Erro ao fazer login com Google:', error.response?.data || error.message);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro no Login com Google',
+                text: 'Não foi possível autenticar sua conta. Tente novamente.',
+                confirmButtonColor: '#3085d6'
+            });
+            
+        } finally {
+            btn.disabled = false;
+            btn.classList.remove('loading');
+        }
+    }
+    
     if (loginForm) {
         loginForm.addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -20,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 // Envia para o endpoint certo
-                const response = await axios.post('http://localhost:8080/autenticacao/login', {
+                const response = await axios.post(`${backendUrl}/autenticacao/login`, {
                     email: email,
                     senha: senha
                 });
