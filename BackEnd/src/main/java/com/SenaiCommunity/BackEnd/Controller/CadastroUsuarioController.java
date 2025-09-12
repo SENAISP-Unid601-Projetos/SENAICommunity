@@ -46,12 +46,10 @@ public class CadastroUsuarioController {
         dto.setSenha(senha);
         dto.setCurso(curso);
         dto.setPeriodo(periodo);
+        dto.setDataNascimento(dataNascimento);
 
         return ResponseEntity.ok(alunoService.criarAlunoComFoto(dto, foto));
     }
-
-
-
 
     @PostMapping(path = "/professores", consumes = "multipart/form-data")
     @Operation(summary = "Cadastra um novo PROFESSOR")

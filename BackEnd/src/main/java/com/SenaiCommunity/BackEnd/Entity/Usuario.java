@@ -23,6 +23,7 @@ public abstract class Usuario {
     @Column(unique = true)
     private String email;
     private String senha;
+    @Lob
     private String fotoPerfil;
     private LocalDate dataNascimento;
     private String bio;
@@ -44,5 +45,8 @@ public abstract class Usuario {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Curtida> curtidas;
 
 }

@@ -5,6 +5,7 @@ import com.SenaiCommunity.BackEnd.Entity.Role;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.RoleRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
+import lombok.Data;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.CommandLineRunner;
@@ -47,6 +48,8 @@ public class BackEndApplication {
 			}
 		}
 	}
+
+	//Metodo para criar um usuario de teste
 //	@Bean
 //	public CommandLineRunner initTestUser(
 //			UsuarioRepository usuarioRepository,

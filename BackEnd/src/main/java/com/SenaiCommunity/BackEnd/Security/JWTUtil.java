@@ -28,39 +28,66 @@ public class JWTUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String gerarToken(UserDetails userDetails) {
+    public String gerarToken(UserDetails userDetails, Long userId) {
         String role = userDetails.getAuthorities().stream()
-                .findFirst() // Se o usuário tiver múltiplas, pegue a primeira
+                .findFirst()
                 .map(GrantedAuthority::getAuthority)
                 .orElse("ROLE_USER");
 
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .claim("role", role)
+                .claim("id", userId)  // <-- Aqui adiciona o ID
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
                 .compact();
     }
-
     public String getRoleDoToken(String token) {
-        Claims claims = validarToken(token);
-        return claims != null ? claims.get("role", String.class) : null;
-    }
-
-    public String getEmailDoToken(String token) {
-        Claims claims = validarToken(token);
-        return claims != null ? claims.getSubject() : null;
-    }
-
-
-    public Claims validarToken(String token) {
         try {
-            JwtParser parser = Jwts.parser().verifyWith(getSigningKey()).build();
-            return parser.parseSignedClaims(token).getPayload();
+            Claims claims = getClaims(token);
+            return claims.get("role", String.class);
         } catch (Exception e) {
-            System.out.println("Erro ao validar token: " + e.getMessage());
             return null;
         }
     }
+
+    public String getEmailDoToken(String token) {
+        try {
+            Claims claims = getClaims(token);
+            return claims.getSubject();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Long getIdDoToken(String token) {
+        try {
+            Claims claims = getClaims(token);
+            Object idObj = claims.get("id");
+            if (idObj instanceof Integer) return ((Integer) idObj).longValue();
+            if (idObj instanceof Long) return (Long) idObj;
+            if (idObj instanceof String) return Long.parseLong((String)idObj);
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public boolean validarToken(String token) {
+        try {
+            Claims claims = getClaims(token);
+            Date expiracao = claims.getExpiration();
+            return expiracao != null && expiracao.after(new Date());
+        } catch (Exception e) {
+            // log aqui
+            return false;
+        }
+    }
+
+    public Claims getClaims(String token) {
+        JwtParser parser = Jwts.parser().verifyWith(getSigningKey()).build();
+        return parser.parseSignedClaims(token).getPayload();
+    }
+
 
 }

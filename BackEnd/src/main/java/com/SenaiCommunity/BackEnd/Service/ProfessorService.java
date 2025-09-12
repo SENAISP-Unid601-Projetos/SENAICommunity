@@ -13,8 +13,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -35,6 +37,9 @@ public class ProfessorService {
     @Autowired
     private RoleRepository roleRepository;
 
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
     // Conversões
 
     private Professor toEntity(ProfessorEntradaDTO dto) {
@@ -54,12 +59,20 @@ public class ProfessorService {
         dto.setId(professor.getId());
         dto.setNome(professor.getNome());
         dto.setEmail(professor.getEmail());
-        dto.setFotoPerfil(professor.getFotoPerfil());
         dto.setFormacao(professor.getFormacao());
         dto.setCodigoSn(professor.getCodigoSn());
         dto.setDataCadastro(professor.getDataCadastro());
         dto.setBio(professor.getBio());
         dto.setDataNascimento(professor.getDataNascimento());
+
+        String nomeFoto = professor.getFotoPerfil();
+        if (nomeFoto != null && !nomeFoto.isBlank()) {
+            // Se o professor TEM uma foto, montamos a URL para o ArquivoController.
+            dto.setFotoPerfil("/api/arquivos/" + nomeFoto);
+        } else {
+            // Se o professor NÃO TEM foto, usamos a URL do arquivo estático padrão.
+            dto.setFotoPerfil("/images/default-avatar.png");
+        }
 
         dto.setProjetosOrientados(
                 professor.getProjetosOrientados() != null
@@ -75,33 +88,35 @@ public class ProfessorService {
         professor.setDataCadastro(LocalDateTime.now());
         professor.setTipoUsuario("PROFESSOR");
 
-        // Busca a role "PROFESSOR" no banco
         Role roleProfessor = roleRepository.findByNome("PROFESSOR")
                 .orElseThrow(() -> new RuntimeException("Role PROFESSOR não encontrada"));
-
         professor.setRoles(Set.of(roleProfessor));
 
         if (foto != null && !foto.isEmpty()) {
             try {
-                String fileName = salvarFoto(foto);
+                String fileName = salvarFoto(foto); // Agora chama o método corrigido
                 professor.setFotoPerfil(fileName);
             } catch (IOException e) {
                 throw new RuntimeException("Erro ao salvar a foto do professor", e);
             }
         } else {
-            professor.setFotoPerfil(null); // ou "default.jpg" se quiser uma imagem padrão
+            professor.setFotoPerfil(null);
         }
 
         Professor salvo = professorRepository.save(professor);
         return toDTO(salvo);
     }
 
-
     private String salvarFoto(MultipartFile foto) throws IOException {
-        String fileName = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());
-        Path caminho = Paths.get("src/main/resources/professorPictures/" + fileName);
-        foto.transferTo(caminho);
-        return fileName;
+        String nomeArquivo = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());
+        Path diretorioDeUpload = Paths.get(uploadDir);
+
+        // Garante que o diretório de uploads exista, criando-o se necessário
+        Files.createDirectories(diretorioDeUpload);
+
+        Path caminhoDoArquivo = diretorioDeUpload.resolve(nomeArquivo);
+        foto.transferTo(caminhoDoArquivo);
+        return nomeArquivo;
     }
 
     public List<ProfessorSaidaDTO> listarTodos() {
@@ -139,6 +154,4 @@ public class ProfessorService {
         }
         professorRepository.deleteById(id);
     }
-
-
 }
