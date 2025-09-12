@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAI Community | Configurações</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/Principal/CSS/principal.css">
+    <link rel="stylesheet" href="/Configuracao/styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="header-left">
+            <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+        </div>
+        <div class="search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Pesquisar...">
+        </div>
+        <nav class="nav-icons">
+            <div class="nav-icon" data-tooltip="Início"><a href="/principal.html"><i class="fas fa-home"></i></a></div>
+            <div class="nav-icon" data-tooltip="Mensagens"><a href="/mensagem.html"><i class="fas fa-comment-dots"></i></a></div>
+            <div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell"></i></div>
+            <div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div>
+        </nav>
+        <div class="user-dropdown">
+            <div class="user">
+                <div class="profile-pic"><img src="/img/perfil.png" alt="Perfil"></div>
+                <span id="username-display">Usuário</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="#"><i class="fas fa-user"></i> Meu Perfil</a>
+                <a href="configuracoes.html"><i class="fas fa-cog"></i> Configurações</a>
+                <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="user-info">
+                <div class="avatar"><img src="/img/perfil.png" alt="Perfil"></div>
+                <h2>Carregando...</h2>
+                <p class="user-title">Carregando...</p>
+            </div>
+            <nav class="menu">
+                <a href="/principal.html"><i class="fas fa-home"></i> Feed</a>
+                <a href="/mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens</a>
+                <a href="/projeto.html"><i class="fas fa-users"></i> Projetos</a>
+                <a href="/vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
+                <a href="/evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="settings-header">
+                <h1>Configurações da Conta</h1>
+                <p>Gerencie suas preferências, privacidade e mais.</p>
+            </div>
+
+            <div class="settings-card">
+                <div class="settings-section">
+                    <h2>Privacidade</h2>
+                    <div class="settings-item">
+                        <div class="item-info">
+                            <i class="fas fa-lock"></i>
+                            <div class="item-text">
+                                <h3>Conta Privada</h3>
+                                <p>Se ativado, você precisará aprovar novos seguidores.</p>
+                            </div>
+                        </div>
+                         <label class="toggle-switch">
+                            <input type="checkbox" id="conta-privada-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Preferências</h2>
+                    <a href="#" class="settings-item navigable">
+                        <div class="item-info">
+                            <i class="fas fa-stream"></i>
+                            <div class="item-text">
+                                <h3>Definir Conteúdo do Feed</h3>
+                                <p>Escolha os tipos de postagens que você mais quer ver.</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Ajuda e Suporte</h2>
+                    <a href="#" class="settings-item navigable">
+                        <div class="item-info">
+                            <i class="fas fa-headset"></i>
+                            <h3>Contato para Suporte</h3>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a href="#" class="settings-item navigable">
+                        <div class="item-info">
+                            <i class="fas fa-question-circle"></i>
+                            <h3>Central de Ajuda</h3>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a href="#" class="settings-item navigable">
+                        <div class="item-info">
+                            <i class="fas fa-flag"></i>
+                            <h3>Relatar Problemas ou Assédios</h3>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="/Principal/JS/principal.js"></script>
+    <script src="/Configuracao/script.js"></script>
+</body>
+</html>     
