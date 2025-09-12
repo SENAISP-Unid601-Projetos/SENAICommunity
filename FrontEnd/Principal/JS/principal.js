@@ -92,9 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateUIWithUserData(user) {
         if (!user) return;
         const userImage = user.urlFotoPerfil ? `${backendUrl}${user.urlFotoPerfil}` : defaultAvatarUrl;
-        if (elements.topbarUserName) elements.topbarUserName.textContent = user.nome;
-        if (elements.sidebarUserName) elements.sidebarUserName.textContent = user.nome;
-        if (elements.sidebarUserTitle) elements.sidebarUserTitle.textContent = user.titulo || 'Membro da Comunidade';
         if (elements.topbarUserImg) elements.topbarUserImg.src = userImage;
         if (elements.sidebarUserImg) elements.sidebarUserImg.src = userImage;
         document.querySelectorAll('.post-icon img, .add-comment .avatar-small img, .post-creator-trigger img').forEach(img => img.src = userImage);
@@ -124,12 +121,17 @@ document.addEventListener('DOMContentLoaded', () => {
         postElement.dataset.autorId = postData.autorId;
 
         const isMyPost = postData.autorId === currentUser.id;
-        const postImage = postData.urlFotoAutor ? `${backendUrl}${postData.urlFotoAutor}` : defaultAvatarUrl;
+        
+        const postImage = postData.urlFotoAutor ? `${backendUrl}/api/arquivos/${postData.urlFotoAutor}` : defaultAvatarUrl;
+
         const formattedDate = formatTimeAgo(postData.dataCriacao);
 
-        const mediaHTML = postData.urlsMidia && postData.urlsMidia.length > 0 ? 
-            `<div class="post-images"><img src="${backendUrl}${postData.urlsMidia[0]}" alt="Post image"></div>` : '';
-        
+        // --- AQUI ESTÁ A CORREÇÃO ---
+        const mediaUrl = postData.urlsMidia && postData.urlsMidia.length > 0 ? postData.urlsMidia[0] : null;
+        const finalMediaUrl = mediaUrl && (mediaUrl.startsWith('http') || mediaUrl.startsWith('https')) ? mediaUrl : `${backendUrl}${mediaUrl}`;
+        const mediaHTML = finalMediaUrl ? `<div class="post-images"><img src="${finalMediaUrl}" alt="Post image"></div>` : '';
+        // --- FIM DA CORREÇÃO ---
+
         const commentsHTML = postData.comentarios.map(comment => renderComment(comment)).join('');
         const likeCount = postData.totalCurtidas || 0;
         const commentCount = postData.comentarios?.length || 0;
@@ -186,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderComment(commentData) {
         const isMyComment = commentData.autorId === currentUser.id;
-        const commentImage = commentData.urlFotoAutor ? `${backendUrl}${commentData.urlFotoAutor}` : defaultAvatarUrl;
+        const commentImage = commentData.urlFotoAutor ? `${backendUrl}/api/arquivos/${commentData.urlFotoAutor}` : defaultAvatarUrl;
         const formattedTime = formatTimeAgo(commentData.dataCriacao);
         const isHighlighted = commentData.destacado ? 'highlighted-comment' : '';
 
@@ -220,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (diffInSeconds < hour) return `${Math.floor(diffInSeconds / minute)}m`;
         if (diffInSeconds < day) return `${Math.floor(diffInSeconds / hour)}h`;
         if (diffInSeconds < month) return `${Math.floor(diffInSeconds / day)}d`;
-        if (diffInSeconds < year) return `${Math.floor(diffInSeconds / month)}m`;
+        if (diffInSeconds < year) return `${Math.floor(diffInSeconds / year)}a`;
         return `${Math.floor(diffInSeconds / year)}a`;
     }
 
@@ -236,8 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Conectado ao WebSocket: ' + frame);
 
             stompClient.subscribe('/topic/publico', message => {
-                const post = JSON.parse(message.body);
-                handleWebSocketMessage(post);
+                const payload = JSON.parse(message.body);
+                handleWebSocketMessage(payload);
             });
         }, error => {
             console.error('Erro na conexão WebSocket', error);
@@ -246,33 +248,46 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function handleWebSocketMessage(post) {
-        const existingPost = document.querySelector(`.post[data-id="${post.id}"]`);
-        if (existingPost) {
-            // Lógica para atualizar um post existente
-            const likesCountEl = existingPost.querySelector('.like-btn .count');
-            likesCountEl.textContent = post.totalCurtidas || 0;
-
-            const commentsContainer = existingPost.querySelector('.post-comments');
-            commentsContainer.innerHTML = post.comentarios.map(c => renderComment(c)).join('');
-            const commentsCountEl = existingPost.querySelector('.comment-btn .count');
-            commentsCountEl.textContent = post.comentarios?.length || 0;
-
-            if (post.tipo === 'remocao' || post.tipo === 'remocao_comentario') {
-                existingPost.remove();
-                showNotification('Uma postagem foi removida.', 'info');
-            } else if (post.tipo === 'edicao' || post.tipo === 'edicao_comentario') {
-                const postTextEl = existingPost.querySelector('.post-text');
-                postTextEl.textContent = post.conteudo;
-                showNotification('Uma postagem foi editada.', 'info');
-            } else if (post.tipo === 'atualizacao_curtida') {
-                // A UI já é atualizada na parte do comentários, mas pode adicionar uma notificação
-            }
-        } else if (post.tipo === 'CREATED') {
-            renderPost(post, true);
+    function handleWebSocketMessage(payload) {
+        const existingPost = document.querySelector(`.post[data-id="${payload.id}"]`);
+        
+        // Se a postagem não existir, renderiza-a.
+        if (!existingPost) {
+            renderPost(payload, true);
             showNotification('Nova postagem no feed!', 'info');
+        } else {
+            // Lógica para atualizar um post existente com base no 'tipo' de mensagem.
+            if (payload.tipo === 'edicao' || payload.tipo === 'remocao') {
+                const postagemAtualizada = payload.postagem;
+                if(postagemAtualizada) {
+                    const postTextEl = existingPost.querySelector('.post-text');
+                    postTextEl.textContent = postagemAtualizada.conteudo;
+                    // Atualiza a mídia se houver
+                    const mediaContainer = existingPost.querySelector('.post-images');
+                    if(mediaContainer) {
+                        mediaContainer.innerHTML = postagemAtualizada.urlsMidia && postagemAtualizada.urlsMidia.length > 0
+                            ? `<img src="${backendUrl}${postagemAtualizada.urlsMidia[0]}" alt="Post image">` : '';
+                    }
+                    showNotification('Uma postagem foi editada.', 'info');
+                } else if (payload.id) { // Caso seja apenas a remoção, sem a postagem completa
+                    existingPost.remove();
+                    showNotification('Uma postagem foi removida.', 'info');
+                }
+            } else {
+                // Lógica para atualizar curtidas e comentários
+                const likesCountEl = existingPost.querySelector('.like-btn .count');
+                likesCountEl.textContent = payload.totalCurtidas || 0;
+    
+                const commentsContainer = existingPost.querySelector('.post-comments');
+                if (payload.comentarios) {
+                    commentsContainer.innerHTML = payload.comentarios.map(c => renderComment(c)).join('');
+                    const commentsCountEl = existingPost.querySelector('.comment-btn .count');
+                    commentsCountEl.textContent = payload.comentarios.length || 0;
+                }
+            }
         }
     }
+
 
     // ==================== EVENT LISTENERS E INTERAÇÕES DO FEED ====================
     function setupEventListeners() {
@@ -312,8 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const formData = new FormData();
             
-            // --- AQUI ESTÁ A CORREÇÃO ---
-            // Criamos o objeto JSON com todos os campos do DTO, mesmo os que são nulos.
+            // --- CÓDIGO CORRETO ---
             const postagemDto = {
                 conteudo: content,
                 projetoId: null,

@@ -113,8 +113,7 @@ public class UsuarioService {
         Path caminhoDoArquivo = diretorioUpload.resolve(nomeArquivo);
         foto.transferTo(caminhoDoArquivo);
 
-        // Retorna o caminho relativo que pode ser acessado pela web
-        // Ex: /uploads/123456_minhafoto.jpg
-        return "/api/arquivos/" + nomeArquivo;
+        // Retorna APENAS o nome do arquivo
+        return nomeArquivo;
     }
 }
