@@ -15,7 +15,6 @@ public class ArquivoMidiaService {
     @Autowired
     private Cloudinary cloudinary;
 
-
     public String upload(MultipartFile file) throws IOException {
 
         Map<String, Object> options = Map.of(

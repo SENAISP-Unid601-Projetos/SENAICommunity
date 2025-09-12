@@ -30,17 +30,12 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        // ✅ LÓGICA DE BYPASS REMOVIDA
-        // O SecurityConfig agora é a única fonte de verdade para quais rotas são públicas.
-        // O filtro tentará validar o token para todas as requisições que o possuírem.
-
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             String email = jwtUtil.getEmailDoToken(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
                 if (jwtUtil.validarToken(token)) {
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
@@ -49,7 +44,6 @@ public class JWTFilter extends OncePerRequestFilter {
                     authentication.setDetails(
                             new WebAuthenticationDetailsSource().buildDetails(request)
                     );
-
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }

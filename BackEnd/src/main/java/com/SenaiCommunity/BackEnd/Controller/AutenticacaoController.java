@@ -46,7 +46,6 @@ public class AutenticacaoController {
             // Gerar token com ID como claim personalizada
             String token = jwtUtil.gerarToken(userDetails, id);
 
-
             // 4. Retornar token no body
             return ResponseEntity.ok(new TokenDTO(token));
         } catch (Exception e) {

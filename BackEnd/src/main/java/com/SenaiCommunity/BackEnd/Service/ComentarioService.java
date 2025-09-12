@@ -10,6 +10,7 @@ import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -153,6 +154,7 @@ public class ComentarioService {
                 .conteudo(comentario.getConteudo())
                 .dataCriacao(comentario.getDataCriacao())
                 .autorId(comentario.getAutor().getId())
+                .urlFotoAutor(comentario.getAutor().getFotoPerfil())
                 .nomeAutor(comentario.getAutor().getNome())
                 .postagemId(comentario.getPostagem().getId())
                 .parentId(comentario.getParent() != null ? comentario.getParent().getId() : null)

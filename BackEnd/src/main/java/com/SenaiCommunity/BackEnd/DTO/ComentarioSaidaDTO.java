@@ -15,6 +15,7 @@ public class ComentarioSaidaDTO {
     private String nomeAutor;
     private Long postagemId;
     private Long parentId;
+    private String urlFotoAutor;
     private boolean destacado;
     private String replyingToName; // Nome do autor do comentário pai
     private int totalCurtidas;

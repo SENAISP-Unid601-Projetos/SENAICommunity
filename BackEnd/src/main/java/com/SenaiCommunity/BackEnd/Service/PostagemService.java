@@ -10,11 +10,11 @@ import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -198,8 +198,6 @@ public class PostagemService {
                 .map(Usuario::getId)
                 .orElse(null);
 
-        // --- INÍCIO DA CORREÇÃO ---
-        // A lógica de cálculo das curtidas do comentário foi movida para dentro do .map()
         List<ComentarioSaidaDTO> comentariosDTO = postagem.getComentarios() != null
                 ? postagem.getComentarios().stream().map(comentario -> {
 
@@ -226,14 +224,13 @@ public class PostagemService {
                     .destacado(comentario.isDestacado())
                     .totalCurtidas(totalCurtidasComentario)
                     .curtidoPeloUsuario(curtidoPeloUsuarioComentario)
+                    .urlFotoAutor(comentario.getAutor().getFotoPerfil())
                     .build();
 
         }).collect(Collectors.toList())
                 : Collections.emptyList();
-        // --- FIM DA CORREÇÃO ---
 
-
-        // Lógica para as curtidas da POSTAGEM (esta parte já estava correta)
+        // Lógica para as curtidas da POSTAGEM
         int totalCurtidasPostagem = postagem.getCurtidas() != null ? postagem.getCurtidas().size() : 0;
         boolean curtidoPeloUsuarioPostagem = false;
         if (usuarioLogadoId != null && postagem.getCurtidas() != null) {
@@ -250,6 +247,7 @@ public class PostagemService {
                 .urlsMidia(urls)
                 .comentarios(comentariosDTO)
                 .totalCurtidas(totalCurtidasPostagem)
+                .urlFotoAutor(postagem.getAutor().getFotoPerfil())
                 .curtidoPeloUsuario(curtidoPeloUsuarioPostagem)
                 .build();
     }

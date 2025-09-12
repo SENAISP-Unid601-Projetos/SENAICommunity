@@ -7,6 +7,7 @@ import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.MensagemPrivadaRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // Importe esta anotação
 
@@ -14,6 +15,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class MensagemPrivadaService {

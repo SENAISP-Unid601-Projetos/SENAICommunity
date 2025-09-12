@@ -37,37 +37,26 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         final StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-        if (accessor == null) {
-            return message;
-        }
-
-        // A lógica de autenticação na conexão inicial
-        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+        if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
             List<String> authorization = accessor.getNativeHeader("Authorization");
 
             if (authorization != null && !authorization.isEmpty()) {
                 String authHeader = authorization.get(0);
-
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     String token = authHeader.substring(7);
-
                     if (jwtUtil.validarToken(token)) {
                         String email = jwtUtil.getEmailDoToken(token);
                         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-                        // Associa o usuário autenticado à sessão do WebSocket
                         accessor.setUser(authentication);
                     }
                 }
             }
         }
 
-        // Para qualquer tipo de mensagem, se o usuário já foi associado à sessão (no CONNECT),
-        // garantimos que ele está disponível no SecurityContext para a thread atual.
-        if (accessor.getUser() instanceof Authentication authentication) {
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (accessor != null && accessor.getUser() instanceof Authentication) {
+            SecurityContextHolder.getContext().setAuthentication((Authentication) accessor.getUser());
         }
 
         return message;
