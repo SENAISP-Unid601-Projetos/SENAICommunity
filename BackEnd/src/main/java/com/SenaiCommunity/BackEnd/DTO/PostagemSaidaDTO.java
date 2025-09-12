@@ -16,8 +16,8 @@ public class PostagemSaidaDTO {
     private Long autorId;
     private String nomeAutor;
     private List<String> urlsMidia;
+    private String urlFotoAutor;
     private List<ComentarioSaidaDTO> comentarios;
     private int totalCurtidas;
     private boolean curtidoPeloUsuario;
-
 }

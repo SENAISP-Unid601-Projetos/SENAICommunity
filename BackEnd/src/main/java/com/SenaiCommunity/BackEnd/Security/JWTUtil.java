@@ -42,8 +42,6 @@ public class JWTUtil {
                 .signWith(getSigningKey())
                 .compact();
     }
-
-
     public String getRoleDoToken(String token) {
         try {
             Claims claims = getClaims(token);

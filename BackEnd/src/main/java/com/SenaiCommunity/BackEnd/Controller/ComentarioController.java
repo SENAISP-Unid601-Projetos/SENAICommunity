@@ -48,6 +48,10 @@ public class ComentarioController {
             messagingTemplate.convertAndSend("/topic/comentario/" + comentarioDTO.getParentId() + "/respostas", payload);
         }
 
+        // Notifica o feed público que a postagem foi atualizada com um novo comentário
+        Map<String, Object> payloadPublico = Map.of("tipo", "novo_comentario", "id", postagemId);
+        messagingTemplate.convertAndSend("/topic/publico", payloadPublico);
+
         return novoComentario;
     }
 
@@ -66,15 +70,19 @@ public class ComentarioController {
         public ResponseEntity<?> destacarComentario(@PathVariable Long id, Principal principal) {
             try {
                 ComentarioSaidaDTO comentarioAtualizado = comentarioService.destacarComentario(id, principal.getName());
+                Long postagemId = comentarioAtualizado.getPostagemId();
 
                 // Notifica o tópico da postagem e o tópico específico do comentário
                 Map<String, Object> payload = Map.of(
                         "tipo", "destaque",
                         "comentario", comentarioAtualizado,
-                        "postagemId", comentarioAtualizado.getPostagemId()
+                        "postagemId", postagemId
                 );
+                messagingTemplate.convertAndSend("/topic/postagem/" + postagemId + "/comentarios", payload);
 
-                messagingTemplate.convertAndSend("/topic/postagem/" + comentarioAtualizado.getPostagemId() + "/comentarios", payload);
+                // Notifica o feed público que a postagem foi atualizada
+                Map<String, Object> payloadPublico = Map.of("tipo", "destaque_comentario", "id", postagemId);
+                messagingTemplate.convertAndSend("/topic/publico", payloadPublico);
 
                 return ResponseEntity.ok(comentarioAtualizado);
             } catch (SecurityException e) {
@@ -90,16 +98,20 @@ public class ComentarioController {
                                                   Principal principal) {
             try {
                 ComentarioSaidaDTO comentarioAtualizado = comentarioService.editarComentario(id, principal.getName(), novoConteudo);
+                Long postagemId = comentarioAtualizado.getPostagemId();
 
                 // Notifica o tópico da postagem e o tópico específico do comentário
                 Map<String, Object> payload = Map.of(
                         "tipo", "edicao",
                         "comentario", comentarioAtualizado,
-                        "postagemId", comentarioAtualizado.getPostagemId()
+                        "postagemId", postagemId
                 );
-
-                messagingTemplate.convertAndSend("/topic/postagem/" + comentarioAtualizado.getPostagemId() + "/comentarios", payload);
+                messagingTemplate.convertAndSend("/topic/postagem/" + postagemId + "/comentarios", payload);
                 messagingTemplate.convertAndSend("/topic/comentario/" + id + "/respostas", payload);
+
+                // Notifica o feed público que a postagem foi atualizada
+                Map<String, Object> payloadPublico = Map.of("tipo", "edicao_comentario", "id", postagemId);
+                messagingTemplate.convertAndSend("/topic/publico", payloadPublico);
 
                 return ResponseEntity.ok(comentarioAtualizado);
             } catch (SecurityException e) {
@@ -124,6 +136,10 @@ public class ComentarioController {
                 // Notifica o tópico da postagem e o tópico específico do comentário
                 messagingTemplate.convertAndSend("/topic/postagem/" + postagemId + "/comentarios", payload);
                 messagingTemplate.convertAndSend("/topic/comentario/" + id + "/respostas", payload);
+
+                // Notifica o feed público que a postagem foi atualizada
+                Map<String, Object> payloadPublico = Map.of("tipo", "remocao_comentario", "id", postagemId);
+                messagingTemplate.convertAndSend("/topic/publico", payloadPublico);
 
                 return ResponseEntity.ok().build();
             } catch (SecurityException e) {

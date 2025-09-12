@@ -20,9 +20,11 @@ public class CloudinaryConfig {
 
     @Bean
     public Cloudinary cloudinary() {
+
         //  Inicializando o Cloudinary com a URL de conexão
         // Este formato é mais robusto e evita problemas de configuração.
         String cloudinaryUrl = String.format("cloudinary://%s:%s@%s", apiKey, apiSecret, cloudName);
         return new Cloudinary(cloudinaryUrl);
     }
 }
+

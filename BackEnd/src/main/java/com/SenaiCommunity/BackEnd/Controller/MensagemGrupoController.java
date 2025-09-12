@@ -30,7 +30,6 @@ public class MensagemGrupoController {
     @Autowired
     private MensagemGrupoService mensagemGrupoService;
 
-
     @MessageMapping("/grupo/{projetoId}")
     @SendTo("/topic/grupo/{projetoId}")
     public MensagemGrupoSaidaDTO enviarParaGrupo(@DestinationVariable Long projetoId,
@@ -60,6 +59,7 @@ public class MensagemGrupoController {
                 return ResponseEntity.ok(mensagemAtualizada);
             } catch (SecurityException e) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+
             } catch (NoSuchElementException e) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
             }
