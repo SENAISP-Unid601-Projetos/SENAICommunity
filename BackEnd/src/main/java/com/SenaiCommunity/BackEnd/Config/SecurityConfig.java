@@ -53,7 +53,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/projetos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/alunos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/professores/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll() // Necessário para a conexão WebSocket inicial
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/images/**", "/api/arquivos/**").permitAll()
                         .requestMatchers(
@@ -61,6 +60,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        // Adição para permitir o acesso aos arquivos estáticos do frontend
+                        .requestMatchers("/Principal/**", "/principal.html", "/mensagem.html", "/perfil.html", "/projeto.html", "/vaga.html", "/evento.html", "/login.html").permitAll()
+                        .requestMatchers("/CadastroLogin/**", "/Principal/**", "/*.html", "/*.css", "/*.js", "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(

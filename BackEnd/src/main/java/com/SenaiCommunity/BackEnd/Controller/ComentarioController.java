@@ -94,10 +94,10 @@ public class ComentarioController {
 
         @PutMapping("/{id}")
         public ResponseEntity<?> editarComentario(@PathVariable Long id,
-                                                  @RequestBody String novoConteudo,
+                                                  @RequestBody ComentarioEntradaDTO dto,
                                                   Principal principal) {
             try {
-                ComentarioSaidaDTO comentarioAtualizado = comentarioService.editarComentario(id, principal.getName(), novoConteudo);
+                ComentarioSaidaDTO comentarioAtualizado = comentarioService.editarComentario(id, principal.getName(), dto);
                 Long postagemId = comentarioAtualizado.getPostagemId();
 
                 // Notifica o tópico da postagem e o tópico específico do comentário

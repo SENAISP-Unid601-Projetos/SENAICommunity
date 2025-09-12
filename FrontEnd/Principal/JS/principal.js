@@ -832,26 +832,26 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
     if (elements.editCommentForm) {
-  elements.editCommentForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const commentId = elements.editCommentIdInput.value;
-    const content = elements.editCommentTextarea.value;
-    try {
-      // CORREÇÃO: Enviar o conteúdo como um objeto JSON
-      await axios.put(
-        `${backendUrl}/comentarios/${commentId}`,
-        { conteudo: content }, // Objeto JSON válido
-        {
-          headers: { "Content-Type": "application/json" },
+    elements.editCommentForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const commentId = elements.editCommentIdInput.value;
+        const content = elements.editCommentTextarea.value;
+        try {
+            await axios.put(
+                `${backendUrl}/comentarios/${commentId}`,
+                // AQUI ESTÁ A CORREÇÃO: Enviar um objeto JSON válido.
+                { conteudo: content },
+                {
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+            showNotification("Comentário editado.", "success");
+            closeAndResetEditCommentModal();
+        } catch (error) {
+            showNotification("Não foi possível salvar o comentário.", "error");
+            console.error("Erro ao editar comentário:", error);
         }
-      );
-      showNotification("Comentário editado.", "success");
-      closeAndResetEditCommentModal();
-    } catch (error) {
-      showNotification("Não foi possível salvar o comentário.", "error");
-      console.error("Erro ao editar comentário:", error);
-    }
-  });
+    });
 }
     if (elements.cancelEditCommentBtn)
       elements.cancelEditCommentBtn.addEventListener(

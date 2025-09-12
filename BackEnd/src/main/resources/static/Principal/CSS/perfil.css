@@ -1,0 +1,123 @@
+/* Estilos para a página de perfil (perfil.css) */
+
+.profile-page {
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+/* Nova abordagem de layout para o cabeçalho */
+.profile-header {
+    display: flex;
+    flex-direction: column; /* Organiza banner e detalhes verticalmente */
+}
+
+.profile-banner {
+    width: 100%;
+    height: 220px;
+    /* REMOVIDO: background-color: var(--bg-quaternary); */
+    /* Se a imagem não carregar, esta área ficará transparente ou usará o background do body */
+}
+
+.profile-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-details {
+    display: flex;
+    align-items: flex-end;
+    padding: 0 2rem;
+    /* Puxa toda a seção de detalhes para cima, sobrepondo o banner */
+    margin-top: -80px; 
+    z-index: 2; /* Garante que os detalhes fiquem sobre o banner */
+    position: relative;
+}
+
+.profile-picture-container {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 5px solid var(--bg-secondary);
+    overflow: hidden;
+    flex-shrink: 0; /* Impede que a imagem seja esmagada */
+    background-color: var(--bg-secondary);
+    box-shadow: var(--shadow);
+}
+
+.profile-picture-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-info-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-grow: 1; /* Ocupa o espaço restante na linha */
+    margin-left: 1.5rem;
+    padding-bottom: 1.5rem; /* Ajusta a altura vertical em relação à foto */
+}
+
+.profile-info h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.profile-info p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.profile-actions .btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.profile-body {
+    padding: 2rem;
+}
+
+.profile-body h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.profile-body #profile-bio {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+    line-height: 1.6;
+}
+
+.profile-metadata {
+    list-style: none;
+    padding: 0;
+}
+
+.profile-metadata li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.profile-metadata li i {
+    width: 20px;
+    text-align: center;
+    color: var(--text-tertiary);
+}
