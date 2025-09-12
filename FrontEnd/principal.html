@@ -2,12 +2,13 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>SENAI Community | Feed</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="Principal/CSS/principal.css">
+  <link rel="stylesheet" href="./Principal/CSS/principal.css">
+
+  <script src="./Principal/JS/principal.js" defer></script>
 </head>
 <body>
   <div class="notification-center"></div>
@@ -28,15 +29,23 @@
 
     <nav class="nav-icons">
       <div class="nav-icon" data-tooltip="Início">
-        <a href="#"><i class="fas fa-home"></i></a>
+        <a href="./principal.html"><i class="fas fa-home"></i></a>
       </div>
       <div class="nav-icon" data-tooltip="Mensagens">
         <a href="mensagem.html"><i class="fas fa-comment-dots"></i></a>
         <span class="badge">3</span>
       </div>
       <div class="nav-icon" data-tooltip="Notificações">
-        <i class="fas fa-bell"></i>
+        <i class="fas fa-bell" id="notification-icon"></i>
         <span class="badge">5</span>
+        <div id="notification-menu" class="notification-menu">
+          <div class="notification">
+            <p>Nova mensagem recebida</p>
+          </div>
+          <div class="notification">
+            <p>Seu projeto foi aprovado</p>
+          </div>
+        </div>
       </div>
       <div class="theme-toggle" data-tooltip="Alternar tema">
         <i class="fas fa-moon"></i>
@@ -46,15 +55,15 @@
     <div class="user-dropdown">
       <div class="user">
         <div class="profile-pic">
-          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil">
+          <img src="./img/perfil.png" alt="Perfil">
         </div>
-        <span>Vinicius G.</span>
+        
         <i class="fas fa-chevron-down"></i>
       </div>
       <div class="dropdown-menu">
-        <a href="#"><i class="fas fa-user"></i> Meu Perfil</a>
+        <a href="perfil.html"><i class="fas fa-user"></i> Meu Perfil</a>
         <a href="#"><i class="fas fa-cog"></i> Configurações</a>
-        <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        <a href="login.html"><i class="fas fa-sign-out-alt"></i> Sair</a>
       </div>
     </div>
   </header>
@@ -63,130 +72,110 @@
     <aside class="sidebar">
       <div class="user-info">
         <div class="avatar">
-          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil">
+          <img src="./img/perfil.png" alt="Perfil">
           <div class="status online"></div>
         </div>
-        <h2>Vinicius Gallo Santos</h2>
-        <p class="user-title">Estudante de ADS</p>
+        <h2>Usuário Temporário</h2>
+        <p class="user-title">Sem Curso</p>
         <div class="user-stats">
           <div class="stat">
-            <strong>156</strong>
+            <strong>3</strong>
             <span>Conexões</span>
           </div>
           <div class="stat">
-            <strong>24</strong>
+            <strong>1</strong>
             <span>Projetos</span>
           </div>
         </div>
       </div>
 
       <nav class="menu">
-        <a href="principal.html" class="active"><i class="fas fa-home"></i> Feed</a>
+        <a href="./principal.html" class="active"><i class="fas fa-home"></i> Feed</a>
         <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
-        <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
-        <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
-        <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+        <a href="./projeto.html"><i class="fas fa-users"></i> Projetos</a>
+        <a href="./vaga.html"><i class="fas fa-briefcase"></i> Vagas de Emprego</a>
+        <a href="./evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
       </nav>
       
       <div class="online-friends">
-          </div>
+      </div>
     </aside>
 
     <main class="main-content">
       <div class="post-creator">
-        <div class="avatar-small">
-          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil">
-        </div>
-        <input type="text" placeholder="Compartilhe seu projeto, Vinicius...">
-        <div class="post-options">
-          <button class="option-btn" data-type="photo"><i class="fas fa-image"></i></button>
-          <button class="option-btn" data-type="video"><i class="fas fa-video"></i></button>
-          <button class="option-btn" data-type="code"><i class="fas fa-code"></i></button>
-        </div>
-      </div>
-
-      <div class="posts-container">
-        <div class="post">
-          <div class="post-header">
-            <div class="post-author">
-              <div class="post-icon"><img src="https://randomuser.me/api/portraits/men/22.jpg" alt="Miguel"></div>
-              <div class="post-info"><h2>Miguel Piscki</h2><span>13h • <i class="fas fa-globe-americas"></i></span></div>
+        <div class="post-creator-simple">
+            <div class="post-creator-trigger">
+                <div class="post-icon">
+                    <img src="./img/perfil.png" alt="Vinicius G.">
+                </div>
+                <input type="text" placeholder="Começar publicação" readonly>
             </div>
-            <div class="post-options-btn"><i class="fas fa-ellipsis-h"></i></div>
-          </div>
-          <div class="post-text">Finalizamos hoje o projeto de automação industrial usando Arduino e sensores IoT. O sistema monitora temperatura, umidade e controla atuadores remotamente!</div>
-          <div class="post-images"><img src="https://images.unsplash.com/photo-1558522195-e1201b090344?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Projeto"></div>
-          <div class="post-actions">
-            <button class="like-btn"><i class="far fa-thumbs-up"></i> <span>Curtir</span> <span class="count">24</span></button>
-            <button class="comment-btn"><i class="far fa-comment"></i> <span>Comentar</span> <span class="count">8</span></button>
-            <button class="share-btn"><i class="far fa-share-square"></i> <span>Compartilhar</span></button>
-          </div>
+            <div class="post-options">
+                <button class="option-btn" data-type="photo"><i class="fas fa-image"></i> Foto</button>
+                <button class="option-btn" data-type="video"><i class="fas fa-video"></i> Vídeo</button>
+                <button class="option-btn" data-type="code"><i class="fas fa-code"></i> Código</button>
+            </div>
+        </div>
+        <div class="post-creator-expanded">
+            <div class="post-editor-content">
+                <div class="editor-header">
+                    <h3>Criar Publicação</h3>
+                </div>
+                <textarea class="editor-textarea" placeholder="No que você está pensando, Usuário?"></textarea>
+                <div class="media-preview-container"></div>
+            </div>
+            <div class="post-editor-footer">
+                <div class="editor-options">
+                    <button class="option-btn" data-type="photo" title="Adicionar foto"><i class="fas fa-image"></i></button>
+                    <button class="option-btn" data-type="video" title="Adicionar vídeo"><i class="fas fa-video"></i></button>
+                </div>
+                <div class="editor-actions">
+                    <button class="cancel-btn">Cancelar</button>
+                    <button class="publish-btn" disabled>Publicar</button>
+                </div>
+            </div>
         </div>
       </div>
+      <div class="feed-separator"><hr/></div>
+      <div class="posts-container"></div>
     </main>
-    
+
     <aside class="right-sidebar">
-    
-    <div class="widget-card" id="upcoming-events-widget">
-        </div>
-
-
-
-
-
-   
-    <div class="widget-card" id="who-to-follow-widget">
+      <div class="widget-card" id="upcoming-events-widget"></div>
+     
+      <div class="widget-card" id="who-to-follow-widget">
         <div class="widget-header">
-            <h3><i class="fas fa-user-plus"></i> Quem Seguir</h3>
-            <a href="" class="see-all">Ver todos</a>
+            <h3><i class="fas fa-user-plus"></i> Sugestão Seguir</h3>
+            <a href="#" class="see-all">Ver todos</a>
         </div>
         <div class="follow-list">
             <div class="follow-item">
-                <div class="follow-avatar">
-                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Ana">
-                </div>
-                <div class="follow-info">
-                    <h4>Ana Silva</h4>
-                    <span>Engenheira de Software</span>
-                </div>
+                <a href="perfil.html?id=ana" class="follow-link">
+                    <div class="follow-avatar">
+                        <img src="https://randomuser.me/api/portraits/women/33.jpg" alt="Ana Silva">
+                    </div>
+                    <div class="follow-info">
+                        <h4>Ana Silva</h4>
+                        <span>Engenheira de Software</span>
+                    </div>
+                </a>
                 <button class="follow-btn"><i class="fas fa-plus"></i></button>
             </div>
             <div class="follow-item">
-                <div class="follow-avatar">
-                    <img src="https://randomuser.me/api/portraits/men/46.jpg" alt="Carlos">
-                </div>
-                <div class="follow-info">
-                    <h4>Carlos Lima</h4>
-                    <span>Especialista em Redes</span>
-                </div>
+                <a href="perfil.html?id=miguel" class="follow-link">
+                    <div class="follow-avatar">
+                        <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="Miguel Piscki">
+                    </div>
+                    <div class="follow-info">
+                        <h4>Miguel Piscki</h4>
+                        <span>Especialista em IoT</span>
+                    </div>
+                </a>
                 <button class="follow-btn"><i class="fas fa-plus"></i></button>
             </div>
         </div>
-    </div>
-
-  </aside>
+      </div>
+      </aside>
   </div>
-
-  <div class="floating-actions">
-    <button class="float-btn main-btn"><i class="fas fa-plus"></i></button>
-    <div class="float-menu">
-      <a href="projeto.html">
-        <button class="float-btn" data-action="project">
-          <i class="fas fa-file-code"></i>
-          <span class="tooltip">Novo Projeto</span>
-        </button>
-      </a>
-      <button class="float-btn" data-action="post">
-        <i class="fas fa-feather-alt"></i>
-        <span class="tooltip">Nova Postagem</span>
-      </button>
-      <button class="float-btn" data-action="event">
-        <i class="fas fa-calendar-plus"></i>
-        <span class="tooltip">Criar Evento</span>
-      </button>
-    </div>
-  </div>
-
-  <script src="Principal/JS/principal.js"></script>
 </body>
 </html>

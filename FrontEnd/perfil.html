@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAI Community | Perfil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Principal/CSS/principal.css">
+    <link rel="stylesheet" href="Perfil/CSS/perfil.css">
+</head>
+<body>
+    <div class="notification-center"></div>
+    
+    <header class="topbar">
+        <div class="header-left">
+            <div class="menu-toggle"><i class="fas fa-bars"></i></div>
+            <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+        </div>
+        <div class="search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Pesquisar...">
+            <div class="search-results"></div>
+        </div>
+        <nav class="nav-icons">
+            <div class="nav-icon" data-tooltip="Início"><a href="principal.html"><i class="fas fa-home"></i></a></div>
+            <div class="nav-icon" data-tooltip="Mensagens"><a href="mensagem.html"><i class="fas fa-comment-dots"></i></a><span class="badge">3</span></div>
+            <div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell" id="notification-icon"></i><span class="badge">5</span></div>
+            <div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div>
+        </nav>
+        <div class="user-dropdown">
+            <div class="user">
+                <div class="profile-pic"><img src="./img/perfil.png" alt="Perfil"></div>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="perfil.html"><i class="fas fa-user"></i> Meu Perfil</a>
+                <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+                <a href="login.html"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-perfil">
+        <aside class="sidebar">
+            <div class="user-info">
+                <div class="avatar"><img src="./img/perfil.png" alt="Perfil"><div class="status online"></div></div>
+                <h2>Usuário Temporário</h2>
+                <p class="user-title">Sem Curso</p>
+                <div class="user-stats">
+                    <div class="stat"><strong>3</strong><span>Conexões</span></div>
+                    <div class="stat"><strong>1</strong><span>Projetos</span></div>
+                </div>
+            </div>
+            <nav class="menu">
+                <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
+                <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens</a>
+                <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
+                <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
+                <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+            </nav>
+        </aside>
+
+        <main class="main-content-perfil">
+            <div class="profile-header-card">
+                <div class="profile-cover">
+                    <img src="https://images.unsplash.com/photo-1579403124614-197f69d8187b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080" alt="Imagem de Capa">
+                </div>
+                <div class="profile-info-main">
+                    <div class="profile-avatar">
+                        <img src="./img/perfil.png" alt="Foto do Perfil" id="profile-avatar-img">
+                    </div>
+                    
+                    <div class="profile-actions" id="profile-actions-container">
+                        </div>
+
+                    <div class="profile-details">
+                        <h1 id="profile-name">Usuario Temporário</h1>
+                        <p id="profile-title">Sem Curso</p>
+                        <div class="profile-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="profile-location-text">São Carlos, Brasil</span>
+                        </div>
+                        <div class="profile-stats">
+                            <div class="stat"><strong>1</strong><span>Conexões</span></div>
+                            <div class="stat"><strong>1</strong><span>Projetos</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-content-card">
+                <nav class="profile-tabs">
+                    <a href="#" class="tab-link active" data-tab="sobre">Sobre</a>
+                    <a href="#" class="tab-link" data-tab="projetos">Projetos</a>
+                    <a href="#" class="tab-link" data-tab="conexoes">Conexões</a>
+                </nav>
+
+                <div class="tab-content active" id="sobre">
+                    <h3>Sobre</h3>
+                    <p>Entusiasta de tecnologia</p>
+                    
+                    <h3>Competências</h3>
+                    <div class="tags-container">
+                        <span class="tag">React</span>
+                        <span class="tag">Node.js</span>
+                        <span class="tag">JavaScript</span>
+                        <span class="tag">TypeScript</span>
+                        <span class="tag">HTML5 & CSS3</span>
+                        <span class="tag">SQL</span>
+                        <span class="tag">Git & GitHub</span>
+                        <span class="tag">Scrum</span>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="projetos">
+                    <h3>Projetos</h3>
+                     <div class="projetos-grid-perfil">
+                        </div>
+                </div>
+
+                <div class="tab-content" id="conexoes">
+                    <h3>Conexões</h3>
+                     <div class="conexoes-grid">
+                        </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="Principal/JS/principal.js"></script>
+    <script src="Perfil/JS/perfil.js"></script>
+</body>
+</html>

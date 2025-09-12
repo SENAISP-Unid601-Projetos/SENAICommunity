@@ -2,19 +2,23 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>SENAI Community | Mensagens</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="Principal/CSS/principal.css">
     <link rel="stylesheet" href="Mensagem/CSS/mensagem.css">
+
+    <script src="Principal/JS/principal.js" defer></script>
+    <script src="Mensagem/JS/mensagem.js" defer></script>
 </head>
 <body>
     <div class="notification-center"></div>
 
     <header class="topbar">
         <div class="header-left">
+            <div class="menu-toggle"><i class="fas fa-bars"></i></div>
             <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
         </div>
         <div class="search">
@@ -22,50 +26,95 @@
             <input type="text" placeholder="Pesquisar projetos...">
         </div>
         <nav class="nav-icons">
-            <div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell"></i><span class="badge">5</span></div>
-            <div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div>
+            <div class="nav-icon" data-tooltip="Início">
+                <a href="principal.html"><i class="fas fa-home"></i></a>
+            </div>
+            <div class="nav-icon" data-tooltip="Mensagens">
+                <a href="mensagem.html"><i class="fas fa-comment-dots"></i></a>
+                <span class="badge">3</span>
+            </div>
+            <div class="nav-icon" data-tooltip="Notificações">
+                <i class="fas fa-bell"></i>
+                <span class="badge">5</span>
+            </div>
+            <div class="theme-toggle" data-tooltip="Alternar tema">
+                <i class="fas fa-moon"></i>
+            </div>
         </nav>
         <div class="user-dropdown">
             <div class="user">
-                <div class="profile-pic"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"></div>
-                <span>Vinicius G.</span>
+                <div class="profile-pic"><img src="img/perfil.png" alt="Perfil"></div>
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div class="dropdown-menu">
-                <a href="#"><i class="fas fa-user"></i> Meu Perfil</a>
+                <a href="perfil.html"><i class="fas fa-user"></i> Meu Perfil</a>
                 <a href="#"><i class="fas fa-cog"></i> Configurações</a>
-                <a href="principal.html"><i class="fas fa-sign-out-alt"></i> Sair</a>
+                <a href="login.html"><i class="fas fa-sign-out-alt"></i> Sair</a>
             </div>
         </div>
     </header>
 
+    <aside class="sidebar mobile-hidden">
+      <div class="user-info">
+        <div class="avatar">
+          <img src="./img/perfil.png" alt="Perfil">
+          <div class="status online"></div>
+        </div>
+        <h2>Usuário Temporário</h2>
+        <p class="user-title">Sem Curso</p>
+        <div class="user-stats">
+          <div class="stat">
+            <strong>3</strong>
+            <span>Conexões</span>
+          </div>
+          <div class="stat">
+            <strong>1</strong>
+            <span>Projetos</span>
+          </div>
+        </div>
+      </div>
+      <nav class="menu">
+        <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
+        <a href="mensagem.html" class="active"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
+        <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
+        <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas de Emprego</a>
+        <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+      </nav>
+      <div class="online-friends">
+      </div>
+    </aside>
+
     <div class="main-wrapper">
         <nav class="nav-rail">
             <a href="principal.html" class="rail-item" data-tooltip="Feed"><i class="fas fa-home"></i></a>
-<a href="mensagem.html" class="rail-item active" data-tooltip="Mensagens"><i class="fas fa-comment-dots"></i></a>
-<a href="projeto.html" class="rail-item" data-tooltip="Projetos"><i class="fas fa-project-diagram"></i></a>
-<a href="vaga.html" class="rail-item" data-tooltip="Vagas"><i class="fas fa-briefcase"></i></a>
-<a href="evento.html" class="rail-item" data-tooltip="Eventos"><i class="fas fa-calendar-check"></i></a>
             <div class="rail-separator"></div>
+            <a href="mensagem.html" class="rail-item active" data-tooltip="Mensagens"><i class="fas fa-comment-dots"></i></a>
+            <a href="projeto.html" class="rail-item" data-tooltip="Projetos"><i class="fas fa-users"></i></a>
+            <a href="vaga.html" class="rail-item" data-tooltip="Vagas"><i class="fas fa-briefcase"></i></a>
+            <a href="evento.html" class="rail-item" data-tooltip="Eventos"><i class="fas fa-calendar-check"></i></a>
         </nav>
 
         <div class="chat-container">
             <aside class="chat-sidebar">
                 <div class="sidebar-header">
                     <h2>Conversas</h2>
-                    <button class="add-convo-btn" title="Nova conversa"><i class="fas fa-plus"></i></button>
+                    <div class="sidebar-header-actions">
+                        <button class="sidebar-toggle-btn" id="collapse-sidebar-btn" title="Recolher painel"><i class="fas fa-chevron-left"></i></button>
+                        <button class="add-convo-btn" title="Nova conversa"><i class="fas fa-plus"></i></button>
+                    </div>
                 </div>
                 <div class="sidebar-search">
                     <input type="text" id="convo-search" placeholder="Buscar conversas...">
                     <i class="fas fa-search"></i>
                 </div>
-                <div class="conversations-list" id="conversations-list">
-                    </div>
+                <div class="conversations-list" id="conversations-list"></div>
             </aside>
             <main class="chat-main">
                 <div class="chat-card">
                     <div class="chat-header-area" id="chat-header-area">
-                        </div>
+                        <button class="sidebar-toggle-btn expand" id="expand-sidebar-btn" title="Expandir painel"><i class="fas fa-chevron-right"></i></button>
+                        <div id="chat-header-dynamic-content"></div>
+                    </div>
                     <div class="chat-messages-area" id="chat-messages-area">
                         <div class="empty-chat">Selecione uma conversa para começar.</div>
                     </div>
@@ -78,7 +127,18 @@
         </div>
     </div>
     
-    <script src="Principal/JS/principal.js"></script>
-    <script src="Mensagem/JS/mensagem.js"></script>
+    <div class="modal-overlay" id="add-convo-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nova Conversa</h2>
+                <button class="close-modal-btn" id="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="user-search-input" placeholder="Buscar usuário...">
+                <div class="user-list" id="new-convo-user-list"></div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

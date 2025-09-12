@@ -2,87 +2,76 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>SENAI Community | Eventos</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="Principal/CSS/principal.css">
   <link rel="stylesheet" href="Evento/CSS/evento.css">
+
 </head>
 <body>
   <div class="notification-center"></div>
-  
   <header class="topbar">
-    <div class="header-left">
-      <div class="menu-toggle"><i class="fas fa-bars"></i></div>
-      <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
-    </div>
-    <div class="search"><i class="fas fa-search"></i><input type="text" placeholder="Pesquisar..."></div>
+    <div class="header-left"><div class="menu-toggle"><i class="fas fa-bars"></i></div><h1 class="logo"><span class="highlight">SENAI </span>Community</h1></div>
+    <div class="search"><i class="fas fa-search"></i><input type="text" id="search-input" placeholder="Pesquisar por título..."></div>
     <nav class="nav-icons">
-      <div class="nav-icon" data-tooltip="Início"><a href="principal.html"><i class="fas fa-home"></i></a></div>
-      <div class="nav-icon" data-tooltip="Mensagens"><a href="grupo.html"><i class="fas fa-comment-dots"></i></a><span class="badge">3</span></div>
-      <div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell"></i><span class="badge">5</span></div>
-      <div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div>
+        <div class="nav-icon" data-tooltip="Início"><a href="principal.html"><i class="fas fa-home"></i></a></div>
+        <div class="nav-icon" data-tooltip="Mensagens"><a href="mensagem.html"><i class="fas fa-comment-dots"></i></a><span class="badge">3</span></div>
+        <div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell" id="notification-icon"></i><span class="badge">5</span><div id="notification-menu" class="notification-menu"><div class="notification"><p>Nova mensagem recebida</p></div><div class="notification"><p>Seu projeto foi aprovado</p></div></div></div>
+        <div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div>
     </nav>
     <div class="user-dropdown">
       <div class="user">
-        <div class="profile-pic"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"></div>
-        <span>Vinicius G.</span><i class="fas fa-chevron-down"></i>
+        <div class="profile-pic">
+          <img src="img/perfil.png" alt="Perfil">
+        </div>
+        <i class="fas fa-chevron-down"></i>
       </div>
       <div class="dropdown-menu">
-        <a href="#"><i class="fas fa-user"></i> Meu Perfil</a>
+        <a href="perfil.html"><i class="fas fa-user"></i> Meu Perfil</a>
         <a href="#"><i class="fas fa-cog"></i> Configurações</a>
-        <a href="principal.html"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        <a href="login.html"><i class="fas fa-sign-out-alt"></i> Sair</a>
       </div>
     </div>
   </header>
-
   <div class="container">
     <aside class="sidebar">
-      <div class="user-info">
-        <div class="avatar"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"><div class="status online"></div></div>
-        <h2>Vinicius Gallo Santos</h2><p class="user-title">Estudante de ADS</p>
-        <div class="user-stats"><div class="stat"><strong>156</strong><span>Conexões</span></div><div class="stat"><strong>24</strong><span>Projetos</span></div></div>
+       <div class="user-info">
+        <div class="avatar">
+          <img src="img/perfil.png" alt="Perfil">
+          <div class="status online"></div>
+        </div>
+        <h2>Usuário Temporário</h2>
+        <p class="user-title">Sem Curso</p>
+        <div class="user-stats">
+          <div class="stat"><strong>3</strong><span>Conexões</span></div>
+          <div class="stat"><strong>1</strong><span>Projetos</span></div>
+        </div>
       </div>
       <nav class="menu">
-        <a href="principal.html" class="active"><i class="fas fa-home"></i> Feed</a>
+        <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
         <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
         <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
-        <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
-        <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+        <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas de Emprego</a>
+        <a href="evento.html" class="active"><i class="fas fa-calendar-check"></i> Eventos</a>
       </nav>
-      </aside>
-
+      <div class="online-friends">
+      </div>
+    </aside>
     <main class="main-content">
       <div class="eventos-header">
         <h1>Conecte-se, Aprenda e Inove</h1>
         <p>Participe de workshops, palestras e competições para acelerar sua carreira.</p>
       </div>
-
       <div class="filters-container">
-        <select id="filter-periodo">
-          <option value="proximos">Próximos Eventos</option>
-          <option value="passados">Eventos Passados</option>
-        </select>
-        <select id="filter-formato">
-          <option value="todos">Todos os Formatos</option>
-          <option value="Presencial">Presencial</option>
-          <option value="Online">Online</option>
-          <option value="Híbrido">Híbrido</option>
-        </select>
-        <select id="filter-categoria">
-          <option value="todos">Todas as Categorias</option>
-          <option value="Tecnologia">Tecnologia</option>
-          <option value="Carreira">Carreira</option>
-          <option value="Inovação">Inovação</option>
-          <option value="Competição">Competição</option>
-        </select>
+        <select id="filter-periodo"><option value="proximos">Próximos Eventos</option><option value="passados">Eventos Passados</option></select>
+        <select id="filter-formato"><option value="todos">Todos os Formatos</option><option value="Presencial">Presencial</option><option value="Online">Online</option><option value="Híbrido">Híbrido</option></select>
+        <select id="filter-categoria"><option value="todos">Todas as Categorias</option><option value="Tecnologia">Tecnologia</option><option value="Carreira">Carreira</option><option value="Inovação">Inovação</option><option value="Competição">Competição</option></select>
       </div>
-      
       <div class="eventos-grid">
-        </div>
+      </div>
     </main>
-    
     <aside class="right-sidebar">
       <div class="meus-eventos-card">
         <h3><i class="fas fa-check-circle"></i> Meus Eventos</h3>
@@ -90,16 +79,9 @@
           <p class="empty-message">Você ainda não confirmou presença em nenhum evento.</p>
         </div>
       </div>
-      
-      <div class="sugerir-evento-card">
-        <h3><i class="fas fa-lightbulb"></i> Tem uma ideia?</h3>
-        <p>Conhece um evento incrível? Compartilhe com a comunidade!</p>
-        <button class="sugerir-btn">Sugerir Evento</button>
-      </div>
     </aside>
   </div>
-
-  <script src="Principal/JS/principal.js"></script>
-  <script src="Evento/JS/evento.js"></script>
+  <script src="Principal/JS/principal.js" defer></script>
+  <script src="Evento/JS/evento.js" defer></script>
 </body>
 </html>

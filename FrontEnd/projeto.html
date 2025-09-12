@@ -2,33 +2,59 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>SENAI Community | Projetos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Principal/CSS/principal.css">
     <link rel="stylesheet" href="Projeto/CSS/projeto.css">
+    <script src="Principal/JS/principal.js" defer></script>
+    <script src="Projeto/JS/projeto.js" defer></script>
 </head>
 <body>
+    <div class="notification-center"></div>
     <header class="topbar">
-        <div class="header-left"><h1 class="logo"><span class="highlight">SENAI </span>Community</h1></div><div class="search"><i class="fas fa-search"></i><input type="text" placeholder="Pesquisar projetos..."></div><nav class="nav-icons"><a href="/Principal/HTML/principal.html" data-tooltip="Feed"><i class="fas fa-home"></i></a><a href="/Mensagem/HTML/mensagem.html" data-tooltip="Mensagens"><i class="fas fa-comment-dots"></i></a><div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell"></i><span class="badge">5</span></div><div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div></nav><div class="user-dropdown"><div class="user"><div class="profile-pic"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"></div><span>Vinicius G.</span><i class="fas fa-chevron-down"></i></div><div class="dropdown-menu"><a href="#"><i class="fas fa-user"></i> Meu Perfil</a><a href="#"><i class="fas fa-cog"></i> Configurações</a><a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a></div></div>
+        <div class="header-left">
+            <div class="menu-toggle"><i class="fas fa-bars"></i></div>
+            <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+        </div>
+        <div class="search"><i class="fas fa-search"></i><input type="text" placeholder="Pesquisar cursos, projetos, amigos..."><div class="search-results"></div></div>
+        <nav class="nav-icons">
+            <div class="nav-icon" data-tooltip="Início"><a href="principal.html"><i class="fas fa-home"></i></a></div>
+            <div class="nav-icon" data-tooltip="Mensagens"><a href="mensagem.html"><i class="fas fa-comment-dots"></i></a><span class="badge">3</span></div>
+            <div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell" id="notification-icon"></i><span class="badge">5</span><div id="notification-menu" class="notification-menu"><div class="notification"><p>Nova mensagem recebida</p></div><div class="notification"><p>Seu projeto foi aprovado</p></div></div></div>
+            <div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div>
+        </nav>
+        <div class="user-dropdown">
+            <div class="user"><div class="profile-pic"><img src="img/perfil.png" alt="Perfil"></div><i class="fas fa-chevron-down"></i></div>
+            <div class="dropdown-menu">
+                <a href="perfil.html"><i class="fas fa-user"></i> Meu Perfil</a>
+                <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+                <a href="login.html"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </div>
+        </div>
     </header>
-
     <div class="container">
         <aside class="sidebar">
             <div class="user-info">
-                <div class="avatar"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"><div class="status online"></div></div>
-                <h2>Vinicius Gallo Santos</h2><p class="user-title">Estudante de ADS</p><div class="user-stats"><div class="stat"><strong>156</strong><span>Conexões</span></div><div class="stat"><strong>24</strong><span>Projetos</span></div></div>
+                <div class="avatar"><img src="img/perfil.png" alt="Perfil"><div class="status online"></div></div>
+                <h2>Usuário Temporário</h2>
+                <p class="user-title">Sem Curso</p>
+                <div class="user-stats">
+                    <div class="stat"><strong>3</strong><span>Conexões</span></div>
+                    <div class="stat"><strong>1</strong><span>Projetos</span></div>
+                </div>
             </div>
             <nav class="menu">
-                <a href="principal.html" class="active"><i class="fas fa-home"></i> Feed</a>
+                <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
                 <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
-                <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
-                <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
+                <a href="projeto.html" class="active"><i class="fas fa-users"></i> Projetos</a>
+                <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas de Emprego</a>
                 <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
             </nav>
+            <div class="online-friends">
+            </div>
         </aside>
-
         <main class="main-content">
             <div class="projetos-header">
                 <div class="header-text">
@@ -37,12 +63,8 @@
                 </div>
                 <button class="btn-new-project" id="btn-new-project"><i class="fas fa-plus"></i> Publicar Projeto</button>
             </div>
-
             <div class="projetos-filters">
-                <div class="search-projetos">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="project-search-input" placeholder="Buscar por nome ou tecnologia...">
-                </div>
+                <div class="search-projetos"><i class="fas fa-search"></i><input type="text" id="project-search-input" placeholder="Buscar por nome ou tecnologia..."></div>
                 <select id="filter-category">
                     <option value="todos">Todas as Categorias</option>
                     <option value="web">Desenvolvimento Web</option>
@@ -51,11 +73,8 @@
                     <option value="ia">Inteligência Artificial</option>
                 </select>
             </div>
-
-            <div class="projetos-grid" id="projetos-grid">
-            </div>
+            <div class="projetos-grid" id="projetos-grid"></div>
         </main>
-
         <aside class="right-sidebar">
             <div class="card-destaque">
                 <h3><i class="fas fa-bullhorn"></i> Buscando Colaboradores</h3>
@@ -67,47 +86,21 @@
             </div>
         </aside>
     </div>
-
     <div class="modal-overlay" id="novo-projeto-modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Cadastrar Novo Projeto</h2>
-                <button class="close-modal-btn">&times;</button>
-            </div>
+            <div class="modal-header"><h2>Cadastrar Novo Projeto</h2><button class="close-modal-btn">&times;</button></div>
             <form id="novo-projeto-form">
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label for="proj-titulo">Título do Projeto</label>
-                        <input type="text" id="proj-titulo" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="proj-descricao">Descrição</label>
-                        <textarea id="proj-descricao" rows="4" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="proj-imagem">URL da Imagem de Capa</label>
-                        <input type="url" id="proj-imagem" placeholder="https://exemplo.com/imagem.png">
-                    </div>
-                    <div class="form-group">
-                        <label for="proj-techs">Tecnologias (separadas por vírgula)</label>
-                        <input type="text" id="proj-techs" placeholder="React, Node.js, Arduino...">
-                    </div>
-                     <div class="form-group">
-                        <label for="proj-status">Status</label>
-                        <select id="proj-status">
-                            <option value="Em Andamento">Em Andamento</option>
-                            <option value="Concluído">Concluído</option>
-                        </select>
-                    </div>
+                    <div class="form-group"><label for="proj-titulo">Título do Projeto</label><input type="text" id="proj-titulo" required></div>
+                    <div class="form-group"><label for="proj-descricao">Descrição</label><textarea id="proj-descricao" rows="4" required></textarea></div>
+                    <div class="form-group"><label for="proj-imagem">URL da Imagem de Capa</label><input type="url" id="proj-imagem" placeholder="https://exemplo.com/imagem.png"></div>
+                    <div class="form-group"><label for="proj-techs">Tecnologias (separadas por vírgula)</label><input type="text" id="proj-techs" placeholder="React, Node.js, Arduino..."></div>
+                    <div class="form-group"><label for="proj-status">Status</label><select id="proj-status"><option value="Em Andamento">Em Andamento</option><option value="Concluído">Concluído</option></select></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn-publish">Publicar Projeto</button>
-                </div>
+                <div class="modal-footer"><button type="submit" class="btn-publish">Publicar Projeto</button></div>
             </form>
         </div>
     </div>
-
-    <script src="Principal/JS/principal.js"></script>
-    <script src="Projeto/JS/projeto.js"></script>
+    
 </body>
 </html>
