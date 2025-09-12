@@ -548,6 +548,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  function closeAndResetEditCommentModal() {
+  if (elements.editCommentModal) {
+    elements.editCommentModal.style.display = "none";
+  }
+  if (elements.editCommentIdInput) {
+    elements.editCommentIdInput.value = "";
+  }
+  if (elements.editCommentTextarea) {
+    elements.editCommentTextarea.value = "";
+  }
+}
+
   window.openEditCommentModal = (commentId, content) => {
     if (elements.editCommentIdInput)
       elements.editCommentIdInput.value = commentId;
@@ -819,32 +831,34 @@ document.addEventListener("DOMContentLoaded", () => {
         () => (elements.editPostModal.style.display = "none")
       );
 
-    if (elements.editCommentForm)
-      elements.editCommentForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const commentId = elements.editCommentIdInput.value;
-        const content = elements.editCommentTextarea.value;
-        try {
-          await axios.put(
-            `${backendUrl}/comentarios/${commentId}`,
-            JSON.stringify(content),
-            {
-              headers: { "Content-Type": "application/json" },
-            }
-          );
-          if (elements.editCommentModal)
-            elements.editCommentModal.style.display = "none";
-          showNotification("Comentário editado.", "success");
-        } catch (error) {
-          showNotification("Não foi possível salvar o comentário.", "error");
-          console.error("Erro ao editar comentário:", error);
+    if (elements.editCommentForm) {
+  elements.editCommentForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const commentId = elements.editCommentIdInput.value;
+    const content = elements.editCommentTextarea.value;
+    try {
+      // CORREÇÃO: Enviar o conteúdo como um objeto JSON
+      await axios.put(
+        `${backendUrl}/comentarios/${commentId}`,
+        { conteudo: content }, // Objeto JSON válido
+        {
+          headers: { "Content-Type": "application/json" },
         }
-      });
+      );
+      showNotification("Comentário editado.", "success");
+      closeAndResetEditCommentModal();
+    } catch (error) {
+      showNotification("Não foi possível salvar o comentário.", "error");
+      console.error("Erro ao editar comentário:", error);
+    }
+  });
+}
     if (elements.cancelEditCommentBtn)
       elements.cancelEditCommentBtn.addEventListener(
         "click",
-        () => (elements.editCommentModal.style.display = "none")
-      );
+        () => {
+          closeAndResetEditCommentModal();
+        });
 
     if (elements.postFileInput)
       elements.postFileInput.addEventListener("change", (event) => {
