@@ -1,6 +1,5 @@
-
-// FUNÇÕES DE SETUP (Definições)
-// ===================================================================
+// @ts-nocheck
+// Arquivo: CadastroLogin/JS/cadastro.js
 
 /**
  * Adiciona a máscara DD/MM/AAAA ao campo de data de nascimento.
@@ -8,7 +7,7 @@
 function setupDateMask() {
     const dataNascimentoInput = document.getElementById('dataNascimento');
     if (dataNascimentoInput) {
-        const dateMask = IMask(dataNascimentoInput, {
+        IMask(dataNascimentoInput, {
             mask: '00/00/0000',
             lazy: false,
             placeholderChar: '_'
@@ -44,6 +43,8 @@ function setupPasswordStrengthMeter() {
         const password = this.value;
         const strengthLevel = checkPasswordStrength(password);
         
+        const strengthMap = { 0: 'Senha Fraca', 1: 'Senha Fraca', 2: 'Senha Média', 3: 'Senha Forte' };
+
         if (strengthLevel === -1) {
             strengthBar.setAttribute('data-strength', '0');
             strengthText.textContent = '';
@@ -51,13 +52,14 @@ function setupPasswordStrengthMeter() {
         }
         
         strengthBar.setAttribute('data-strength', strengthLevel);
-        const strengthMap = { 0: 'Senha Fraca', 1: 'Senha Fraca', 2: 'Senha Média', 3: 'Senha Forte' };
         strengthText.textContent = strengthMap[strengthLevel] || '';
     });
 }
 
 /**
- * Configura a área de upload de imagem com drag-drop e preview.
+ * ✅ CORREÇÃO APLICADA AQUI ✅
+ * Configura a área de upload de imagem com drag-drop e preview,
+ * sem o evento de clique duplicado.
  */
 function setupImageUpload() {
     const dropZone = document.getElementById('drop-zone');
@@ -85,16 +87,25 @@ function setupImageUpload() {
         dataTransfer.items.add(file);
         fotoInput.files = dataTransfer.files;
     }
-
-    dropZone.addEventListener('click', () => fotoInput.click());
-    fotoInput.addEventListener('change', () => handleFile(fotoInput.files[0]));
+    
+    // A linha abaixo foi REMOVIDA para corrigir o bug do duplo clique.
+    // O comportamento do <label for="foto"> já é suficiente para abrir o seletor de arquivos.
+    // dropZone.addEventListener('click', () => fotoInput.click()); 
+    
+    fotoInput.addEventListener('change', () => {
+        if (fotoInput.files.length > 0) {
+            handleFile(fotoInput.files[0]);
+        }
+    });
     
     dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.classList.remove('drag-over');
-        handleFile(e.dataTransfer.files[0]);
+        if (e.dataTransfer.files.length > 0) {
+            handleFile(e.dataTransfer.files[0]);
+        }
     });
 
     imagePreview.addEventListener('click', () => {
@@ -114,8 +125,6 @@ function setupFormSubmission() {
     registerForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        // ... (validações de senha e termos) ...
-
         const formData = new FormData(this);
         const dataNascimentoValor = formData.get('dataNascimento');
         if (dataNascimentoValor) {
@@ -124,7 +133,7 @@ function setupFormSubmission() {
                  const dataFormatada = `${ano}-${mes}-${dia}`;
                  formData.set('dataNascimento', dataFormatada);
             } else {
-                 Swal.fire({ icon: 'error', title: 'Data Inválida', text: 'Por favor, insira uma data de nascimento válida.' });
+                 Swal.fire({ icon: 'error', title: 'Data Inválida', text: 'Por favor, insira uma data de nascimento válida (DD/MM/AAAA).' });
                  return;
             }
         }
@@ -160,75 +169,16 @@ function setupFormSubmission() {
 }
 
 /**
- * Configura os botões de "mostrar/esconder" senha.
- */
-function setupPasswordToggles() {
-    document.querySelectorAll('.toggle-password').forEach(button => {
-        button.addEventListener('click', function() {
-            const input = this.closest('.input-group').querySelector('input');
-            const icon = this.querySelector('i');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        });
-    });
-}
-
-/**
- * ✅ CORREÇÃO APLICADA AQUI ✅
- * Configura o botão de troca de tema (light/dark).
- */
-function setupThemeToggle() {
-    const themeToggleButton = document.querySelector('.theme-toggle');
-    const rootElement = document.documentElement;
-    if (!themeToggleButton) return;
-
-    const icon = themeToggleButton.querySelector('i');
-    const THEME_KEY = 'user-theme';
-
-    function applyTheme(theme) {
-        const isLight = theme === 'light';
-        rootElement.setAttribute('data-theme', isLight ? 'light' : 'dark'); // Usa dark como padrão explícito
-        if (icon) {
-            icon.classList.toggle('fa-sun', isLight);
-            icon.classList.toggle('fa-moon', !isLight);
-        }
-        if (isLight) {
-            localStorage.setItem(THEME_KEY, 'light');
-        } else {
-            localStorage.removeItem(THEME_KEY);
-        }
-    }
-
-    themeToggleButton.addEventListener('click', () => {
-        const currentTheme = rootElement.getAttribute('data-theme');
-        applyTheme(currentTheme === 'light' ? 'dark' : 'light');
-    });
-
-    // Aplica o tema salvo no carregamento inicial
-    applyTheme(localStorage.getItem(THEME_KEY));
-}
-
-
-// ===================================================================
-// PONTO DE ENTRADA PRINCIPAL
-// ===================================================================
-/**
- * ✅ ESTRUTURA CORRIGIDA ✅
- * Este é o único 'DOMContentLoaded' que chama todas as outras funções,
- * garantindo que nenhum evento seja registrado duas vezes.
+ * Ponto de entrada principal para a página de cadastro.
  */
 document.addEventListener('DOMContentLoaded', function() {
     setupDateMask();
     setupPasswordStrengthMeter();
     setupImageUpload();
     setupFormSubmission();
-    setupPasswordToggles();
-    setupThemeToggle(); // Chamado uma única vez
+    
+    // Chama a função de alternância de senha definida em utils.js
+    setupPasswordToggles(); 
+    
+    // A configuração do tema é totalmente gerenciada por background.js
 });
