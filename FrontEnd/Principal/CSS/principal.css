@@ -212,6 +212,148 @@ body {
   text-align: center;
 }
 
+/* --- NOVOS ESTILOS PARA NOTIFICAÇÕES --- */
+.nav-icon {
+    position: relative; /* Necessário para o posicionamento do painel */
+}
+
+.notifications-panel {
+    display: none; /* Começa escondido */
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 360px;
+    max-height: 400px;
+    overflow-y: auto;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow);
+    z-index: 1001;
+}
+
+.notifications-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.notifications-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.notifications-list .empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.notification-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.notification-item.unread {
+    background-color: var(--bg-hover);
+}
+
+.notification-item i {
+    color: var(--accent-primary);
+    font-size: 1.2rem;
+}
+
+.notification-item p {
+    margin: 0;
+    font-size: 0.9rem;
+    flex-grow: 1;
+}
+
+.notification-item .timestamp {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.mark-as-read-btn {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--accent-primary);
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* --- NOVOS ESTILOS PARA AMIGOS ONLINE --- */
+.online-friends {
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    padding: 1.25rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+.widget-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.friend-list .empty-state {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.friend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.friend-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.friend-item .avatar {
+    width: 32px;
+    height: 32px;
+}
+
+.friend-item .friend-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    flex-grow: 1;
+}
+
+.friend-item .status.online {
+    margin-left: auto; /* Empurra o status para a direita */
+    width: 10px;
+    height: 10px;
+    border: none;
+}
+
 /* Container Layout */
 .container {
   display: grid;
@@ -828,3 +970,110 @@ body {
 .pic-editor-overlay span { font-size: 0.8rem; margin-top: 0.5rem; }
 .warning-text { background-color: rgba(248, 81, 73, 0.1); border-left: 4px solid var(--danger); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-primary); }
 .modal-footer .btn-danger { background-color: var(--danger); color: white; }
+
+/* --- Estilos para a Página de Busca de Amigos --- */
+
+/* Caixa de pesquisa dentro do widget */
+.search-box {
+    position: relative;
+}
+
+.search-box i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+.search-box input {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 2.75rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-secondary);
+}
+
+/* Contêiner para os resultados da busca */
+.search-results-container {
+    margin-top: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Card de resultado de usuário */
+.user-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-primary);
+}
+
+.user-card-avatar img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-card-info {
+    flex-grow: 1; /* Ocupa o espaço disponível */
+}
+
+.user-card-info h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.user-card-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.user-card-action .btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    white-space: nowrap; /* Impede que o texto do botão quebre linha */
+}
+
+.user-card-action .btn-primary {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+.user-card-action .btn-secondary {
+    background-color: var(--bg-quaternary);
+    color: var(--text-primary);
+}
+
+.user-card-action .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}

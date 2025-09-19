@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const jwtToken = localStorage.getItem("token");
   let stompClient = null;
   let currentUser = null;
+   let userFriends = []; // VARIÁVEL GLOBAL PARA ARMAZENAR AMIGOS
   let selectedFilesForPost = [];
   let selectedFilesForEdit = [];
   const searchInput = document.getElementById("search-input");
@@ -25,9 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     editPostTextarea: document.getElementById("edit-post-textarea"),
     cancelEditPostBtn: document.getElementById("cancel-edit-post-btn"),
     editPostFileInput: document.getElementById("edit-post-files"),
-    editFilePreviewContainer: document.getElementById(
-      "edit-file-preview-container"
-    ),
+    editFilePreviewContainer: document.getElementById("edit-file-preview-container"),
 
     editCommentModal: document.getElementById("edit-comment-modal"),
     editCommentForm: document.getElementById("edit-comment-form"),
@@ -46,16 +45,19 @@ document.addEventListener("DOMContentLoaded", () => {
     editProfileBio: document.getElementById("edit-profile-bio"),
     editProfileDob: document.getElementById("edit-profile-dob"),
     editProfilePassword: document.getElementById("edit-profile-password"),
-    editProfilePasswordConfirm: document.getElementById(
-      "edit-profile-password-confirm"
-    ),
+    editProfilePasswordConfirm: document.getElementById("edit-profile-password-confirm"),
 
     deleteAccountModal: document.getElementById("delete-account-modal"),
     deleteAccountForm: document.getElementById("delete-account-form"),
-    cancelDeleteAccountBtn: document.getElementById(
-      "cancel-delete-account-btn"
-    ),
+    cancelDeleteAccountBtn: document.getElementById("cancel-delete-account-btn"),
     deleteConfirmPassword: document.getElementById("delete-confirm-password"),
+
+    notificationsIcon: document.getElementById('notifications-icon'),
+    notificationsPanel: document.getElementById('notifications-panel'),
+    notificationsList: document.getElementById('notifications-list'),
+    notificationsBadge: document.getElementById('notifications-badge'),
+    onlineFriendsList: document.getElementById('online-friends-list'),
+    connectionsCount: document.getElementById('connections-count')
   };
 
   // --- INICIALIZAÇÃO ---
@@ -72,6 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
       updateUIWithUserData(currentUser);
       connectWebSocket();
       setupEventListeners();
+      fetchFriends();
+      fetchNotifications();
     } catch (error) {
       console.error("ERRO CRÍTICO NA INICIALIZAÇÃO:", error);
       localStorage.removeItem("token");
@@ -135,9 +139,22 @@ document.addEventListener("DOMContentLoaded", () => {
       (frame) => {
         console.log("CONECTADO AO WEBSOCKET");
         fetchPublicPosts();
+        // Inscrição no feed público
         stompClient.subscribe("/topic/publico", (message) => {
           const payload = JSON.parse(message.body);
           handlePublicFeedUpdate(payload);
+        });
+        // INSCRIÇÃO PARA NOTIFICAÇÕES
+        stompClient.subscribe(`/user/${currentUser.email}/queue/notifications`, (message) => {
+            const notification = JSON.parse(message.body);
+            showNotification(`Nova notificação: ${notification.mensagem}`, 'info');
+            fetchNotifications(); // Busca a lista atualizada para incluir a nova notificação
+        });
+
+        // INSCRIÇÃO PARA STATUS ONLINE/OFFLINE
+        stompClient.subscribe("/topic/status", (message) => {
+            const onlineUsersEmails = JSON.parse(message.body);
+            updateOnlineFriends(onlineUsersEmails);
         });
       },
       (error) => console.error("ERRO WEBSOCKET:", error)
@@ -426,6 +443,127 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // --- NOVAS FUNÇÕES PARA NOTIFICAÇÕES ---
+  async function fetchNotifications() {
+        try {
+            const response = await axios.get(`${backendUrl}/api/notificacoes`);
+            renderNotifications(response.data);
+        } catch (error) {
+            console.error("Erro ao buscar notificações:", error);
+        }
+    }
+
+    function renderNotifications(notifications) {
+        if (!elements.notificationsList) return;
+        elements.notificationsList.innerHTML = ''; // Limpa a lista
+
+        const unreadCount = notifications.filter(n => !n.lida).length;
+
+        if (elements.notificationsBadge) {
+            if (unreadCount > 0) {
+                elements.notificationsBadge.textContent = unreadCount;
+                elements.notificationsBadge.style.display = 'flex';
+            } else {
+                elements.notificationsBadge.style.display = 'none';
+            }
+        }
+
+        if (notifications.length === 0) {
+            elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
+            return;
+        }
+
+        notifications.forEach(notification => {
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            if (!notification.lida) {
+                item.classList.add('unread');
+            }
+            
+            const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
+
+            item.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <div class="notification-content">
+                    <p>${notification.mensagem}</p>
+                    <span class="timestamp">${data}</span>
+                </div>
+                ${!notification.lida ? '<button class="mark-as-read-btn" title="Marcar como lida"></button>' : ''}
+            `;
+            
+            if (!notification.lida) {
+                item.querySelector('.mark-as-read-btn').addEventListener('click', (e) => {
+                    e.stopPropagation(); // Impede que o clique feche o painel
+                    markNotificationAsRead(notification.id);
+                });
+            }
+
+            elements.notificationsList.appendChild(item);
+        });
+    }
+    
+    async function markNotificationAsRead(notificationId) {
+        try {
+            await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+            fetchNotifications(); // Recarrega a lista para refletir a mudança
+        } catch (error) {
+            console.error("Erro ao marcar notificação como lida:", error);
+            showNotification('Erro ao atualizar notificação.', 'error');
+        }
+    }
+
+    // --- NOVAS FUNÇÕES PARA AMIGOS ONLINE ---
+
+   async function fetchFriends() {
+    try {
+        const response = await axios.get(`${backendUrl}/api/amizades/`);
+        userFriends = response.data;
+        
+        // --- LINHA ADICIONADA PARA ATUALIZAR O CONTADOR ---
+        if (elements.connectionsCount) {
+            elements.connectionsCount.textContent = userFriends.length;
+        }
+
+        // A renderização inicial dos amigos online ocorrerá quando recebermos o primeiro status do WebSocket
+    } catch (error) {
+        console.error("Erro ao buscar lista de amigos:", error);
+        if (elements.connectionsCount) {
+            elements.connectionsCount.textContent = '0';
+        }
+    }
+}
+    
+    function updateOnlineFriends(onlineUsersEmails) {
+        if (!elements.onlineFriendsList) return;
+        
+        const onlineFriends = userFriends.filter(friend => onlineUsersEmails.includes(friend.email));
+
+        elements.onlineFriendsList.innerHTML = ''; // Limpa a lista
+
+        if (onlineFriends.length === 0) {
+            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+            return;
+        }
+
+        onlineFriends.forEach(friend => {
+            const friendElement = document.createElement('div');
+            friendElement.className = 'friend-item';
+            
+            const friendAvatar = friend.fotoPerfil 
+                ? `${backendUrl}${friend.fotoPerfil}`
+                : `${backendUrl}/images/default-avatar.png`;
+
+            friendElement.innerHTML = `
+                <div class="avatar">
+                    <img src="${friendAvatar}" alt="Avatar de ${friend.nome}">
+                </div>
+                <span class="friend-name">${friend.nome}</span>
+                <div class="status online"></div>
+            `;
+            elements.onlineFriendsList.appendChild(friendElement);
+        });
+    }
+
   // CORREÇÃO: Função modificada para fechar todos os tipos de menu
   const closeAllMenus = () => {
     document
@@ -656,9 +794,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setupEventListeners() {
-    document.body.addEventListener("click", closeAllMenus);
+        // MODIFICADO: Listener principal no body para fechar menus e o painel de notificações ao clicar fora
+    document.body.addEventListener("click", (e) => {
+        // Fecha o painel de notificações se o clique for fora dele e fora do ícone
+        if (elements.notificationsPanel && !elements.notificationsPanel.contains(e.target) && !elements.notificationsIcon.contains(e.target)) {
+            elements.notificationsPanel.style.display = 'none';
+        }
+        // A função closeAllMenus fecha os menus de post/comentário e o dropdown do usuário
+        closeAllMenus();
+    });
 
-    // NOVO LISTENER PARA ABRIR O DROPDOWN
+    // NOVO: Listener para o ícone de notificações para abrir/fechar o painel
+    if (elements.notificationsIcon) {
+        elements.notificationsIcon.addEventListener('click', (event) => {
+            event.stopPropagation(); // Impede que o clique no body feche o painel imediatamente
+            const isVisible = elements.notificationsPanel.style.display === 'block';
+            elements.notificationsPanel.style.display = isVisible ? 'none' : 'block';
+        });
+    }
+
+    // Listener para abrir o dropdown do usuário
     if (elements.userDropdownTrigger) {
       elements.userDropdownTrigger.addEventListener("click", (event) => {
         event.stopPropagation(); // Impede que o clique no body feche o menu imediatamente
@@ -672,16 +827,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     }
+    
+    // Listener para o campo de busca
     if (searchInput) {
       searchInput.addEventListener("input", filterPosts);
     }
 
+    // Listener do botão de Logout
     if (elements.logoutBtn)
       elements.logoutBtn.addEventListener("click", () => {
         localStorage.clear();
         window.location.href = "login.html";
       });
 
+    // Listeners para os botões de perfil e conta
     if (elements.editProfileBtn)
       elements.editProfileBtn.addEventListener("click", openEditProfileModal);
     if (elements.deleteAccountBtn)
@@ -689,12 +848,13 @@ document.addEventListener("DOMContentLoaded", () => {
         "click",
         openDeleteAccountModal
       );
+
+    // Listeners do Modal de Edição de Perfil
     if (elements.cancelEditProfileBtn)
       elements.cancelEditProfileBtn.addEventListener(
         "click",
         () => (elements.editProfileModal.style.display = "none")
       );
-
     if (elements.editProfilePicInput)
       elements.editProfilePicInput.addEventListener("change", () => {
         const file = elements.editProfilePicInput.files[0];
@@ -702,7 +862,6 @@ document.addEventListener("DOMContentLoaded", () => {
           elements.editProfilePicPreview.src = URL.createObjectURL(file);
         }
       });
-
     if (elements.editProfileForm)
       elements.editProfileForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -751,6 +910,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
+    // Listeners do Modal de Exclusão de Conta
     if (elements.cancelDeleteAccountBtn)
       elements.cancelDeleteAccountBtn.addEventListener(
         "click",
@@ -791,6 +951,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
+    // Listeners do Modal de Edição de Post
     if (elements.editPostFileInput)
       elements.editPostFileInput.addEventListener("change", (event) => {
         Array.from(event.target.files).forEach((file) => {
@@ -800,7 +961,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         updateEditFilePreview();
       });
-
     if (elements.editPostForm)
       elements.editPostForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -831,35 +991,36 @@ document.addEventListener("DOMContentLoaded", () => {
         () => (elements.editPostModal.style.display = "none")
       );
 
+    // Listeners do Modal de Edição de Comentário
     if (elements.editCommentForm) {
-    elements.editCommentForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const commentId = elements.editCommentIdInput.value;
-        const content = elements.editCommentTextarea.value;
-        try {
-            await axios.put(
-                `${backendUrl}/comentarios/${commentId}`,
-                // AQUI ESTÁ A CORREÇÃO: Enviar um objeto JSON válido.
-                { conteudo: content },
-                {
-                    headers: { "Content-Type": "application/json" },
-                }
-            );
-            showNotification("Comentário editado.", "success");
-            closeAndResetEditCommentModal();
-        } catch (error) {
-            showNotification("Não foi possível salvar o comentário.", "error");
-            console.error("Erro ao editar comentário:", error);
-        }
-    });
-}
+      elements.editCommentForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const commentId = elements.editCommentIdInput.value;
+          const content = elements.editCommentTextarea.value;
+          try {
+              await axios.put(
+                  `${backendUrl}/comentarios/${commentId}`,
+                  { conteudo: content },
+                  {
+                      headers: { "Content-Type": "application/json" },
+                  }
+              );
+              showNotification("Comentário editado.", "success");
+              closeAndResetEditCommentModal();
+          } catch (error) {
+              showNotification("Não foi possível salvar o comentário.", "error");
+              console.error("Erro ao editar comentário:", error);
+          }
+      });
+    }
     if (elements.cancelEditCommentBtn)
       elements.cancelEditCommentBtn.addEventListener(
         "click",
         () => {
           closeAndResetEditCommentModal();
         });
-
+    
+    // Listeners do Criador de Post
     if (elements.postFileInput)
       elements.postFileInput.addEventListener("change", (event) => {
         selectedFilesForPost = Array.from(event.target.files);

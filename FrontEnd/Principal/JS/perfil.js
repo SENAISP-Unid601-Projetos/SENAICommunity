@@ -43,11 +43,18 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteAccountModal: document.getElementById('delete-account-modal'),
         deleteAccountForm: document.getElementById('delete-account-form'),
         cancelDeleteAccountBtn: document.getElementById('cancel-delete-account-btn'),
-        deleteConfirmPassword: document.getElementById('delete-confirm-password')
+        deleteConfirmPassword: document.getElementById('delete-confirm-password'),
+
+        notificationsIcon: document.getElementById('notifications-icon'),
+        notificationsPanel: document.getElementById('notifications-panel'),
+        notificationsList: document.getElementById('notifications-list'),
+        notificationsBadge: document.getElementById('notifications-badge'),
+        onlineFriendsList: document.getElementById('online-friends-list'),
+        connectionsCount: document.getElementById('connections-count')
     };
 
     // --- INICIALIZAÇÃO ---
-    async function init() {
+     async function init() {
         if (!jwtToken) {
             window.location.href = 'login.html';
             return;
@@ -58,10 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await axios.get(`${backendUrl}/usuarios/me`);
             currentUser = response.data;
             
-            // Popula tanto a UI geral quanto a página de perfil
             updateUIWithUserData(currentUser);
             populateProfileData(currentUser);
-
+            fetchUserConnections(); // NOVA CHAMADA DE FUNÇÃO
             setupEventListeners();
         } catch (error) {
             console.error("ERRO CRÍTICO NA INICIALIZAÇÃO DO PERFIL:", error);
@@ -69,6 +75,19 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'login.html';
         }
     }
+
+     // --- NOVA FUNÇÃO PARA BUSCAR CONEXÕES ---
+    async function fetchUserConnections() {
+        if (!elements.connectionsCount) return;
+        try {
+            const response = await axios.get(`${backendUrl}/api/amizades/`);
+            elements.connectionsCount.textContent = response.data.length;
+        } catch (error) {
+            console.error("Erro ao buscar conexões:", error);
+            elements.connectionsCount.textContent = '0';
+        }
+    }
+
 
     // --- FUNÇÕES DE UI ---
 
