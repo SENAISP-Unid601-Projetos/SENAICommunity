@@ -60,9 +60,6 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        // Adição para permitir o acesso aos arquivos estáticos do frontend
-                        .requestMatchers("/Principal/**", "/principal.html", "/mensagem.html", "/perfil.html", "/projeto.html", "/vaga.html", "/evento.html", "/login.html").permitAll()
-                        .requestMatchers("/CadastroLogin/**", "/Principal/**", "/*.html", "/*.css", "/*.js", "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(

@@ -27,6 +27,8 @@ public class MensagemGrupoService {
     private ProjetoRepository projetoRepository;
     @Autowired
     private MensagemGrupoRepository mensagemGrupoRepository;
+    @Autowired
+    private NotificacaoService notificacaoService;
 
     private MensagemGrupoSaidaDTO toDTO(MensagemGrupo mensagem) {
         return MensagemGrupoSaidaDTO.builder()
@@ -56,8 +58,36 @@ public class MensagemGrupoService {
         Projeto projeto = projetoRepository.findById(projetoId)
                 .orElseThrow(() -> new NoSuchElementException("Projeto não encontrado"));
 
+        // Verifica se o autor é membro do projeto
+        boolean isMember = projeto.getAlunos().stream().anyMatch(aluno -> aluno.getId().equals(autor.getId())) ||
+                projeto.getProfessores().stream().anyMatch(prof -> prof.getId().equals(autor.getId()));
+
+        if (!isMember) {
+            throw new SecurityException("Acesso negado: você não é membro deste projeto.");
+        }
+
+
         MensagemGrupo novaMensagem = toEntity(dto, autor, projeto);
         MensagemGrupo mensagemSalva = mensagemGrupoRepository.save(novaMensagem);
+
+        // Notifica todos os membros do projeto, exceto o próprio autor da mensagem.
+
+        // Notifica Alunos
+        projeto.getAlunos().stream()
+                .filter(aluno -> !aluno.getId().equals(autor.getId())) // Filtra para não notificar o próprio autor
+                .forEach(aluno -> notificacaoService.criarNotificacao(
+                        aluno,
+                        "Nova mensagem no projeto '" + projeto.getTitulo() + "': " + autor.getNome() + " disse..."
+                ));
+
+        // Notifica Professores
+        projeto.getProfessores().stream()
+                .filter(professor -> !professor.getId().equals(autor.getId())) // Filtra para não notificar o próprio autor
+                .forEach(professor -> notificacaoService.criarNotificacao(
+                        professor,
+                        "Nova mensagem no projeto '" + projeto.getTitulo() + "': " + autor.getNome() + " disse..."
+                ));
+
 
         return toDTO(mensagemSalva);
     }
