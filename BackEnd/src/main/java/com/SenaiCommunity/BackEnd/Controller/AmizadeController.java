@@ -2,6 +2,7 @@ package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.AmigoDTO;
 import com.SenaiCommunity.BackEnd.DTO.SolicitacaoAmizadeDTO;
+import com.SenaiCommunity.BackEnd.DTO.SolicitacaoEnviadaDTO;
 import com.SenaiCommunity.BackEnd.Service.AmizadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +62,12 @@ public class AmizadeController {
     @GetMapping("/pendentes")
     public ResponseEntity<List<SolicitacaoAmizadeDTO>> listarSolicitacoesPendentes(Principal principal) {
         List<SolicitacaoAmizadeDTO> solicitacoes = amizadeService.listarSolicitacoesPendentes(principal.getName());
+        return ResponseEntity.ok(solicitacoes);
+    }
+
+    @GetMapping("/enviadas")
+    public ResponseEntity<List<SolicitacaoEnviadaDTO>> listarSolicitacoesEnviadas(Principal principal) {
+        List<SolicitacaoEnviadaDTO> solicitacoes = amizadeService.listarSolicitacoesEnviadas(principal.getName());
         return ResponseEntity.ok(solicitacoes);
     }
 }

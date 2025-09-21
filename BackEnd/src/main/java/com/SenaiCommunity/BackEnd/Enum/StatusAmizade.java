@@ -1,4 +1,4 @@
-package com.SenaiCommunity.BackEnd.Entity;
+package com.SenaiCommunity.BackEnd.Enum;
 
 public enum StatusAmizade {
     PENDENTE,

@@ -1077,3 +1077,122 @@ body {
     cursor: not-allowed;
     opacity: 0.7;
 }
+
+/* --- Estilos para Ações nas Notificações --- */
+.notification-content {
+    width: 100%;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.notification-actions .btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    border-radius: 4px;
+}
+
+.feedback-text {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+.feedback-text.success {
+    color: var(--success);
+}
+
+/* --- Estilos para a Página de Amizades --- */
+.connections-section {
+    margin-top: 2rem;
+}
+.connections-section h3 {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.request-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+.request-card {
+    background-color: var(--bg-tertiary);
+    border-radius: var(--card-radius);
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+.request-card img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+}
+.request-card h4 {
+    margin-bottom: 0.25rem;
+    font-size: 1.1rem;
+}
+.request-card .timestamp {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+.request-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.request-card-actions .btn {
+    width: 100%;
+}
+
+/* CSS para o link da notificação */
+.notification-item {
+    padding: 0; /* Remove padding do item pai */
+}
+.notification-link {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem; /* Adiciona padding ao link */
+    text-decoration: none;
+    color: inherit;
+}
+.notification-actions-wrapper {
+    padding: 0 1rem 1rem 1rem; /* Espaçamento para os botões */
+}
+
+
+
+.user-card-action {
+    display: flex; 
+    gap: 0.5rem;  
+    align-items: center; 
+}
+
+
+.btn.btn-danger {
+    background-color: var(--bg-quaternary);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+.btn.btn-danger:hover {
+    background-color: var(--danger);
+    color: white;
+}
+
+
+.user-card-action .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem; /* Espaço entre o ícone e o texto */
+}

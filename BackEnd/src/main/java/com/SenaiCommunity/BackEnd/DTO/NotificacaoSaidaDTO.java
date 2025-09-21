@@ -18,7 +18,8 @@ public class NotificacaoSaidaDTO {
     private String mensagem;
     private LocalDateTime dataCriacao;
     private boolean lida;
-    private String link; // Ex: "/perfil/123" ou "/post/45"
+    private String tipo;
+    private Long idReferencia;
 
     // Método de conversão estático para facilitar a criação a partir da entidade
     public static NotificacaoSaidaDTO fromEntity(Notificacao notificacao) {
@@ -27,7 +28,10 @@ public class NotificacaoSaidaDTO {
                 notificacao.getMensagem(),
                 notificacao.getDataCriacao(),
                 notificacao.isLida(),
-                notificacao.getLink()
+                notificacao.getTipo(),
+                notificacao.getIdReferencia()
         );
     }
+
+
 }

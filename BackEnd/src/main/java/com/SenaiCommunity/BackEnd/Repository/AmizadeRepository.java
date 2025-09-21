@@ -1,7 +1,7 @@
 package com.SenaiCommunity.BackEnd.Repository;
 
 import com.SenaiCommunity.BackEnd.Entity.Amizade;
-import com.SenaiCommunity.BackEnd.Entity.StatusAmizade;
+import com.SenaiCommunity.BackEnd.Enum.StatusAmizade;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,4 +21,7 @@ public interface AmizadeRepository extends JpaRepository<Amizade, Long> {
     // Lista todos os amigos de um usuário (onde o status é ACEITO)
     @Query("SELECT a FROM Amizade a WHERE (a.solicitante = ?1 OR a.solicitado = ?1) AND a.status = 'ACEITO'")
     List<Amizade> findAmigosByUsuario(Usuario usuario);
+
+    // Lista todas as solicitações pendentes feitas por um usuário
+    List<Amizade> findBySolicitanteAndStatus(Usuario solicitante, StatusAmizade status);
 }

@@ -29,38 +29,47 @@ public class NotificacaoService {
     private SimpMessagingTemplate messagingTemplate;
 
     /**
-     * Método de conversão privado. Transforma uma entidade Notificacao em um DTO.
+     * MÉTODO DE CONVERSÃO MODIFICADO E MAIS SEGURO.
+     * Ele agora verifica se os campos são nulos antes de usá-los.
      */
     private NotificacaoSaidaDTO toDTO(Notificacao notificacao) {
-        return new NotificacaoSaidaDTO(
-                notificacao.getId(),
-                notificacao.getMensagem(),
-                notificacao.getDataCriacao(),
-                notificacao.isLida(),
-                notificacao.getLink()
-        );
+        return NotificacaoSaidaDTO.builder()
+                .id(notificacao.getId())
+                .mensagem(notificacao.getMensagem())
+                .dataCriacao(notificacao.getDataCriacao())
+                .lida(notificacao.isLida())
+                // Verifica se o tipo é nulo, se for, define como "GERAL" por padrão.
+                .tipo(notificacao.getTipo() != null ? notificacao.getTipo() : "GERAL")
+                .idReferencia(notificacao.getIdReferencia()) // Long pode ser nulo, então não há problema aqui.
+                .build();
     }
 
     @Transactional
-    public void criarNotificacao(Usuario destinatario, String mensagem) {
-        Notificacao notificacao = new Notificacao();
-        notificacao.setDestinatario(destinatario);
-        notificacao.setMensagem(mensagem);
-        notificacao.setDataCriacao(LocalDateTime.now());
+    public void criarNotificacao(Usuario destinatario, String mensagem, String tipo, Long idReferencia) {
+        Notificacao notificacao = Notificacao.builder()
+                .destinatario(destinatario)
+                .mensagem(mensagem)
+                .dataCriacao(LocalDateTime.now())
+                .tipo(tipo)
+                .idReferencia(idReferencia)
+                .build();
 
         Notificacao notificacaoSalva = notificacaoRepository.save(notificacao);
 
-        // Converte para DTO usando o método privado antes de enviar via WebSocket
         NotificacaoSaidaDTO dto = toDTO(notificacaoSalva);
 
         messagingTemplate.convertAndSendToUser(
                 destinatario.getEmail(),
                 "/queue/notifications",
-                dto // Envia o DTO
+                dto
         );
     }
 
-    //Busca todas as notificações de um usuário.
+    // Sobrecarga para notificações gerais, que não quebrarão mais.
+    public void criarNotificacao(Usuario destinatario, String mensagem) {
+        criarNotificacao(destinatario, mensagem, "GERAL", null);
+    }
+
     public List<NotificacaoSaidaDTO> buscarPorDestinatario(String emailDestinatario) {
         Usuario destinatario = usuarioRepository.findByEmail(emailDestinatario)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
@@ -68,18 +77,15 @@ public class NotificacaoService {
         List<Notificacao> notificacoes = notificacaoRepository.findByDestinatarioOrderByDataCriacaoDesc(destinatario);
 
         return notificacoes.stream()
-                .map(this::toDTO) // Usa a referência do método de conversão privado
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-
-    //Marca uma notificação específica como lida.
     @Transactional
     public void marcarComoLida(Long notificacaoId, String emailUsuarioLogado) {
         Notificacao notificacao = notificacaoRepository.findById(notificacaoId)
                 .orElseThrow(() -> new EntityNotFoundException("Notificação não encontrada."));
 
-        // Validação de segurança: garante que o usuário só pode marcar suas próprias notificações
         if (!notificacao.getDestinatario().getEmail().equals(emailUsuarioLogado)) {
             throw new SecurityException("Acesso negado. Você não pode alterar esta notificação.");
         }

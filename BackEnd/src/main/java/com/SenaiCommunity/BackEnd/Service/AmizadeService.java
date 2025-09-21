@@ -2,8 +2,9 @@ package com.SenaiCommunity.BackEnd.Service;
 
 import com.SenaiCommunity.BackEnd.DTO.AmigoDTO;
 import com.SenaiCommunity.BackEnd.DTO.SolicitacaoAmizadeDTO;
+import com.SenaiCommunity.BackEnd.DTO.SolicitacaoEnviadaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Amizade;
-import com.SenaiCommunity.BackEnd.Entity.StatusAmizade;
+import com.SenaiCommunity.BackEnd.Enum.StatusAmizade;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.AmizadeRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
@@ -28,6 +29,7 @@ public class AmizadeService {
     @Autowired
     private NotificacaoService notificacaoService;
 
+
     /**
      * Converte uma entidade Amizade em um DTO para representar uma solicitação pendente.
      */
@@ -41,6 +43,21 @@ public class AmizadeService {
                 amizade.getDataSolicitacao()
         );
     }
+
+    /**
+     * Converte uma entidade Amizade em um DTO para representar uma solicitação enviada.
+     */
+    private SolicitacaoEnviadaDTO toSolicitacaoEnviadaDTO(Amizade amizade) {
+        Usuario solicitado = amizade.getSolicitado();
+        return new SolicitacaoEnviadaDTO(
+                amizade.getId(),
+                solicitado.getId(),
+                solicitado.getNome(),
+                solicitado.getFotoPerfil(), // Lembre-se de converter para URL no frontend
+                amizade.getDataSolicitacao()
+        );
+    }
+
 
     /**
      * Converte uma entidade Amizade em um DTO para representar um amigo.
@@ -82,9 +99,14 @@ public class AmizadeService {
         novaSolicitacao.setSolicitado(solicitado);
         novaSolicitacao.setStatus(StatusAmizade.PENDENTE);
         novaSolicitacao.setDataSolicitacao(LocalDateTime.now());
-        amizadeRepository.save(novaSolicitacao);
+        Amizade solicitacaoSalva = amizadeRepository.save(novaSolicitacao);
 
-        notificacaoService.criarNotificacao(solicitado, solicitante.getNome() + " te enviou um pedido de amizade.");
+        notificacaoService.criarNotificacao(
+                solicitado,
+                solicitante.getNome() + " te enviou um pedido de amizade.",
+                "PEDIDO_AMIZADE", // O tipo da notificação
+                solicitacaoSalva.getId() // O ID da amizade para os botões de ação
+        );
     }
 
     @Transactional
@@ -129,6 +151,20 @@ public class AmizadeService {
 
         return solicitacoes.stream()
                 .map(this::toSolicitacaoDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lista todas as solicitações de amizade pendentes enviadas pelo usuário logado.
+     */
+    public List<SolicitacaoEnviadaDTO> listarSolicitacoesEnviadas(String emailUsuarioLogado) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuarioLogado)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
+
+        List<Amizade> solicitacoes = amizadeRepository.findBySolicitanteAndStatus(usuario, StatusAmizade.PENDENTE);
+
+        return solicitacoes.stream()
+                .map(this::toSolicitacaoEnviadaDTO)
                 .collect(Collectors.toList());
     }
 
