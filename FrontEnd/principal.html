@@ -33,16 +33,55 @@
         <a href="mensagem.html"><i class="fas fa-comment-dots"></i></a>
         <span class="badge">3</span>
       </div>
+
       <div class="nav-icon" data-tooltip="Notificações">
-        <i class="fas fa-bell" id="notification-icon"></i>
+        <a href="#" id="notification-icon-link"><i class="fas fa-bell" id="notification-icon"></i></a>
         <span class="badge">5</span>
+
         <div id="notification-menu" class="notification-menu">
-          <div class="notification">
-            <p>Nova mensagem recebida</p>
-          </div>
-          <div class="notification">
-            <p>Seu projeto foi aprovado</p>
-          </div>
+            <div class="notification-header">
+                <h4>Notificações</h4>
+            </div>
+
+            <div class="notification-section" id="follow-requests-section">
+                <h5>Solicitações para Seguir</h5>
+                <div id="follow-requests-list">
+                    <div class="notification-item follow-request">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Avatar do usuário">
+                        <div class="notification-text">
+                            <p><strong>João Pedro</strong> quer seguir você.</p>
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn-accept" title="Aceitar">&#10003;</button>
+                            <button class="btn-decline" title="Recusar">&times;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notification-section" id="activity-section">
+                <h5>Curtidas e Comentários</h5>
+                <div id="activity-list">
+                    <div class="notification-item">
+                        <img src="https://randomuser.me/api/portraits/women/33.jpg" alt="Avatar do usuário">
+                        <div class="notification-text">
+                            <p><strong>Ana Silva</strong> curtiu sua publicação: "Workshop de APIs..."</p>
+                            <span class="notification-time">há 5 minutos</span>
+                        </div>
+                    </div>
+                    <div class="notification-item">
+                        <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="Avatar do usuário">
+                        <div class="notification-text">
+                            <p><strong>Carlos Souza</strong> comentou no seu projeto: "Meu Portfólio"</p>
+                            <span class="notification-time">há 2 horas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="notification-footer">
+                <a href="#">Ver todas as notificações</a>
+            </div>
         </div>
       </div>
       <div class="theme-toggle" data-tooltip="Alternar tema">
@@ -143,7 +182,7 @@
 
     <aside class="right-sidebar">
       <div class="widget-card" id="upcoming-events-widget"></div>
-     
+      
       <div class="widget-card" id="who-to-follow-widget">
         <div class="widget-header">
             <h3><i class="fas fa-user-plus"></i> Sugestão Seguir</h3>

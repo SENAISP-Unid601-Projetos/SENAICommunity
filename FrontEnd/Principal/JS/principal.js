@@ -19,6 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
         userDropdownTrigger: document.querySelector('.user-dropdown .user'),
         notificationCenter: document.querySelector('.notification-center'),
 
+        // Notificações
+        notificationIconLink: document.getElementById('notification-icon-link'),
+        notificationMenu: document.getElementById('notification-menu'),
+        followRequestsList: document.getElementById('follow-requests-list'),
+        activityList: document.getElementById('activity-list'),
+
         // Feed e Posts
         postsContainer: document.querySelector('.posts-container'),
         postCreatorSimpleView: document.querySelector('.post-creator-simple'),
@@ -77,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUser = response.data;
             updateUIWithUserData(currentUser);
             setupEventListeners();
+            setupNotificationListeners(); // <<< ADICIONADO AQUI
             connectToWebSocket();
             await loadInitialPosts();
             loadOnlineFriends();
@@ -251,30 +258,26 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleWebSocketMessage(payload) {
         const existingPost = document.querySelector(`.post[data-id="${payload.id}"]`);
         
-        // Se a postagem não existir, renderiza-a.
         if (!existingPost) {
             renderPost(payload, true);
             showNotification('Nova postagem no feed!', 'info');
         } else {
-            // Lógica para atualizar um post existente com base no 'tipo' de mensagem.
             if (payload.tipo === 'edicao' || payload.tipo === 'remocao') {
                 const postagemAtualizada = payload.postagem;
                 if(postagemAtualizada) {
                     const postTextEl = existingPost.querySelector('.post-text');
                     postTextEl.textContent = postagemAtualizada.conteudo;
-                    // Atualiza a mídia se houver
                     const mediaContainer = existingPost.querySelector('.post-images');
                     if(mediaContainer) {
                         mediaContainer.innerHTML = postagemAtualizada.urlsMidia && postagemAtualizada.urlsMidia.length > 0
                             ? `<img src="${backendUrl}${postagemAtualizada.urlsMidia[0]}" alt="Post image">` : '';
                     }
                     showNotification('Uma postagem foi editada.', 'info');
-                } else if (payload.id) { // Caso seja apenas a remoção, sem a postagem completa
+                } else if (payload.id) {
                     existingPost.remove();
                     showNotification('Uma postagem foi removida.', 'info');
                 }
             } else {
-                // Lógica para atualizar curtidas e comentários
                 const likesCountEl = existingPost.querySelector('.like-btn .count');
                 likesCountEl.textContent = payload.totalCurtidas || 0;
     
@@ -288,8 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
-    // ==================== EVENT LISTENERS E INTERAÇÕES DO FEED ====================
+    // ==================== EVENT LISTENERS GERAIS ====================
     function setupEventListeners() {
         // Dropdown do usuário
         document.body.addEventListener('click', () => {
@@ -323,11 +325,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elements.publishBtn) elements.publishBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             const content = elements.textarea.value.trim();
-            if (!content) return;
+            if (!content && !elements.fileInput.files[0]) return;
             
             const formData = new FormData();
             
-            // --- CÓDIGO CORRETO ---
             const postagemDto = {
                 conteudo: content,
                 projetoId: null,
@@ -392,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Funções do modal de criação de postagem
+    // --- Funções do modal de criação de postagem ---
     function openPostCreator() {
         elements.postCreatorSimpleView.style.display = 'none';
         elements.postCreatorExpandedView.style.display = 'block';
@@ -412,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Funções para lidar com eventos em posts renderizados
+    // --- Funções para lidar com eventos em posts renderizados ---
     function addPostEvents(postElement) {
         // Lógica para o menu de opções do post
         const optionsBtn = postElement.querySelector('.post-options-btn');
@@ -427,7 +428,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const postId = likeBtn.dataset.postId;
             try {
                 await axios.post(`${backendUrl}/curtidas/toggle`, { postagemId: postId });
-                // A UI será atualizada pelo WebSocket
             } catch (error) {
                 console.error("Erro ao curtir:", error);
                 showNotification('Não foi possível curtir a postagem.', 'error');
@@ -447,7 +447,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     showNotification('Comentário adicionado!', 'success');
                     commentInput.value = '';
-                    // A UI será atualizada pelo WebSocket
                 } catch (error) {
                     console.error("Erro ao comentar:", error);
                     showNotification('Não foi possível adicionar o comentário.', 'error');
@@ -456,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Função para mostrar o menu de opções do post
+    // --- Função para mostrar o menu de opções do post ---
     function showPostOptionsMenu(postElement, targetButton) {
         document.querySelectorAll('.post-options-menu').forEach(menu => menu.remove());
         const postId = postElement.dataset.id;
@@ -482,7 +481,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm("Tem certeza que deseja excluir esta postagem?")) {
                 try {
                     await axios.delete(`${backendUrl}/postagem/${postId}`);
-                    // A UI será atualizada pelo WebSocket
                     showNotification('Postagem excluída com sucesso!', 'success');
                 } catch (error) {
                     console.error('Erro ao excluir postagem:', error);
@@ -499,6 +497,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 10);
     }
+
+    // ==================== LÓGICA DE NOTIFICAÇÕES ====================
+
+    function setupNotificationListeners() {
+        if (elements.notificationIconLink && elements.notificationMenu) {
+            elements.notificationIconLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const isVisible = elements.notificationMenu.classList.toggle('show');
+                // Se o menu acabou de ficar visível, busca as notificações.
+                if (isVisible) {
+                    // fetchNotifications(); // Descomente quando a API estiver pronta
+                }
+            });
+
+            elements.notificationMenu.addEventListener('click', (event) => {
+                event.stopPropagation();
+            });
+
+            window.addEventListener('click', () => {
+                if (elements.notificationMenu.classList.contains('show')) {
+                    elements.notificationMenu.classList.remove('show');
+                }
+            });
+        }
+    }
+
+    async function fetchNotifications() {
+        if (!elements.followRequestsList || !elements.activityList) return;
+
+        elements.followRequestsList.innerHTML = '<p class="loading-message">Carregando...</p>';
+        elements.activityList.innerHTML = '';
+
+        try {
+            // --- PONTO DE INTEGRAÇÃO COM O BACK-END ---
+            // const response = await axios.get(`${backendUrl}/api/notificacoes`);
+            // const notifications = response.data;
+            
+            // --- DADOS MOCKADOS PARA TESTE (REMOVER DEPOIS) ---
+            const notifications = [
+                { id: 1, type: 'FOLLOW_REQUEST', fromUser: { name: 'João Pedro', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' }},
+                { id: 2, type: 'LIKE', fromUser: { name: 'Ana Silva', avatar: 'https://randomuser.me/api/portraits/women/33.jpg' }, postTitle: 'Workshop de APIs...', time: 'há 5 minutos' },
+                { id: 3, type: 'COMMENT', fromUser: { name: 'Carlos Souza', avatar: 'https://randomuser.me/api/portraits/men/45.jpg' }, postTitle: 'Meu Portfólio', time: 'há 2 horas' }
+            ];
+            // --- FIM DOS DADOS MOCKADOS ---
+
+            elements.followRequestsList.innerHTML = '';
+            elements.activityList.innerHTML = '';
+
+            if (notifications.length === 0) {
+                elements.activityList.innerHTML = '<p class="empty-message">Nenhuma notificação nova.</p>';
+                return;
+            }
+
+            notifications.forEach(notif => {
+                if (notif.type === 'FOLLOW_REQUEST') {
+                    const itemHTML = `
+                        <div class="notification-item follow-request">
+                            <img src="${notif.fromUser.avatar}" alt="Avatar do usuário">
+                            <div class="notification-text">
+                                <p><strong>${notif.fromUser.name}</strong> quer seguir você.</p>
+                            </div>
+                            <div class="notification-actions">
+                                <button class="btn-accept" title="Aceitar" data-notif-id="${notif.id}">✓</button>
+                                <button class="btn-decline" title="Recusar" data-notif-id="${notif.id}">×</button>
+                            </div>
+                        </div>`;
+                    elements.followRequestsList.innerHTML += itemHTML;
+                } else {
+                    const actionText = notif.type === 'LIKE' ? 'curtiu sua publicação' : 'comentou no seu projeto';
+                    const itemHTML = `
+                        <div class="notification-item">
+                            <img src="${notif.fromUser.avatar}" alt="Avatar do usuário">
+                            <div class="notification-text">
+                                <p><strong>${notif.fromUser.name}</strong> ${actionText}: "${notif.postTitle}"</p>
+                                <span class="notification-time">${notif.time}</span>
+                            </div>
+                        </div>`;
+                    elements.activityList.innerHTML += itemHTML;
+                }
+            });
+
+        } catch (error) {
+            console.error("Erro ao buscar notificações:", error);
+            elements.followRequestsList.innerHTML = '<p class="error-message">Erro ao carregar.</p>';
+        }
+    }
+
 
     // ==================== WIDGETS E OUTRAS FUNÇÕES AUXILIARES ====================
     function loadOnlineFriends() {
