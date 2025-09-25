@@ -462,8 +462,8 @@ body {
 }
 
 /* ==========================================================
-   BLOCO DE CRIAÇÃO DE POSTAGEM - TOTALMENTE CORRIGIDO
-   ========================================================== */
+    BLOCO DE CRIAÇÃO DE POSTAGEM - TOTALMENTE CORRIGIDO
+    ========================================================== */
 
 .post-creator {
   background-color: var(--bg-secondary);
@@ -630,8 +630,8 @@ body {
 }
 
 /* ==========================================================
-   FIM DO BLOCO DE CRIAÇÃO DE POSTAGEM
-   ========================================================== */
+    FIM DO BLOCO DE CRIAÇÃO DE POSTAGEM
+    ========================================================== */
 
 .posts-container { display: flex; flex-direction: column; gap: 1rem; }
 
@@ -789,7 +789,7 @@ body {
 #featured-projects-widget .project-preview-info p { font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; }
 #featured-projects-widget .project-preview-info .author-avatar { width: 16px; height: 16px; border-radius: 50%; }
 
-/* --- SEÇÃO DE NOTIFICAÇÕES (CORRIGIDA E ÚNICA) --- */
+/* --- SEÇÃO DE NOTIFICAÇÕES (POP-UP) --- */
 .notification-center {
   position: fixed;
   top: 1rem;
@@ -803,7 +803,7 @@ body {
   pointer-events: none;
 }
 
-.notification {
+.notification-center .notification { /* Alterado para ser mais específico */
   padding: 0.8rem 1.2rem;
   background-color: var(--bg-secondary);
   color: var(--text-primary);
@@ -821,48 +821,167 @@ body {
   pointer-events: auto;
 }
 
-.notification.show {
+.notification-center .notification.show {
   opacity: 1;
   transform: translateX(0);
 }
 
-.notification.success { border-left: 4px solid var(--success); }
-.notification.info { border-left: 4px solid var(--accent-primary); }
-.notification.error { border-left: 4px solid var(--danger); }
+.notification-center .notification.success { border-left: 4px solid var(--success); }
+.notification-center .notification.info { border-left: 4px solid var(--accent-primary); }
+.notification-center .notification.error { border-left: 4px solid var(--danger); }
 
-/* Menu Dropdown de Notificações */
+/* ==========================================================
+   ESTILOS COMPLETOS PARA O MENU DROPDOWN DE NOTIFICAÇÕES
+   ========================================================== */
+
+/* O contêiner principal do dropdown de notificações */
 .notification-menu {
-  display: none;
-  position: absolute;
-  top: 120%;
-  right: 0;
-  background-color: var(--bg-secondary);
-  width: 300px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--card-radius);
-  box-shadow: var(--shadow);
-  z-index: 1001;
+    display: none; /* Começa oculto por padrão */
+    position: absolute;
+    top: 55px; /* Posição abaixo do ícone do sino */
+    right: 0;
+    width: 380px; /* Largura ideal para o conteúdo */
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow);
+    z-index: 1001;
+    overflow: hidden; /* Garante que os cantos arredondados sejam aplicados a tudo */
 }
 
+/* Classe adicionada via JS para mostrar o menu */
 .notification-menu.show {
-  display: block;
+    display: block;
 }
 
-.notification-menu .notification {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-primary);
-  opacity: 1;
-  transform: none;
-  transition: background-color 0.2s ease;
+/* Cabeçalho do menu */
+.notification-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
-.notification-menu .notification:hover {
-  background-color: var(--bg-tertiary);
+.notification-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
-.notification-menu .notification:last-child { border-bottom: none; }
-.notification-menu .notification p { font-size: 0.875rem; margin: 0; }
+/* Seções internas (Solicitações, Atividades) */
+.notification-section {
+    padding: 0.5rem 1rem;
+}
+
+.notification-section h5 {
+    margin: 0.5rem 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+/* Estilo de cada item individual de notificação */
+.notification-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+    background-color: var(--background-hover);
+}
+
+.notification-item img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.notification-text {
+    flex-grow: 1; /* Ocupa o espaço restante */
+}
+
+.notification-text p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+.notification-text strong {
+    font-weight: 600;
+}
+
+.notification-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* Estilos específicos para a solicitação de seguir */
+.follow-request {
+    justify-content: space-between;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.notification-actions button {
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.btn-accept {
+    background-color: var(--accent-primary);
+    color: white;
+}
+.btn-accept:hover {
+    opacity: 0.85;
+}
+
+.btn-decline {
+    background-color: var(--bg-quaternary);
+    color: var(--text-secondary);
+}
+.btn-decline:hover {
+    background-color: var(--danger);
+    color: white;
+}
+
+/* Rodapé do menu */
+.notification-footer {
+    text-align: center;
+    padding: 0.75rem;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+}
+
+.notification-footer a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.notification-footer a:hover {
+    text-decoration: underline;
+}
 
 /* Post Options Menu */
 .post-options-menu {
@@ -923,8 +1042,7 @@ body {
   }
 }
 
-/* ADICIONE ESTE CÓDIGO AO FINAL DO SEU ARQUIVO CSS */
-
+/* Correções e Adições Finais */
 .post-editor-footer {
     display: flex;
     justify-content: space-between; /* ALTERADO para alinhar itens nas extremidades */
@@ -956,42 +1074,22 @@ body {
     color: var(--accent-primary);
 }
 
-/* ADICIONE ESTE CÓDIGO AO FINAL DO SEU ARQUIVO CSS */
-
-/* 1. Adiciona um espaço extra abaixo da caixa de criação de post */
 .post-creator {
   margin-bottom: 1.5rem; 
 }
 
-/* 2. Estiliza o novo divisor */
 .feed-separator {
-  margin-bottom: 1.5rem; /* Espaço depois do divisor */
+  margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
 .feed-separator hr {
-  flex-grow: 1; /* Faz a linha ocupar todo o espaço disponível */
+  flex-grow: 1;
   border: none;
   border-top: 1px solid var(--border-color);
 }
-/* FIM DO CÓDIGO CSS */
-
-/* Novo estilo para os ícones SVG na barra de pesquisa */
-.search-result svg {
-  width: 16px;
-  height: 16px;
-  margin-right: 0.75rem;
-  color: var(--text-secondary);
-}
-/* Adicione este bloco no final do arquivo principal.css */
-@media (max-width: 768px) {
-  .post-options .option-btn[data-type="code"] {
-    display: none;
-  }
-}
-/* /FrontEnd/Principal/CSS/principal.css */
 
 .post-author-link {
     text-decoration: none;
@@ -1001,17 +1099,15 @@ body {
 .post-author-link:hover {
     text-decoration: underline;
 }
-/* Adicione este código ao final do arquivo */
 
 .online-friends .friend {
-    text-decoration: none; /* Remove o sublinhado do link */
-    color: var(--text-primary); /* Garante que o texto tenha a cor principal */
+    text-decoration: none;
+    color: var(--text-primary);
 }
 
 .online-friends .friend:hover span {
-    text-decoration: underline; /* Opcional: Adiciona sublinhado ao passar o mouse */
+    text-decoration: underline;
 }
-/* Adicione este código ao final do arquivo principal.css */
 
 #who-to-follow-widget .follow-item {
     display: flex;
@@ -1023,7 +1119,7 @@ body {
     align-items: center;
     gap: 1rem;
     text-decoration: none;
-    color: inherit; /* Herda a cor do texto normal, em vez de ser azul */
+    color: inherit;
     flex-grow: 1;
     padding: 0.25rem;
     border-radius: 6px;
@@ -1033,18 +1129,9 @@ body {
 .follow-link:hover {
     background-color: var(--bg-tertiary);
 }
-/* --- CÓDIGO DE RESPONSIVIDADE PARA CELULAR --- */
-
-/* ... (código existente da responsividade) ... */
 
 @media (max-width: 768px) {
-    
-    /* ... (regras existentes para .nav-rail, .chat-container, etc.) ... */
-
-    /* ADICIONE ESTA NOVA REGRA PARA ESCONDER OS BOTÕES NO MOBILE */
-    #collapse-sidebar-btn, #expand-sidebar-btn {
-        display: none !important; /* Esconde os botões de recolher/expandir */
-    }
+  .post-options .option-btn[data-type="code"] {
+    display: none;
+  }
 }
-
-/* ... (resto do código, se houver) ... */
