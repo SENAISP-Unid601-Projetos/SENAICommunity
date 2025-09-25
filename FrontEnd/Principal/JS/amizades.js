@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let stompClient = null;
     let currentUser = null;
     let userFriends = [];
+    let friendsLoaded = false;
     let latestOnlineEmails = [];
     const defaultAvatarUrl = `${backendUrl}/images/default-avatar.png`;
 
@@ -118,7 +119,8 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             stompClient.subscribe("/topic/status", (message) => {
                 latestOnlineEmails = JSON.parse(message.body);
-                updateOnlineFriends();
+                 atualizarStatusDeAmigosNaUI();
+
             });
         }, (error) => console.error("ERRO WEBSOCKET:", error));
     }
@@ -138,18 +140,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- FUNÇÕES DE AMIZADES E CONEXÕES ---
+    // amizades.js
 
     async function fetchFriends() {
         try {
             const response = await axios.get(`${backendUrl}/api/amizades/`);
-            userFriends = response.data; // Armazena a lista de amigos globalmente
+            userFriends = response.data;
+            friendsLoaded = true;
             if (elements.connectionsCount) {
-                elements.connectionsCount.textContent = response.data.length;
+                elements.connectionsCount.textContent = userFriends.length;
             }
-            renderFriends(response.data, elements.friendsList);
-            updateOnlineFriends(); // Atualiza a lista de online após ter a lista de amigos
+
+            renderFriends(userFriends, elements.friendsList);
+            atualizarStatusDeAmigosNaUI();
+
         } catch (error) {
-            console.error('Erro ao buscar amigos:', error);
+            console.error("Erro ao buscar lista de amigos:", error);
+            if (elements.friendsList) {
+                elements.friendsList.innerHTML = `<p class="empty-state">Erro ao carregar seus amigos.</p>`;
+            }
+            friendsLoaded = true;
         }
     }
 
@@ -219,12 +229,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         friends.forEach(friend => {
-            // MUDANÇA 1: Usando a classe 'user-card' para o estilo correto
+            const statusClass = friend.online ? 'online' : 'offline';
+           
             const card = document.createElement('div');
             card.className = 'user-card';
             card.id = `friend-card-${friend.idAmizade}`;
 
-            // MUDANÇA 2: Corrigindo a montagem da URL da foto de perfil
+          
             const fotoUrl = friend.fotoPerfil
                 ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}`
                 : defaultAvatarUrl;
@@ -234,7 +245,6 @@ document.addEventListener("DOMContentLoaded", () => {
             <button class="btn btn-danger" onclick="window.removerAmizade(${friend.idAmizade})"><i class="fas fa-user-minus"></i> Remover</button>
         `;
 
-            // MUDANÇA 3: Usando a estrutura de classes do user-card (avatar, info, action)
             card.innerHTML = `
             <div class="user-card-avatar">
                 <img src="${fotoUrl}" alt="Foto de ${friend.nome}">
@@ -242,6 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="user-card-info">
                 <h4>${friend.nome}</h4>
                 <p>${friend.email}</p>
+                <div class="status ${friend.online ? 'online' : 'offline'}" data-user-email="${friend.email}"></div>
             </div>
             <div class="user-card-action">
                 ${actionsHtml}
@@ -251,26 +262,54 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function updateOnlineFriends() {
-        if (!elements.onlineFriendsList) return;
+ /**
+ * Função centralizada para atualizar todos os indicadores visuais de amigos online.
+ * inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
+ */
+
+function atualizarStatusDeAmigosNaUI() {
+    if (elements.onlineFriendsList) {
+
+        if (!friendsLoaded) {
+            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
+            return;
+        }
+
         const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
+
         elements.onlineFriendsList.innerHTML = '';
         if (onlineFriends.length === 0) {
             elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
-            return;
+        } else {
+            onlineFriends.forEach(friend => {
+                const friendElement = document.createElement('div');
+                friendElement.className = 'friend-item';
+                const friendAvatar = friend.fotoPerfil 
+                    ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` 
+                    : defaultAvatarUrl;
+
+                friendElement.innerHTML = `
+                    <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
+                    <span class="friend-name">${friend.nome}</span>
+                    <div class="status online"></div>
+                `;
+                elements.onlineFriendsList.appendChild(friendElement);
+            });
         }
-        onlineFriends.forEach(friend => {
-            const friendElement = document.createElement('div');
-            friendElement.className = 'friend-item';
-            const friendAvatar = friend.fotoPerfil ? `${backendUrl}${friend.fotoPerfil}` : defaultAvatarUrl;
-            friendElement.innerHTML = `
-            <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
-            <span class="friend-name">${friend.nome}</span>
-            <div class="status online"></div>
-      `;
-            elements.onlineFriendsList.appendChild(friendElement);
-        });
     }
+
+    const statusDots = document.querySelectorAll('.status[data-user-email]');
+    statusDots.forEach(dot => {
+        const email = dot.getAttribute('data-user-email');
+        if (latestOnlineEmails.includes(email)) {
+            dot.classList.add('online');
+            dot.classList.remove('offline');
+        } else {
+            dot.classList.remove('online');
+            dot.classList.add('offline');
+        }
+    });
+}
 
     // --- FUNÇÕES DE AÇÃO GLOBAIS ---
     window.aceitar = async (amizadeId) => {

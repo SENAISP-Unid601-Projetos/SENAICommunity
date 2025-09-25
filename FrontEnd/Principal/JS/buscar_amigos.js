@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let stompClient = null;
   let currentUser = null;
   let userFriends = [];
+  let friendsLoaded = false;
+  let latestOnlineEmails = [];
   const defaultAvatarUrl = `${backendUrl}/images/default-avatar.png`;
 
   // --- ELEMENTOS DO DOM (Seleção Centralizada e Completa) ---
@@ -115,9 +117,9 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchNotifications();
       });
       stompClient.subscribe("/topic/status", (message) => {
-        const onlineUsersEmails = JSON.parse(message.body);
-        updateOnlineFriends(onlineUsersEmails);
-      });
+    latestOnlineEmails = JSON.parse(message.body);
+    atualizarStatusDeAmigosNaUI();
+});
     }, (error) => console.error("ERRO WEBSOCKET:", error));
   }
 
@@ -222,38 +224,65 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await axios.get(`${backendUrl}/api/amizades/`);
       userFriends = response.data;
+      friendsLoaded = true;
       if (elements.connectionsCount) {
         elements.connectionsCount.textContent = userFriends.length;
       }
+      // Chama a atualização dos amigos online DEPOIS de ter a lista completa
+        atualizarStatusDeAmigosNaUI();
     } catch (error) {
       console.error("Erro ao buscar lista de amigos:", error);
-      if (elements.connectionsCount) {
-        elements.connectionsCount.textContent = '0';
-      }
+      friendsLoaded = true;
     }
   }
 
-  function updateOnlineFriends(onlineUsersEmails) {
-    if (!elements.onlineFriendsList) return;
-    const onlineFriends = userFriends.filter(friend => onlineUsersEmails.includes(friend.email));
-    elements.onlineFriendsList.innerHTML = '';
-    if (onlineFriends.length === 0) {
-      elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
-      return;
+/**
+ * Função centralizada para atualizar todos os indicadores visuais de amigos online.
+ * Isso inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
+ */
+function atualizarStatusDeAmigosNaUI() {
+    if (elements.onlineFriendsList) {
+
+        if (!friendsLoaded) {
+            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
+            return;
+        }
+
+        const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
+
+        elements.onlineFriendsList.innerHTML = '';
+        if (onlineFriends.length === 0) {
+            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+        } else {
+            onlineFriends.forEach(friend => {
+                const friendElement = document.createElement('div');
+                friendElement.className = 'friend-item';
+                const friendAvatar = friend.fotoPerfil 
+                    ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` 
+                    : defaultAvatarUrl;
+
+                friendElement.innerHTML = `
+                    <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
+                    <span class="friend-name">${friend.nome}</span>
+                    <div class="status online"></div>
+                `;
+                elements.onlineFriendsList.appendChild(friendElement);
+            });
+        }
     }
-    onlineFriends.forEach(friend => {
-      const friendElement = document.createElement('div');
-      friendElement.className = 'friend-item';
-      const friendAvatar = friend.fotoPerfil ? `${backendUrl}${friend.fotoPerfil}` : defaultAvatarUrl;
-      friendElement.innerHTML = `
-            <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
-            <span class="friend-name">${friend.nome}</span>
-            <div class="status online"></div>
-      `;
-      elements.onlineFriendsList.appendChild(friendElement);
+
+    const statusDots = document.querySelectorAll('.status[data-user-email]');
+    statusDots.forEach(dot => {
+        const email = dot.getAttribute('data-user-email');
+        if (latestOnlineEmails.includes(email)) {
+            dot.classList.add('online');
+            dot.classList.remove('offline');
+        } else {
+            dot.classList.remove('online');
+            dot.classList.add('offline');
+        }
     });
-  }
-
+}
   // --- FUNÇÕES PARA BUSCA DE USUÁRIOS ---
   async function buscarUsuarios(nome) {
     if (!elements.searchResultsContainer) return;
@@ -268,6 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Substitua a sua função renderizarResultados por esta:
   function renderizarResultados(usuarios) {
     if (!elements.searchResultsContainer) return;
     elements.searchResultsContainer.innerHTML = '';
@@ -281,6 +311,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const userCard = document.createElement('div');
       userCard.className = 'user-card';
       const fotoUrl = usuario.fotoPerfil ? `${backendUrl}${usuario.fotoPerfil}` : defaultAvatarUrl;
+
+      const statusClass = usuario.online ? 'online' : 'offline';
 
       let actionButtonHtml = '';
       switch (usuario.statusAmizade) {
@@ -299,17 +331,21 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       userCard.innerHTML = `
-        <div class="user-card-avatar"><img src="${fotoUrl}" alt="Foto de ${usuario.nome}"></div>
-        <div class="user-card-info">
-            <h4>${usuario.nome}</h4>
-            <p>${usuario.email}</p>
-        </div>
-        <div class="user-card-action">${actionButtonHtml}</div>
-      `;
+            <div class="user-card-avatar">
+                <img src="${fotoUrl}" alt="Foto de ${usuario.nome}">
+                <div class="status ${statusClass}" data-user-email="${usuario.email}"></div>
+            </div>
+            <div class="user-card-info">
+                <h4>${usuario.nome}</h4>
+                <p>${usuario.email}</p>
+            </div>
+            <div class="user-card-action">
+                ${actionButtonHtml}
+            </div>
+        `;
       elements.searchResultsContainer.appendChild(userCard);
     });
   }
-
   window.enviarSolicitacao = async (idSolicitado, buttonElement) => {
     buttonElement.disabled = true;
     buttonElement.textContent = 'Enviando...';

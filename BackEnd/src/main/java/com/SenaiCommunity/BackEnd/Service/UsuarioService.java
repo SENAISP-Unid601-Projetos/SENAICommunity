@@ -35,6 +35,9 @@ public class UsuarioService {
     @Autowired
     private AmizadeRepository amizadeRepository;
 
+    @Autowired
+    private UserStatusService userStatusService;
+
     @Value("${file.upload-dir}")
     private String uploadDir;
 
@@ -155,7 +158,8 @@ public class UsuarioService {
                 usuario.getNome(),
                 usuario.getEmail(),
                 urlFoto,
-                status
+                status,
+                userStatusService.isOnline(usuario.getEmail())
         );
     }
 

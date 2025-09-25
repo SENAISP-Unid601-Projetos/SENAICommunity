@@ -29,6 +29,9 @@ public class AmizadeService {
     @Autowired
     private NotificacaoService notificacaoService;
 
+    @Autowired
+    private UserStatusService userStatusService;
+
 
     /**
      * Converte uma entidade Amizade em um DTO para representar uma solicitação pendente.
@@ -53,7 +56,7 @@ public class AmizadeService {
                 amizade.getId(),
                 solicitado.getId(),
                 solicitado.getNome(),
-                solicitado.getFotoPerfil(), // Lembre-se de converter para URL no frontend
+                solicitado.getFotoPerfil(),
                 amizade.getDataSolicitacao()
         );
     }
@@ -74,7 +77,8 @@ public class AmizadeService {
                 amigo.getId(),
                 amigo.getNome(),
                 amigo.getEmail(),
-                amigo.getFotoPerfil()
+                amigo.getFotoPerfil(),
+                userStatusService.isOnline(amigo.getEmail())
         );
     }
 

@@ -13,13 +13,13 @@ public class UsuarioBuscaDTO {
     private String nome;
     private String email;
     private String fotoPerfil;
-    private StatusAmizadeRelacao statusAmizade; // Um Enum que criaremos a seguir
-
+    private StatusAmizadeRelacao statusAmizade;
+    private boolean online;
     // Enum para representar o status da relação de amizade
     public enum StatusAmizadeRelacao {
         AMIGOS,
-        SOLICITACAO_ENVIADA, // Você enviou o pedido
-        SOLICITACAO_RECEBIDA, // Você recebeu o pedido
+        SOLICITACAO_ENVIADA,
+        SOLICITACAO_RECEBIDA,
         NENHUMA // Nenhuma relação
     }
 }

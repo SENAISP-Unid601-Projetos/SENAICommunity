@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let userFriends = []; // VARIÁVEL GLOBAL PARA ARMAZENAR AMIGOS
   let selectedFilesForPost = [];
   let selectedFilesForEdit = [];
+  let friendsLoaded = false;
   let latestOnlineEmails = [];
 
   const searchInput = document.getElementById("search-input");
@@ -154,9 +155,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // INSCRIÇÃO PARA STATUS ONLINE/OFFLINE
+        // 2. Adicione esta inscrição dentro da sua função connectWebSocket
         stompClient.subscribe("/topic/status", (message) => {
           latestOnlineEmails = JSON.parse(message.body);
-          updateOnlineFriends();
+          // Chama a função para atualizar a UI sempre que a lista de online mudar
+         atualizarStatusDeAmigosNaUI();
         });
       },
       (error) => console.error("ERRO WEBSOCKET:", error)
@@ -515,53 +518,73 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- NOVAS FUNÇÕES PARA AMIGOS ONLINE ---
+  // --- FUNÇÕES PARA AMIGOS ONLINE ---
 
   async function fetchFriends() {
     try {
       const response = await axios.get(`${backendUrl}/api/amizades/`);
-      userFriends = response.data; // Atualiza a lista de amigos
+      userFriends = response.data;
+      friendsLoaded = true;
       if (elements.connectionsCount) {
         elements.connectionsCount.textContent = userFriends.length;
       }
-      updateOnlineFriends();
+      // Chama a atualização dos amigos online DEPOIS de ter a lista completa
+     atualizarStatusDeAmigosNaUI()
     } catch (error) {
       console.error("Erro ao buscar lista de amigos:", error);
+      friendsLoaded = true;
     }
   }
 
-  function updateOnlineFriends() {
-    if (!elements.onlineFriendsList) return;
+/**
+ * Função centralizada para atualizar todos os indicadores visuais de amigos online.
+ * Isso inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
+ */
+function atualizarStatusDeAmigosNaUI() {
+    if (elements.onlineFriendsList) {
 
-    // Compara a lista global de amigos com a lista global de emails online
-    const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
+        if (!friendsLoaded) {
+            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
+            return;
+        }
 
-    elements.onlineFriendsList.innerHTML = '';
-    if (onlineFriends.length === 0) {
-      elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
-      return;
+        const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
+
+        elements.onlineFriendsList.innerHTML = '';
+        if (onlineFriends.length === 0) {
+            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+        } else {
+            onlineFriends.forEach(friend => {
+                const friendElement = document.createElement('div');
+                friendElement.className = 'friend-item';
+                const friendAvatar = friend.fotoPerfil 
+                    ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` 
+                    : defaultAvatarUrl;
+
+                friendElement.innerHTML = `
+                    <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
+                    <span class="friend-name">${friend.nome}</span>
+                    <div class="status online"></div>
+                `;
+                elements.onlineFriendsList.appendChild(friendElement);
+            });
+        }
     }
 
-    onlineFriends.forEach(friend => {
-      const friendElement = document.createElement('div');
-      friendElement.className = 'friend-item';
-
-      const friendAvatar = friend.fotoPerfil
-        ? `${backendUrl}${friend.fotoPerfil}`
-        : `${backendUrl}/images/default-avatar.png`;
-
-      friendElement.innerHTML = `
-                <div class="avatar">
-                    <img src="${friendAvatar}" alt="Avatar de ${friend.nome}">
-                </div>
-                <span class="friend-name">${friend.nome}</span>
-                <div class="status online"></div>
-            `;
-      elements.onlineFriendsList.appendChild(friendElement);
+    const statusDots = document.querySelectorAll('.status[data-user-email]');
+    statusDots.forEach(dot => {
+        const email = dot.getAttribute('data-user-email');
+        if (latestOnlineEmails.includes(email)) {
+            dot.classList.add('online');
+            dot.classList.remove('offline');
+        } else {
+            dot.classList.remove('online');
+            dot.classList.add('offline');
+        }
     });
-  }
+}
 
-  // CORREÇÃO: Função modificada para fechar todos os tipos de menu
+  // Função modificada para fechar todos os tipos de menu
   const closeAllMenus = () => {
     document
       .querySelectorAll(".options-menu, .dropdown-menu")
@@ -802,7 +825,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setupEventListeners() {
-    // MODIFICADO: Listener principal no body para fechar menus e o painel de notificações ao clicar fora
+    //  Listener principal no body para fechar menus e o painel de notificações ao clicar fora
     document.body.addEventListener("click", (e) => {
       // Fecha o painel de notificações se o clique for fora dele e fora do ícone
       if (elements.notificationsPanel && !elements.notificationsPanel.contains(e.target) && !elements.notificationsIcon.contains(e.target)) {
@@ -812,7 +835,7 @@ document.addEventListener("DOMContentLoaded", () => {
       closeAllMenus();
     });
 
-    // NOVO: Listener para o ícone de notificações para abrir/fechar o painel
+    // Listener para o ícone de notificações para abrir/fechar o painel
     if (elements.notificationsIcon) {
       elements.notificationsIcon.addEventListener('click', (event) => {
         event.stopPropagation(); // Impede que o clique no body feche o painel imediatamente

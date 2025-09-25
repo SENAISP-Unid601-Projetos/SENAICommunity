@@ -11,10 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AmigoDTO {
-    private Long idAmizade; // O ID da relação de amizade
+    private Long idAmizade;
     private Long idUsuario;
     private String nome;
     private String email;
     private String fotoPerfil;
-    // Adicione aqui o status online/offline se desejar
+    private boolean online;
+
 }
