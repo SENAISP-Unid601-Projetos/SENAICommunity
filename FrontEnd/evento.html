@@ -8,7 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="Principal/CSS/principal.css">
   <link rel="stylesheet" href="Evento/CSS/evento.css">
-
 </head>
 <body>
   <div class="notification-center"></div>
@@ -38,10 +37,7 @@
   <div class="container">
     <aside class="sidebar">
        <div class="user-info">
-        <div class="avatar">
-          <img src="img/perfil.png" alt="Perfil">
-          <div class="status online"></div>
-        </div>
+        <div class="avatar"><img src="img/perfil.png" alt="Perfil"><div class="status online"></div></div>
         <h2>Usuário Temporário</h2>
         <p class="user-title">Sem Curso</p>
         <div class="user-stats">
@@ -66,8 +62,8 @@
       </div>
       <div class="filters-container">
         <select id="filter-periodo"><option value="proximos">Próximos Eventos</option><option value="passados">Eventos Passados</option></select>
-        <select id="filter-formato"><option value="todos">Todos os Formatos</option><option value="Presencial">Presencial</option><option value="Online">Online</option><option value="Híbrido">Híbrido</option></select>
-        <select id="filter-categoria"><option value="todos">Todas as Categorias</option><option value="Tecnologia">Tecnologia</option><option value="Carreira">Carreira</option><option value="Inovação">Inovação</option><option value="Competição">Competição</option></select>
+        <select id="filter-formato"><option value="todos">Todos os Formatos</option><option value="PRESENCIAL">Presencial</option><option value="ONLINE">Online</option><option value="HIBRIDO">Híbrido</option></select>
+        <select id="filter-categoria"><option value="todos">Todas as Categorias</option><option value="TECNOLOGIA">Tecnologia</option><option value="CARREIRA">Carreira</option><option value="INOVACAO">Inovação</option><option value="COMPETICAO">Competição</option></select>
       </div>
       <div class="eventos-grid">
       </div>
@@ -81,6 +77,11 @@
       </div>
     </aside>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  
   <script src="Principal/JS/principal.js" defer></script>
   <script src="Evento/JS/evento.js" defer></script>
 </body>
