@@ -43,6 +43,9 @@ public class ProjetoService {
     @Autowired
     private ConviteProjetoRepository conviteProjetoRepository;
 
+    @Autowired
+    private NotificacaoService notificacaoService;
+
     public List<ProjetoDTO> listarTodos() {
         List<Projeto> projetos = projetoRepository.findAll();
         return projetos.stream().map(this::converterParaDTO).collect(Collectors.toList());
@@ -80,13 +83,9 @@ public class ProjetoService {
 
         if (foto != null && !foto.isEmpty()) {
             try {
-                System.out.println("[DEBUG] Iniciando upload da imagem: " + foto.getOriginalFilename());
-                System.out.println("[DEBUG] Tamanho do arquivo: " + foto.getSize() + " bytes");
-
                 String fileName = salvarFoto(foto);
                 projeto.setImagemUrl(fileName);
 
-                System.out.println("[DEBUG] Imagem salva com sucesso: " + fileName);
             } catch (IOException e) {
                 System.err.println("[ERROR] Erro ao salvar a foto do projeto: " + e.getMessage());
                 e.printStackTrace();
@@ -205,6 +204,9 @@ public class ProjetoService {
         convite.setDataConvite(LocalDateTime.now());
 
         conviteProjetoRepository.save(convite);
+
+        String mensagem = String.format("Você foi convidado para o projeto '%s' por %s.", projeto.getTitulo(), usuarioConvidador.getNome());
+        notificacaoService.criarNotificacao(usuarioConvidado, mensagem, "CONVITE_PROJETO", projeto.getId());
     }
 
     @Transactional
@@ -244,6 +246,10 @@ public class ProjetoService {
         membro.setConvidadoPor(convite.getConvidadoPor());
 
         projetoMembroRepository.save(membro);
+
+        String mensagem = String.format("%s aceitou seu convite e agora faz parte do projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
+        // Notificar o autor do projeto
+        notificacaoService.criarNotificacao(convite.getProjeto().getAutor(), mensagem, "MEMBRO_ADICIONADO", convite.getProjeto().getId());
     }
 
     @Transactional
@@ -268,6 +274,9 @@ public class ProjetoService {
         }
 
         projetoMembroRepository.delete(membro);
+
+        String mensagem = String.format("Você foi removido do projeto '%s'.", projeto.getTitulo());
+        notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "MEMBRO_REMOVIDO", projeto.getId());
     }
 
     @Transactional
@@ -287,6 +296,10 @@ public class ProjetoService {
 
         membro.setRole(novaRole);
         projetoMembroRepository.save(membro);
+
+        String mensagem = String.format("Sua permissão no projeto '%s' foi alterada para %s.", projeto.getTitulo(), novaRole.toString());
+        notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "PERMISSAO_ALTERADA", projeto.getId());
+
     }
 
     @Transactional
@@ -331,6 +344,10 @@ public class ProjetoService {
         convite.setStatus(ConviteProjeto.StatusConvite.RECUSADO);
         convite.setDataResposta(LocalDateTime.now());
         conviteProjetoRepository.save(convite);
+
+        String mensagem = String.format("%s recusou o convite para o projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
+        // Notificar quem convidou
+        notificacaoService.criarNotificacao(convite.getConvidadoPor(), mensagem, "CONVITE_RECUSADO", convite.getProjeto().getId());
     }
 
     private boolean isAdminOuModerador(Long projetoId, Long usuarioId) {
@@ -355,8 +372,6 @@ public class ProjetoService {
         if (!isAdmin(id, adminId)) {
             throw new IllegalArgumentException("Apenas administradores podem deletar o projeto");
         }
-
-        System.out.println("[DEBUG] Deletando projeto ID: " + id + " por admin ID: " + adminId);
 
         // Deletar o projeto (cascade irá remover membros automaticamente)
         projetoRepository.deleteById(id);
@@ -469,19 +484,15 @@ public class ProjetoService {
         // Criar diretório se não existir
         Path uploadPath = Paths.get(UPLOAD_DIR);
         if (!Files.exists(uploadPath)) {
-            System.out.println("[DEBUG] Criando diretório de upload: " + uploadPath.toAbsolutePath());
             Files.createDirectories(uploadPath);
         }
 
         // Caminho completo do arquivo
         Path filePath = uploadPath.resolve(fileName);
 
-        System.out.println("[DEBUG] Salvando arquivo em: " + filePath.toAbsolutePath());
-
         // Salvar arquivo
         try {
             Files.copy(foto.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("[DEBUG] Arquivo salvo com sucesso");
         } catch (IOException e) {
             System.err.println("[ERROR] Erro ao salvar arquivo: " + e.getMessage());
             throw new IOException("Erro ao salvar arquivo no servidor", e);

@@ -54,8 +54,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/projetos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/alunos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/professores/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll() // Necessário para a conexão WebSocket inicial
-                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/auth/**", "/cadastro/**", "/ws/**", "/login**", "/oauth2/**").permitAll()
                         .requestMatchers("/images/**", "/api/arquivos/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",

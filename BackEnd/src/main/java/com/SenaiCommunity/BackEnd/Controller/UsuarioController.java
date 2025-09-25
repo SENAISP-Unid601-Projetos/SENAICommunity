@@ -1,6 +1,7 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.UsuarioAtualizacaoDTO;
+import com.SenaiCommunity.BackEnd.DTO.UsuarioBuscaDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;
 import com.SenaiCommunity.BackEnd.Service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.Authentication;
 
 import java.io.IOException;
+import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -44,5 +47,11 @@ public class UsuarioController {
     public ResponseEntity<UsuarioSaidaDTO> atualizarMinhaFoto(@RequestPart("foto") MultipartFile foto, Authentication authentication) throws IOException {
         UsuarioSaidaDTO usuarioAtualizado = usuarioService.atualizarFotoPerfil(authentication, foto);
         return ResponseEntity.ok(usuarioAtualizado);
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<List<UsuarioBuscaDTO>> buscarUsuarios(@RequestParam("nome") String nome, Principal principal) {
+        List<UsuarioBuscaDTO> usuarios = usuarioService.buscarUsuariosPorNome(nome, principal.getName());
+        return ResponseEntity.ok(usuarios);
     }
 }

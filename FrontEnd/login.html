@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-signin-client_id" content="1055449517512-gq7f7doogo5e8vmaq84vgrabsk1q5f5k.apps.googleusercontent.com">
     <title>Login | SenaiCommunity</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CadastroLogin/CSS/cadastro.css">
@@ -70,10 +71,9 @@
             <div class="divider">
                 <span>ou</span>
             </div>
-            <div id="google-signin-button" class="btn btn-google">
-                <i class="fab fa-google"></i>
-                Entrar com Google
-            </div>
+            <div id="google-signin-button"></div>
+
+
             
             <div class="auth-footer">
                 <p>Não tem uma conta? <a href="cadastro.html" class="text-link">Cadastre-se</a></p>
@@ -88,6 +88,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="CadastroLogin/JS/background.js" defer></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src="CadastroLogin/JS/login.js" defer></script>
     <script src="CadastroLogin/JS/utils.js" defer></script>
 </body>

@@ -303,24 +303,33 @@
     margin-left: .5em;
 }
 
+/* Botão customizado do Google */
 .btn-google {
+    width: 100%; /* mesma largura do botão "Entrar" */
+    padding: 0.75rem; /* mesmo padding */
+    border-radius: 6px; /* mesma borda arredondada */
+    font-weight: 600;
+    cursor: pointer;
+    display: flex; /* ícone + texto alinhados */
+    align-items: center;
+    justify-content: center; /* centralizar conteúdo */
+    gap: 0.5rem; /* espaço entre ícone e texto */
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
     transition: var(--transition);
-}
-
-.btn-google:hover {
-    background-color: var(--bg-quaternary);
+  }
+  
+  .btn-google:hover {
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
-}
-
-.btn-google i {
-    color: var(--accent-primary);
-}
-
-/* Garante que o ícone do Google tenha a cor correta em todos os temas */
-[data-theme="light"] .btn-google i {
-    color: var(--accent-primary);
-}
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .btn-google img {
+    width: 20px;
+    height: 20px;
+  }
+  
+  
+  

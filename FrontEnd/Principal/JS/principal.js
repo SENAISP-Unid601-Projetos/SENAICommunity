@@ -4,8 +4,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const jwtToken = localStorage.getItem("token");
   let stompClient = null;
   let currentUser = null;
+  let userFriends = []; // VARIÁVEL GLOBAL PARA ARMAZENAR AMIGOS
   let selectedFilesForPost = [];
   let selectedFilesForEdit = [];
+  let friendsLoaded = false;
+  let latestOnlineEmails = [];
+
   const searchInput = document.getElementById("search-input");
 
   // --- ELEMENTOS DO DOM (Seleção Centralizada) ---
@@ -25,9 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
     editPostTextarea: document.getElementById("edit-post-textarea"),
     cancelEditPostBtn: document.getElementById("cancel-edit-post-btn"),
     editPostFileInput: document.getElementById("edit-post-files"),
-    editFilePreviewContainer: document.getElementById(
-      "edit-file-preview-container"
-    ),
+    editFilePreviewContainer: document.getElementById("edit-file-preview-container"),
 
     editCommentModal: document.getElementById("edit-comment-modal"),
     editCommentForm: document.getElementById("edit-comment-form"),
@@ -46,16 +48,19 @@ document.addEventListener("DOMContentLoaded", () => {
     editProfileBio: document.getElementById("edit-profile-bio"),
     editProfileDob: document.getElementById("edit-profile-dob"),
     editProfilePassword: document.getElementById("edit-profile-password"),
-    editProfilePasswordConfirm: document.getElementById(
-      "edit-profile-password-confirm"
-    ),
+    editProfilePasswordConfirm: document.getElementById("edit-profile-password-confirm"),
 
     deleteAccountModal: document.getElementById("delete-account-modal"),
     deleteAccountForm: document.getElementById("delete-account-form"),
-    cancelDeleteAccountBtn: document.getElementById(
-      "cancel-delete-account-btn"
-    ),
+    cancelDeleteAccountBtn: document.getElementById("cancel-delete-account-btn"),
     deleteConfirmPassword: document.getElementById("delete-confirm-password"),
+
+    notificationsIcon: document.getElementById('notifications-icon'),
+    notificationsPanel: document.getElementById('notifications-panel'),
+    notificationsList: document.getElementById('notifications-list'),
+    notificationsBadge: document.getElementById('notifications-badge'),
+    onlineFriendsList: document.getElementById('online-friends-list'),
+    connectionsCount: document.getElementById('connections-count')
   };
 
   // --- INICIALIZAÇÃO ---
@@ -72,6 +77,8 @@ document.addEventListener("DOMContentLoaded", () => {
       updateUIWithUserData(currentUser);
       connectWebSocket();
       setupEventListeners();
+      fetchFriends();
+      fetchNotifications();
     } catch (error) {
       console.error("ERRO CRÍTICO NA INICIALIZAÇÃO:", error);
       localStorage.removeItem("token");
@@ -135,9 +142,24 @@ document.addEventListener("DOMContentLoaded", () => {
       (frame) => {
         console.log("CONECTADO AO WEBSOCKET");
         fetchPublicPosts();
+        // Inscrição no feed público
         stompClient.subscribe("/topic/publico", (message) => {
           const payload = JSON.parse(message.body);
           handlePublicFeedUpdate(payload);
+        });
+        // INSCRIÇÃO PARA NOTIFICAÇÕES
+        stompClient.subscribe(`/user/${currentUser.email}/queue/notifications`, (message) => {
+          const notification = JSON.parse(message.body);
+          showNotification(`Nova notificação: ${notification.mensagem}`, 'info');
+          fetchNotifications(); // Busca a lista atualizada para incluir a nova notificação
+        });
+
+        // INSCRIÇÃO PARA STATUS ONLINE/OFFLINE
+        // 2. Adicione esta inscrição dentro da sua função connectWebSocket
+        stompClient.subscribe("/topic/status", (message) => {
+          latestOnlineEmails = JSON.parse(message.body);
+          // Chama a função para atualizar a UI sempre que a lista de online mudar
+         atualizarStatusDeAmigosNaUI();
         });
       },
       (error) => console.error("ERRO WEBSOCKET:", error)
@@ -178,8 +200,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function createCommentElement(comment, post) {
     const commentAuthorName =
-    comment.autor?.nome || comment.nomeAutor || "Usuário";
-     const commentAuthorAvatar = comment.urlFotoAutor
+      comment.autor?.nome || comment.nomeAutor || "Usuário";
+    const commentAuthorAvatar = comment.urlFotoAutor
       ? `${backendUrl}/api/arquivos/${comment.urlFotoAutor}`
       : `${backendUrl}/images/default-avatar.png`;
     const autorIdDoComentario = comment.autor?.id || comment.autorId;
@@ -189,46 +211,37 @@ document.addEventListener("DOMContentLoaded", () => {
     let optionsMenu = "";
     if (isAuthor || isPostOwner) {
       optionsMenu = `
-                <button class="comment-options-btn" onclick="event.stopPropagation(); window.openCommentMenu(${
-                  comment.id
-                })">
+                <button class="comment-options-btn" onclick="event.stopPropagation(); window.openCommentMenu(${comment.id
+        })">
                     <i class="fas fa-ellipsis-h"></i>
                 </button>
-                <div class="options-menu" id="comment-menu-${
-                  comment.id
-                }" onclick="event.stopPropagation();">
-                    ${
-                      isAuthor
-                        ? `<button onclick="window.openEditCommentModal(${
-                            comment.id
-                          }, '${comment.conteudo.replace(
-                            /'/g,
-                            "\\'"
-                          )}')"><i class="fas fa-pen"></i> Editar</button>`
-                        : ""
-                    }
-                    ${
-                      isAuthor || isPostOwner
-                        ? `<button class="danger" onclick="window.deleteComment(${comment.id})"><i class="fas fa-trash"></i> Excluir</button>`
-                        : ""
-                    }
-                    ${
-                      isPostOwner
-                        ? `<button onclick="window.highlightComment(${
-                            comment.id
-                          })"><i class="fas fa-star"></i> ${
-                            comment.destacado ? "Remover Destaque" : "Destacar"
-                          }</button>`
-                        : ""
-                    }
+                <div class="options-menu" id="comment-menu-${comment.id
+        }" onclick="event.stopPropagation();">
+                    ${isAuthor
+          ? `<button onclick="window.openEditCommentModal(${comment.id
+          }, '${comment.conteudo.replace(
+            /'/g,
+            "\\'"
+          )}')"><i class="fas fa-pen"></i> Editar</button>`
+          : ""
+        }
+                    ${isAuthor || isPostOwner
+          ? `<button class="danger" onclick="window.deleteComment(${comment.id})"><i class="fas fa-trash"></i> Excluir</button>`
+          : ""
+        }
+                    ${isPostOwner
+          ? `<button onclick="window.highlightComment(${comment.id
+          })"><i class="fas fa-star"></i> ${comment.destacado ? "Remover Destaque" : "Destacar"
+          }</button>`
+          : ""
+        }
                 </div>
             `;
     }
     return `
             <div class="comment-container">
-                <div class="comment ${
-                  comment.destacado ? "destacado" : ""
-                }" id="comment-${comment.id}">
+                <div class="comment ${comment.destacado ? "destacado" : ""
+      }" id="comment-${comment.id}">
                     <div class="comment-avatar"><img src="${commentAuthorAvatar}" alt="Avatar de ${commentAuthorName}"></div>
                     <div class="comment-body">
                         <span class="comment-author">${commentAuthorName}</span>
@@ -237,26 +250,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${optionsMenu}
                 </div>
                 <div class="comment-actions-footer">
-                    <button class="action-btn-like ${
-                      comment.curtidoPeloUsuario ? "liked" : ""
-                    }" onclick="window.toggleLike(event, ${post.id}, ${
-      comment.id
-    })">Curtir</button>
-                    <button class="action-btn-reply" onclick="window.toggleReplyForm(${
-                      comment.id
-                    })">Responder</button>
-                    <span class="like-count" id="like-count-comment-${
-                      comment.id
-                    }"><i class="fas fa-heart"></i> ${
-      comment.totalCurtidas || 0
-    }</span>
+                    <button class="action-btn-like ${comment.curtidoPeloUsuario ? "liked" : ""
+      }" onclick="window.toggleLike(event, ${post.id}, ${comment.id
+      })">Curtir</button>
+                    <button class="action-btn-reply" onclick="window.toggleReplyForm(${comment.id
+      })">Responder</button>
+                    <span class="like-count" id="like-count-comment-${comment.id
+      }"><i class="fas fa-heart"></i> ${comment.totalCurtidas || 0
+      }</span>
                 </div>
                 <div class="reply-form" id="reply-form-${comment.id}">
-                    <input type="text" id="reply-input-${
-                      comment.id
-                    }" placeholder="Escreva sua resposta..."><button onclick="window.sendComment(${
-      post.id
-    }, ${comment.id})"><i class="fas fa-paper-plane"></i></button>
+                    <input type="text" id="reply-input-${comment.id
+      }" placeholder="Escreva sua resposta..."><button onclick="window.sendComment(${post.id
+      }, ${comment.id})"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
         `;
@@ -316,21 +322,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isAuthor) {
       optionsMenu = `
             <div class="post-options">
-                <button class="post-options-btn" onclick="event.stopPropagation(); window.openPostMenu(${
-                  post.id
-                })"><i class="fas fa-ellipsis-h"></i></button>
-                <div class="options-menu" id="post-menu-${
-                  post.id
-                }" onclick="event.stopPropagation();">
-                    <button onclick="window.openEditPostModal(${
-                      post.id
-                    }, '${post.conteudo.replace(
-        /'/g,
-        "\\'"
-      )}')"><i class="fas fa-pen"></i> Editar</button>
-                    <button class="danger" onclick="window.deletePost(${
-                      post.id
-                    })"><i class="fas fa-trash"></i> Excluir</button>
+                <button class="post-options-btn" onclick="event.stopPropagation(); window.openPostMenu(${post.id
+        })"><i class="fas fa-ellipsis-h"></i></button>
+                <div class="options-menu" id="post-menu-${post.id
+        }" onclick="event.stopPropagation();">
+                    <button onclick="window.openEditPostModal(${post.id
+        }, '${post.conteudo.replace(
+          /'/g,
+          "\\'"
+        )}')"><i class="fas fa-pen"></i> Editar</button>
+                    <button class="danger" onclick="window.deletePost(${post.id
+        })"><i class="fas fa-trash"></i> Excluir</button>
                 </div>
             </div>
         `;
@@ -348,29 +350,21 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="post-content"><p>${post.conteudo}</p></div>
         ${mediaHtml}
         <div class="post-actions">
-            <button class="action-btn ${
-              post.curtidoPeloUsuario ? "liked" : ""
-            }" onclick="window.toggleLike(event, ${
-      post.id
-    }, null)"><i class="fas fa-heart"></i> <span id="like-count-post-${
-      post.id
-    }">${post.totalCurtidas || 0}</span></button>
-            <button class="action-btn" onclick="window.toggleComments(${
-              post.id
-            })"><i class="fas fa-comment"></i> <span>${
-      post.comentarios?.length || 0
-    }</span></button>
+            <button class="action-btn ${post.curtidoPeloUsuario ? "liked" : ""
+      }" onclick="window.toggleLike(event, ${post.id
+      }, null)"><i class="fas fa-heart"></i> <span id="like-count-post-${post.id
+      }">${post.totalCurtidas || 0}</span></button>
+            <button class="action-btn" onclick="window.toggleComments(${post.id
+      })"><i class="fas fa-comment"></i> <span>${post.comentarios?.length || 0
+      }</span></button>
         </div>
-        <div class="comments-section" id="comments-section-${
-          post.id
-        }" style="display: none;">
+        <div class="comments-section" id="comments-section-${post.id
+      }" style="display: none;">
             <div class="comments-list">${commentsHtml}</div>
             <div class="comment-form">
-                <input type="text" id="comment-input-${
-                  post.id
-                }" placeholder="Adicione um comentário..."><button onclick="window.sendComment(${
-      post.id
-    }, null)"><i class="fas fa-paper-plane"></i></button>
+                <input type="text" id="comment-input-${post.id
+      }" placeholder="Adicione um comentário..."><button onclick="window.sendComment(${post.id
+      }, null)"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
     `;
@@ -426,7 +420,171 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // CORREÇÃO: Função modificada para fechar todos os tipos de menu
+  // --- NOVAS FUNÇÕES PARA NOTIFICAÇÕES ---
+  async function fetchNotifications() {
+    try {
+      const response = await axios.get(`${backendUrl}/api/notificacoes`);
+      renderNotifications(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar notificações:", error);
+    }
+  }
+
+  function renderNotifications(notifications) {
+    // Garante que o elemento da lista de notificações existe antes de continuar
+    if (!elements.notificationsList) return;
+
+    // Limpa a lista de notificações para renderizar a nova lista atualizada
+    elements.notificationsList.innerHTML = '';
+
+    // Calcula a contagem de notificações não lidas
+    const unreadCount = notifications.filter(n => !n.lida).length;
+
+    // Atualiza o contador (badge) no ícone de sino
+    if (elements.notificationsBadge) {
+      if (unreadCount > 0) {
+        elements.notificationsBadge.textContent = unreadCount;
+        elements.notificationsBadge.style.display = 'flex';
+      } else {
+        elements.notificationsBadge.style.display = 'none';
+      }
+    }
+
+    // Se não houver notificações, exibe uma mensagem de estado vazio
+    if (notifications.length === 0) {
+      elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
+      return;
+    }
+
+    // Itera sobre cada notificação para criar seu elemento HTML
+    notifications.forEach(notification => {
+      const item = document.createElement('div');
+      item.className = 'notification-item';
+      item.id = `notification-item-${notification.id}`;
+      if (!notification.lida) {
+        item.classList.add('unread');
+      }
+
+      const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
+      let actionButtonsHtml = '';
+      let iconClass = 'fa-info-circle'; // Ícone padrão para notificações gerais
+
+      // Verifica se a notificação é um pedido de amizade para adicionar os botões
+      if (notification.tipo === 'PEDIDO_AMIZADE') {
+        iconClass = 'fa-user-plus'; // Muda o ícone para um de amizade
+        actionButtonsHtml = `
+                <div class="notification-actions">
+                    <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
+                    <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
+                </div>
+            `;
+      }
+
+      // Monta o HTML do item da notificação.
+      // O corpo principal é um link para a página de gerenciamento de amizades.
+      // Os botões de ação ficam fora do link.
+      item.innerHTML = `
+            <a href="amizades.html" class="notification-link">
+                <div class="notification-icon-wrapper">
+                    <i class="fas ${iconClass}"></i>
+                </div>
+                <div class="notification-content">
+                    <p>${notification.mensagem}</p>
+                    <span class="timestamp">${data}</span>
+                </div>
+            </a>
+            <div class="notification-actions-wrapper">
+                 ${actionButtonsHtml}
+            </div>
+        `;
+
+      // Adiciona um listener para impedir que o clique nos botões ative o link da notificação
+      const actionsWrapper = item.querySelector('.notification-actions-wrapper');
+      if (actionsWrapper) {
+        actionsWrapper.addEventListener('click', e => e.stopPropagation());
+      }
+
+      elements.notificationsList.appendChild(item);
+    });
+  }
+
+  async function markNotificationAsRead(notificationId) {
+    try {
+      await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+      fetchNotifications(); // Recarrega a lista para refletir a mudança
+    } catch (error) {
+      console.error("Erro ao marcar notificação como lida:", error);
+      showNotification('Erro ao atualizar notificação.', 'error');
+    }
+  }
+
+  // --- FUNÇÕES PARA AMIGOS ONLINE ---
+
+  async function fetchFriends() {
+    try {
+      const response = await axios.get(`${backendUrl}/api/amizades/`);
+      userFriends = response.data;
+      friendsLoaded = true;
+      if (elements.connectionsCount) {
+        elements.connectionsCount.textContent = userFriends.length;
+      }
+      // Chama a atualização dos amigos online DEPOIS de ter a lista completa
+     atualizarStatusDeAmigosNaUI()
+    } catch (error) {
+      console.error("Erro ao buscar lista de amigos:", error);
+      friendsLoaded = true;
+    }
+  }
+
+/**
+ * Função centralizada para atualizar todos os indicadores visuais de amigos online.
+ * Isso inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
+ */
+function atualizarStatusDeAmigosNaUI() {
+    if (elements.onlineFriendsList) {
+
+        if (!friendsLoaded) {
+            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
+            return;
+        }
+
+        const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
+
+        elements.onlineFriendsList.innerHTML = '';
+        if (onlineFriends.length === 0) {
+            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+        } else {
+            onlineFriends.forEach(friend => {
+                const friendElement = document.createElement('div');
+                friendElement.className = 'friend-item';
+                const friendAvatar = friend.fotoPerfil 
+                    ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` 
+                    : defaultAvatarUrl;
+
+                friendElement.innerHTML = `
+                    <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
+                    <span class="friend-name">${friend.nome}</span>
+                    <div class="status online"></div>
+                `;
+                elements.onlineFriendsList.appendChild(friendElement);
+            });
+        }
+    }
+
+    const statusDots = document.querySelectorAll('.status[data-user-email]');
+    statusDots.forEach(dot => {
+        const email = dot.getAttribute('data-user-email');
+        if (latestOnlineEmails.includes(email)) {
+            dot.classList.add('online');
+            dot.classList.remove('offline');
+        } else {
+            dot.classList.remove('online');
+            dot.classList.add('offline');
+        }
+    });
+}
+
+  // Função modificada para fechar todos os tipos de menu
   const closeAllMenus = () => {
     document
       .querySelectorAll(".options-menu, .dropdown-menu")
@@ -548,6 +706,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  function closeAndResetEditCommentModal() {
+    if (elements.editCommentModal) {
+      elements.editCommentModal.style.display = "none";
+    }
+    if (elements.editCommentIdInput) {
+      elements.editCommentIdInput.value = "";
+    }
+    if (elements.editCommentTextarea) {
+      elements.editCommentTextarea.value = "";
+    }
+  }
+
   window.openEditCommentModal = (commentId, content) => {
     if (elements.editCommentIdInput)
       elements.editCommentIdInput.value = commentId;
@@ -574,6 +744,17 @@ document.addEventListener("DOMContentLoaded", () => {
       showNotification("Não foi possível destacar o comentário.", "error");
       console.error("Erro ao destacar comentário:", error);
     }
+  };
+
+  window.aceitar = async (amizadeId) => {
+    await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
+    document.getElementById(`received-card-${amizadeId}`).remove();
+
+  };
+
+  window.recusar = async (amizadeId) => {
+    await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`);
+    document.getElementById(`received-card-${amizadeId}`).remove();
   };
 
   function updateEditFilePreview() {
@@ -644,9 +825,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setupEventListeners() {
-    document.body.addEventListener("click", closeAllMenus);
+    //  Listener principal no body para fechar menus e o painel de notificações ao clicar fora
+    document.body.addEventListener("click", (e) => {
+      // Fecha o painel de notificações se o clique for fora dele e fora do ícone
+      if (elements.notificationsPanel && !elements.notificationsPanel.contains(e.target) && !elements.notificationsIcon.contains(e.target)) {
+        elements.notificationsPanel.style.display = 'none';
+      }
+      // A função closeAllMenus fecha os menus de post/comentário e o dropdown do usuário
+      closeAllMenus();
+    });
 
-    // NOVO LISTENER PARA ABRIR O DROPDOWN
+    // Listener para o ícone de notificações para abrir/fechar o painel
+    if (elements.notificationsIcon) {
+      elements.notificationsIcon.addEventListener('click', (event) => {
+        event.stopPropagation(); // Impede que o clique no body feche o painel imediatamente
+        const isVisible = elements.notificationsPanel.style.display === 'block';
+        elements.notificationsPanel.style.display = isVisible ? 'none' : 'block';
+      });
+    }
+
+    // Listener para abrir o dropdown do usuário
     if (elements.userDropdownTrigger) {
       elements.userDropdownTrigger.addEventListener("click", (event) => {
         event.stopPropagation(); // Impede que o clique no body feche o menu imediatamente
@@ -660,16 +858,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     }
+
+    // Listener para o campo de busca
     if (searchInput) {
       searchInput.addEventListener("input", filterPosts);
     }
 
+    // Listener do botão de Logout
     if (elements.logoutBtn)
       elements.logoutBtn.addEventListener("click", () => {
         localStorage.clear();
         window.location.href = "login.html";
       });
 
+    // Listeners para os botões de perfil e conta
     if (elements.editProfileBtn)
       elements.editProfileBtn.addEventListener("click", openEditProfileModal);
     if (elements.deleteAccountBtn)
@@ -677,12 +879,13 @@ document.addEventListener("DOMContentLoaded", () => {
         "click",
         openDeleteAccountModal
       );
+
+    // Listeners do Modal de Edição de Perfil
     if (elements.cancelEditProfileBtn)
       elements.cancelEditProfileBtn.addEventListener(
         "click",
         () => (elements.editProfileModal.style.display = "none")
       );
-
     if (elements.editProfilePicInput)
       elements.editProfilePicInput.addEventListener("change", () => {
         const file = elements.editProfilePicInput.files[0];
@@ -690,7 +893,6 @@ document.addEventListener("DOMContentLoaded", () => {
           elements.editProfilePicPreview.src = URL.createObjectURL(file);
         }
       });
-
     if (elements.editProfileForm)
       elements.editProfileForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -739,6 +941,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
+    // Listeners do Modal de Exclusão de Conta
     if (elements.cancelDeleteAccountBtn)
       elements.cancelDeleteAccountBtn.addEventListener(
         "click",
@@ -779,6 +982,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
+    // Listeners do Modal de Edição de Post
     if (elements.editPostFileInput)
       elements.editPostFileInput.addEventListener("change", (event) => {
         Array.from(event.target.files).forEach((file) => {
@@ -788,7 +992,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         updateEditFilePreview();
       });
-
     if (elements.editPostForm)
       elements.editPostForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -819,7 +1022,8 @@ document.addEventListener("DOMContentLoaded", () => {
         () => (elements.editPostModal.style.display = "none")
       );
 
-    if (elements.editCommentForm)
+    // Listeners do Modal de Edição de Comentário
+    if (elements.editCommentForm) {
       elements.editCommentForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const commentId = elements.editCommentIdInput.value;
@@ -827,25 +1031,27 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           await axios.put(
             `${backendUrl}/comentarios/${commentId}`,
-            JSON.stringify(content),
+            { conteudo: content },
             {
               headers: { "Content-Type": "application/json" },
             }
           );
-          if (elements.editCommentModal)
-            elements.editCommentModal.style.display = "none";
           showNotification("Comentário editado.", "success");
+          closeAndResetEditCommentModal();
         } catch (error) {
           showNotification("Não foi possível salvar o comentário.", "error");
           console.error("Erro ao editar comentário:", error);
         }
       });
+    }
     if (elements.cancelEditCommentBtn)
       elements.cancelEditCommentBtn.addEventListener(
         "click",
-        () => (elements.editCommentModal.style.display = "none")
-      );
+        () => {
+          closeAndResetEditCommentModal();
+        });
 
+    // Listeners do Criador de Post
     if (elements.postFileInput)
       elements.postFileInput.addEventListener("change", (event) => {
         selectedFilesForPost = Array.from(event.target.files);
