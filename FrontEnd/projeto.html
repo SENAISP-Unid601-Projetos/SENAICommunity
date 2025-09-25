@@ -8,8 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Principal/CSS/principal.css">
     <link rel="stylesheet" href="Projeto/CSS/projeto.css">
-    <script src="Principal/JS/principal.js" defer></script>
-    <script src="Projeto/JS/projeto.js" defer></script>
 </head>
 <body>
     <div class="notification-center"></div>
@@ -93,7 +91,7 @@
                 <div class="modal-body">
                     <div class="form-group"><label for="proj-titulo">Título do Projeto</label><input type="text" id="proj-titulo" required></div>
                     <div class="form-group"><label for="proj-descricao">Descrição</label><textarea id="proj-descricao" rows="4" required></textarea></div>
-                    <div class="form-group"><label for="proj-imagem">URL da Imagem de Capa</label><input type="url" id="proj-imagem" placeholder="https://exemplo.com/imagem.png"></div>
+                    <div class="form-group"><label for="proj-imagem">Imagem de Capa do Projeto</label><input type="file" id="proj-imagem" accept="image/*"></div>
                     <div class="form-group"><label for="proj-techs">Tecnologias (separadas por vírgula)</label><input type="text" id="proj-techs" placeholder="React, Node.js, Arduino..."></div>
                     <div class="form-group"><label for="proj-status">Status</label><select id="proj-status"><option value="Em Andamento">Em Andamento</option><option value="Concluído">Concluído</option></select></div>
                 </div>
@@ -101,6 +99,12 @@
             </form>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     
+    <script src="Principal/JS/principal.js" defer></script>
+    <script src="Projeto/JS/projeto.js" defer></script>
 </body>
 </html>

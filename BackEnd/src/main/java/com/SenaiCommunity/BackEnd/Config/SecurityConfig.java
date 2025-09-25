@@ -44,23 +44,18 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Endpoints que NÃO precisam de login
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/autenticacao/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/projetos/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/projetos/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/projetos/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/projetos/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/alunos/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/professores/**").permitAll()
                         .requestMatchers("/ws/**").permitAll() // Necessário para a conexão WebSocket inicial
-                        .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/images/**", "/api/arquivos/**").permitAll()
-                        .requestMatchers(
+                        .requestMatchers("/images/**", "/api/arquivos/**", "/projetos/imagens/**").permitAll() // Endpoints de arquivos públicos
+                        .requestMatchers( // Endpoints do Swagger para documentação
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        // QUALQUER OUTRA requisição precisa de autenticação
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(

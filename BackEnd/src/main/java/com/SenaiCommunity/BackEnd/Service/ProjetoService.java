@@ -381,7 +381,12 @@ public class ProjetoService {
         dto.setDataEntrega(projeto.getDataEntrega());
         dto.setStatus(projeto.getStatus());
 
-        dto.setImagemUrl(projeto.getImagemUrl());
+        if (projeto.getImagemUrl() != null && !projeto.getImagemUrl().isBlank()) {
+            dto.setImagemUrl("/projetos/imagens/" + projeto.getImagemUrl());
+        } else {
+            dto.setImagemUrl("/img/unnamed.png"); // Imagem padrão
+        }
+
         dto.setDataCriacao(projeto.getDataCriacao());
         dto.setMaxMembros(projeto.getMaxMembros());
         dto.setGrupoPrivado(projeto.getGrupoPrivado());
