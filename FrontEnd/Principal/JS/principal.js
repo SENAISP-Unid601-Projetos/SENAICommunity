@@ -75,9 +75,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await axios.get(`${backendUrl}/usuarios/me`);
       currentUser = response.data;
       updateUIWithUserData(currentUser);
+      await fetchFriends();
       connectWebSocket();
       setupEventListeners();
-      fetchFriends();
       fetchNotifications();
     } catch (error) {
       console.error("ERRO CRÍTICO NA INICIALIZAÇÃO:", error);
@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
         stompClient.subscribe("/topic/status", (message) => {
           latestOnlineEmails = JSON.parse(message.body);
           // Chama a função para atualizar a UI sempre que a lista de online mudar
-         atualizarStatusDeAmigosNaUI();
+          atualizarStatusDeAmigosNaUI();
         });
       },
       (error) => console.error("ERRO WEBSOCKET:", error)
@@ -431,89 +431,77 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderNotifications(notifications) {
-    // Garante que o elemento da lista de notificações existe antes de continuar
     if (!elements.notificationsList) return;
-
-    // Limpa a lista de notificações para renderizar a nova lista atualizada
     elements.notificationsList.innerHTML = '';
-
-    // Calcula a contagem de notificações não lidas
     const unreadCount = notifications.filter(n => !n.lida).length;
 
-    // Atualiza o contador (badge) no ícone de sino
     if (elements.notificationsBadge) {
-      if (unreadCount > 0) {
-        elements.notificationsBadge.textContent = unreadCount;
-        elements.notificationsBadge.style.display = 'flex';
-      } else {
-        elements.notificationsBadge.style.display = 'none';
-      }
+      elements.notificationsBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+      elements.notificationsBadge.textContent = unreadCount;
     }
 
-    // Se não houver notificações, exibe uma mensagem de estado vazio
     if (notifications.length === 0) {
       elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
       return;
     }
 
-    // Itera sobre cada notificação para criar seu elemento HTML
     notifications.forEach(notification => {
       const item = document.createElement('div');
       item.className = 'notification-item';
       item.id = `notification-item-${notification.id}`;
-      if (!notification.lida) {
-        item.classList.add('unread');
-      }
+      if (!notification.lida) item.classList.add('unread');
 
       const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
       let actionButtonsHtml = '';
-      let iconClass = 'fa-info-circle'; // Ícone padrão para notificações gerais
+      let iconClass = 'fa-info-circle';
 
-      // Verifica se a notificação é um pedido de amizade para adicionar os botões
-      if (notification.tipo === 'PEDIDO_AMIZADE') {
-        iconClass = 'fa-user-plus'; // Muda o ícone para um de amizade
+      if (notification.tipo === 'PEDIDO_AMIZADE' && !notification.lida) { // Mostra botões apenas se não foi lida
+        iconClass = 'fa-user-plus';
         actionButtonsHtml = `
-                <div class="notification-actions">
-                    <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
-                    <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
-                </div>
+              <div class="notification-actions">
+                <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
+                <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
+              </div>
             `;
       }
 
-      // Monta o HTML do item da notificação.
-      // O corpo principal é um link para a página de gerenciamento de amizades.
-      // Os botões de ação ficam fora do link.
+      // ADICIONADO "onclick" AO LINK ABAIXO
       item.innerHTML = `
-            <a href="amizades.html" class="notification-link">
-                <div class="notification-icon-wrapper">
-                    <i class="fas ${iconClass}"></i>
-                </div>
+            <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(${notification.id})">
+                <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
                 <div class="notification-content">
                     <p>${notification.mensagem}</p>
                     <span class="timestamp">${data}</span>
                 </div>
             </a>
-            <div class="notification-actions-wrapper">
-                 ${actionButtonsHtml}
-            </div>
+            <div class="notification-actions-wrapper">${actionButtonsHtml}</div>
         `;
 
-      // Adiciona um listener para impedir que o clique nos botões ative o link da notificação
       const actionsWrapper = item.querySelector('.notification-actions-wrapper');
       if (actionsWrapper) {
         actionsWrapper.addEventListener('click', e => e.stopPropagation());
       }
-
       elements.notificationsList.appendChild(item);
     });
   }
 
   async function markNotificationAsRead(notificationId) {
+    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+
+
+    if (!notificationItem || !notificationItem.classList.contains('unread')) {
+      return;
+    }
+
+    notificationItem.classList.remove('unread');
+
     try {
       await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
-      fetchNotifications(); // Recarrega a lista para refletir a mudança
+
+      fetchNotifications();
     } catch (error) {
       console.error("Erro ao marcar notificação como lida:", error);
+      notificationItem.classList.add('unread');
       showNotification('Erro ao atualizar notificação.', 'error');
     }
   }
@@ -525,64 +513,72 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await axios.get(`${backendUrl}/api/amizades/`);
       userFriends = response.data;
       friendsLoaded = true;
+
       if (elements.connectionsCount) {
         elements.connectionsCount.textContent = userFriends.length;
       }
-      // Chama a atualização dos amigos online DEPOIS de ter a lista completa
-     atualizarStatusDeAmigosNaUI()
+
+      if (typeof renderFriends === 'function' && elements.friendsList) {
+        renderFriends(userFriends, elements.friendsList);
+      }
+
+      atualizarStatusDeAmigosNaUI();
+
     } catch (error) {
       console.error("Erro ao buscar lista de amigos:", error);
       friendsLoaded = true;
     }
   }
 
-/**
- * Função centralizada para atualizar todos os indicadores visuais de amigos online.
- * Isso inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
- */
-function atualizarStatusDeAmigosNaUI() {
+
+
+  /**
+   * Função centralizada para atualizar todos os indicadores visuais de amigos online.
+   * Isso inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
+   */
+  function atualizarStatusDeAmigosNaUI() {
     if (elements.onlineFriendsList) {
 
-        if (!friendsLoaded) {
-            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
-            return;
-        }
+      if (!friendsLoaded) {
+        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
+        return;
+      }
 
-        const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
+      const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
 
-        elements.onlineFriendsList.innerHTML = '';
-        if (onlineFriends.length === 0) {
-            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
-        } else {
-            onlineFriends.forEach(friend => {
-                const friendElement = document.createElement('div');
-                friendElement.className = 'friend-item';
-                const friendAvatar = friend.fotoPerfil 
-                    ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` 
-                    : defaultAvatarUrl;
+      elements.onlineFriendsList.innerHTML = '';
+      if (onlineFriends.length === 0) {
+        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+      } else {
+        onlineFriends.forEach(friend => {
+          const friendElement = document.createElement('div');
+          friendElement.className = 'friend-item';
+          const friendAvatar = friend.fotoPerfil
+            ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}`
+            : defaultAvatarUrl;
 
-                friendElement.innerHTML = `
+          friendElement.innerHTML = `
                     <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
                     <span class="friend-name">${friend.nome}</span>
                     <div class="status online"></div>
                 `;
-                elements.onlineFriendsList.appendChild(friendElement);
-            });
-        }
+          elements.onlineFriendsList.appendChild(friendElement);
+        });
+      }
     }
 
     const statusDots = document.querySelectorAll('.status[data-user-email]');
     statusDots.forEach(dot => {
-        const email = dot.getAttribute('data-user-email');
-        if (latestOnlineEmails.includes(email)) {
-            dot.classList.add('online');
-            dot.classList.remove('offline');
-        } else {
-            dot.classList.remove('online');
-            dot.classList.add('offline');
-        }
+      const email = dot.getAttribute('data-user-email');
+      if (latestOnlineEmails.includes(email)) {
+        dot.classList.add('online');
+        dot.classList.remove('offline');
+      } else {
+        dot.classList.remove('online');
+        dot.classList.add('offline');
+      }
     });
-}
+  }
 
   // Função modificada para fechar todos os tipos de menu
   const closeAllMenus = () => {
@@ -746,17 +742,30 @@ function atualizarStatusDeAmigosNaUI() {
     }
   };
 
-  window.aceitar = async (amizadeId) => {
-    await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
-    document.getElementById(`received-card-${amizadeId}`).remove();
-
-  };
-
-  window.recusar = async (amizadeId) => {
-    await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`);
-    document.getElementById(`received-card-${amizadeId}`).remove();
-  };
-
+  // --- FUNÇÕES DE AÇÕES DE AMIZADE (para notificações) ---
+  function handleFriendRequestFeedback(notificationId, message, type = 'info') {
+    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+    if (notificationItem) {
+      const actionsDiv = notificationItem.querySelector('.notification-actions-wrapper');
+      if (actionsDiv) {
+        actionsDiv.innerHTML = `<p class="feedback-text ${type === 'success' ? 'success' : ''}">${message}</p>`;
+      }
+      // Remove a notificação da lista após um tempo para o usuário ler a mensagem
+      setTimeout(() => {
+        notificationItem.classList.add('removing');
+        // Permite que a animação CSS finalize antes de remover o elemento do DOM
+        setTimeout(() => {
+          notificationItem.remove();
+          // Após remover, reavalia se a lista de notificações está vazia
+          if (elements.notificationsList && elements.notificationsList.children.length === 0) {
+            elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
+          }
+        }, 500); // Deve corresponder ao tempo da transição no CSS
+      }, 2500); // Tempo que a mensagem de feedback fica visível
+    }
+    // Re-busca as notificações para atualizar o contador (badge)
+    fetchNotifications();
+  }
   function updateEditFilePreview() {
     if (!elements.editFilePreviewContainer) return;
     elements.editFilePreviewContainer.innerHTML = "";

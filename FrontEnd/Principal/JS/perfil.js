@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUIWithUserData(currentUser);
             populateProfileData(currentUser);
             fetchUserConnections(); // NOVA CHAMADA DE FUNÇÃO
+            fetchNotifications()
             setupEventListeners();
         } catch (error) {
             console.error("ERRO CRÍTICO NA INICIALIZAÇÃO DO PERFIL:", error);
@@ -114,6 +115,87 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elements.sidebarUserTitle) elements.sidebarUserTitle.textContent = user.titulo || 'Membro da Comunidade';
         if (elements.topbarUserImg) elements.topbarUserImg.src = userImage;
         if (elements.sidebarUserImg) elements.sidebarUserImg.src = userImage;
+    }
+
+    async function fetchNotifications() {
+        try {
+            const response = await axios.get(`${backendUrl}/api/notificacoes`);
+            renderNotifications(response.data);
+        } catch (error) {
+            console.error("Erro ao buscar notificações:", error);
+        }
+    }
+
+    function renderNotifications(notifications) {
+        if (!elements.notificationsList) return;
+        elements.notificationsList.innerHTML = '';
+        const unreadCount = notifications.filter(n => !n.lida).length;
+
+        if (elements.notificationsBadge) {
+            elements.notificationsBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+            elements.notificationsBadge.textContent = unreadCount;
+        }
+
+        if (notifications.length === 0) {
+            elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
+            return;
+        }
+
+        notifications.forEach(notification => {
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            item.id = `notification-item-${notification.id}`;
+            if (!notification.lida) item.classList.add('unread');
+
+            const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
+            let actionButtonsHtml = '';
+            let iconClass = 'fa-info-circle';
+
+            if (notification.tipo === 'PEDIDO_AMIZADE' && !notification.lida) {
+                iconClass = 'fa-user-plus';
+                // Os botões de aceitar/recusar precisam ser definidos globalmente ou importados se for usar aqui
+                actionButtonsHtml = `
+              <div class="notification-actions">
+                 <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
+                 <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
+              </div>
+            `;
+            }
+
+            item.innerHTML = `
+            <a href="amizades.html" class="notification-link" onclick="markNotificationAsRead(${notification.id})">
+                <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
+                <div class="notification-content">
+                    <p>${notification.mensagem}</p>
+                    <span class="timestamp">${data}</span>
+                </div>
+            </a>
+            <div class="notification-actions-wrapper">${actionButtonsHtml}</div>
+        `;
+
+            const actionsWrapper = item.querySelector('.notification-actions-wrapper');
+            if (actionsWrapper) {
+                actionsWrapper.addEventListener('click', e => e.stopPropagation());
+            }
+
+            elements.notificationsList.appendChild(item);
+        });
+    }
+
+    async function markNotificationAsRead(notificationId) {
+        const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+        if (!notificationItem || !notificationItem.classList.contains('unread')) {
+            return;
+        }
+        notificationItem.classList.remove('unread');
+        try {
+            await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+            fetchNotifications();
+        } catch (error) {
+            console.error("Erro ao marcar notificação como lida:", error);
+            notificationItem.classList.add('unread');
+            showNotification('Erro ao atualizar notificação.', 'error');
+        }
     }
 
     function showNotification(message, type = 'info') {
