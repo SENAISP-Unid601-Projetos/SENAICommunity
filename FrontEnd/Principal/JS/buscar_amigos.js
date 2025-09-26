@@ -64,8 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await axios.get(`${backendUrl}/usuarios/me`);
       currentUser = response.data;
       updateUIWithUserData(currentUser);
-      await fetchFriends();
-      connectWebSocket();
+     connectWebSocket();
+      fetchFriends();
       setupEventListeners();
       fetchNotifications();
     } catch (error) {
@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let actionButtonsHtml = '';
       let iconClass = 'fa-info-circle';
 
-      if (notification.tipo === 'PEDIDO_AMIZADE' && !notification.lida) { // Mostra botões apenas se não foi lida
+      if (notification.tipo === 'PEDIDO_AMIZADE' && !notification.lida) {
         iconClass = 'fa-user-plus';
         actionButtonsHtml = `
               <div class="notification-actions">
@@ -193,7 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
       }
 
-      // ADICIONADO "onclick" AO LINK ABAIXO
       item.innerHTML = `
             <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(${notification.id})">
                 <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
@@ -214,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- FUNÇÕES DE AMIGOS E CONEXÕES ---
-  async function fetchFriends() {
+ async function fetchFriends() {
     try {
       const response = await axios.get(`${backendUrl}/api/amizades/`);
       userFriends = response.data;
@@ -223,16 +222,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.connectionsCount) {
         elements.connectionsCount.textContent = userFriends.length;
       }
-
-      if (typeof renderFriends === 'function' && elements.friendsList) {
-        renderFriends(userFriends, elements.friendsList);
-      }
-
       atualizarStatusDeAmigosNaUI();
-
+      
     } catch (error) {
       console.error("Erro ao buscar lista de amigos:", error);
-      friendsLoaded = true;
+      friendsLoaded = true; 
+       atualizarStatusDeAmigosNaUI();
     }
   }
 
@@ -240,49 +235,51 @@ document.addEventListener("DOMContentLoaded", () => {
    * Função centralizada para atualizar todos os indicadores visuais de amigos online.
    * Isso inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
    */
-  function atualizarStatusDeAmigosNaUI() {
-    if (elements.onlineFriendsList) {
+   function atualizarStatusDeAmigosNaUI() {
+    if (!elements.onlineFriendsList) return;
 
-      if (!friendsLoaded) {
+    // Condição de guarda: Só renderiza se a lista de amigos já foi carregada.
+    if (!friendsLoaded) {
         elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
         return;
-      }
-
-      const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
-
-      elements.onlineFriendsList.innerHTML = '';
-      if (onlineFriends.length === 0) {
-        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
-      } else {
-        onlineFriends.forEach(friend => {
-          const friendElement = document.createElement('div');
-          friendElement.className = 'friend-item';
-          const friendAvatar = friend.fotoPerfil
-            ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}`
-            : defaultAvatarUrl;
-
-          friendElement.innerHTML = `
-                    <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
-                    <span class="friend-name">${friend.nome}</span>
-                    <div class="status online"></div>
-                `;
-          elements.onlineFriendsList.appendChild(friendElement);
-        });
-      }
     }
 
+    const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
+
+    elements.onlineFriendsList.innerHTML = '';
+    if (onlineFriends.length === 0) {
+        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+    } else {
+        onlineFriends.forEach(friend => {
+            const friendElement = document.createElement('div');
+            friendElement.className = 'friend-item';
+            const friendAvatar = friend.fotoPerfil
+                ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}`
+                : defaultAvatarUrl;
+
+            friendElement.innerHTML = `
+                <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
+                <span class="friend-name">${friend.nome}</span>
+                <div class="status online"></div>
+            `;
+            elements.onlineFriendsList.appendChild(friendElement);
+        });
+    }
+
+    // Lógica para atualizar os pontos de status em outros lugares da página
     const statusDots = document.querySelectorAll('.status[data-user-email]');
     statusDots.forEach(dot => {
-      const email = dot.getAttribute('data-user-email');
-      if (latestOnlineEmails.includes(email)) {
-        dot.classList.add('online');
-        dot.classList.remove('offline');
-      } else {
-        dot.classList.remove('online');
-        dot.classList.add('offline');
-      }
+        const email = dot.getAttribute('data-user-email');
+        if (latestOnlineEmails.includes(email)) {
+            dot.classList.add('online');
+            dot.classList.remove('offline');
+        } else {
+            dot.classList.remove('online');
+            dot.classList.add('offline');
+        }
     });
   }
+
   // --- FUNÇÕES PARA BUSCA DE USUÁRIOS ---
   async function buscarUsuarios(nome) {
     if (!elements.searchResultsContainer) return;

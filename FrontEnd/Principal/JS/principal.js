@@ -75,8 +75,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await axios.get(`${backendUrl}/usuarios/me`);
       currentUser = response.data;
       updateUIWithUserData(currentUser);
-      await fetchFriends();
       connectWebSocket();
+      fetchFriends();
       setupEventListeners();
       fetchNotifications();
     } catch (error) {
@@ -155,10 +155,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // INSCRIÇÃO PARA STATUS ONLINE/OFFLINE
-        // 2. Adicione esta inscrição dentro da sua função connectWebSocket
         stompClient.subscribe("/topic/status", (message) => {
           latestOnlineEmails = JSON.parse(message.body);
-          // Chama a função para atualizar a UI sempre que a lista de online mudar
           atualizarStatusDeAmigosNaUI();
         });
       },
@@ -517,16 +515,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.connectionsCount) {
         elements.connectionsCount.textContent = userFriends.length;
       }
-
-      if (typeof renderFriends === 'function' && elements.friendsList) {
-        renderFriends(userFriends, elements.friendsList);
-      }
-
       atualizarStatusDeAmigosNaUI();
-
+      
     } catch (error) {
       console.error("Erro ao buscar lista de amigos:", error);
-      friendsLoaded = true;
+      friendsLoaded = true; 
+       atualizarStatusDeAmigosNaUI();
     }
   }
 
@@ -537,46 +531,47 @@ document.addEventListener("DOMContentLoaded", () => {
    * Isso inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
    */
   function atualizarStatusDeAmigosNaUI() {
-    if (elements.onlineFriendsList) {
+    if (!elements.onlineFriendsList) return;
 
-      if (!friendsLoaded) {
+    // Condição de guarda: Só renderiza se a lista de amigos já foi carregada.
+    if (!friendsLoaded) {
         elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
         return;
-      }
-
-      const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
-
-      elements.onlineFriendsList.innerHTML = '';
-      if (onlineFriends.length === 0) {
-        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
-      } else {
-        onlineFriends.forEach(friend => {
-          const friendElement = document.createElement('div');
-          friendElement.className = 'friend-item';
-          const friendAvatar = friend.fotoPerfil
-            ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}`
-            : defaultAvatarUrl;
-
-          friendElement.innerHTML = `
-                    <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
-                    <span class="friend-name">${friend.nome}</span>
-                    <div class="status online"></div>
-                `;
-          elements.onlineFriendsList.appendChild(friendElement);
-        });
-      }
     }
 
+    const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
+
+    elements.onlineFriendsList.innerHTML = '';
+    if (onlineFriends.length === 0) {
+        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+    } else {
+        onlineFriends.forEach(friend => {
+            const friendElement = document.createElement('div');
+            friendElement.className = 'friend-item';
+            const friendAvatar = friend.fotoPerfil
+                ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}`
+                : defaultAvatarUrl;
+
+            friendElement.innerHTML = `
+                <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
+                <span class="friend-name">${friend.nome}</span>
+                <div class="status online"></div>
+            `;
+            elements.onlineFriendsList.appendChild(friendElement);
+        });
+    }
+
+    // Lógica para atualizar os pontos de status em outros lugares da página
     const statusDots = document.querySelectorAll('.status[data-user-email]');
     statusDots.forEach(dot => {
-      const email = dot.getAttribute('data-user-email');
-      if (latestOnlineEmails.includes(email)) {
-        dot.classList.add('online');
-        dot.classList.remove('offline');
-      } else {
-        dot.classList.remove('online');
-        dot.classList.add('offline');
-      }
+        const email = dot.getAttribute('data-user-email');
+        if (latestOnlineEmails.includes(email)) {
+            dot.classList.add('online');
+            dot.classList.remove('offline');
+        } else {
+            dot.classList.remove('online');
+            dot.classList.add('offline');
+        }
     });
   }
 
