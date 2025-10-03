@@ -94,6 +94,11 @@ body {
   color: var(--accent-primary);
 }
 
+/* Altere esta regra */
+.logo .highlight {
+    color: var(--danger); /* Alterado de --highlight para --danger */
+}
+
 .search {
   position: relative;
   flex: 0.5;

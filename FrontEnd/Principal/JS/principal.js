@@ -1,4 +1,53 @@
+// Bloco de código para controle de tema.
+// Este bloco será executado em todas as páginas que importam o principal.js.
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- FUNÇÕES DE CONTROLE DE TEMA ---
+    function setInitialTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'dark'; // Garante 'dark' como padrão
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+    }
+
+    function updateThemeIcon(theme) {
+        const themeToggleIcon = document.querySelector('.theme-toggle i');
+        if (themeToggleIcon) {
+            if (theme === 'dark') {
+                themeToggleIcon.classList.remove('fa-sun');
+                themeToggleIcon.classList.add('fa-moon');
+            } else {
+                themeToggleIcon.classList.remove('fa-moon');
+                themeToggleIcon.classList.add('fa-sun');
+            }
+        }
+    }
+
+    // --- INICIALIZAÇÃO DO TEMA ---
+    setInitialTheme();
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+});
+
+
+// Lógica específica para a página principal (feed)
+// Esta parte só será executada completamente na principal.html
 document.addEventListener("DOMContentLoaded", () => {
+  
+  // Verifica se estamos na página principal antes de executar o código do feed
+  if (!document.querySelector(".posts-container")) {
+    return;
+  }
+    
   // --- CONFIGURAÇÕES E VARIÁVEIS GLOBAIS ---
   const backendUrl = "http://localhost:8080";
   const jwtToken = localStorage.getItem("token");
