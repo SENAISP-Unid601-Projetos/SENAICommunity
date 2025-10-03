@@ -447,7 +447,7 @@ body {
   position: relative;
   width: 80px;
   height: 80px;
-  border-radius: 50%;
+  border-radius: 50%; 
   margin: 0 auto 1rem;
 }
 
@@ -1650,4 +1650,124 @@ body {
 .status.offline {
   background-color: var(--text-tertiary);
   /* Cinza para offline */
+}
+/* Adicionar ao final de FrontEnd/Principal/CSS/principal.css */
+
+/* Melhorias no Modal de Edição */
+#edit-post-modal .modal-content {
+    max-width: 550px; /* Um pouco mais largo para acomodar as mídias */
+}
+
+#edit-post-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem; /* Aumenta o espaçamento entre os elementos */
+}
+
+#edit-post-textarea {
+    min-height: 100px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.75rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+}
+
+#edit-post-textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-secondary);
+}
+
+.form-group-files {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.file-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#edit-existing-media-container,
+#edit-file-preview-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.existing-media-item,
+.file-preview-item {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+}
+
+.existing-media-item img,
+.file-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+/* Checkbox para remover mídia existente */
+.remove-existing-media-checkbox {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    appearance: none;
+    -webkit-appearance: none;
+    display: grid;
+    place-content: center;
+}
+
+.remove-existing-media-checkbox::before {
+    content: '✔';
+    color: white;
+    font-size: 12px;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+}
+
+.remove-existing-media-checkbox:checked::before {
+    transform: scale(1);
+}
+
+/* Botão de remover nova mídia */
+.file-preview-item .remove-file-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 22px;
+    height: 22px;
+    background: var(--danger);
+    color: white;
+    border: 2px solid var(--bg-secondary);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* Adiciona ícones aos botões do modal */
+#edit-post-form .modal-footer .btn i {
+    margin-right: 0.5rem;
 }

@@ -151,28 +151,40 @@
         </aside>
     </div>
 
-    <div id="edit-post-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Editar Publicação</h3>
-            </div>
-            <form id="edit-post-form">
-                <input type="hidden" id="edit-post-id">
-                <textarea id="edit-post-textarea" placeholder="Edite sua publicação..."></textarea>
-                <div class="form-group-files">
-                    <label for="edit-post-files" class="file-label">
-                        <i class="fas fa-image"></i> Adicionar Novas Mídias
-                    </label>
-                    <input type="file" id="edit-post-files" multiple accept="image/*,video/*" style="display:none;">
-                    <div id="edit-file-preview-container"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" id="cancel-edit-post-btn" class="btn btn-secondary">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
+   <div id="edit-post-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Editar Publicação</h3>
         </div>
+        <form id="edit-post-form">
+            <input type="hidden" id="edit-post-id">
+            
+            <textarea id="edit-post-textarea" placeholder="Edite sua publicação..."></textarea>
+            
+            <div class="form-group-files" id="existing-media-section" style="display: none;">
+                <label class="file-label">Mídias Atuais (marque para remover)</label>
+                <div id="edit-existing-media-container"></div>
+            </div>
+
+            <div class="form-group-files">
+                <label for="edit-post-files" class="file-label" style="cursor: pointer;">
+                    <i class="fas fa-plus-circle"></i> Adicionar Novas Mídias
+                </label>
+                <input type="file" id="edit-post-files" multiple accept="image/*,video/*" style="display:none;">
+                <div id="edit-file-preview-container"></div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" id="cancel-edit-post-btn" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
     <div id="edit-comment-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
