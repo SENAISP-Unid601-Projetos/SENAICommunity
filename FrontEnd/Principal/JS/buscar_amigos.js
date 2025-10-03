@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let userFriends = [];
   let friendsLoaded = false;
   let latestOnlineEmails = [];
-  const defaultAvatarUrl = `${backendUrl}/images/default-avatar.png`;
+  const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
 
   // --- ELEMENTOS DO DOM (Seleção Centralizada e Completa) ---
   const elements = {
