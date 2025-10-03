@@ -111,10 +111,24 @@ document.addEventListener("DOMContentLoaded", () => {
         stompClient.connect(headers, (frame) => {
             console.log("CONECTADO AO WEBSOCKET");
             stompClient.subscribe(`/user/${currentUser.email}/queue/notifications`, (message) => {
-                const notification = JSON.parse(message.body);
-                showNotification(`Nova notificação: ${notification.mensagem}`, 'info');
-                fetchNotifications();
-            });
+    const newNotification = JSON.parse(message.body);
+    showNotification(`Nova notificação: ${newNotification.mensagem}`, 'info');
+    if (elements.notificationsList) {
+        const emptyState = elements.notificationsList.querySelector('.empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+        const newItem = createNotificationElement(newNotification);
+        elements.notificationsList.prepend(newItem);
+    }
+
+    if (elements.notificationsBadge) {
+        const currentCount = parseInt(elements.notificationsBadge.textContent) || 0;
+        const newCount = currentCount + 1;
+        elements.notificationsBadge.textContent = newCount;
+        elements.notificationsBadge.style.display = 'flex';
+    }
+});
             stompClient.subscribe("/topic/status", (message) => {
                 latestOnlineEmails = JSON.parse(message.body);
                 atualizarStatusDeAmigosNaUI();
@@ -149,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         notifications.forEach(notification => {
-            const item = document.createElement('div');
+            const item = createNotificationElement(notification);
             item.className = 'notification-item';
             item.id = `notification-item-${notification.id}`;
             if (!notification.lida) item.classList.add('unread');
@@ -188,6 +202,43 @@ document.addEventListener("DOMContentLoaded", () => {
             elements.notificationsList.appendChild(item);
         });
     }
+
+    function createNotificationElement(notification) {
+    const item = document.createElement('div');
+    item.className = 'notification-item unread'; // Adiciona como não lida por padrão
+    item.id = `notification-item-${notification.id}`;
+
+    const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
+    let actionButtonsHtml = '';
+    let iconClass = 'fa-info-circle';
+
+    if (notification.tipo === 'PEDIDO_AMIZADE') {
+        iconClass = 'fa-user-plus';
+        actionButtonsHtml = `
+          <div class="notification-actions">
+            <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
+            <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
+          </div>
+        `;
+    }
+
+    item.innerHTML = `
+        <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
+            <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
+            <div class="notification-content">
+                <p>${notification.mensagem}</p>
+                <span class="timestamp">${data}</span>
+            </div>
+        </a>
+        <div class="notification-actions-wrapper">${actionButtonsHtml}</div>
+    `;
+
+    const actionsWrapper = item.querySelector('.notification-actions-wrapper');
+    if (actionsWrapper) {
+        actionsWrapper.addEventListener('click', e => e.stopPropagation());
+    }
+    return item;
+}
 
     async function markNotificationAsRead(notificationId) {
         const notificationItem = document.getElementById(`notification-item-${notificationId}`);
