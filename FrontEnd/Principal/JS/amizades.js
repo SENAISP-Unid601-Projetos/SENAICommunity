@@ -65,10 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const response = await axios.get(`${backendUrl}/usuarios/me`);
             currentUser = response.data;
             updateUIWithUserData(currentUser);
-            connectWebSocket();
             setupEventListeners();
-
-            // Funções específicas desta página
+            connectWebSocket();
             fetchFriends();
             fetchReceivedRequests();
             fetchSentRequests();
@@ -119,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             stompClient.subscribe("/topic/status", (message) => {
                 latestOnlineEmails = JSON.parse(message.body);
-                 atualizarStatusDeAmigosNaUI();
+                atualizarStatusDeAmigosNaUI();
 
             });
         }, (error) => console.error("ERRO WEBSOCKET:", error));
@@ -136,12 +134,78 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderNotifications(notifications) {
-        // ... (implementação completa da função renderNotifications)
+        if (!elements.notificationsList) return;
+        elements.notificationsList.innerHTML = '';
+        const unreadCount = notifications.filter(n => !n.lida).length;
+
+        if (elements.notificationsBadge) {
+            elements.notificationsBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+            elements.notificationsBadge.textContent = unreadCount;
+        }
+
+        if (notifications.length === 0) {
+            elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
+            return;
+        }
+
+        notifications.forEach(notification => {
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            item.id = `notification-item-${notification.id}`;
+            if (!notification.lida) item.classList.add('unread');
+
+            const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
+            let actionButtonsHtml = '';
+            let iconClass = 'fa-info-circle';
+
+            if (notification.tipo === 'PEDIDO_AMIZADE' && !notification.lida) {
+                iconClass = 'fa-user-plus';
+                // Os botões de aceitar/recusar precisam ser definidos globalmente ou importados se for usar aqui
+                actionButtonsHtml = `
+              <div class="notification-actions">
+                 <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
+                 <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
+              </div>
+            `;
+            }
+
+            item.innerHTML = `
+            <a href="amizades.html" class="notification-link" onclick="markNotificationAsRead(${notification.id})">
+                <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
+                <div class="notification-content">
+                    <p>${notification.mensagem}</p>
+                    <span class="timestamp">${data}</span>
+                </div>
+            </a>
+            <div class="notification-actions-wrapper">${actionButtonsHtml}</div>
+        `;
+
+            const actionsWrapper = item.querySelector('.notification-actions-wrapper');
+            if (actionsWrapper) {
+                actionsWrapper.addEventListener('click', e => e.stopPropagation());
+            }
+
+            elements.notificationsList.appendChild(item);
+        });
+    }
+
+    async function markNotificationAsRead(notificationId) {
+        const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+        if (!notificationItem || !notificationItem.classList.contains('unread')) {
+            return;
+        }
+        notificationItem.classList.remove('unread');
+        try {
+            await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+            fetchNotifications();
+        } catch (error) {
+            console.error("Erro ao marcar notificação como lida:", error);
+            notificationItem.classList.add('unread');
+            showNotification('Erro ao atualizar notificação.', 'error');
+        }
     }
 
     // --- FUNÇÕES DE AMIZADES E CONEXÕES ---
-    // amizades.js
-
     async function fetchFriends() {
         try {
             const response = await axios.get(`${backendUrl}/api/amizades/`);
@@ -150,16 +214,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (elements.connectionsCount) {
                 elements.connectionsCount.textContent = userFriends.length;
             }
-
+            // Renderiza a lista principal de amigos (offline e online)
             renderFriends(userFriends, elements.friendsList);
+            // Atualiza o widget de amigos online na sidebar
             atualizarStatusDeAmigosNaUI();
-
         } catch (error) {
-            console.error("Erro ao buscar lista de amigos:", error);
-            if (elements.friendsList) {
-                elements.friendsList.innerHTML = `<p class="empty-state">Erro ao carregar seus amigos.</p>`;
-            }
+            console.error('Erro ao buscar amigos:', error);
             friendsLoaded = true;
+            atualizarStatusDeAmigosNaUI();
         }
     }
 
@@ -220,84 +282,74 @@ document.addEventListener("DOMContentLoaded", () => {
             container.appendChild(card);
         });
     }
-    function renderFriends(friends, container) {
+
+
+   function renderFriends(friends, container) {
         if (!container) return;
         container.innerHTML = '';
         if (friends.length === 0) {
-            container.innerHTML = `<p class="empty-state">Você ainda não tem amigos. Adicione novas conexões na página "Encontrar Pessoas".</p>`;
+            container.innerHTML = `<p class="empty-state">Você ainda não tem amigos.</p>`;
             return;
         }
-
         friends.forEach(friend => {
-            const statusClass = friend.online ? 'online' : 'offline';
-           
             const card = document.createElement('div');
             card.className = 'user-card';
             card.id = `friend-card-${friend.idAmizade}`;
-
-          
-            const fotoUrl = friend.fotoPerfil
-                ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}`
-                : defaultAvatarUrl;
-
+            const fotoUrl = friend.fotoPerfil ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` : defaultAvatarUrl;
             const actionsHtml = `
-            <a href="mensagem.html" class="btn btn-primary"><i class="fas fa-comment-dots"></i> Mensagem</a>
-            <button class="btn btn-danger" onclick="window.removerAmizade(${friend.idAmizade})"><i class="fas fa-user-minus"></i> Remover</button>
-        `;
-
+                <a href="mensagem.html" class="btn btn-primary"><i class="fas fa-comment-dots"></i> Mensagem</a>
+                <button class="btn btn-danger" onclick="window.removerAmizade(${friend.idAmizade})"><i class="fas fa-user-minus"></i> Remover</button>
+            `;
             card.innerHTML = `
-            <div class="user-card-avatar">
-                <img src="${fotoUrl}" alt="Foto de ${friend.nome}">
-            </div>
-            <div class="user-card-info">
-                <h4>${friend.nome}</h4>
-                <p>${friend.email}</p>
-                <div class="status ${friend.online ? 'online' : 'offline'}" data-user-email="${friend.email}"></div>
-            </div>
-            <div class="user-card-action">
-                ${actionsHtml}
-            </div>
-        `;
+                <div class="user-card-avatar">
+                    <img src="${fotoUrl}" alt="Foto de ${friend.nome}">
+                    <div class="status ${friend.online ? 'online' : 'offline'}" data-user-email="${friend.email}"></div>
+                </div>
+                <div class="user-card-info">
+                    <h4>${friend.nome}</h4>
+                    <p>${friend.email}</p>
+                </div>
+                <div class="user-card-action">${actionsHtml}</div>
+            `;
             container.appendChild(card);
         });
     }
+    /**
+    * Função centralizada para atualizar todos os indicadores visuais de amigos online.
+    * inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
+    */
+  function atualizarStatusDeAmigosNaUI() {
+    if (!elements.onlineFriendsList) return;
 
- /**
- * Função centralizada para atualizar todos os indicadores visuais de amigos online.
- * inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
- */
-
-function atualizarStatusDeAmigosNaUI() {
-    if (elements.onlineFriendsList) {
-
-        if (!friendsLoaded) {
-            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
-            return;
-        }
-
-        const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
-
-        elements.onlineFriendsList.innerHTML = '';
-        if (onlineFriends.length === 0) {
-            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
-        } else {
-            onlineFriends.forEach(friend => {
-                const friendElement = document.createElement('div');
-                friendElement.className = 'friend-item';
-                const friendAvatar = friend.fotoPerfil 
-                    ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` 
-                    : defaultAvatarUrl;
-
-                friendElement.innerHTML = `
-                    <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
-                    <span class="friend-name">${friend.nome}</span>
-                    <div class="status online"></div>
-                `;
-                elements.onlineFriendsList.appendChild(friendElement);
-            });
-        }
+    // Condição de guarda: Só renderiza se a lista de amigos já foi carregada.
+    if (!friendsLoaded) {
+        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
+        return;
     }
 
+    const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
+
+    elements.onlineFriendsList.innerHTML = '';
+    if (onlineFriends.length === 0) {
+        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+    } else {
+        onlineFriends.forEach(friend => {
+            const friendElement = document.createElement('div');
+            friendElement.className = 'friend-item';
+            const friendAvatar = friend.fotoPerfil
+                ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}`
+                : defaultAvatarUrl;
+
+            friendElement.innerHTML = `
+                <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
+                <span class="friend-name">${friend.nome}</span>
+                <div class="status online"></div>
+            `;
+            elements.onlineFriendsList.appendChild(friendElement);
+        });
+    }
+
+    // Lógica para atualizar os pontos de status em outros lugares da página
     const statusDots = document.querySelectorAll('.status[data-user-email]');
     statusDots.forEach(dot => {
         const email = dot.getAttribute('data-user-email');
@@ -309,7 +361,7 @@ function atualizarStatusDeAmigosNaUI() {
             dot.classList.add('offline');
         }
     });
-}
+  }
 
     // --- FUNÇÕES DE AÇÃO GLOBAIS ---
     window.aceitar = async (amizadeId) => {
