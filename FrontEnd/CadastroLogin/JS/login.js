@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         size: "large",
                         type: "standard",
                         shape: "rectangular",
-                        text: "signin_with", // texto: "Entrar com Google"
+                        text: "continue_with", // texto: "Entrar com Google"
                       }
 
                 );
