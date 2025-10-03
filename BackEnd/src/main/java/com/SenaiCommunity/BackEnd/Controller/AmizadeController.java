@@ -64,6 +64,7 @@ public class AmizadeController {
         List<AmigoDTO> amigos = amizadeService.listarAmigos(usuarioLogado);
         return ResponseEntity.ok(amigos);
     }
+
     @GetMapping("/online")
     public ResponseEntity<List<AmigoDTO>> listarAmigosOnline(Principal principal) {
         Usuario usuarioLogado = usuarioService.buscarPorEmail(principal.getName());

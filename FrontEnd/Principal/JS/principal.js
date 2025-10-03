@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedFilesForEdit = [];
   let friendsLoaded = false;
   let latestOnlineEmails = [];
+  const defaultAvatarUrl = `${backendUrl}/images/default-avatar.png`;
 
   const searchInput = document.getElementById("search-input");
 
@@ -125,7 +126,8 @@ document.addEventListener("DOMContentLoaded", () => {
       currentUser = response.data;
       updateUIWithUserData(currentUser);
       connectWebSocket();
-      fetchFriends();
+      await fetchFriends();
+      await fetchInitialOnlineFriends();
       setupEventListeners();
       fetchNotifications();
     } catch (error) {
@@ -565,7 +567,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // ADICIONADO "onclick" AO LINK ABAIXO
       item.innerHTML = `
-            <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(${notification.id})">
+            <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
                 <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
                 <div class="notification-content">
                     <p>${notification.mensagem}</p>
@@ -583,30 +585,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  async function markNotificationAsRead(notificationId) {
-    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
-
-
-    if (!notificationItem || !notificationItem.classList.contains('unread')) {
-      return;
-    }
-
-    notificationItem.classList.remove('unread');
-
-    try {
-      await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
-
-      fetchNotifications();
-    } catch (error) {
-      console.error("Erro ao marcar notificação como lida:", error);
-      notificationItem.classList.add('unread');
-      showNotification('Erro ao atualizar notificação.', 'error');
-    }
-  }
-
   // --- FUNÇÕES PARA AMIGOS ONLINE ---
-
-  async function fetchFriends() {
+ async function fetchFriends() {
     try {
       const response = await axios.get(`${backendUrl}/api/amizades/`);
       userFriends = response.data;
@@ -615,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.connectionsCount) {
         elements.connectionsCount.textContent = userFriends.length;
       }
-      atualizarStatusDeAmigosNaUI();
+  
       
     } catch (error) {
       console.error("Erro ao buscar lista de amigos:", error);
@@ -624,13 +604,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-
+ async function fetchInitialOnlineFriends() {
+    try {
+        const response = await axios.get(`${backendUrl}/api/amizades/online`); 
+        const amigosOnlineDTOs = response.data;
+        latestOnlineEmails = amigosOnlineDTOs.map(amigo => amigo.email);
+        atualizarStatusDeAmigosNaUI(); 
+    } catch (error) {
+        console.error("Erro ao buscar status inicial de amigos online:", error);
+    }
+}
 
   /**
    * Função centralizada para atualizar todos os indicadores visuais de amigos online.
    * Isso inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
    */
-  function atualizarStatusDeAmigosNaUI() {
+   function atualizarStatusDeAmigosNaUI() {
     if (!elements.onlineFriendsList) return;
 
     // Condição de guarda: Só renderiza se a lista de amigos já foi carregada.
@@ -809,6 +798,62 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  window.markNotificationAsRead = async (event, notificationId) => {
+    // 1. Impede a navegação imediata para o link do href
+    if (event) {
+        event.preventDefault();
+    }
+
+    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+
+    // Só executa a lógica se a notificação estiver marcada como não lida
+    if (notificationItem && notificationItem.classList.contains('unread')) {
+        notificationItem.classList.remove('unread'); // Atualização otimista da UI
+
+        try {
+            // 2. Espera a confirmação do backend
+            await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+            // Busca novamente para atualizar o contador (badge)
+            fetchNotifications(); 
+        } catch (error) {
+            console.error("Erro ao marcar notificação como lida:", error);
+            // Em caso de erro, reverte a mudança na UI
+            notificationItem.classList.add('unread'); 
+            showNotification('Erro ao atualizar notificação.', 'error');
+        } finally {
+            // 3. Navega para a página de destino após a operação ser concluída (com sucesso ou falha)
+            if (event && event.currentTarget) {
+                window.location.href = event.currentTarget.href;
+            }
+        }
+    } else {
+        // Se a notificação já foi lida, apenas navega
+        if (event && event.currentTarget) {
+            window.location.href = event.currentTarget.href;
+        }
+    }
+};
+
+  window.openEditCommentModal = (commentId, content) => {
+    if (elements.editCommentIdInput)
+      elements.editCommentIdInput.value = commentId;
+    if (elements.editCommentTextarea)
+      elements.editCommentTextarea.value = content;
+    if (elements.editCommentModal)
+      elements.editCommentModal.style.display = "flex";
+  };
+  window.deleteComment = async (commentId) => {
+    if (confirm("Tem certeza que deseja excluir este comentário?")) {
+      try {
+        await axios.delete(`${backendUrl}/comentarios/${commentId}`);
+        showNotification("Comentário excluído.", "success");
+      } catch (error) {
+        showNotification("Não foi possível excluir o comentário.", "error");
+        console.error("Erro ao excluir comentário:", error);
+      }
+    }
+  };
+  window.highlightComment = async (commentId) => {
  let urlsParaRemover = []; // Array global para guardar URLs a serem removidas
 
 // 1. Função ATUALIZADA para abrir o modal
