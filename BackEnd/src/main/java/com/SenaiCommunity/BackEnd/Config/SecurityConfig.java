@@ -47,15 +47,18 @@ public class SecurityConfig {
                         // Endpoints que NÃO precisam de login
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/autenticacao/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll() // Necessário para a conexão WebSocket inicial
-                        .requestMatchers("/images/**", "/api/arquivos/**", "/projetos/imagens/**").permitAll() // Endpoints de arquivos públicos
-                        .requestMatchers( // Endpoints do Swagger para documentação
+
+                        // ✅ CORREÇÃO APLICADA AQUI: Liberando os endpoints de cadastro de forma mais explícita
+                        .requestMatchers(HttpMethod.POST, "/cadastro/alunos").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/cadastro/professores").permitAll()
+
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/images/**", "/api/arquivos/**", "/projetos/imagens/**").permitAll()
+                        .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        // QUALQUER OUTRA requisição precisa de autenticação
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(
@@ -68,7 +71,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://127.0.0.1:5501", "http://localhost:3000", "http://127.0.0.1:5502"));
+        // Adicione a porta do seu front-end React (Vite usa 5173 por padrão)
+        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://127.0.0.1:5501", "http://localhost:3000", "http://127.0.0.1:5502", "http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

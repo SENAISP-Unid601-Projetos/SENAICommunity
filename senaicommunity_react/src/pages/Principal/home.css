@@ -1,0 +1,32 @@
+.home-container {
+    color: var(--text-primary);
+}
+
+.home-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logout-btn {
+    background-color: var(--highlight);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.logout-btn:hover {
+    opacity: 0.9;
+}
+
+.home-content {
+    padding: 2rem;
+    text-align: center;
+}

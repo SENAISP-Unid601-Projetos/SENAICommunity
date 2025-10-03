@@ -1,0 +1,151 @@
+/* --- Conteúdo completo para o arquivo cadastro.css --- */
+
+.tech-background {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; overflow: hidden;
+    background: linear-gradient(-45deg, var(--bg-primary), var(--bg-secondary), var(--bg-tertiary), var(--bg-quaternary));
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+}
+
+.file-upload-wrapper { width: 100%; margin: 0.5rem 0; position: relative; }
+.file-upload-label {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 100%; height: 150px; border: 2px dashed var(--border-color);
+    border-radius: var(--card-radius); cursor: pointer; transition: var(--transition);
+    text-align: center; padding: 1rem;
+}
+
+.file-upload-label:hover, .file-upload-label.drag-over {
+    border-color: var(--accent-primary);
+    background-color: var(--bg-tertiary);
+}
+
+#upload-instructions { color: var(--text-secondary); }
+#upload-instructions i { font-size: 2.5rem; margin-bottom: 0.75rem; color: var(--text-tertiary); }
+#upload-instructions p { font-size: 1rem; }
+#file-name { font-size: 0.8rem; color: var(--text-tertiary); margin-top: 0.5rem; word-break: break-all; }
+
+#image-preview { width: 100%; height: 150px; object-fit: cover; border-radius: var(--card-radius); border: 1px solid var(--border-color); }
+.image-preview-hidden { display: none; }
+
+.theme-toggle {
+    position: fixed; bottom: 2rem; right: 2rem; width: 3rem; height: 3rem;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background-color: var(--bg-tertiary); color: var(--text-primary); cursor: pointer;
+    box-shadow: var(--shadow); z-index: 100; transition: var(--transition);
+}
+
+.theme-toggle:hover { background-color: var(--bg-quaternary); transform: scale(1.05); }
+
+.input-group { position: relative; }
+.input-group i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-tertiary); z-index: 2; }
+
+.input-group input, .input-group select {
+    width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem;
+    background-color: var(--bg-tertiary); border: 1px solid var(--border-color);
+    border-radius: 6px; color: var(--text-primary); transition: var(--transition);
+    font-family: 'Inter', sans-serif; font-size: 1rem;
+}
+
+.input-group input:focus, .input-group select:focus {
+    outline: none; border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+}
+
+.input-group select {
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat; background-position: right 0.75rem center;
+    background-size: 16px 12px; padding-right: 2.5rem;
+}
+
+.input-group select:invalid { color: var(--text-secondary); }
+
+.toggle-password {
+    position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--text-tertiary); cursor: pointer;
+    transition: var(--transition); z-index: 2;
+}
+
+/* --- ESTILOS DAS PARTÍCULAS QUE ESTAVAM FALTANDO --- */
+
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(88, 166, 255, 0.3);
+    animation-name: float;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    z-index: -1;
+    filter: blur(0.5px);
+}
+
+.highlight-particle {
+    background: rgba(248, 81, 73, 0.4);
+    animation-name: floatRed, glow;
+    animation-duration: 12s, 3s;
+    animation-iteration-count: infinite, infinite;
+    animation-timing-function: linear, ease-in-out;
+    filter: blur(0.8px);
+}
+
+.small-particle { width: 3px; height: 3px; }
+.medium-particle { width: 5px; height: 5px; }
+.large-particle { width: 7px; height: 7px; }
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+    0%, 100% { 
+        transform: translate(0, 0); 
+        opacity: 0.7;
+    }
+    25% { 
+        transform: translate(-50px, -30px); 
+        opacity: 1;
+    }
+    50% { 
+        transform: translate(20px, -50px); 
+        opacity: 0.7;
+    }
+    75% { 
+        transform: translate(50px, 30px); 
+        opacity: 1;
+    }
+}
+
+@keyframes floatRed {
+    0% { 
+        transform: translate(0, 0) scale(1); 
+        opacity: 0;
+    }
+    20% { 
+        opacity: 1; 
+        transform: scale(1.1);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+    80% { 
+        opacity: 1; 
+        transform: scale(1.1);
+    }
+    100% { 
+        transform: translate(100px, -100px) scale(1); 
+        opacity: 0;
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(88, 166, 255, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(88, 166, 255, 0.5);
+    }
+}
