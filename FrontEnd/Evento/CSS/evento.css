@@ -1,24 +1,30 @@
-/* CSS para /Eventos/CSS/eventos.css */
+/* Layout da página de Eventos corrigido para 2 colunas */
+.container {
+  grid-template-columns: 280px 1fr;
+  grid-template-areas: "sidebar main"; /* Define as áreas do grid */
+}
 
-/* Cabeçalho da Seção de Eventos */
+/* Garante que não haja uma sidebar fantasma à direita */
+.right-sidebar {
+    display: none;
+}
+
+.main-content {
+    grid-area: main; /* Associa o conteúdo principal à área 'main' */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
 .eventos-header {
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(var(--rgb-accent), 0.1), transparent), var(--bg-secondary);
+  background: var(--bg-secondary);
   border-radius: var(--card-radius);
-  margin-bottom: 1rem;
   border: 1px solid var(--border-color);
 }
+.eventos-header h1 { color: var(--accent-primary); margin-bottom: 0.5rem; }
+.eventos-header p { color: var(--text-secondary); }
 
-.eventos-header h1 {
-  color: var(--accent-primary);
-  margin-bottom: 0.5rem;
-}
-
-.eventos-header p {
-  color: var(--text-secondary);
-}
-
-/* Estilo dos filtros (reutiliza muito do vaga.css, mas podemos garantir aqui) */
 .filters-container {
   display: flex;
   flex-wrap: wrap;
@@ -26,10 +32,8 @@
   padding: 1rem;
   background-color: var(--bg-secondary);
   border-radius: var(--card-radius);
-  margin-bottom: 1rem;
   border: 1px solid var(--border-color);
 }
-
 .filters-container select {
   flex: 1;
   min-width: 150px;
@@ -38,25 +42,14 @@
   border: 1px solid var(--border-color);
   border-radius: 6px;
   color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.875rem;
 }
 
-.filters-container select:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px var(--accent-primary);
-}
-
-
-/* Grid de Eventos */
 .eventos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
-/* Card de Evento */
 .evento-card {
   background-color: var(--bg-secondary);
   border-radius: var(--card-radius);
@@ -64,21 +57,20 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: var(--transition);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .evento-card:hover {
   transform: translateY(-5px);
   box-shadow: var(--shadow);
 }
 
 .evento-imagem {
-  height: 150px;
+  height: 160px;
   background-size: cover;
   background-position: center;
   position: relative;
+  background-color: var(--bg-tertiary);
 }
-
 .evento-imagem::after {
   content: '';
   position: absolute;
@@ -98,25 +90,15 @@
   line-height: 1.1;
   border: 1px solid var(--border-color);
 }
-
-.evento-data span:first-child {
-  font-size: 1.5rem;
-  font-weight: 700;
-  display: block;
-}
-
-.evento-data span:last-child {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-}
+.evento-data span:first-child { font-size: 1.5rem; font-weight: 700; display: block; }
+.evento-data span:last-child { font-size: 0.75rem; text-transform: uppercase; }
 
 .evento-conteudo {
-  padding: 1rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
-
 .evento-categoria {
   font-size: 0.75rem;
   font-weight: 600;
@@ -124,14 +106,13 @@
   text-transform: uppercase;
   margin-bottom: 0.5rem;
 }
-
 .evento-titulo {
   font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
   flex-grow: 1;
 }
-
 .evento-detalhe {
   display: flex;
   align-items: center;
@@ -140,11 +121,7 @@
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
 }
-
-.evento-detalhe i {
-  width: 15px;
-  text-align: center;
-}
+.evento-detalhe i { width: 15px; text-align: center; }
 
 .evento-card .rsvp-btn {
   width: 100%;
@@ -159,75 +136,40 @@
   font-weight: 600;
   transition: var(--transition);
 }
+.evento-card .rsvp-btn:hover { background-color: var(--accent-secondary); }
+.evento-card .rsvp-btn.confirmed { background-color: var(--success); }
 
-.evento-card .rsvp-btn:hover {
-  background-color: var(--accent-secondary);
-}
-
-.evento-card .rsvp-btn.confirmed {
-  background-color: var(--success);
-  color: white;
-}
-
-.evento-card .rsvp-btn.confirmed:hover {
-  background-color: var(--success);
-  opacity: 0.9;
-}
-
-
-/* Sidebar Direita */
-.meus-eventos-card, .sugerir-evento-card {
+/* Card "Meus Eventos" */
+.meus-eventos-card {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--card-radius);
   padding: 1.5rem;
-  margin-bottom: 1rem;
 }
-
-.meus-eventos-card h3, .sugerir-evento-card h3 {
+.meus-eventos-card h3 {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin: 0 0 1rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
 }
-
+#meus-eventos-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
 #meus-eventos-lista .evento-confirmado-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   font-size: 0.875rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border-color);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
 }
-
-#meus-eventos-lista .evento-confirmado-item:last-child {
-  border-bottom: none;
-}
-
 #meus-eventos-lista .empty-message {
     color: var(--text-secondary);
     font-size: 0.875rem;
+    padding: 1rem 0;
 }
-
-.sugerir-evento-card p {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
-}
-
-.sugerir-btn {
-  width: 100%;
-  background-color: transparent;
-  border: 1px solid var(--accent-primary);
-  color: var(--accent-primary);
-  padding: 0.6rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.sugerir-btn:hover {
-  background-color: var(--accent-primary);
-  color: white;
-}
-
