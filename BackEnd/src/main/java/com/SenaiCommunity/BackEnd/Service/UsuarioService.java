@@ -1,8 +1,11 @@
 package com.SenaiCommunity.BackEnd.Service;
 
 import com.SenaiCommunity.BackEnd.DTO.UsuarioAtualizacaoDTO;
+import com.SenaiCommunity.BackEnd.DTO.UsuarioBuscaDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;
+import com.SenaiCommunity.BackEnd.Entity.Amizade;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
+import com.SenaiCommunity.BackEnd.Repository.AmizadeRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -26,12 +32,18 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AmizadeRepository amizadeRepository;
+
+    @Autowired
+    private UserStatusService userStatusService;
+
     @Value("${file.upload-dir}")
     private String uploadDir;
 
     /**
      * método público para buscar usuário por email.
-     * Este método é necessário para o CurtidaController.
+     * necessário para o CurtidaController.
      */
     public Usuario buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email)
@@ -113,8 +125,67 @@ public class UsuarioService {
         Path caminhoDoArquivo = diretorioUpload.resolve(nomeArquivo);
         foto.transferTo(caminhoDoArquivo);
 
-        // Retorna o caminho relativo que pode ser acessado pela web
-        // Ex: /uploads/123456_minhafoto.jpg
-        return "/api/arquivos/" + nomeArquivo;
+        // Retorna APENAS o nome do arquivo.
+        // O restante da URL será montado no frontend ou no DTO.
+        return nomeArquivo;
+    }
+
+    /**
+     * Busca usuários por nome e determina o status de amizade com o usuário logado.
+     */
+    public List<UsuarioBuscaDTO> buscarUsuariosPorNome(String nome, String emailUsuarioLogado) {
+        Usuario usuarioLogado = buscarPorEmail(emailUsuarioLogado);
+
+        List<Usuario> usuariosEncontrados = usuarioRepository.findByNomeContainingIgnoreCaseAndIdNot(nome, usuarioLogado.getId());
+
+        return usuariosEncontrados.stream()
+                .map(usuario -> toBuscaDTO(usuario, usuarioLogado))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Converte uma entidade Usuario para UsuarioBuscaDTO, incluindo o status de amizade.
+     */
+    private UsuarioBuscaDTO toBuscaDTO(Usuario usuario, Usuario usuarioLogado) {
+        UsuarioBuscaDTO.StatusAmizadeRelacao status = determinarStatusAmizade(usuario, usuarioLogado);
+
+        String urlFoto = usuario.getFotoPerfil() != null && !usuario.getFotoPerfil().isBlank()
+                ? "/api/arquivos/" + usuario.getFotoPerfil()
+                : "/images/default-avatar.png";
+
+        return new UsuarioBuscaDTO(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail(),
+                urlFoto,
+                status,
+                userStatusService.isOnline(usuario.getEmail())
+        );
+    }
+
+    /**
+     * Lógica auxiliar para verificar a relação de amizade entre dois usuários.
+     */
+    private UsuarioBuscaDTO.StatusAmizadeRelacao determinarStatusAmizade(Usuario usuario, Usuario usuarioLogado) {
+        Optional<Amizade> amizadeOpt = amizadeRepository.findAmizadeEntreUsuarios(usuarioLogado, usuario);
+
+        if (amizadeOpt.isEmpty()) {
+            return UsuarioBuscaDTO.StatusAmizadeRelacao.NENHUMA;
+        }
+
+        Amizade amizade = amizadeOpt.get();
+        switch (amizade.getStatus()) {
+            case ACEITO:
+                return UsuarioBuscaDTO.StatusAmizadeRelacao.AMIGOS;
+            case PENDENTE:
+                // Se o solicitante for o usuário logado, então a solicitação foi enviada por ele.
+                if (amizade.getSolicitante().getId().equals(usuarioLogado.getId())) {
+                    return UsuarioBuscaDTO.StatusAmizadeRelacao.SOLICITACAO_ENVIADA;
+                } else {
+                    return UsuarioBuscaDTO.StatusAmizadeRelacao.SOLICITACAO_RECEBIDA;
+                }
+            default: // RECUSADO ou outros estados
+                return UsuarioBuscaDTO.StatusAmizadeRelacao.NENHUMA;
+        }
     }
 }

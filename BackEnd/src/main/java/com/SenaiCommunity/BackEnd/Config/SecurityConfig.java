@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/autenticacao/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/autenticacao/login/google").permitAll() // ✅ NOVO ENDPOINT DE LOGIN SOCIAL
                         .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/projetos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/projetos/**").permitAll()
@@ -53,8 +54,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/projetos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/alunos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/professores/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll() // Necessário para a conexão WebSocket inicial
-                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/auth/**", "/cadastro/**", "/ws/**", "/login**", "/oauth2/**").permitAll()
                         .requestMatchers("/images/**", "/api/arquivos/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",

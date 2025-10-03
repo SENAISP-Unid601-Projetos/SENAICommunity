@@ -39,11 +39,18 @@ document.addEventListener('DOMContentLoaded', () => {
         editProfileDob: document.getElementById('edit-profile-dob'),
         editProfilePassword: document.getElementById('edit-profile-password'),
         editProfilePasswordConfirm: document.getElementById('edit-profile-password-confirm'),
-        
+
         deleteAccountModal: document.getElementById('delete-account-modal'),
         deleteAccountForm: document.getElementById('delete-account-form'),
         cancelDeleteAccountBtn: document.getElementById('cancel-delete-account-btn'),
-        deleteConfirmPassword: document.getElementById('delete-confirm-password')
+        deleteConfirmPassword: document.getElementById('delete-confirm-password'),
+
+        notificationsIcon: document.getElementById('notifications-icon'),
+        notificationsPanel: document.getElementById('notifications-panel'),
+        notificationsList: document.getElementById('notifications-list'),
+        notificationsBadge: document.getElementById('notifications-badge'),
+        onlineFriendsList: document.getElementById('online-friends-list'),
+        connectionsCount: document.getElementById('connections-count')
     };
 
     // --- INICIALIZAÇÃO ---
@@ -57,11 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await axios.get(`${backendUrl}/usuarios/me`);
             currentUser = response.data;
-            
-            // Popula tanto a UI geral quanto a página de perfil
+
             updateUIWithUserData(currentUser);
             populateProfileData(currentUser);
-
+            fetchUserConnections(); // NOVA CHAMADA DE FUNÇÃO
             setupEventListeners();
         } catch (error) {
             console.error("ERRO CRÍTICO NA INICIALIZAÇÃO DO PERFIL:", error);
@@ -69,6 +75,19 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'login.html';
         }
     }
+
+    // --- NOVA FUNÇÃO PARA BUSCAR CONEXÕES ---
+    async function fetchUserConnections() {
+        if (!elements.connectionsCount) return;
+        try {
+            const response = await axios.get(`${backendUrl}/api/amizades/`);
+            elements.connectionsCount.textContent = response.data.length;
+        } catch (error) {
+            console.error("Erro ao buscar conexões:", error);
+            elements.connectionsCount.textContent = '0';
+        }
+    }
+
 
     // --- FUNÇÕES DE UI ---
 
@@ -78,12 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const userImage = user.urlFotoPerfil ? `${backendUrl}${user.urlFotoPerfil}` : defaultAvatarUrl;
         const userDob = user.dataNascimento ? new Date(user.dataNascimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'Não informado';
 
-        if(elements.profileName) elements.profileName.textContent = user.nome;
-        if(elements.profileTitle) elements.profileTitle.textContent = user.titulo || 'Membro da Comunidade';
-        if(elements.profilePicImg) elements.profilePicImg.src = userImage;
-        if(elements.profileBio) elements.profileBio.textContent = user.bio || 'Nenhuma bio informada.';
-        if(elements.profileEmail) elements.profileEmail.textContent = user.email;
-        if(elements.profileDob) elements.profileDob.textContent = userDob;
+        if (elements.profileName) elements.profileName.textContent = user.nome;
+        if (elements.profileTitle) elements.profileTitle.textContent = user.titulo || 'Membro da Comunidade';
+        if (elements.profilePicImg) elements.profilePicImg.src = userImage;
+        if (elements.profileBio) elements.profileBio.textContent = user.bio || 'Nenhuma bio informada.';
+        if (elements.profileEmail) elements.profileEmail.textContent = user.email;
+        if (elements.profileDob) elements.profileDob.textContent = userDob;
     }
 
     // Preenche os dados do header e sidebar
@@ -127,16 +146,16 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.editProfilePasswordConfirm.value = '';
         elements.editProfileModal.style.display = 'flex';
     }
-    
+
     function openDeleteAccountModal() {
-        if(elements.deleteConfirmPassword) elements.deleteConfirmPassword.value = '';
-        if(elements.deleteAccountModal) elements.deleteAccountModal.style.display = 'flex';
+        if (elements.deleteConfirmPassword) elements.deleteConfirmPassword.value = '';
+        if (elements.deleteAccountModal) elements.deleteAccountModal.style.display = 'flex';
     }
 
     // --- SETUP DOS EVENT LISTENERS ---
     function setupEventListeners() {
         document.body.addEventListener('click', closeAllMenus);
-        
+
         // Listener para abrir o dropdown do usuário
         if (elements.userDropdownTrigger) {
             elements.userDropdownTrigger.addEventListener('click', (event) => {
@@ -172,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (elements.editProfileForm) elements.editProfileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             let userUpdated = false;
 
             // 1. Atualiza a foto, se houver uma nova
@@ -203,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 dataNascimento: elements.editProfileDob.value ? new Date(elements.editProfileDob.value).toISOString() : null,
                 senha: password || null
             };
-            
+
             try {
                 const response = await axios.put(`${backendUrl}/usuarios/me`, updateData);
                 currentUser = response.data; // Atualiza currentUser com os novos dados
@@ -214,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // 3. Se qualquer atualização foi bem-sucedida, atualiza a UI e fecha o modal
-            if(userUpdated) {
+            if (userUpdated) {
                 updateUIWithUserData(currentUser);
                 populateProfileData(currentUser);
                 showNotification('Perfil atualizado com sucesso!', 'success');
@@ -234,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 // Passo 1: Verifica a senha tentando fazer login
                 await axios.post(`${backendUrl}/autenticacao/login`, { email: currentUser.email, senha: password });
-                
+
                 // Passo 2: Se o login deu certo, a senha está correta
                 if (confirm("Você tem ABSOLUTA CERTEZA? Esta ação não pode ser desfeita.")) {
                     await axios.delete(`${backendUrl}/usuarios/me`);
@@ -248,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
+
     // Ponto de entrada da aplicação
     init();
 });

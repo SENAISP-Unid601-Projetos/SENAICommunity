@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAI Community | Minhas Conexões</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Principal/CSS/principal.css">
+</head>
+<body>
+    <div class="notification-center"></div>
+
+    <header class="topbar">
+        </header>
+
+    <div class="container">
+        <aside class="sidebar">
+             <a href="perfil.html" class="user-info-link">
+                <div class="user-info">
+                    <div class="avatar">
+                        <img src="https://via.placeholder.com/80" alt="Perfil" id="sidebar-user-img">
+                        <div class="status online"></div>
+                    </div>
+                    <h2 id="sidebar-user-name">Carregando...</h2>
+                    <p class="user-title" id="sidebar-user-title">Carregando...</p>
+                    <div class="user-stats">
+                        <div class="stat">
+                            <strong id="connections-count">-</strong>
+                            <span>Conexões</span>
+                        </div>
+                        <div class="stat">
+                            <strong id="projects-count">-</strong>
+                            <span>Projetos</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            <nav class="menu">
+                <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
+                <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
+                <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
+                <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
+                <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+                <a href="buscar_amigos.html"><i class="fas fa-user-plus"></i> Encontrar Pessoas</a>
+                <a href="amizades.html" class="active"><i class="fas fa-user-friends"></i> Minhas Conexões</a>
+            </nav>
+          <div class="widget-card online-friends" id="online-friends-widget">
+    <h3 class="widget-title">Amigos Online</h3>
+    <div class="friend-list" id="online-friends-list">
+        <p class="empty-state">Carregando...</p>
+    </div>
+</div>
+        </aside>
+
+        <main class="main-content">
+            <div class="widget-card">
+                <h2 class="widget-title">Gerenciar Conexões</h2>
+                
+                <div class="connections-section">
+                    <h3>Pedidos de Amizade Recebidos</h3>
+                    <div class="request-list" id="received-requests-list">
+                        <p class="empty-state">Nenhum pedido recebido.</p>
+                    </div>
+                </div>
+
+                <div class="connections-section">
+                    <h3>Pedidos de Amizade Enviados</h3>
+                    <div class="request-list" id="sent-requests-list">
+                        <p class="empty-state">Nenhum pedido enviado.</p>
+                    </div>
+                </div>
+
+                <div class="connections-section">
+        <h3>Meus Amigos</h3>
+        <div class="request-list" id="friends-list">
+            </div>
+    </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="/Principal/JS/amizades.js"></script> </body>
+</html>
