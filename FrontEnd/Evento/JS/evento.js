@@ -1,175 +1,158 @@
-/* Layout da página de Eventos corrigido para 2 colunas */
-.container {
-  grid-template-columns: 280px 1fr;
-  grid-template-areas: "sidebar main"; /* Define as áreas do grid */
-}
+document.addEventListener('DOMContentLoaded', () => {
+    // --- CONFIGURAÇÕES GLOBAIS ---
+    const backendUrl = 'http://localhost:8080';
+    const jwtToken = localStorage.getItem('token');
+    let currentUser = null;
+    let allEvents = [];
+    let confirmedEvents = new Set();
 
-/* Garante que não haja uma sidebar fantasma à direita */
-.right-sidebar {
-    display: none;
-}
+    // --- ELEMENTOS DO DOM ---
+    const elements = {
+        eventosGrid: document.querySelector('.eventos-grid'),
+        meusEventosLista: document.getElementById('meus-eventos-lista'),
+        searchInput: document.getElementById('search-input'),
+        filterPeriodo: document.getElementById('filter-periodo'),
+        filterFormato: document.getElementById('filter-formato'),
+        filterCategoria: document.getElementById('filter-categoria'),
+        sidebarUserImg: document.getElementById('sidebar-user-img'),
+        sidebarUserName: document.getElementById('sidebar-user-name'),
+        sidebarUserTitle: document.getElementById('sidebar-user-title'),
+        topbarUserImg: document.getElementById('topbar-user-img'),
+        topbarUserName: document.getElementById('topbar-user-name')
+    };
 
-.main-content {
-    grid-area: main; /* Associa o conteúdo principal à área 'main' */
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
+    // --- FUNÇÕES DE RENDERIZAÇÃO ---
+    const render = {
+        eventosGrid(eventos) {
+            const grid = elements.eventosGrid;
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            if (eventos.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Nenhum evento encontrado para os filtros selecionados.</p>';
+                return;
+            }
 
-.eventos-header {
-  padding: 1.5rem;
-  background: var(--bg-secondary);
-  border-radius: var(--card-radius);
-  border: 1px solid var(--border-color);
-}
-.eventos-header h1 { color: var(--accent-primary); margin-bottom: 0.5rem; }
-.eventos-header p { color: var(--text-secondary); }
+            eventos.forEach(evento => {
+                const data = new Date(evento.data);
+                const dia = data.getUTCDate();
+                const mes = data.toLocaleString('pt-BR', { month: 'short', timeZone: 'UTC' }).replace('.', '');
+                const isConfirmed = confirmedEvents.has(evento.id);
+                
+                // CORREÇÃO: Usa a URL completa que vem do backend, que já inclui o http://localhost:8080
+                const imageUrl = evento.imagemCapaUrl 
+                    ? evento.imagemCapaUrl
+                    : 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80';
 
-.filters-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: var(--bg-secondary);
-  border-radius: var(--card-radius);
-  border: 1px solid var(--border-color);
-}
-.filters-container select {
-  flex: 1;
-  min-width: 150px;
-  padding: 0.75rem;
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-primary);
-}
+                const card = document.createElement('div');
+                card.className = 'evento-card';
+                card.dataset.id = evento.id;
+                card.innerHTML = `
+                    <div class="evento-imagem" style="background-image: url('${imageUrl}')">
+                      <div class="evento-data"><span>${dia}</span><span>${mes}</span></div>
+                    </div>
+                    <div class="evento-conteudo">
+                      <span class="evento-categoria">${evento.categoria}</span>
+                      <h2 class="evento-titulo">${evento.nome}</h2>
+                      <div class="evento-detalhe"><i class="fas fa-clock"></i> Horário a definir</div>
+                      <div class="evento-detalhe"><i class="fas fa-map-marker-alt"></i> ${evento.local} (${evento.formato})</div>
+                      <button class="rsvp-btn ${isConfirmed ? 'confirmed' : ''}">
+                        <i class="fas ${isConfirmed ? 'fa-check' : 'fa-calendar-plus'}"></i> 
+                        ${isConfirmed ? 'Presença Confirmada' : 'Confirmar Presença'}
+                      </button>
+                    </div>`;
+                grid.appendChild(card);
+            });
+        },
+        meusEventos() {
+            const lista = elements.meusEventosLista;
+            const eventosConfirmados = allEvents.filter(e => confirmedEvents.has(e.id));
+            lista.innerHTML = '';
+            if (eventosConfirmados.length === 0) {
+                lista.innerHTML = '<p class="empty-message">Você não confirmou presença em nenhum evento.</p>';
+                return;
+            }
+            eventosConfirmados.forEach(evento => {
+                const data = new Date(evento.data);
+                lista.innerHTML += `
+                    <div class="evento-confirmado-item">
+                        <div class="evento-data" style="background-color: var(--bg-tertiary); padding: 0.3rem; border-radius: 4px;">
+                            <span>${data.getUTCDate()}</span>
+                            <span>${data.toLocaleString('pt-BR', { month: 'short', timeZone: 'UTC' }).replace('.', '')}</span>
+                        </div>
+                        <span>${evento.nome}</span>
+                    </div>`;
+            });
+        },
+        userInfo(user) {
+            const userImage = user.urlFotoPerfil ? `${backendUrl}${user.urlFotoPerfil}` : 'https://via.placeholder.com/80';
+            elements.sidebarUserImg.src = userImage;
+            elements.sidebarUserName.textContent = user.nome;
+            elements.sidebarUserTitle.textContent = user.titulo || 'Membro da Comunidade';
+            elements.topbarUserImg.src = userImage;
+            elements.topbarUserName.textContent = user.nome;
+        }
+    };
 
-.eventos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-}
-
-.evento-card {
-  background-color: var(--bg-secondary);
-  border-radius: var(--card-radius);
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.evento-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow);
-}
-
-.evento-imagem {
-  height: 160px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  background-color: var(--bg-tertiary);
-}
-.evento-imagem::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
-}
-
-.evento-data {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background-color: rgba(13, 17, 23, 0.8);
-  color: white;
-  border-radius: 6px;
-  text-align: center;
-  padding: 0.5rem;
-  line-height: 1.1;
-  border: 1px solid var(--border-color);
-}
-.evento-data span:first-child { font-size: 1.5rem; font-weight: 700; display: block; }
-.evento-data span:last-child { font-size: 0.75rem; text-transform: uppercase; }
-
-.evento-conteudo {
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-.evento-categoria {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--accent-primary);
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
-}
-.evento-titulo {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  line-height: 1.4;
-  flex-grow: 1;
-}
-.evento-detalhe {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-}
-.evento-detalhe i { width: 15px; text-align: center; }
-
-.evento-card .rsvp-btn {
-  width: 100%;
-  background-color: var(--accent-primary);
-  border: none;
-  border-radius: 6px;
-  padding: 0.75rem;
-  margin-top: 1rem;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: var(--transition);
-}
-.evento-card .rsvp-btn:hover { background-color: var(--accent-secondary); }
-.evento-card .rsvp-btn.confirmed { background-color: var(--success); }
-
-/* Card "Meus Eventos" */
-.meus-eventos-card {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--card-radius);
-  padding: 1.5rem;
-}
-.meus-eventos-card h3 {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0 0 1rem 0;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color);
-}
-#meus-eventos-lista {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-}
-#meus-eventos-lista .evento-confirmado-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  background-color: var(--bg-tertiary);
-}
-#meus-eventos-lista .empty-message {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    padding: 1rem 0;
-}
+    const app = {
+        async fetchAndRenderEventos() {
+            try {
+                const response = await axios.get(`${backendUrl}/api/eventos`);
+                allEvents = response.data;
+                this.applyFilters();
+            } catch (error) {
+                console.error("Erro ao buscar eventos:", error);
+                elements.eventosGrid.innerHTML = '<p style="color: red; text-align: center;">Não foi possível carregar os eventos.</p>';
+            }
+        },
+        applyFilters() {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            const { value: periodo } = elements.filterPeriodo;
+            const { value: formato } = elements.filterFormato;
+            const { value: categoria } = elements.filterCategoria;
+            const searchTerm = elements.searchInput.value.toLowerCase();
+            
+            let filtered = allEvents.filter(evento => {
+                const eventoData = new Date(evento.data);
+                return (periodo === 'proximos' ? eventoData >= hoje : eventoData < hoje) &&
+                       (formato === 'todos' || evento.formato === formato) &&
+                       (categoria === 'todos' || evento.categoria === categoria) &&
+                       evento.nome.toLowerCase().includes(searchTerm);
+            });
+            filtered.sort((a, b) => periodo === 'proximos' ? new Date(a.data) - new Date(b.data) : new Date(b.data) - new Date(a.data));
+            render.eventosGrid(filtered);
+        },
+        toggleRsvp(eventoId) {
+            confirmedEvents.has(eventoId) ? confirmedEvents.delete(eventoId) : confirmedEvents.add(eventoId);
+            this.applyFilters();
+            render.meusEventos();
+        },
+        setupEventListeners() {
+            [elements.searchInput, elements.filterPeriodo, elements.filterFormato, elements.filterCategoria].forEach(el => {
+                el.addEventListener('input', () => this.applyFilters());
+            });
+            elements.eventosGrid.addEventListener('click', e => {
+                const btn = e.target.closest('.rsvp-btn');
+                if (btn) this.toggleRsvp(parseInt(btn.closest('.evento-card').dataset.id, 10));
+            });
+        },
+        async init() {
+            if (!jwtToken) { window.location.href = 'login.html'; return; }
+            axios.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+            try {
+                const response = await axios.get(`${backendUrl}/usuarios/me`);
+                currentUser = response.data;
+                render.userInfo(currentUser);
+                this.setupEventListeners();
+                await this.fetchAndRenderEventos();
+                render.meusEventos();
+            } catch (error) {
+                console.error("Erro de autenticação:", error);
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+            }
+        }
+    };
+    app.init();
+});
