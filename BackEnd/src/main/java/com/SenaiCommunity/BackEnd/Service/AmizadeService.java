@@ -32,61 +32,8 @@ public class AmizadeService {
     @Autowired
     private UserStatusService userStatusService;
 
-
-    /**
-     * Converte uma entidade Amizade em um DTO para representar uma solicitação pendente.
-     */
-    private SolicitacaoAmizadeDTO toSolicitacaoDTO(Amizade amizade) {
-        Usuario solicitante = amizade.getSolicitante();
-        return new SolicitacaoAmizadeDTO(
-                amizade.getId(),
-                solicitante.getId(),
-                solicitante.getNome(),
-                solicitante.getFotoPerfil(),
-                amizade.getDataSolicitacao()
-        );
-    }
-
-    /**
-     * Converte uma entidade Amizade em um DTO para representar uma solicitação enviada.
-     */
-    private SolicitacaoEnviadaDTO toSolicitacaoEnviadaDTO(Amizade amizade) {
-        Usuario solicitado = amizade.getSolicitado();
-        return new SolicitacaoEnviadaDTO(
-                amizade.getId(),
-                solicitado.getId(),
-                solicitado.getNome(),
-                solicitado.getFotoPerfil(),
-                amizade.getDataSolicitacao()
-        );
-    }
-
-
-    /**
-     * Converte uma entidade Amizade em um DTO para representar um amigo.
-     * A lógica identifica qual dos dois usuários na relação é o "amigo" (não o usuário logado).
-     */
-    private AmigoDTO toAmigoDTO(Amizade amizade, Long idUsuarioLogado) {
-        Usuario solicitante = amizade.getSolicitante();
-        Usuario solicitado = amizade.getSolicitado();
-
-        Usuario amigo = solicitante.getId().equals(idUsuarioLogado) ? solicitado : solicitante;
-
-        return new AmigoDTO(
-                amizade.getId(),
-                amigo.getId(),
-                amigo.getNome(),
-                amigo.getEmail(),
-                amigo.getFotoPerfil(),
-                userStatusService.isOnline(amigo.getEmail())
-        );
-    }
-
     @Transactional
-    public void enviarSolicitacao(String emailSolicitante, Long idSolicitado) {
-        Usuario solicitante = usuarioRepository.findByEmail(emailSolicitante)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário solicitante não encontrado."));
-
+    public void enviarSolicitacao(Usuario solicitante, Long idSolicitado) {
         Usuario solicitado = usuarioRepository.findById(idSolicitado)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário solicitado não encontrado."));
 
@@ -108,17 +55,18 @@ public class AmizadeService {
         notificacaoService.criarNotificacao(
                 solicitado,
                 solicitante.getNome() + " te enviou um pedido de amizade.",
-                "PEDIDO_AMIZADE", // O tipo da notificação
-                solicitacaoSalva.getId() // O ID da amizade para os botões de ação
+                "PEDIDO_AMIZADE",
+                solicitacaoSalva.getId()
         );
     }
 
     @Transactional
-    public void aceitarSolicitacao(Long amizadeId, String emailUsuarioLogado) {
+    public void aceitarSolicitacao(Long amizadeId, Usuario usuarioLogado) {
         Amizade amizade = amizadeRepository.findById(amizadeId)
                 .orElseThrow(() -> new RuntimeException("Solicitação não encontrada."));
 
-        if (!amizade.getSolicitado().getEmail().equals(emailUsuarioLogado)) {
+        // A verificação agora é feita pelo ID do usuário, que é mais seguro
+        if (!amizade.getSolicitado().getId().equals(usuarioLogado.getId())) {
             throw new SecurityException("Ação não permitida.");
         }
 
@@ -129,60 +77,55 @@ public class AmizadeService {
     }
 
     @Transactional
-    public void recusarSolicitacao(Long amizadeId, String emailUsuarioLogado) {
+    public void recusarOuRemoverAmizade(Long amizadeId, Usuario usuarioLogado) {
         Amizade amizade = amizadeRepository.findById(amizadeId)
-                .orElseThrow(() -> new RuntimeException("Solicitação não encontrada."));
+                .orElseThrow(() -> new RuntimeException("Relação não encontrada."));
 
-        if (!amizade.getSolicitado().getEmail().equals(emailUsuarioLogado)) {
+        // Verifica se o usuário logado faz parte da amizade (seja como solicitante ou solicitado)
+        boolean isPartOfAmizade = amizade.getSolicitado().getId().equals(usuarioLogado.getId()) ||
+                amizade.getSolicitante().getId().equals(usuarioLogado.getId());
+
+        if (!isPartOfAmizade) {
             throw new SecurityException("Ação não permitida.");
-        }
-
-        if (amizade.getStatus() != StatusAmizade.PENDENTE) {
-            throw new IllegalStateException("Esta solicitação já foi respondida.");
         }
 
         amizadeRepository.delete(amizade);
     }
 
-    /**
-     * Lista todas as solicitações de amizade pendentes para o usuário logado.
-     */
-    public List<SolicitacaoAmizadeDTO> listarSolicitacoesPendentes(String emailUsuarioLogado) {
-        Usuario usuario = usuarioRepository.findByEmail(emailUsuarioLogado)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
-
-        List<Amizade> solicitacoes = amizadeRepository.findBySolicitadoAndStatus(usuario, StatusAmizade.PENDENTE);
-
+    public List<SolicitacaoAmizadeDTO> listarSolicitacoesPendentes(Usuario usuarioLogado) {
+        List<Amizade> solicitacoes = amizadeRepository.findBySolicitadoAndStatus(usuarioLogado, StatusAmizade.PENDENTE);
         return solicitacoes.stream()
-                .map(this::toSolicitacaoDTO)
+                .map(amizade -> new SolicitacaoAmizadeDTO(
+                        amizade.getId(),
+                        amizade.getSolicitante().getId(),
+                        amizade.getSolicitante().getNome(),
+                        amizade.getSolicitante().getFotoPerfil(),
+                        amizade.getDataSolicitacao()))
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Lista todas as solicitações de amizade pendentes enviadas pelo usuário logado.
-     */
-    public List<SolicitacaoEnviadaDTO> listarSolicitacoesEnviadas(String emailUsuarioLogado) {
-        Usuario usuario = usuarioRepository.findByEmail(emailUsuarioLogado)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
-
-        List<Amizade> solicitacoes = amizadeRepository.findBySolicitanteAndStatus(usuario, StatusAmizade.PENDENTE);
-
+    public List<SolicitacaoEnviadaDTO> listarSolicitacoesEnviadas(Usuario usuarioLogado) {
+        List<Amizade> solicitacoes = amizadeRepository.findBySolicitanteAndStatus(usuarioLogado, StatusAmizade.PENDENTE);
         return solicitacoes.stream()
-                .map(this::toSolicitacaoEnviadaDTO)
+                .map(amizade -> new SolicitacaoEnviadaDTO(
+                        amizade.getId(),
+                        amizade.getSolicitado().getId(),
+                        amizade.getSolicitado().getNome(),
+                        amizade.getSolicitado().getFotoPerfil(),
+                        amizade.getDataSolicitacao()))
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Lista todos os amigos (status ACEITO) do usuário logado.
-     */
-    public List<AmigoDTO> listarAmigos(String emailUsuarioLogado) {
-        Usuario usuario = usuarioRepository.findByEmail(emailUsuarioLogado)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
-
-        List<Amizade> amizades = amizadeRepository.findAmigosByUsuario(usuario);
-
+    public List<AmigoDTO> listarAmigos(Usuario usuarioLogado) {
+        List<Amizade> amizades = amizadeRepository.findAmigosByUsuario(usuarioLogado);
         return amizades.stream()
-                .map(amizade -> toAmigoDTO(amizade, usuario.getId()))
+                .map(amizade -> {
+                    Usuario amigo = amizade.getSolicitante().getId().equals(usuarioLogado.getId())
+                            ? amizade.getSolicitado()
+                            : amizade.getSolicitante();
+                    boolean isOnline = userStatusService.isOnline(amigo.getEmail());
+                    return new AmigoDTO(amizade.getId(), amigo, isOnline);
+                })
                 .collect(Collectors.toList());
     }
 }

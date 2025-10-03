@@ -381,7 +381,7 @@ body {
   height: 10px;
   border: none;
 
-  position: static; 
+  position: static;
   flex-shrink: 0;
 }
 
@@ -1364,6 +1364,14 @@ body {
   border-color: var(--accent-primary);
 }
 
+.user-card-avatar {
+  position: relative;
+  /* Define este container como referência para o status */
+  flex-shrink: 0;
+  /* Impede que o container encolha */
+}
+
+
 .user-card-avatar img {
   width: 60px;
   height: 60px;
@@ -1499,25 +1507,114 @@ body {
   width: 100%;
 }
 
-/* CSS para o link da notificação */
+/* --- Estilos para Ações nas Notificações --- */
+.notification-content {
+  width: 100%;
+}
+
+/* Container para os botões de ação */
+.notification-actions {
+  display: flex;
+  gap: 0.75rem;
+  /* Aumenta o espaço entre os botões */
+  margin-top: 0.75rem;
+}
+
+/* Estilo geral para os botões pequenos */
+.notification-actions .btn-sm {
+  padding: 0.4rem 0.85rem;
+  /* Ajusta o padding para um tamanho confortável */
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+/* Botão primário (Aceitar) */
+.notification-actions .btn-primary {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+.notification-actions .btn-primary:hover {
+  opacity: 0.85;
+}
+
+/* Botão secundário (Recusar) - estilo "outline" */
+.notification-actions .btn-secondary {
+  background-color: transparent;
+  border-color: var(--text-secondary);
+  color: var(--text-secondary);
+}
+
+.notification-actions .btn-secondary:hover {
+  background-color: var(--bg-quaternary);
+  color: var(--text-primary);
+  border-color: var(--bg-quaternary);
+}
+
+
+/* Texto de feedback que aparece após a ação (Ex: "Pedido aceito!") */
+.feedback-text {
+  margin-top: 0.75rem;
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--text-secondary);
+  animation: fadeIn 0.5s ease;
+}
+
+.feedback-text.success {
+  color: var(--success);
+}
+
+.feedback-text.info {
+  color: var(--accent-primary);
+}
+
+/* Ajustes no item de notificação para melhor alinhamento */
 .notification-item {
+  display: flex;
+  flex-direction: column;
+  /* Organiza o conteúdo e as ações verticalmente */
+  align-items: flex-start;
+  transition: opacity 0.4s ease, max-height 0.4s ease;
+  overflow: hidden;
+  max-height: 200px;
+  /* Altura inicial para animação */
+  border-bottom: 1px solid var(--border-color);
   padding: 0;
-  /* Remove padding do item pai */
+  /* Removido para o link interno controlar o espaçamento */
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item.removing {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border: none;
 }
 
 .notification-link {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  /* Adiciona padding ao link */
   text-decoration: none;
   color: inherit;
+  width: 100%;
 }
 
 .notification-actions-wrapper {
-  padding: 0 1rem 1rem 1rem;
-  /* Espaçamento para os botões */
+  padding: 0 1rem 1rem 3.5rem;
+  /* Alinha os botões com o texto da notificação */
 }
+
 
 .user-card-action {
   display: flex;
