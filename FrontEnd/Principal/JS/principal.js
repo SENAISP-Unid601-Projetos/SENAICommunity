@@ -298,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ? fotoAutorPath.startsWith("http")
         ? fotoAutorPath
         : `${backendUrl}/api/arquivos/${fotoAutorPath}`
-      : `${backendUrl}/images/default-avatar.png`;
+      : `${backendUrl}/images/default-avatar.jpg`;
 
     const dataFormatada = new Date(post.dataCriacao).toLocaleString("pt-BR");
     const isAuthor = currentUser && autorIdDoPost === currentUser.id;

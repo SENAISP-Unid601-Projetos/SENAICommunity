@@ -36,7 +36,7 @@ public class UsuarioSaidaDTO {
             this.urlFotoPerfil = "/api/arquivos/" + nomeFoto;
         } else {
             // CORREÇÃO: Aponte para a sua imagem padrão
-            this.urlFotoPerfil = "/images/default-avatar-icon.jpg";
+            this.urlFotoPerfil = "/images/default-avatar.jpg";
         }
     }
 }
