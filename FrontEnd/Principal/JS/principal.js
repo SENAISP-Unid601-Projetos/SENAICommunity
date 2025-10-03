@@ -1,53 +1,4 @@
-// Bloco de código para controle de tema.
-// Este bloco será executado em todas as páginas que importam o principal.js.
-document.addEventListener('DOMContentLoaded', () => {
-    
-    // --- FUNÇÕES DE CONTROLE DE TEMA ---
-    function setInitialTheme() {
-        const savedTheme = localStorage.getItem('theme') || 'dark'; // Garante 'dark' como padrão
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
-    }
-
-    function toggleTheme() {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateThemeIcon(newTheme);
-    }
-
-    function updateThemeIcon(theme) {
-        const themeToggleIcon = document.querySelector('.theme-toggle i');
-        if (themeToggleIcon) {
-            if (theme === 'dark') {
-                themeToggleIcon.classList.remove('fa-sun');
-                themeToggleIcon.classList.add('fa-moon');
-            } else {
-                themeToggleIcon.classList.remove('fa-moon');
-                themeToggleIcon.classList.add('fa-sun');
-            }
-        }
-    }
-
-    // --- INICIALIZAÇÃO DO TEMA ---
-    setInitialTheme();
-    const themeToggle = document.querySelector('.theme-toggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-    }
-});
-
-
-// Lógica específica para a página principal (feed)
-// Esta parte só será executada completamente na principal.html
 document.addEventListener("DOMContentLoaded", () => {
-  
-  // Verifica se estamos na página principal antes de executar o código do feed
-  if (!document.querySelector(".posts-container")) {
-    return;
-  }
-    
   // --- CONFIGURAÇÕES E VARIÁVEIS GLOBAIS ---
   const backendUrl = "http://localhost:8080";
   const jwtToken = localStorage.getItem("token");
@@ -143,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const userImage = user.urlFotoPerfil
       ? `${backendUrl}${user.urlFotoPerfil}`
-      : `${backendUrl}/images/default-avatar.jpg`;
+      : `${backendUrl}/images/default-avatar.png`;
 
     const topbarUserName = document.getElementById("topbar-user-name");
     if (topbarUserName) topbarUserName.textContent = user.nome;
@@ -349,7 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ? fotoAutorPath.startsWith("http")
         ? fotoAutorPath
         : `${backendUrl}/api/arquivos/${fotoAutorPath}`
-      : `${backendUrl}/images/default-avatar.jpg`;
+      : `${backendUrl}/images/default-avatar.png`;
 
     const dataFormatada = new Date(post.dataCriacao).toLocaleString("pt-BR");
     const isAuthor = currentUser && autorIdDoPost === currentUser.id;
@@ -854,59 +805,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
   window.highlightComment = async (commentId) => {
- let urlsParaRemover = []; // Array global para guardar URLs a serem removidas
-
-// 1. Função ATUALIZADA para abrir o modal
-window.openEditPostModal = async (postId) => {
-    const existingMediaContainer = document.getElementById('edit-existing-media-container');
-    const existingMediaSection = document.getElementById('existing-media-section');
-
-    if (!elements.editPostModal || !existingMediaContainer || !existingMediaSection) return;
-
-    // Limpa o estado anterior
-    selectedFilesForEdit = [];
-    urlsParaRemover = [];
-    updateEditFilePreview();
-    existingMediaContainer.innerHTML = '';
-    existingMediaSection.style.display = 'none';
-    
     try {
-        const response = await axios.get(`${backendUrl}/postagem/${postId}`);
-        const post = response.data;
-
-        elements.editPostIdInput.value = post.id;
-        elements.editPostTextarea.value = post.conteudo;
-
-        if (post.urlsMidia && post.urlsMidia.length > 0) {
-            existingMediaSection.style.display = 'block'; // Mostra a seção de mídias
-            post.urlsMidia.forEach(url => {
-                const item = document.createElement('div');
-                item.className = 'existing-media-item';
-                item.innerHTML = `
-                    <img src="${url}" alt="Mídia existente">
-                    <input type="checkbox" class="remove-existing-media-checkbox" title="Marcar para remover">
-                `;
-                
-                const checkbox = item.querySelector('.remove-existing-media-checkbox');
-                checkbox.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        urlsParaRemover.push(url);
-                        item.style.opacity = '0.4';
-                    } else {
-                        urlsParaRemover = urlsParaRemover.filter(u => u !== url);
-                        item.style.opacity = '1';
-                    }
-                });
-
-                existingMediaContainer.appendChild(item);
-            });
-        }
-
-        elements.editPostModal.style.display = "flex";
+      await axios.put(`${backendUrl}/comentarios/${commentId}/destacar`);
     } catch (error) {
-        showNotification("Erro ao carregar dados da postagem.", "error");
+      showNotification("Não foi possível destacar o comentário.", "error");
+      console.error("Erro ao destacar comentário:", error);
     }
-};
+  };
 
   // --- FUNÇÕES DE AÇÕES DE AMIZADE (para notificações) ---
   function handleFriendRequestFeedback(notificationId, message, type = 'info') {
@@ -932,32 +837,26 @@ window.openEditPostModal = async (postId) => {
     // Re-busca as notificações para atualizar o contador (badge)
     fetchNotifications();
   }
- function updateEditFilePreview() {
+  function updateEditFilePreview() {
     if (!elements.editFilePreviewContainer) return;
     elements.editFilePreviewContainer.innerHTML = "";
     selectedFilesForEdit.forEach((file, index) => {
       const item = document.createElement("div");
       item.className = "file-preview-item";
-      
       const previewElement = document.createElement("img");
       previewElement.src = URL.createObjectURL(file);
       item.appendChild(previewElement);
-      
       const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
       removeBtn.className = "remove-file-btn";
       removeBtn.innerHTML = "&times;";
-      removeBtn.title = "Remover este arquivo";
       removeBtn.onclick = () => {
         selectedFilesForEdit.splice(index, 1);
         updateEditFilePreview();
       };
-      
       item.appendChild(removeBtn);
       elements.editFilePreviewContainer.appendChild(item);
     });
-}
-
+  }
 
   function openEditProfileModal() {
     if (!currentUser || !elements.editProfileModal) return;
@@ -1173,43 +1072,30 @@ window.openEditPostModal = async (postId) => {
         });
         updateEditFilePreview();
       });
-   if (elements.editPostForm)
-  elements.editPostForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const saveButton = elements.editPostForm.querySelector('button[type="submit"]');
-    saveButton.disabled = true;
-    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-
-    try {
+    if (elements.editPostForm)
+      elements.editPostForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
         const postId = elements.editPostIdInput.value;
         const content = elements.editPostTextarea.value;
-        
-        const postagemDTO = { 
-            conteudo: content,
-            urlsParaRemover: urlsParaRemover 
-        };
-        
+        const postagemDTO = { conteudo: content };
         const formData = new FormData();
         formData.append(
           "postagem",
           new Blob([JSON.stringify(postagemDTO)], { type: "application/json" })
         );
-        
-        selectedFilesForEdit.forEach((file) => formData.append("arquivos", file));
-        
-        await axios.put(`${backendUrl}/postagem/${postId}`, formData);
-        
-        if (elements.editPostModal) elements.editPostModal.style.display = "none";
-        showNotification("Postagem editada com sucesso.", "success");
-
-    } catch (error) {
-      showNotification("Não foi possível salvar as alterações.", "error");
-      console.error("Erro ao editar post:", error);
-    } finally {
-      saveButton.disabled = false;
-      saveButton.innerHTML = '<i class="fas fa-save"></i> Salvar';
-    }
-  });
+        selectedFilesForEdit.forEach((file) =>
+          formData.append("arquivos", file)
+        );
+        try {
+          await axios.put(`${backendUrl}/postagem/${postId}`, formData);
+          if (elements.editPostModal)
+            elements.editPostModal.style.display = "none";
+          showNotification("Postagem editada com sucesso.", "success");
+        } catch (error) {
+          showNotification("Não foi possível salvar as alterações.", "error");
+          console.error("Erro ao editar post:", error);
+        }
+      });
     if (elements.cancelEditPostBtn)
       elements.cancelEditPostBtn.addEventListener(
         "click",
@@ -1279,52 +1165,35 @@ window.openEditPostModal = async (postId) => {
       });
     }
 
-   if (elements.publishBtn) {
-  elements.publishBtn.addEventListener("click", async () => {
-    const publishButton = elements.publishBtn;
-    
-    // Desabilita o botão e muda o texto para "Publicando..."
-    publishButton.disabled = true;
-    publishButton.textContent = 'Publicando...';
-
-    try {
-      const content = elements.postTextarea.value.trim();
-      if (!content && selectedFilesForPost.length === 0) {
-        showNotification("Escreva algo ou anexe um arquivo.", "info");
-        return; // Retorna, mas o bloco finally será executado para reativar o botão
-      }
-
-      const formData = new FormData();
-      formData.append(
-        "postagem",
-        new Blob([JSON.stringify({ conteudo: content })], {
-          type: "application/json",
-        })
-      );
-      selectedFilesForPost.forEach((file) =>
-        formData.append("arquivos", file)
-      );
-
-      await axios.post(`${backendUrl}/postagem/upload-mensagem`, formData);
-
-      // Limpa os campos após o sucesso
-      if (elements.postTextarea) elements.postTextarea.value = "";
-      selectedFilesForPost = [];
-      if (elements.postFileInput) elements.postFileInput.value = "";
-      updateFilePreview();
-      showNotification("Publicado com sucesso!", "success");
-
-    } catch (error) {
-      showNotification("Erro ao publicar postagem.", "error");
-      console.error("Erro ao publicar:", error);
-    } finally {
-      // Este bloco será executado SEMPRE, seja em caso de sucesso ou erro
-      // Reabilita o botão e restaura o texto original
-      publishButton.disabled = false;
-      publishButton.textContent = 'Publicar';
-    }
-  });
-}
+    if (elements.publishBtn)
+      elements.publishBtn.addEventListener("click", async () => {
+        const content = elements.postTextarea.value.trim();
+        if (!content && selectedFilesForPost.length === 0) {
+          showNotification("Escreva algo ou anexe um arquivo.", "info");
+          return;
+        }
+        const formData = new FormData();
+        formData.append(
+          "postagem",
+          new Blob([JSON.stringify({ conteudo: content })], {
+            type: "application/json",
+          })
+        );
+        selectedFilesForPost.forEach((file) =>
+          formData.append("arquivos", file)
+        );
+        try {
+          await axios.post(`${backendUrl}/postagem/upload-mensagem`, formData);
+          if (elements.postTextarea) elements.postTextarea.value = "";
+          selectedFilesForPost = [];
+          if (elements.postFileInput) elements.postFileInput.value = "";
+          updateFilePreview();
+          showNotification("Publicado com sucesso!", "success");
+        } catch (error) {
+          showNotification("Erro ao publicar postagem.", "error");
+          console.error("Erro ao publicar:", error);
+        }
+      });
   }
 
   init();
