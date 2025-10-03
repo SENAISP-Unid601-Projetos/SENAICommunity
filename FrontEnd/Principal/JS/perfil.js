@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURAÇÕES E VARIÁVEIS GLOBAIS ---
     const backendUrl = 'http://localhost:8080';
     const jwtToken = localStorage.getItem('token');
-    const defaultAvatarUrl = `${backendUrl}/images/default-avatar.png`;
+    const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
     let currentUser = null;
 
     // --- ELEMENTOS DO DOM ---
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             item.innerHTML = `
-            <a href="amizades.html" class="notification-link" onclick="markNotificationAsRead(${notification.id})">
+             <a href="amizades.html" class="notification-link" onclick="markNotificationAsRead(event, ${notification.id})">
                 <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
                 <div class="notification-content">
                     <p>${notification.mensagem}</p>
@@ -182,21 +182,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function markNotificationAsRead(notificationId) {
-        const notificationItem = document.getElementById(`notification-item-${notificationId}`);
-        if (!notificationItem || !notificationItem.classList.contains('unread')) {
-            return;
-        }
-        notificationItem.classList.remove('unread');
-        try {
-            await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
-            fetchNotifications();
-        } catch (error) {
-            console.error("Erro ao marcar notificação como lida:", error);
-            notificationItem.classList.add('unread');
-            showNotification('Erro ao atualizar notificação.', 'error');
+    async function markNotificationAsRead(event, notificationId) { // Adicione 'event'
+    if (event) {
+        event.preventDefault(); // Adicione esta linha
+    }
+    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+    if (!notificationItem || !notificationItem.classList.contains('unread')) {
+        // Apenas navegue se já estiver lida
+        if (event && event.currentTarget) window.location.href = event.currentTarget.href;
+        return;
+    }
+    notificationItem.classList.remove('unread');
+    try {
+        await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+        fetchNotifications();
+    } catch (error) {
+        console.error("Erro ao marcar notificação como lida:", error);
+        notificationItem.classList.add('unread');
+        showNotification('Erro ao atualizar notificação.', 'error');
+    } finally {
+        // Navegue após a conclusão
+        if (event && event.currentTarget) {
+            window.location.href = event.currentTarget.href;
         }
     }
+}
 
     function showNotification(message, type = 'info') {
         const notification = document.createElement('div');

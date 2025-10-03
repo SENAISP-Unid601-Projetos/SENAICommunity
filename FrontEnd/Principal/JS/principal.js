@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const userImage = user.urlFotoPerfil
       ? `${backendUrl}${user.urlFotoPerfil}`
-      : `${backendUrl}/images/default-avatar.png`;
+      : `${backendUrl}/images/default-avatar.jpg`;
 
     const topbarUserName = document.getElementById("topbar-user-name");
     if (topbarUserName) topbarUserName.textContent = user.nome;
