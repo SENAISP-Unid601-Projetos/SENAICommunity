@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Service;
 
+import com.SenaiCommunity.BackEnd.DTO.AmigoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioAtualizacaoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioBuscaDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;

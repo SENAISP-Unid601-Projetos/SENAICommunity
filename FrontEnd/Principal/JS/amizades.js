@@ -67,7 +67,8 @@ document.addEventListener("DOMContentLoaded", () => {
             updateUIWithUserData(currentUser);
             setupEventListeners();
             connectWebSocket();
-            fetchFriends();
+            await fetchFriends();
+            await fetchInitialOnlineFriends();
             fetchReceivedRequests();
             fetchSentRequests();
             fetchNotifications();
@@ -184,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             item.innerHTML = `
-            <a href="amizades.html" class="notification-link" onclick="markNotificationAsRead(${notification.id})">
+         <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
                 <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
                 <div class="notification-content">
                     <p>${notification.mensagem}</p>
@@ -240,21 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return item;
 }
 
-    async function markNotificationAsRead(notificationId) {
-        const notificationItem = document.getElementById(`notification-item-${notificationId}`);
-        if (!notificationItem || !notificationItem.classList.contains('unread')) {
-            return;
-        }
-        notificationItem.classList.remove('unread');
-        try {
-            await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
-            fetchNotifications();
-        } catch (error) {
-            console.error("Erro ao marcar notificação como lida:", error);
-            notificationItem.classList.add('unread');
-            showNotification('Erro ao atualizar notificação.', 'error');
-        }
-    }
+   
 
     // --- FUNÇÕES DE AMIZADES E CONEXÕES ---
     async function fetchFriends() {
@@ -267,14 +254,24 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             // Renderiza a lista principal de amigos (offline e online)
             renderFriends(userFriends, elements.friendsList);
-            // Atualiza o widget de amigos online na sidebar
-            atualizarStatusDeAmigosNaUI();
+           
         } catch (error) {
             console.error('Erro ao buscar amigos:', error);
             friendsLoaded = true;
             atualizarStatusDeAmigosNaUI();
         }
     }
+
+   async function fetchInitialOnlineFriends() {
+    try {
+        const response = await axios.get(`${backendUrl}/api/amizades/online`); 
+        const amigosOnlineDTOs = response.data;
+        latestOnlineEmails = amigosOnlineDTOs.map(amigo => amigo.email);
+        atualizarStatusDeAmigosNaUI(); 
+    } catch (error) {
+        console.error("Erro ao buscar status inicial de amigos online:", error);
+    }
+}
 
     async function fetchReceivedRequests() {
         try {
@@ -415,6 +412,42 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
     // --- FUNÇÕES DE AÇÃO GLOBAIS ---
+
+    window.markNotificationAsRead = async (event, notificationId) => {
+    // 1. Impede a navegação imediata para o link do href
+    if (event) {
+        event.preventDefault();
+    }
+
+    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+
+    // Só executa a lógica se a notificação estiver marcada como não lida
+    if (notificationItem && notificationItem.classList.contains('unread')) {
+        notificationItem.classList.remove('unread'); // Atualização otimista da UI
+
+        try {
+            // 2. Espera a confirmação do backend
+            await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+            // Busca novamente para atualizar o contador (badge)
+            fetchNotifications(); 
+        } catch (error) {
+            console.error("Erro ao marcar notificação como lida:", error);
+            // Em caso de erro, reverte a mudança na UI
+            notificationItem.classList.add('unread'); 
+            showNotification('Erro ao atualizar notificação.', 'error');
+        } finally {
+            // 3. Navega para a página de destino após a operação ser concluída (com sucesso ou falha)
+            if (event && event.currentTarget) {
+                window.location.href = event.currentTarget.href;
+            }
+        }
+    } else {
+        // Se a notificação já foi lida, apenas navega
+        if (event && event.currentTarget) {
+            window.location.href = event.currentTarget.href;
+        }
+    }
+};
     window.aceitar = async (amizadeId) => {
         try {
             await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
