@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let userFriends = [];
   let friendsLoaded = false;
   let latestOnlineEmails = [];
-  const defaultAvatarUrl = `${backendUrl}/images/default-avatar.png`;
+  const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
 
   // --- ELEMENTOS DO DOM (Seleção Centralizada e Completa) ---
   const elements = {
@@ -64,8 +64,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await axios.get(`${backendUrl}/usuarios/me`);
       currentUser = response.data;
       updateUIWithUserData(currentUser);
-     connectWebSocket();
-      fetchFriends();
+      connectWebSocket();
+      await fetchFriends();
+      await fetchInitialOnlineFriends();
       setupEventListeners();
       fetchNotifications();
     } catch (error) {
@@ -208,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       item.innerHTML = `
-            <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(${notification.id})">
+           <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
                 <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
                 <div class="notification-content">
                     <p>${notification.mensagem}</p>
@@ -246,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     item.innerHTML = `
-        <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
+   <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
             <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
             <div class="notification-content">
                 <p>${notification.mensagem}</p>
@@ -273,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.connectionsCount) {
         elements.connectionsCount.textContent = userFriends.length;
       }
-      atualizarStatusDeAmigosNaUI();
+  
       
     } catch (error) {
       console.error("Erro ao buscar lista de amigos:", error);
@@ -281,6 +282,17 @@ document.addEventListener("DOMContentLoaded", () => {
        atualizarStatusDeAmigosNaUI();
     }
   }
+
+ async function fetchInitialOnlineFriends() {
+    try {
+        const response = await axios.get(`${backendUrl}/api/amizades/online`); 
+        const amigosOnlineDTOs = response.data;
+        latestOnlineEmails = amigosOnlineDTOs.map(amigo => amigo.email);
+        atualizarStatusDeAmigosNaUI(); 
+    } catch (error) {
+        console.error("Erro ao buscar status inicial de amigos online:", error);
+    }
+}
 
   /**
    * Função centralizada para atualizar todos os indicadores visuais de amigos online.
@@ -409,6 +421,32 @@ document.addEventListener("DOMContentLoaded", () => {
       buttonElement.innerHTML = '<i class="fas fa-user-plus"></i> Adicionar';
     }
   };
+
+  window.markNotificationAsRead = async (event, notificationId) => {
+    if (event) {
+        event.preventDefault();
+    }
+    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+    if (notificationItem && notificationItem.classList.contains('unread')) {
+        notificationItem.classList.remove('unread');
+        try {
+            await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+            fetchNotifications(); 
+        } catch (error) {
+            console.error("Erro ao marcar notificação como lida:", error);
+            notificationItem.classList.add('unread'); 
+            showNotification('Erro ao atualizar notificação.', 'error');
+        } finally {
+            if (event && event.currentTarget) {
+                window.location.href = event.currentTarget.href;
+            }
+        }
+    } else {
+        if (event && event.currentTarget) {
+            window.location.href = event.currentTarget.href;
+        }
+    }
+};
 
   // --- FUNÇÕES DE MODAIS E MENUS (COMPLETAS) ---
   const closeAllMenus = () => {
