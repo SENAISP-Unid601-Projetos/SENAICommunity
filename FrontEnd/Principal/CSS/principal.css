@@ -1513,6 +1513,13 @@ body {
   width: 100%;
 }
 
+/* Estilo para a lista de amigos na vertical */
+.user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Adiciona um espaçamento entre os cards */
+}
+
 /* --- Estilos para Ações nas Notificações --- */
 .notification-content {
   width: 100%;
