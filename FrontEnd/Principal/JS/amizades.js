@@ -138,6 +138,31 @@ document.addEventListener("DOMContentLoaded", () => {
         }, (error) => console.error("ERRO WEBSOCKET:", error));
     }
 
+    // --- FUNÇÕES DE AÇÕES DE AMIZADE (para notificações) ---
+  function handleFriendRequestFeedback(notificationId, message, type = 'info') {
+    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+    if (notificationItem) {
+      const actionsDiv = notificationItem.querySelector('.notification-actions-wrapper');
+      if (actionsDiv) {
+        actionsDiv.innerHTML = `<p class="feedback-text ${type === 'success' ? 'success' : ''}">${message}</p>`;
+      }
+      // Remove a notificação da lista após um tempo para o usuário ler a mensagem
+      setTimeout(() => {
+        notificationItem.classList.add('removing');
+        // Permite que a animação CSS finalize antes de remover o elemento do DOM
+        setTimeout(() => {
+          notificationItem.remove();
+          // Após remover, reavalia se a lista de notificações está vazia
+          if (elements.notificationsList && elements.notificationsList.children.length === 0) {
+            elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
+          }
+        }, 500); // Deve corresponder ao tempo da transição no CSS
+      }, 2500); // Tempo que a mensagem de feedback fica visível
+    }
+    // Re-busca as notificações para atualizar o contador (badge)
+    fetchNotifications();
+  }
+
     // --- FUNÇÕES DE NOTIFICAÇÕES ---
     async function fetchNotifications() {
         try {
@@ -410,6 +435,29 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
   }
+
+  window.aceitarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
+      // A função 'handleFriendRequestFeedback' já existe no seu código para dar o feedback visual.
+      handleFriendRequestFeedback(notificationId, 'Pedido aceito!', 'success');
+      fetchFriends(); // Atualiza a contagem de conexões
+    } catch (error) {
+      console.error('Erro ao aceitar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao aceitar.', 'error');
+    }
+  };
+
+  window.recusarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`);
+      handleFriendRequestFeedback(notificationId, 'Pedido recusado.', 'info');
+    } catch (error) {
+      console.error('Erro ao recusar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao recusar.', 'error');
+    }
+  };
+
 
     // --- FUNÇÕES DE AÇÃO GLOBAIS ---
 
