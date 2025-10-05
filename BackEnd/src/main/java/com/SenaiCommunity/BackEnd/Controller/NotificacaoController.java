@@ -29,4 +29,10 @@ public class NotificacaoController {
         notificacaoService.marcarComoLida(id, principal.getName());
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/ler-todas")
+    public ResponseEntity<Void> marcarTodasComoLidas(Principal principal) {
+        notificacaoService.marcarTodasComoLidas(principal.getName());
+        return ResponseEntity.ok().build();
+    }
 }

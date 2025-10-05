@@ -93,4 +93,20 @@ public class NotificacaoService {
         notificacao.setLida(true);
         notificacaoRepository.save(notificacao);
     }
+
+    @Transactional
+    public void marcarTodasComoLidas(String emailUsuarioLogado) {
+        Usuario destinatario = usuarioRepository.findByEmail(emailUsuarioLogado)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o email: " + emailUsuarioLogado));
+
+        // Usa o novo método do repositório
+        List<Notificacao> notificacoesNaoLidas = notificacaoRepository.findByDestinatarioAndLidaIsFalse(destinatario);
+
+        if (!notificacoesNaoLidas.isEmpty()) {
+            for (Notificacao notificacao : notificacoesNaoLidas) {
+                notificacao.setLida(true); // O campo 'lida' existe na sua entidade
+            }
+            notificacaoRepository.saveAll(notificacoesNaoLidas);
+        }
+    }
 }

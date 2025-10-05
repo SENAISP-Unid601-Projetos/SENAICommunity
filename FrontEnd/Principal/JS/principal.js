@@ -834,7 +834,7 @@ document.addEventListener("DOMContentLoaded", () => {
       handleFriendRequestFeedback(notificationId, 'Erro ao recusar.', 'error');
     }
   };
-  
+
   // --- FUNÇÕES DE AÇÕES DE AMIZADE (para notificações) ---
   function handleFriendRequestFeedback(notificationId, message, type = 'info') {
     const notificationItem = document.getElementById(`notification-item-${notificationId}`);
@@ -858,7 +858,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     // Re-busca as notificações para atualizar o contador (badge)
     fetchNotifications();
-  }
+  };
+
+  async function markAllNotificationsAsRead() {
+    // Verifica se há notificações não lidas antes de fazer a chamada
+    const unreadCount = parseInt(elements.notificationsBadge.textContent, 10);
+    if (isNaN(unreadCount) || unreadCount === 0) {
+      return; // Sai da função se não houver nada a fazer
+    };
+
+    try {
+      // Chama o endpoint do backend para marcar todas como lidas
+      // NOTA: Certifique-se de que este endpoint POST /api/notificacoes/ler-todas exista no seu backend.
+      await axios.post(`${backendUrl}/api/notificacoes/ler-todas`);
+
+      // Atualiza a UI imediatamente para dar feedback ao usuário
+      if (elements.notificationsBadge) {
+        elements.notificationsBadge.style.display = 'none';
+        elements.notificationsBadge.textContent = '0';
+      }
+      if (elements.notificationsList) {
+        const unreadItems = elements.notificationsList.querySelectorAll('.notification-item.unread');
+        unreadItems.forEach(item => item.classList.remove('unread'));
+      }
+    } catch (error){
+      console.error("Erro ao marcar todas as notificações como lidas:", error);
+      showNotification('Não foi possível atualizar as notificações.', 'error');
+    }
+  };
+  
   function updateEditFilePreview() {
     if (!elements.editFilePreviewContainer) return;
     elements.editFilePreviewContainer.innerHTML = "";
@@ -940,9 +968,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Listener para o ícone de notificações para abrir/fechar o painel
     if (elements.notificationsIcon) {
       elements.notificationsIcon.addEventListener('click', (event) => {
-        event.stopPropagation(); // Impede que o clique no body feche o painel imediatamente
-        const isVisible = elements.notificationsPanel.style.display === 'block';
-        elements.notificationsPanel.style.display = isVisible ? 'none' : 'block';
+        event.stopPropagation();
+        const panel = elements.notificationsPanel;
+        const isVisible = panel.style.display === 'block';
+        panel.style.display = isVisible ? 'none' : 'block';
+
+        // Se o painel está sendo aberto, marca todas as notificações como lidas
+        if (!isVisible) {
+          markAllNotificationsAsRead();
+        }
       });
     }
 
