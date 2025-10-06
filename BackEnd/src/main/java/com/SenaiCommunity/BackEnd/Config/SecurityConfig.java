@@ -46,10 +46,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/autenticacao/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/autenticacao/login/google").permitAll() // ✅ NOVO ENDPOINT DE LOGIN SOCIAL
+                        .requestMatchers(HttpMethod.POST, "/autenticacao/login/google").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/projetos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/vagas/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/vagas/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/projetos/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/projetos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/alunos/**").permitAll()
