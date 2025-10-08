@@ -1778,3 +1778,79 @@ body {
 #edit-post-form .modal-footer .btn i {
     margin-right: 0.5rem;
 }
+/* Adicione estas regras ao final do seu arquivo CSS */
+
+.publish-btn.loading {
+    cursor: wait;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem; /* Espaço entre o ícone e o texto */
+}
+
+/* Animação do ícone de carregamento (spinner) do Font Awesome */
+.fa-spinner {
+    animation: fa-spin 1s infinite linear;
+}
+
+@keyframes fa-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+/* Adicionar ao final de FrontEnd/Principal/CSS/principal.css */
+
+/* Container para mídias existentes */
+#edit-existing-media-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.existing-media-item {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.existing-media-item img, .existing-media-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+/* Checkbox para remover a imagem existente */
+.remove-existing-media-checkbox {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* Estilo para o botão de remover novas mídias */
+.file-preview-item .remove-file-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    background: var(--danger);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -9,6 +9,34 @@ document.addEventListener("DOMContentLoaded", () => {
   let latestOnlineEmails = [];
   const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
 
+  // --- FUNÇÕES DE CONTROLE DE TEMA ---
+function setInitialTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+    const themeToggleIcon = document.querySelector('.theme-toggle i');
+    if (themeToggleIcon) {
+        if (theme === 'dark') {
+            themeToggleIcon.classList.remove('fa-sun');
+            themeToggleIcon.classList.add('fa-moon');
+        } else {
+            themeToggleIcon.classList.remove('fa-moon');
+            themeToggleIcon.classList.add('fa-sun');
+        }
+    }
+}
+
   // --- ELEMENTOS DO DOM (Seleção Centralizada e Completa) ---
   const elements = {
     // UI Geral
@@ -69,6 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await fetchInitialOnlineFriends();
       setupEventListeners();
       fetchNotifications();
+      setInitialTheme();
     } catch (error) {
       console.error("ERRO CRÍTICO NA INICIALIZAÇÃO:", error);
       localStorage.removeItem("token");
@@ -524,6 +553,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- SETUP DOS EVENT LISTENERS (COMPLETO) ---
   function setupEventListeners() {
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
     document.body.addEventListener("click", (e) => {
       if (elements.notificationsPanel && !elements.notificationsPanel.contains(e.target) && !elements.notificationsIcon.contains(e.target)) {
         elements.notificationsPanel.style.display = 'none';
