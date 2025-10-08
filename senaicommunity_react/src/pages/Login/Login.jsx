@@ -7,9 +7,10 @@ import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCode, faEnvelope, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
+// Importação de Componentes e Estilos
 import Background from '../../components/Auth/Background';
 import ThemeToggle from '../../components/Auth/ThemeToggle';
-import './login.css'; // Importa o CSS corrigido
+import './login.css'; // O CSS corrigido que ajusta o alinhamento dos ícones
 
 const Login = ({ onLogin }) => {
     const [email, setEmail] = useState('');
@@ -18,6 +19,7 @@ const Login = ({ onLogin }) => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    // Define o título da página quando o componente é montado
     useEffect(() => {
         document.title = 'Senai Community | Login';
     }, []);
@@ -25,12 +27,21 @@ const Login = ({ onLogin }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+
         try {
-            const response = await axios.post('http://localhost:8080/autenticacao/login', { email, senha });
+            const response = await axios.post('http://localhost:8080/autenticacao/login', {
+                email,
+                senha
+            });
+
             const token = response.data.token;
-            localStorage.setItem('authToken', token);
-            onLogin(token);
-            navigate('/home');
+            localStorage.setItem('authToken', token); // Armazena o token de autenticação
+
+            onLogin(token); // Informa ao App.jsx que o login foi bem-sucedido
+            
+            // Redireciona para a página principal
+            navigate('/principal');
+
         } catch (error) {
             console.error('Erro no login:', error);
             const errorMessage = error.response?.data || 'E-mail ou senha incorretos.';
@@ -57,12 +68,26 @@ const Login = ({ onLogin }) => {
                     <form onSubmit={handleSubmit} className="auth-form">
                         <div className="input-group">
                             <FontAwesomeIcon icon={faEnvelope} />
-                            <input type="email" name="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                            <input 
+                                type="email" 
+                                name="email" 
+                                placeholder="Email" 
+                                value={email} 
+                                onChange={(e) => setEmail(e.target.value)} 
+                                required 
+                            />
                         </div>
                         
                         <div className="input-group">
                             <FontAwesomeIcon icon={faLock} />
-                            <input type={isPasswordVisible ? "text" : "password"} name="senha" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} required />
+                            <input 
+                                type={isPasswordVisible ? "text" : "password"} 
+                                name="senha" 
+                                placeholder="Senha" 
+                                value={senha} 
+                                onChange={(e) => setSenha(e.target.value)} 
+                                required 
+                            />
                             <button type="button" className="toggle-password" onClick={() => setIsPasswordVisible(!isPasswordVisible)}>
                                 <FontAwesomeIcon icon={isPasswordVisible ? faEyeSlash : faEye} />
                             </button>

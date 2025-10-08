@@ -1,0 +1,58 @@
+/* Estilos para src/components/Layout/Topbar.css */
+.topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 2rem; background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky; top: 0; z-index: 1000;
+    box-shadow: var(--shadow);
+}
+.header-left { display: flex; align-items: center; gap: 1rem; }
+.menu-toggle { display: none; cursor: pointer; font-size: 1.2rem; }
+.logo .highlight { color: var(--highlight); }
+
+.search { position: relative; flex: 0.5; max-width: 400px; }
+.search svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+.search input {
+    width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem;
+    background-color: var(--bg-tertiary); border: none;
+    border-radius: 20px; color: var(--text-primary);
+}
+
+.nav-icons { display: flex; align-items: center; gap: 0.5rem; }
+.nav-icon {
+    position: relative; padding: 0.75rem; border-radius: 50%;
+    cursor: pointer; color: var(--text-secondary); font-size: 1.25rem;
+    text-decoration: none; transition: var(--transition);
+}
+.nav-icon:hover { background-color: var(--bg-tertiary); color: var(--text-primary); }
+.badge {
+    position: absolute; top: 2px; right: 2px; background-color: var(--danger);
+    color: white; border-radius: 50%; width: 16px; height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: bold;
+}
+.theme-toggle {
+
+    transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1) rotate(15deg);
+    color: var(--highlight); /* Muda para a cor de destaque no hover */
+}
+.user-dropdown { position: relative; }
+.user { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 20px; cursor: pointer; }
+.user:hover { background-color: var(--bg-tertiary); }
+.profile-pic img { width: 32px; height: 32px; border-radius: 50%; }
+.dropdown-menu {
+    display: none; position: absolute; top: 110%; right: 0;
+    width: 200px; background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem 0;
+    box-shadow: var(--shadow);
+}
+.user-dropdown:hover .dropdown-menu { display: block; }
+.dropdown-menu a {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1rem; color: var(--text-primary); text-decoration: none;
+}
+.dropdown-menu a:hover { background-color: var(--bg-tertiary); }
