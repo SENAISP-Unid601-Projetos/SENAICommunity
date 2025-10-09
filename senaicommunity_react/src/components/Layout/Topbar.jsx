@@ -1,71 +1,65 @@
-import React, { useState } from 'react';
+// CONTEÚDO COMPLETO E FINAL para src/components/Layout/Topbar.jsx
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faCommentDots, faBell, faMoon, faBars, faSearch, faChevronDown, faUser, faCog, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+// Todos os ícones necessários
+import { faHome, faCommentDots, faBell, faMoon, faSun, faSearch, faChevronDown, faUser, faCog, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
-import './Topbar.css';
-
-// Notification Menu Component
-const NotificationMenu = () => (
-    <div id="notification-menu" className="notification-menu">
-        <div className="notification-header"><h4>Notificações</h4></div>
-        <div className="notification-section">
-            <h5>Solicitações para Seguir</h5>
-            <div className="notification-item follow-request">
-                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Avatar"/>
-                <div className="notification-text"><p><strong>João Pedro</strong> quer seguir você.</p></div>
-                <div className="notification-actions">
-                    <button className="btn-accept">✓</button>
-                    <button className="btn-decline">×</button>
-                </div>
-            </div>
-        </div>
-        <div className="notification-section">
-            <h5>Curtidas e Comentários</h5>
-            <div className="notification-item">
-                <img src="https://randomuser.me/api/portraits/women/33.jpg" alt="Avatar"/>
-                <div className="notification-text">
-                    <p><strong>Ana Silva</strong> curtiu sua publicação.</p>
-                    <span className="notification-time">há 5 minutos</span>
-                </div>
-            </div>
-        </div>
-        <div className="notification-footer"><a href="#">Ver todas</a></div>
-    </div>
-);
+import './Topbar.css'; // IMPORTAÇÃO DO CSS DO TOPBAR
 
 const Topbar = ({ onLogout }) => {
-    const [notificationsOpen, setNotificationsOpen] = useState(false);
-    
-    // ... (resto do seu componente Topbar)
+    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
+    };
+
+    const currentUser = { name: "Vinicius G.", avatar: "/img/perfil.png" };
 
     return (
         <header className="topbar">
-            {/* ... (código do header-left e search) ... */}
             <div className="header-left">
-                <div className="menu-toggle"><FontAwesomeIcon icon={faBars} /></div>
-                <h1 className="logo"><span className="highlight">SENAI </span>Community</h1>
+                {/* ✅ Ícone de alternar tema MOVIDO PARA AQUI */}
+                <div className="nav-icon theme-toggle" title="Alternar tema" onClick={toggleTheme}>
+                    <FontAwesomeIcon icon={theme === 'dark' ? faMoon : faSun} />
+                </div>
+                {/* Logo com cores SENAI (vermelho) e Community (azul) */}
+                <h1 className="logo"><span className="highlight">SENAI</span> Community</h1>
             </div>
+            {/* Campo de busca */}
             <div className="search">
                 <FontAwesomeIcon icon={faSearch} />
                 <input type="text" placeholder="Pesquisar..." />
             </div>
-            
+            {/* Ícones de navegação (sem o theme-toggle agora) */}
             <nav className="nav-icons">
                 <Link to="/principal" className="nav-icon" title="Início"><FontAwesomeIcon icon={faHome} /></Link>
                 <Link to="/mensagens" className="nav-icon" title="Mensagens">
                     <FontAwesomeIcon icon={faCommentDots} />
                     <span className="badge">3</span>
                 </Link>
-                <div className="nav-icon" title="Notificações" onClick={() => setNotificationsOpen(!notificationsOpen)}>
+                <div className="nav-icon" title="Notificações">
                     <FontAwesomeIcon icon={faBell} />
                     <span className="badge">5</span>
-                    {notificationsOpen && <NotificationMenu />}
                 </div>
-                {/* ... (código do theme-toggle e user-dropdown) ... */}
+                {/* O theme-toggle NÃO ESTÁ MAIS AQUI */}
             </nav>
-
+            {/* Dropdown do usuário */}
             <div className="user-dropdown">
-                {/* ... (código do user-dropdown) ... */}
+                <div className="user">
+                    <div className="profile-pic"><img src={currentUser.avatar} alt="Perfil" /></div>
+                    <span>{currentUser.name}</span>
+                    <FontAwesomeIcon icon={faChevronDown} />
+                </div>
+                <div className="dropdown-menu">
+                    <Link to="/perfil"><FontAwesomeIcon icon={faUser} /> Meu Perfil</Link>
+                    <Link to="/configuracoes"><FontAwesomeIcon icon={faCog} /> Configurações</Link>
+                    <a href="#" onClick={onLogout}><FontAwesomeIcon icon={faSignOutAlt} /> Sair</a>
+                </div>
             </div>
         </header>
     );
