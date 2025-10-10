@@ -1,3 +1,5 @@
+// BackEnd/src/main/java/com/SenaiCommunity/BackEnd/Controller/AmizadeController.java (CORRIGIDO)
+
 package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.AmigoDTO;
@@ -8,6 +10,8 @@ import com.SenaiCommunity.BackEnd.Service.AmizadeService;
 import com.SenaiCommunity.BackEnd.Service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+// ✅ 1. Importar a anotação de segurança
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -15,6 +19,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/amizades")
+// ✅ 2. Adicionar a anotação para proteger todos os endpoints do controller
+@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
 public class AmizadeController {
 
     @Autowired

@@ -1,0 +1,68 @@
+/* src/pages/Eventos/Eventos.css */
+
+.eventos-header {
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+}
+.eventos-header h1 { color: var(--text-primary); margin-bottom: 0.5rem; }
+.eventos-header p { color: var(--text-secondary); }
+
+.filters-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+.filters-container select {
+    flex: 1;
+    min-width: 150px;
+    padding: 0.75rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.eventos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+.sem-eventos {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    grid-column: 1 / -1;
+}
+
+.evento-card {
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+}
+.evento-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
+.evento-imagem { height: 150px; background-size: cover; background-position: center; position: relative; }
+.evento-imagem::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); }
+.evento-data { position: absolute; top: 1rem; left: 1rem; background-color: rgba(13, 17, 23, 0.8); color: white; border-radius: 6px; text-align: center; padding: 0.5rem; line-height: 1.1; border: 1px solid var(--border-color); }
+.evento-data span:first-child { font-size: 1.5rem; font-weight: 700; display: block; }
+.evento-data span:last-child { font-size: 0.75rem; text-transform: uppercase; }
+.evento-conteudo { padding: 1rem; display: flex; flex-direction: column; flex-grow: 1; }
+.evento-categoria { font-size: 0.75rem; font-weight: 600; color: var(--accent-primary); text-transform: uppercase; margin-bottom: 0.5rem; }
+.evento-titulo { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; flex-grow: 1; }
+.evento-detalhe { display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+.evento-detalhe svg { width: 15px; text-align: center; }
+.rsvp-btn { width: 100%; background-color: var(--accent-primary); border: none; border-radius: 6px; padding: 0.75rem; margin-top: 1rem; color: #ffffff; cursor: pointer; font-size: 0.875rem; font-weight: 600; }

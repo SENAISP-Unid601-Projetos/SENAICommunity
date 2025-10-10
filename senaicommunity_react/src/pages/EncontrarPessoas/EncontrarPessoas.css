@@ -1,0 +1,51 @@
+/* src/pages/EncontrarPessoas/EncontrarPessoas.css */
+
+.widget-card {
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+.widget-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
+.search-box { position: relative; }
+.search-box svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+.search-box input {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 2.75rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.search-results-container {
+    margin-top: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+.empty-state { padding: 2rem; text-align: center; color: var(--text-secondary); }
+
+.user-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.user-card-avatar { position: relative; flex-shrink: 0; }
+.user-card-avatar img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+.user-card-avatar .status { position: absolute; bottom: 2px; right: 2px; width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--bg-secondary); }
+.user-card-avatar .status.online { background-color: var(--online); }
+.user-card-avatar .status.offline { background-color: var(--text-tertiary); }
+.user-card-info { flex-grow: 1; }
+.user-card-info h4 { margin: 0 0 0.25rem 0; font-size: 1.1rem; }
+.user-card-info p { margin: 0; font-size: 0.85rem; color: var(--text-secondary); }
+.user-card-action { margin-left: auto; }
+.user-card-action .btn { padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+.user-card-action .btn-primary { background-color: var(--accent-primary); color: white; }
+.user-card-action .btn-secondary { background-color: var(--bg-quaternary); color: var(--text-primary); }
+.user-card-action .btn:disabled { cursor: not-allowed; opacity: 0.7; }
