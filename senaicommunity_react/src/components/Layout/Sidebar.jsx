@@ -5,7 +5,10 @@ import './Sidebar.css'; // Crie este arquivo CSS
 
 const Sidebar = ({ currentUser }) => {
 
-    const userImage = currentUser?.urlFotoPerfil || "https://via.placeholder.com/80";
+
+const userImage = currentUser?.urlFotoPerfil 
+    ? `http://localhost:8080${currentUser.urlFotoPerfil}` 
+    : "https://via.placeholder.com/80";
     const userTitle = currentUser?.tipoUsuario === 'ALUNO' ? 'Aluno(a)' : 'Professor(a)';
 
     return (

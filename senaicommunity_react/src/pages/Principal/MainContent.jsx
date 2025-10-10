@@ -3,12 +3,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImage, faVideo, faCode, faThumbsUp, faComment, faShareSquare, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 
-// Componente para criar um novo post
 const PostCreator = ({ currentUser }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [postText, setPostText] = useState('');
 
-    const userImage = currentUser?.urlFotoPerfil || "https://via.placeholder.com/40";
+    // ✅ CORREÇÃO AQUI
+    const userImage = currentUser?.urlFotoPerfil 
+        ? `http://localhost:8080${currentUser.urlFotoPerfil}`
+        : "https://via.placeholder.com/40";
 
     const handlePublish = async () => {
         if (!postText.trim()) return;
@@ -24,7 +26,6 @@ const PostCreator = ({ currentUser }) => {
             await axios.post('http://localhost:8080/postagem/upload-mensagem', formData);
             setPostText('');
             setIsExpanded(false);
-            // O post aparecerá via WebSocket, não precisa recarregar a lista manualmente
         } catch (error) {
             console.error("Erro ao publicar:", error);
             alert("Não foi possível publicar a postagem.");
@@ -67,7 +68,6 @@ const PostCreator = ({ currentUser }) => {
     );
 };
 
-// Componente principal do conteúdo central
 const MainContent = ({ currentUser }) => {
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -76,7 +76,6 @@ const MainContent = ({ currentUser }) => {
         const fetchPosts = async () => {
             try {
                 const response = await axios.get('http://localhost:8080/api/chat/publico');
-                // Ordena os posts por data, do mais novo para o mais antigo
                 const sortedPosts = response.data.sort(
                     (a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao)
                 );
@@ -96,38 +95,43 @@ const MainContent = ({ currentUser }) => {
             <div className="post-creator">
                 <PostCreator currentUser={currentUser} />
             </div>
-
             <div className="feed-separator"><hr/></div>
-            
             <div className="posts-container">
                 {isLoading ? (
                     <p>Carregando feed...</p>
                 ) : (
-                    posts.map(post => (
-                        <div className="post" key={post.id}>
-                            <div className="post-header">
-                                <div className="post-author">
-                                    <div className="post-icon"><img src={post.urlFotoAutor || 'https://via.placeholder.com/40'} alt={post.nomeAutor} /></div>
-                                    <div className="post-info">
-                                        <h2>{post.nomeAutor}</h2>
-                                        <span>{new Date(post.dataCriacao).toLocaleDateString()}</span>
+                    posts.map(post => {
+                        // ✅ CORREÇÃO AQUI
+                        const autorAvatar = post.urlFotoAutor
+                            ? `http://localhost:8080${post.urlFotoAutor}`
+                            : 'https://via.placeholder.com/40';
+                        
+                        return (
+                            <div className="post" key={post.id}>
+                                <div className="post-header">
+                                    <div className="post-author">
+                                        <div className="post-icon"><img src={autorAvatar} alt={post.nomeAutor} /></div>
+                                        <div className="post-info">
+                                            <h2>{post.nomeAutor}</h2>
+                                            <span>{new Date(post.dataCriacao).toLocaleDateString()}</span>
+                                        </div>
                                     </div>
+                                    <div className="post-options-btn"><FontAwesomeIcon icon={faEllipsisH} /></div>
                                 </div>
-                                <div className="post-options-btn"><FontAwesomeIcon icon={faEllipsisH} /></div>
-                            </div>
-                            <p className="post-text">{post.conteudo}</p>
-                            {post.urlsMidia && post.urlsMidia.length > 0 && (
-                                <div className="post-images">
-                                    <img src={post.urlsMidia[0]} alt="Imagem do Post" />
+                                <p className="post-text">{post.conteudo}</p>
+                                {post.urlsMidia && post.urlsMidia.length > 0 && (
+                                    <div className="post-images">
+                                        <img src={post.urlsMidia[0]} alt="Imagem do Post" />
+                                    </div>
+                                )}
+                                <div className="post-actions">
+                                    <button><FontAwesomeIcon icon={faThumbsUp} /> Curtir</button>
+                                    <button><FontAwesomeIcon icon={faComment} /> Comentar</button>
+                                    <button><FontAwesomeIcon icon={faShareSquare} /> Compartilhar</button>
                                 </div>
-                            )}
-                            <div className="post-actions">
-                                <button><FontAwesomeIcon icon={faThumbsUp} /> Curtir</button>
-                                <button><FontAwesomeIcon icon={faComment} /> Comentar</button>
-                                <button><FontAwesomeIcon icon={faShareSquare} /> Compartilhar</button>
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
         </main>
