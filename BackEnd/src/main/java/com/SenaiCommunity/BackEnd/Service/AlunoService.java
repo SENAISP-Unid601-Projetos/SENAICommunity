@@ -71,7 +71,7 @@ public class AlunoService {
             dto.setFotoPerfil("/api/arquivos/" + nomeFoto);
         } else {
             // Se o aluno NÃO TEM foto, usamos a URL do arquivo estático padrão.
-            dto.setFotoPerfil("/images/default-avatar.png");
+            dto.setFotoPerfil("/images/default-avatar.jpg");
         }
 
         dto.setProjetos(
@@ -119,8 +119,6 @@ public class AlunoService {
 
         Path caminhoDoArquivo = diretorioDeUpload.resolve(nomeArquivo);
         foto.transferTo(caminhoDoArquivo);
-
-        // Retorna APENAS o nome do arquivo
         return nomeArquivo;
     }
 

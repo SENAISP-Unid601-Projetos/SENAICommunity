@@ -44,16 +44,20 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints que NÃO precisam de login
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/autenticacao/login").permitAll()
-
-                        // ✅ CORREÇÃO APLICADA AQUI: Liberando os endpoints de cadastro de forma mais explícita
-                        .requestMatchers(HttpMethod.POST, "/cadastro/alunos").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/cadastro/professores").permitAll()
-
-                        .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/images/**", "/api/arquivos/**", "/projetos/imagens/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/autenticacao/login/google").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/vagas/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/vagas/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/alunos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/professores/**").permitAll()
+                        .requestMatchers("/auth/**", "/cadastro/**", "/ws/**", "/login**", "/oauth2/**").permitAll()
+                        .requestMatchers("/images/**", "/api/arquivos/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -71,8 +75,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Adicione a porta do seu front-end React (Vite usa 5173 por padrão)
-        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://127.0.0.1:5501", "http://localhost:3000", "http://127.0.0.1:5502", "http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://127.0.0.1:5501", "http://localhost:3000", "http://127.0.0.1:5502"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

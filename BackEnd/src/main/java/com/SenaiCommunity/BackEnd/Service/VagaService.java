@@ -1,16 +1,17 @@
 package com.SenaiCommunity.BackEnd.Service;
 
-import com.SenaiCommunity.BackEnd.DTO.VagaDTO;
+import com.SenaiCommunity.BackEnd.DTO.VagaEntradaDTO;
+import com.SenaiCommunity.BackEnd.DTO.VagaSaidaDTO;
+import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Entity.Vaga;
+import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import com.SenaiCommunity.BackEnd.Repository.VagaRepository;
-import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,63 +21,33 @@ public class VagaService {
     @Autowired
     private VagaRepository vagaRepository;
 
-    public List<VagaDTO> listarVagas(String busca, String tipo, String local, String nivel) {
-        Specification<Vaga> spec = (root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
-            if (busca != null && !busca.isBlank()) {
-                String buscaLike = "%" + busca.toLowerCase() + "%";
-                predicates.add(criteriaBuilder.or(
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("titulo")), buscaLike),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("empresa")), buscaLike),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("descricao")), buscaLike)
-                ));
-            }
+    @Transactional
+    public VagaSaidaDTO criar(VagaEntradaDTO dto, String autorEmail) {
+        Usuario autor = usuarioRepository.findByEmail(autorEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário autor não encontrado."));
 
-            if (tipo != null && !tipo.equals("todos")) {
-                predicates.add(criteriaBuilder.equal(root.get("tipo"), tipo));
-            }
-            if (local != null && !local.equals("todos")) {
-                predicates.add(criteriaBuilder.equal(root.get("local"), local));
-            }
-            if (nivel != null && !nivel.equals("todos")) {
-                predicates.add(criteriaBuilder.equal(root.get("nivel"), nivel));
-            }
+        Vaga vaga = new Vaga();
+        vaga.setTitulo(dto.getTitulo());
+        vaga.setDescricao(dto.getDescricao());
+        vaga.setEmpresa(dto.getEmpresa());
+        vaga.setLocalizacao(dto.getLocalizacao());
+        vaga.setNivel(dto.getNivel());
+        vaga.setTipoContratacao(dto.getTipoContratacao());
+        vaga.setDataPublicacao(LocalDateTime.now());
+        vaga.setAutor(autor);
 
-            query.orderBy(criteriaBuilder.desc(root.get("dataPublicacao")));
+        Vaga vagaSalva = vagaRepository.save(vaga);
+        return new VagaSaidaDTO(vagaSalva);
+    }
 
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-        };
-
-        return vagaRepository.findAll(spec).stream()
-                .map(this::toDTO)
+    public List<VagaSaidaDTO> listarTodas() {
+        return vagaRepository.findAll().stream()
+                .map(VagaSaidaDTO::new)
                 .collect(Collectors.toList());
     }
 
-    private VagaDTO toDTO(Vaga vaga) {
-        VagaDTO dto = new VagaDTO();
-        dto.setId(vaga.getId());
-        dto.setTitulo(vaga.getTitulo());
-        dto.setEmpresa(vaga.getEmpresa());
-        dto.setLogoUrl(vaga.getLogoUrl());
-        dto.setLocal(vaga.getLocal());
-        dto.setCidade(vaga.getCidade());
-        dto.setNivel(vaga.getNivel());
-        dto.setTipo(vaga.getTipo());
-        dto.setDescricao(vaga.getDescricao());
-        dto.setDataPublicacao(vaga.getDataPublicacao());
-        dto.setTags(vaga.getTags());
-        dto.setPublicado(formatarDataPublicacao(vaga.getDataPublicacao()));
-        return dto;
-    }
-
-    private String formatarDataPublicacao(LocalDate data) {
-        if (data == null) return "";
-        Period period = Period.between(data, LocalDate.now());
-        if (period.getYears() > 0) return "há " + period.getYears() + (period.getYears() > 1 ? " anos" : " ano");
-        if (period.getMonths() > 0) return "há " + period.getMonths() + (period.getMonths() > 1 ? " meses" : " mês");
-        if (period.getDays() > 7) return "há " + (period.getDays() / 7) + " semanas";
-        if (period.getDays() > 0) return "há " + period.getDays() + (period.getDays() > 1 ? " dias" : " dia");
-        return "hoje";
-    }
+    // Adicione outros métodos como atualizar, deletar, etc. conforme a necessidade
 }

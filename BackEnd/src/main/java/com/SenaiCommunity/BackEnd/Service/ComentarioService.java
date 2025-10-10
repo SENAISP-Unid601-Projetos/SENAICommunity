@@ -33,6 +33,9 @@ public class ComentarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private NotificacaoService notificacaoService;
+
     /**
      * Cria um novo comentário, associa ao autor e à postagem, e o salva no banco.
      */
@@ -55,6 +58,23 @@ public class ComentarioService {
             Comentario parent = comentarioRepository.findById(dto.getParentId())
                     .orElseThrow(() -> new EntityNotFoundException("Comentário pai não encontrado"));
             novoComentario.setParent(parent);
+
+            // Notifica o autor do comentário PAI (se não for ele mesmo)
+            if (!parent.getAutor().getId().equals(autor.getId())) {
+                notificacaoService.criarNotificacao(
+                        parent.getAutor(),
+                        autor.getNome() + " respondeu ao seu comentário."
+                );
+            }
+
+        }else {
+            // Se não for uma resposta, notifica o autor da POSTAGEM (se não for ele mesmo)
+            if (!postagem.getAutor().getId().equals(autor.getId())) {
+                notificacaoService.criarNotificacao(
+                        postagem.getAutor(),
+                        autor.getNome() + " comentou na sua postagem."
+                );
+            }
         }
 
         Comentario comentarioSalvo = comentarioRepository.save(novoComentario);
