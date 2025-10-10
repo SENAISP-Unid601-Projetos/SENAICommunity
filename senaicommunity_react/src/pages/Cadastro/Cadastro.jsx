@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // ✅ IMPORTADO para navegação
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import IMask from 'imask';
@@ -13,6 +14,9 @@ import './cadastro.css'; // Estilos da página
 
 // Componente principal da página de Cadastro
 const Cadastro = () => {
+    // ✅ HOOK para navegação
+    const navigate = useNavigate();
+
     // Estado para guardar os dados do formulário
     const [formData, setFormData] = useState({
         nome: '',
@@ -30,16 +34,18 @@ const Cadastro = () => {
     const [passwordStrength, setPasswordStrength] = useState(0);
     const [loading, setLoading] = useState(false);
 
-    // Efeito para mudar o título da página quando o componente carregar
+    // Efeito para mudar o título da página
     useEffect(() => {
         document.title = 'Senai Community | Cadastro';
-    }, []); // O array vazio garante que isso rode apenas uma vez
+    }, []);
 
     // Efeito para aplicar a máscara no campo de data
     useEffect(() => {
         const dateElement = document.getElementById('dataNascimento');
         if (dateElement) {
-            IMask(dateElement, { mask: '00/00/0000' });
+            const mask = IMask(dateElement, { mask: '00/00/0000' });
+            // Limpa a máscara quando o componente é desmontado para evitar memory leaks
+            return () => mask.destroy();
         }
     }, []);
     
@@ -80,9 +86,19 @@ const Cadastro = () => {
             Swal.fire({ icon: 'error', title: 'Oops...', text: 'As senhas não coincidem!' });
             return;
         }
+        
+        if (!formData.terms) {
+            Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Você deve aceitar os termos e a política de privacidade.' });
+            return;
+        }
 
         // Formata a data para o backend (AAAA-MM-DD)
         const [dia, mes, ano] = formData.dataNascimento.split('/');
+        // Validação simples da data
+        if (!dia || !mes || !ano || ano.length !== 4) {
+            Swal.fire({ icon: 'error', title: 'Data inválida', text: 'Por favor, insira uma data de nascimento válida no formato DD/MM/AAAA.' });
+            return;
+        }
         const formattedDate = `${ano}-${mes}-${dia}`;
 
         const submissionData = new FormData();
@@ -99,9 +115,9 @@ const Cadastro = () => {
         setLoading(true);
 
         try {
-            await axios.post('http://localhost:8080/cadastro/alunos', submissionData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            // ✅ CORREÇÃO: Removido o header 'Content-Type'. 
+            // O navegador o define automaticamente com o 'boundary' correto quando usa FormData.
+            await axios.post('http://localhost:8080/cadastro/alunos', submissionData);
 
             await Swal.fire({
                 icon: 'success', title: 'Cadastro realizado!',
@@ -109,8 +125,8 @@ const Cadastro = () => {
                 timer: 2500, showConfirmButton: false, allowOutsideClick: false
             });
             
-            // Em uma aplicação React real, usaríamos um hook de navegação (ex: useNavigate do React Router)
-            window.location.href = '/login'; 
+            // ✅ CORREÇÃO: Usando useNavigate para redirecionar
+            navigate('/login'); 
             
         } catch (error) {
             console.error('Erro no cadastro:', error);
@@ -180,12 +196,12 @@ const Cadastro = () => {
                         <FileUpload file={formData.foto} setFile={(file) => setFormData(prev => ({ ...prev, foto: file }))} />
 
                         <label className="checkbox terms">
-                            <input type="checkbox" name="terms" checked={formData.terms} onChange={handleChange} required />
+                            <input type="checkbox" name="terms" checked={formData.terms} onChange={handleChange} />
                             <span className="checkmark"></span>
                             Eu concordo com os <a href="#" className="text-link">Termos</a> e <a href="#" className="text-link">Política</a>
                         </label>
 
-                        <button type="submit" className="btn btn-primary" disabled={loading}>
+                        <button type="submit" className="btn btn-primary" disabled={loading || !formData.terms}>
                             {loading ? <span className="spinner"></span> : <span className="btn-text">Cadastrar</span>}
                         </button>
                         

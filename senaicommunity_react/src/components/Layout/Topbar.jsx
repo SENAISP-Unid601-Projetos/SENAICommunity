@@ -1,65 +1,78 @@
-// CONTEÚDO COMPLETO E FINAL para src/components/Layout/Topbar.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // ✅ HOOKS IMPORTADOS
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// Todos os ícones necessários
-import { faHome, faCommentDots, faBell, faMoon, faSun, faSearch, faChevronDown, faUser, faCog, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
-import './Topbar.css'; // IMPORTAÇÃO DO CSS DO TOPBAR
+// ✅ ÍCONE 'faSun' ADICIONADO
+import { faHome, faCommentDots, faBell, faMoon, faSun, faChevronDown, faUserEdit, faUserSlash, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import './Topbar.css';
 
-const Topbar = ({ onLogout }) => {
-    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+const Topbar = ({ onLogout, currentUser }) => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // ✅ ESTADO PARA CONTROLAR O TEMA ATUAL
+    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+    const navigate = useNavigate();
 
+    // ✅ EFEITO QUE RODA UMA VEZ PARA APLICAR O TEMA INICIAL
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
     }, [theme]);
 
-    const toggleTheme = () => {
-        setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
+    const handleToggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
     };
 
-    const currentUser = { name: "Vinicius G.", avatar: "/img/perfil.png" };
+    // ✅ FUNÇÃO PARA ALTERNAR O TEMA
+    const handleThemeToggle = () => {
+        const newTheme = theme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+        localStorage.setItem('theme', newTheme);
+    };
+    
+    const userImage = currentUser?.urlFotoPerfil || "https://via.placeholder.com/40";
 
     return (
         <header className="topbar">
             <div className="header-left">
-                {/* ✅ Ícone de alternar tema MOVIDO PARA AQUI */}
-                <div className="nav-icon theme-toggle" title="Alternar tema" onClick={toggleTheme}>
-                    <FontAwesomeIcon icon={theme === 'dark' ? faMoon : faSun} />
-                </div>
-                {/* Logo com cores SENAI (vermelho) e Community (azul) */}
-                <h1 className="logo"><span className="highlight">SENAI</span> Community</h1>
+                <h1 className="logo"><span className="highlight">SENAI </span>Community</h1>
             </div>
-            {/* Campo de busca */}
+
             <div className="search">
-                <FontAwesomeIcon icon={faSearch} />
-                <input type="text" placeholder="Pesquisar..." />
+                <i className="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Pesquisar por autor ou conteúdo..." />
             </div>
-            {/* Ícones de navegação (sem o theme-toggle agora) */}
+
             <nav className="nav-icons">
-                <Link to="/principal" className="nav-icon" title="Início"><FontAwesomeIcon icon={faHome} /></Link>
-                <Link to="/mensagens" className="nav-icon" title="Mensagens">
+                <a href="/principal" className="nav-icon" data-tooltip="Início">
+                    <FontAwesomeIcon icon={faHome} />
+                </a>
+                <div className="nav-icon" data-tooltip="Mensagens">
                     <FontAwesomeIcon icon={faCommentDots} />
                     <span className="badge">3</span>
-                </Link>
-                <div className="nav-icon" title="Notificações">
-                    <FontAwesomeIcon icon={faBell} />
-                    <span className="badge">5</span>
                 </div>
-                {/* O theme-toggle NÃO ESTÁ MAIS AQUI */}
+                <div className="nav-icon" data-tooltip="Notificações">
+                    <FontAwesomeIcon icon={faBell} />
+                </div>
+                {/* ✅ ATUALIZAÇÃO DO ÍCONE DE TEMA */}
+                <div className="theme-toggle" data-tooltip="Alternar tema" onClick={handleThemeToggle}>
+                    <FontAwesomeIcon icon={theme === 'dark' ? faMoon : faSun} />
+                </div>
             </nav>
-            {/* Dropdown do usuário */}
+
             <div className="user-dropdown">
-                <div className="user">
-                    <div className="profile-pic"><img src={currentUser.avatar} alt="Perfil" /></div>
-                    <span>{currentUser.name}</span>
+                <div className="user" onClick={handleToggleMenu}>
+                    <div className="profile-pic">
+                        <img src={userImage} alt="Perfil" id="topbar-user-img" />
+                    </div>
+                    <span id="topbar-user-name">{currentUser?.nome || 'Usuário'}</span>
                     <FontAwesomeIcon icon={faChevronDown} />
                 </div>
-                <div className="dropdown-menu">
-                    <Link to="/perfil"><FontAwesomeIcon icon={faUser} /> Meu Perfil</Link>
-                    <Link to="/configuracoes"><FontAwesomeIcon icon={faCog} /> Configurações</Link>
-                    <a href="#" onClick={onLogout}><FontAwesomeIcon icon={faSignOutAlt} /> Sair</a>
-                </div>
+                
+                {isMenuOpen && (
+                    <div className="dropdown-menu" style={{ display: 'block' }}>
+                        <a href="#"><FontAwesomeIcon icon={faUserEdit} /> Editar Perfil</a>
+                        <a href="#" className="danger"><FontAwesomeIcon icon={faUserSlash} /> Excluir Conta</a>
+                        <a href="#" onClick={onLogout}><FontAwesomeIcon icon={faSignOutAlt} /> Sair</a>
+                    </div>
+                )}
             </div>
         </header>
     );

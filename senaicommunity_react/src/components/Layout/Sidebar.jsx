@@ -1,39 +1,44 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faCommentDots, faUsers, faBriefcase, faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
-import { NavLink } from 'react-router-dom';
+import { faHome, faCommentDots, faUsers, faBriefcase, faCalendarCheck, faUserPlus, faUserFriends } from '@fortawesome/free-solid-svg-icons';
+import './Sidebar.css'; // Crie este arquivo CSS
 
-const Sidebar = () => {
-    // Estes dados virão da API no futuro
-    const currentUser = {
-        name: "Vinicius Gallo Santos",
-        title: "Estudante de ADS",
-        avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-        connections: 156,
-        projects: 24
-    };
+const Sidebar = ({ currentUser }) => {
+
+    const userImage = currentUser?.urlFotoPerfil || "https://via.placeholder.com/80";
+    const userTitle = currentUser?.tipoUsuario === 'ALUNO' ? 'Aluno(a)' : 'Professor(a)';
 
     return (
         <aside className="sidebar">
-            <div className="user-info">
-                <div className="avatar">
-                    <img src={currentUser.avatar} alt="Perfil" />
-                    <div className="status online"></div>
+            <a href="#" className="user-info-link">
+                <div className="user-info">
+                    <div className="avatar">
+                        <img src={userImage} alt="Perfil" id="sidebar-user-img" />
+                        <div className="status online"></div>
+                    </div>
+                    <h2 id="sidebar-user-name">{currentUser?.nome || 'Usuário'}</h2>
+                    <p className="user-title" id="sidebar-user-title">{userTitle}</p>
+                    <div className="user-stats">
+                        <div className="stat">
+                            <strong id="connections-count">-</strong>
+                            <span>Conexões</span>
+                        </div>
+                        <div className="stat">
+                            <strong id="projects-count">-</strong>
+                            <span>Projetos</span>
+                        </div>
+                    </div>
                 </div>
-                <h2>{currentUser.name}</h2>
-                <p className="user-title">{currentUser.title}</p>
-                <div className="user-stats">
-                    <div className="stat"><strong>{currentUser.connections}</strong><span>Conexões</span></div>
-                    <div className="stat"><strong>{currentUser.projects}</strong><span>Projetos</span></div>
-                </div>
-            </div>
+            </a>
 
             <nav className="menu">
-                <NavLink to="/principal"><FontAwesomeIcon icon={faHome} /> Feed</NavLink>
-                <NavLink to="/mensagens"><FontAwesomeIcon icon={faCommentDots} /> Mensagens <span className="badge">3</span></NavLink>
-                <NavLink to="/projetos"><FontAwesomeIcon icon={faUsers} /> Projetos</NavLink>
-                <NavLink to="/vagas"><FontAwesomeIcon icon={faBriefcase} /> Vagas</NavLink>
-                <NavLink to="/eventos"><FontAwesomeIcon icon={faCalendarCheck} /> Eventos</NavLink>
+                <a href="/principal"><FontAwesomeIcon icon={faHome} /> Feed</a>
+                <a href="#"><FontAwesomeIcon icon={faCommentDots} /> Mensagens <span className="badge">3</span></a>
+                <a href="#"><FontAwesomeIcon icon={faUsers} /> Projetos</a>
+                <a href="#"><FontAwesomeIcon icon={faBriefcase} /> Vagas</a>
+                <a href="#"><FontAwesomeIcon icon={faCalendarCheck} /> Eventos</a>
+                <a href="#"><FontAwesomeIcon icon={faUserPlus} /> Encontrar Pessoas</a>
+                <a href="#"><FontAwesomeIcon icon={faUserFriends} /> Minhas Conexões</a> 
             </nav>
         </aside>
     );
