@@ -1,10 +1,34 @@
-// @ts-nocheck
 document.addEventListener('DOMContentLoaded', () => {
+
     const ProjetosPage = {
+        
         state: {
-            projetos: [],
+            projetos: [
+                {
+                    id: 1,
+                    titulo: "Projeto IoT",
+                    // IMAGEM CORRIGIDA: Usando um placeholder confiável
+                    imagem: "/img/unnamed.png",
+                    descricao: "Esta solução inovadora, baseada na plataforma Arduino, utiliza sensores IoT de precisão para monitorar em tempo real variáveis críticas como temperatura e umidade, garantindo um controle de ambiente rigoroso e eficiente.",
+                    membros: [{ nome: "Ana Silva", avatar: "https://randomuser.me/api/portraits/women/33.jpg" }, { nome: "Miguel Piscki", avatar: "https://randomuser.me/api/portraits/men/22.jpg" }],
+                    tecnologias: ["Arduino", "C++", "Node.js", "Servo Motor"],
+                    categoria: "iot"
+                },
+                {
+                    id: 2,
+                    titulo: "Projeto: Torno CNC Modular PrecisionCraft",
+                    // IMAGEM CORRIGIDA: Usando um placeholder confiável
+                    imagem: "/img/cnc.png   ",
+                    descricao: "Este projeto é um Torno CNC Modular moderno e robusto, feito para usinagem de alta precisão. Ele é versátil, podendo trabalhar com diversos materiais e formas complexas, e é ideal para oficinas, educação e pesquisa. Seu design fácil de manter e customizar permite que os usuários o adaptem às suas necessidades.",
+                    membros: [{ nome: "Laura", avatar: "https://randomuser.me/api/portraits/women/55.jpg" }, { nome: " Carlos", avatar: "http://randomuser.me/api/portraits/men/51.jpg" }, { nome: "Julia", avatar: "https://randomuser.me/api/portraits/women/48.jpg" }],
+                    tecnologias: ["Controle Numérico Computadorizado (CNC)", "Servomotores de Precisão", "Sistemas de Guias Lineares", "Fuso de Esferas Motor", "Software CAD/CAM", "Sensores de Feedback", "Estrutura Modular"],
+                    categoria: "Engenharia Mecatrônica e Fabricação Digital"
+                },
+                
+            ],
             filteredProjetos: []
         },
+
         elements: {
             grid: document.getElementById('projetos-grid'),
             modalOverlay: document.getElementById('novo-projeto-modal'),
@@ -14,139 +38,80 @@ document.addEventListener('DOMContentLoaded', () => {
             searchInput: document.getElementById('project-search-input'),
             categoryFilter: document.getElementById('filter-category'),
         },
-        api: {
-            backendUrl: 'http://localhost:8080',
-            jwtToken: localStorage.getItem('token'),
-            currentUser: null,
 
-            async fetchCurrentUser() {
-                if (!this.jwtToken) return;
-                try {
-                    const response = await axios.get(`${this.backendUrl}/usuarios/me`, {
-                        headers: { 'Authorization': `Bearer ${this.jwtToken}` }
-                    });
-                    this.currentUser = response.data;
-                } catch (error) {
-                    console.error("Erro ao buscar usuário logado:", error);
-                }
-            },
-
-            async fetchProjetos() {
-                if (!this.jwtToken) return;
-                try {
-                    const response = await axios.get(`${ProjetosPage.api.backendUrl}/projetos`, {
-                        headers: { 'Authorization': `Bearer ${ProjetosPage.api.jwtToken}` }
-                    });
-                    ProjetosPage.state.projetos = response.data;
-                    ProjetosPage.handlers.applyFilters();
-                } catch (error) {
-                    console.error("Erro ao carregar projetos:", error);
-                    ProjetosPage.elements.grid.innerHTML = `<p>Não foi possível carregar os projetos.</p>`;
-                }
-            }
-        },
         render() {
             const grid = this.elements.grid;
-            if (!grid) return;
+            if (!grid) {
+                console.error("Elemento #projetos-grid não foi encontrado no HTML.");
+                return;
+            }
 
             grid.innerHTML = '';
             const projetosParaRenderizar = this.state.filteredProjetos;
 
             if (projetosParaRenderizar.length === 0) {
-                grid.innerHTML = `<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Nenhum projeto encontrado.</p>`;
+                grid.innerHTML = `<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Nenhum projeto encontrado com os filtros selecionados.</p>`;
                 return;
             }
 
             projetosParaRenderizar.forEach(proj => {
                 const card = document.createElement('div');
                 card.className = 'projeto-card';
-                
-                const imageUrl = proj.imagemUrl ? `${ProjetosPage.api.backendUrl}${proj.imagemUrl}` : 'https://placehold.co/600x400/161b22/ffffff?text=Projeto';
-
                 card.innerHTML = `
-                    <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
+                    <div class="projeto-imagem" style="background-image: url('${proj.imagem}')"></div>
                     <div class="projeto-conteudo">
                         <h3>${proj.titulo}</h3>
                         <p>${proj.descricao}</p>
                         <div class="projeto-membros">
-                            ${(proj.membros || []).map(m => `<img class="membro-avatar" src="${m.avatar || './img/perfil.png'}" title="${m.usuarioNome}">`).join('')}
+                            ${proj.membros.map(m => `<img class="membro-avatar" src="${m.avatar}" title="${m.nome}">`).join('')}
                         </div>
                         <div class="projeto-footer">
-                            <span class="tech-tag">${proj.status || 'Não definido'}</span>
+                            ${proj.tecnologias.map(t => `<span class="tech-tag">${t}</span>`).join('')}
                         </div>
                     </div>`;
                 grid.appendChild(card);
             });
         },
+
         handlers: {
             openModal() { ProjetosPage.elements.modalOverlay?.classList.add('visible'); },
             closeModal() { ProjetosPage.elements.modalOverlay?.classList.remove('visible'); },
             
-            async handleFormSubmit(e) {
+            handleFormSubmit(e) {
                 e.preventDefault();
                 const form = ProjetosPage.elements.form;
-                const formData = new FormData();
-
-                // Adiciona os campos do DTO
-                formData.append('titulo', form.querySelector('#proj-titulo').value);
-                formData.append('descricao', form.querySelector('#proj-descricao').value);
-                formData.append('maxMembros', 50); // Valor fixo, pode ser um campo no modal
-                formData.append('grupoPrivado', false); // Valor fixo
-                formData.append('autorId', ProjetosPage.api.currentUser.id);
-
-                // Adiciona a imagem, se houver
-                const fotoInput = form.querySelector('#proj-imagem');
-                if (fotoInput.files[0]) {
-                    formData.append('foto', fotoInput.files[0]);
-                }
-
-                try {
-                    await axios.post(`${ProjetosPage.api.backendUrl}/projetos`, formData, {
-                        headers: {
-                            'Authorization': `Bearer ${ProjetosPage.api.jwtToken}`,
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    });
-
-                    form.reset();
-                    ProjetosPage.handlers.closeModal();
-                    await ProjetosPage.api.fetchProjetos(); // Recarrega os projetos
-                    
-                    if (typeof showNotification === 'function') {
-                        showNotification('Projeto publicado com sucesso!', 'success');
-                    }
-                } catch (error) {
-                    console.error("Erro ao criar projeto:", error);
-                    if (typeof showNotification === 'function') {
-                        showNotification('Erro ao publicar o projeto.', 'error');
-                    }
-                }
+                const novoProjeto = {
+                    id: Date.now(),
+                    titulo: form.querySelector('#proj-titulo').value,
+                    descricao: form.querySelector('#proj-descricao').value,
+                    imagem: form.querySelector('#proj-imagem').value || 'https://placehold.co/600x400/161b22/ffffff?text=Novo+Projeto',
+                    membros: [{ nome: "Vinicius G.", avatar: "https://randomuser.me/api/portraits/men/32.jpg" }],
+                    tecnologias: form.querySelector('#proj-techs').value.split(',').map(t => t.trim()),
+                    categoria: 'web'
+                };
+                
+                ProjetosPage.state.projetos.unshift(novoProjeto);
+                ProjetosPage.handlers.applyFilters();
+                
+                form.reset();
+                ProjetosPage.handlers.closeModal();
             },
 
             applyFilters() {
                 const search = ProjetosPage.elements.searchInput.value.toLowerCase();
-                // A filtragem de categoria pode ser implementada no futuro
-                // const category = ProjetosPage.elements.categoryFilter.value;
+                const category = ProjetosPage.elements.categoryFilter.value;
 
                 ProjetosPage.state.filteredProjetos = ProjetosPage.state.projetos.filter(proj => {
-                    return proj.titulo.toLowerCase().includes(search) || proj.descricao.toLowerCase().includes(search);
+                    const searchMatch = proj.titulo.toLowerCase().includes(search) || proj.tecnologias.join(' ').toLowerCase().includes(search);
+                    const categoryMatch = category === 'todos' || proj.categoria === category;
+                    return searchMatch && categoryMatch;
                 });
+
                 ProjetosPage.render();
             }
         },
 
-        async init() {
-            if (!this.api.jwtToken) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            await this.api.fetchCurrentUser();
-            if (!this.api.currentUser) {
-                window.location.href = 'login.html';
-                return;
-            }
-
+        init() {
             const { openModalBtn, closeModalBtn, modalOverlay, form, searchInput, categoryFilter } = this.elements;
 
             openModalBtn?.addEventListener('click', this.handlers.openModal);
@@ -156,9 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             form?.addEventListener('submit', (e) => this.handlers.handleFormSubmit(e));
             searchInput?.addEventListener('input', () => this.handlers.applyFilters());
-            // categoryFilter?.addEventListener('change', () => this.handlers.applyFilters());
+            categoryFilter?.addEventListener('change', () => this.handlers.applyFilters());
 
-            await this.api.fetchProjetos();
+            this.handlers.applyFilters();
         }
     };
 

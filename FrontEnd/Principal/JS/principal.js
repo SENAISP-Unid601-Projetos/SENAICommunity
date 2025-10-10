@@ -1,631 +1,1310 @@
-// @ts-nocheck
+// Bloco de código para controle de tema.
+// Este bloco será executado em todas as páginas que importam o principal.js.
 document.addEventListener('DOMContentLoaded', () => {
-    // ==================== CONFIGURAÇÕES E VARIÁVEIS GLOBAIS ====================
-    const backendUrl = 'http://localhost:8080';
-    const jwtToken = localStorage.getItem('token');
-    const defaultAvatarUrl = `${backendUrl}/images/default-avatar.png`;
-    let currentUser = null;
-    let stompClient = null;
-
-    // --- ELEMENTOS DO DOM ---
-    const elements = {
-        // UI Geral
-        topbarUserName: document.getElementById('topbar-user-name'),
-        sidebarUserName: document.getElementById('sidebar-user-name'),
-        sidebarUserTitle: document.getElementById('sidebar-user-title'),
-        topbarUserImg: document.getElementById('topbar-user-img'),
-        sidebarUserImg: document.getElementById('sidebar-user-img'),
-        logoutBtn: document.getElementById('logout-btn'),
-        userDropdownTrigger: document.querySelector('.user-dropdown .user'),
-        notificationCenter: document.querySelector('.notification-center'),
-
-        // Notificações
-        notificationIconLink: document.getElementById('notification-icon-link'),
-        notificationMenu: document.getElementById('notification-menu'),
-        followRequestsList: document.getElementById('follow-requests-list'),
-        activityList: document.getElementById('activity-list'),
-
-        // Feed e Posts
-        postsContainer: document.querySelector('.posts-container'),
-        postCreatorSimpleView: document.querySelector('.post-creator-simple'),
-        postCreatorExpandedView: document.querySelector('.post-creator-expanded'),
-        simpleViewTrigger: document.querySelector('.post-creator-trigger'),
-        cancelBtn: document.querySelector('.post-creator-expanded .cancel-btn'),
-        publishBtn: document.querySelector('.post-creator-expanded .publish-btn'),
-        textarea: document.querySelector('.post-creator-expanded .editor-textarea'),
-        mediaPreviewContainer: document.querySelector('.media-preview-container'),
-        fileInput: document.getElementById('post-media-input'), // Novo input de arquivo
-        photoOptionBtn: document.querySelector('.editor-options [data-type="photo"]'),
-
-        // Modais de Edição de Perfil (adicionados para compatibilidade)
-        editProfileModal: document.getElementById('edit-profile-modal'),
-        editProfileForm: document.getElementById('edit-profile-form'),
-        cancelEditProfileBtn: document.getElementById('cancel-edit-profile-btn'),
-        editProfilePicInput: document.getElementById('edit-profile-pic-input'),
-        editProfilePicPreview: document.getElementById('edit-profile-pic-preview'),
-        editProfileName: document.getElementById('edit-profile-name'),
-        editProfileBio: document.getElementById('edit-profile-bio'),
-        editProfileDob: document.getElementById('edit-profile-dob'),
-        editProfilePassword: document.getElementById('edit-profile-password'),
-        editProfilePasswordConfirm: document.getElementById('edit-profile-password-confirm'),
-
-        // Modais de Deletar Conta (adicionados para compatibilidade)
-        deleteAccountModal: document.getElementById('delete-account-modal'),
-        deleteAccountForm: document.getElementById('delete-account-form'),
-        deleteConfirmPassword: document.getElementById('delete-confirm-password')
-    };
-
-    // ==================== FUNÇÕES DE UI E NOTIFICAÇÕES ====================
-
-    function showNotification(message, type = 'info') {
-        if (!elements.notificationCenter) return;
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        elements.notificationCenter.appendChild(notification);
-        setTimeout(() => { notification.classList.add('show'); }, 10);
-        setTimeout(() => {
-            notification.classList.remove('show');
-            notification.addEventListener('transitionend', () => notification.remove());
-        }, 5000); // tempo de 5s para notificações
-    }
     
-    // ==================== INICIALIZAÇÃO DA APLICAÇÃO ====================
-    async function init() {
-        if (!jwtToken) {
-            window.location.href = 'login.html';
-            return;
-        }
-        axios.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
+    // --- FUNÇÕES DE CONTROLE DE TEMA ---
+    function setInitialTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'dark'; // Garante 'dark' como padrão
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    }
 
-        try {
-            const response = await axios.get(`${backendUrl}/usuarios/me`);
-            currentUser = response.data;
-            updateUIWithUserData(currentUser);
-            setupEventListeners();
-            setupNotificationListeners(); // <<< ADICIONADO AQUI
-            connectToWebSocket();
-            await loadInitialPosts();
-            loadOnlineFriends();
-            loadAllWidgets();
-        } catch (error) {
-            console.error("ERRO CRÍTICO NA INICIALIZAÇÃO:", error);
-            showNotification("Sessão expirada. Por favor, faça login novamente.", "error");
-            localStorage.removeItem('token');
-            setTimeout(() => { window.location.href = 'login.html'; }, 3000);
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+    }
+
+    function updateThemeIcon(theme) {
+        const themeToggleIcon = document.querySelector('.theme-toggle i');
+        if (themeToggleIcon) {
+            if (theme === 'dark') {
+                themeToggleIcon.classList.remove('fa-sun');
+                themeToggleIcon.classList.add('fa-moon');
+            } else {
+                themeToggleIcon.classList.remove('fa-moon');
+                themeToggleIcon.classList.add('fa-sun');
+            }
         }
     }
 
-    function updateUIWithUserData(user) {
-        if (!user) return;
-        const userImage = user.urlFotoPerfil ? `${backendUrl}${user.urlFotoPerfil}` : defaultAvatarUrl;
-        if (elements.topbarUserImg) elements.topbarUserImg.src = userImage;
-        if (elements.sidebarUserImg) elements.sidebarUserImg.src = userImage;
-        document.querySelectorAll('.post-icon img, .add-comment .avatar-small img, .post-creator-trigger img').forEach(img => img.src = userImage);
+    // --- INICIALIZAÇÃO DO TEMA ---
+    setInitialTheme();
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
     }
+});
+
+
+// Lógica específica para a página principal (feed)
+// Esta parte só será executada completamente na principal.html
+document.addEventListener("DOMContentLoaded", () => {
+  
+  // Verifica se estamos na página principal antes de executar o código do feed
+  if (!document.querySelector(".posts-container")) {
+    return;
+  }
     
-    // ==================== LÓGICA DO FEED (CRIAÇÃO, EXIBIÇÃO, INTERAÇÕES) ====================
+  // --- CONFIGURAÇÕES E VARIÁVEIS GLOBAIS ---
+  const backendUrl = "http://localhost:8080";
+  const jwtToken = localStorage.getItem("token");
+  let stompClient = null;
+  let currentUser = null;
+  let userFriends = []; // VARIÁVEL GLOBAL PARA ARMAZENAR AMIGOS
+  let selectedFilesForPost = [];
+  let selectedFilesForEdit = [];
+  let friendsLoaded = false;
+  let latestOnlineEmails = [];
 
-    async function loadInitialPosts() {
-        if (!elements.postsContainer) return;
-        try {
-            const response = await axios.get(`${backendUrl}/api/chat/publico`);
-            const posts = response.data.sort((a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao));
-            elements.postsContainer.innerHTML = '';
-            posts.forEach(postData => {
-                renderPost(postData);
-            });
-        } catch (error) {
-            console.error("Erro ao carregar posts iniciais:", error);
-            showNotification("Não foi possível carregar o feed.", "error");
+  const searchInput = document.getElementById("search-input");
+
+  // --- ELEMENTOS DO DOM (Seleção Centralizada) ---
+  const elements = {
+    userDropdownTrigger: document.querySelector(".user-dropdown .user"),
+    postsContainer: document.querySelector(".posts-container"),
+    logoutBtn: document.getElementById("logout-btn"),
+    postTextarea: document.getElementById("post-creator-textarea"),
+    postFileInput: document.getElementById("post-file-input"),
+    filePreviewContainer: document.getElementById("file-preview-container"),
+    publishBtn: document.getElementById("publish-post-btn"),
+    notificationCenter: document.querySelector(".notification-center"),
+
+    editPostModal: document.getElementById("edit-post-modal"),
+    editPostForm: document.getElementById("edit-post-form"),
+    editPostIdInput: document.getElementById("edit-post-id"),
+    editPostTextarea: document.getElementById("edit-post-textarea"),
+    cancelEditPostBtn: document.getElementById("cancel-edit-post-btn"),
+    editPostFileInput: document.getElementById("edit-post-files"),
+    editFilePreviewContainer: document.getElementById("edit-file-preview-container"),
+
+    editCommentModal: document.getElementById("edit-comment-modal"),
+    editCommentForm: document.getElementById("edit-comment-form"),
+    editCommentIdInput: document.getElementById("edit-comment-id"),
+    editCommentTextarea: document.getElementById("edit-comment-textarea"),
+    cancelEditCommentBtn: document.getElementById("cancel-edit-comment-btn"),
+
+    editProfileBtn: document.getElementById("edit-profile-btn"),
+    deleteAccountBtn: document.getElementById("delete-account-btn"),
+    editProfileModal: document.getElementById("edit-profile-modal"),
+    editProfileForm: document.getElementById("edit-profile-form"),
+    cancelEditProfileBtn: document.getElementById("cancel-edit-profile-btn"),
+    editProfilePicInput: document.getElementById("edit-profile-pic-input"),
+    editProfilePicPreview: document.getElementById("edit-profile-pic-preview"),
+    editProfileName: document.getElementById("edit-profile-name"),
+    editProfileBio: document.getElementById("edit-profile-bio"),
+    editProfileDob: document.getElementById("edit-profile-dob"),
+    editProfilePassword: document.getElementById("edit-profile-password"),
+    editProfilePasswordConfirm: document.getElementById("edit-profile-password-confirm"),
+
+    deleteAccountModal: document.getElementById("delete-account-modal"),
+    deleteAccountForm: document.getElementById("delete-account-form"),
+    cancelDeleteAccountBtn: document.getElementById("cancel-delete-account-btn"),
+    deleteConfirmPassword: document.getElementById("delete-confirm-password"),
+
+    notificationsIcon: document.getElementById('notifications-icon'),
+    notificationsPanel: document.getElementById('notifications-panel'),
+    notificationsList: document.getElementById('notifications-list'),
+    notificationsBadge: document.getElementById('notifications-badge'),
+    onlineFriendsList: document.getElementById('online-friends-list'),
+    connectionsCount: document.getElementById('connections-count')
+  };
+
+  // --- INICIALIZAÇÃO ---
+  async function init() {
+    if (!jwtToken) {
+      window.location.href = "login.html";
+      return;
+    }
+    axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
+
+    try {
+      const response = await axios.get(`${backendUrl}/usuarios/me`);
+      currentUser = response.data;
+      updateUIWithUserData(currentUser);
+      connectWebSocket();
+      fetchFriends();
+      setupEventListeners();
+      fetchNotifications();
+    } catch (error) {
+      console.error("ERRO CRÍTICO NA INICIALIZAÇÃO:", error);
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+  }
+
+  // --- FUNÇÕES DE UI ---
+  function updateUIWithUserData(user) {
+    if (!user) return;
+
+    const userImage = user.urlFotoPerfil
+      ? `${backendUrl}${user.urlFotoPerfil}`
+      : `${backendUrl}/images/default-avatar.png`;
+
+    const topbarUserName = document.getElementById("topbar-user-name");
+    if (topbarUserName) topbarUserName.textContent = user.nome;
+
+    const sidebarUserName = document.getElementById("sidebar-user-name");
+    if (sidebarUserName) sidebarUserName.textContent = user.nome;
+
+    const sidebarUserTitle = document.getElementById("sidebar-user-title");
+    if (sidebarUserTitle)
+      sidebarUserTitle.textContent = user.titulo || "Membro da Comunidade";
+
+    const topbarUserImg = document.getElementById("topbar-user-img");
+    if (topbarUserImg) topbarUserImg.src = userImage;
+
+    const sidebarUserImg = document.getElementById("sidebar-user-img");
+    if (sidebarUserImg) sidebarUserImg.src = userImage;
+
+    const postCreatorImg = document.getElementById("post-creator-img");
+    if (postCreatorImg) postCreatorImg.src = userImage;
+  }
+
+  function showNotification(message, type = "info") {
+    const notification = document.createElement("div");
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    if (elements.notificationCenter)
+      elements.notificationCenter.appendChild(notification);
+    setTimeout(() => {
+      notification.classList.add("show");
+    }, 10);
+    setTimeout(() => {
+      notification.classList.remove("show");
+      setTimeout(() => {
+        notification.remove();
+      }, 300);
+    }, 5000);
+  }
+
+  // --- LÓGICA DO WEBSOCKET ---
+  function connectWebSocket() {
+    const socket = new SockJS(`${backendUrl}/ws`);
+    stompClient = Stomp.over(socket);
+    stompClient.debug = null;
+    const headers = { Authorization: `Bearer ${jwtToken}` };
+    stompClient.connect(
+      headers,
+      (frame) => {
+        console.log("CONECTADO AO WEBSOCKET");
+        fetchPublicPosts();
+        // Inscrição no feed público
+        stompClient.subscribe("/topic/publico", (message) => {
+          const payload = JSON.parse(message.body);
+          handlePublicFeedUpdate(payload);
+        });
+        // INSCRIÇÃO PARA NOTIFICAÇÕES
+                stompClient.subscribe(`/user/${currentUser.email}/queue/notifications`, (message) => {
+    const newNotification = JSON.parse(message.body);
+    showNotification(`Nova notificação: ${newNotification.mensagem}`, 'info');
+    if (elements.notificationsList) {
+        const emptyState = elements.notificationsList.querySelector('.empty-state');
+        if (emptyState) {
+            emptyState.remove();
         }
+        const newItem = createNotificationElement(newNotification);
+        elements.notificationsList.prepend(newItem);
     }
 
-    function renderPost(postData, prepend = false) {
-        const postElement = document.createElement('div');
-        postElement.className = 'post';
-        postElement.dataset.id = postData.id;
-        postElement.dataset.autorId = postData.autorId;
+    if (elements.notificationsBadge) {
+        const currentCount = parseInt(elements.notificationsBadge.textContent) || 0;
+        const newCount = currentCount + 1;
+        elements.notificationsBadge.textContent = newCount;
+        elements.notificationsBadge.style.display = 'flex';
+    }
+});
 
-        const isMyPost = postData.autorId === currentUser.id;
-        
-        const postImage = postData.urlFotoAutor ? `${backendUrl}/api/arquivos/${postData.urlFotoAutor}` : defaultAvatarUrl;
+        // INSCRIÇÃO PARA STATUS ONLINE/OFFLINE
+        stompClient.subscribe("/topic/status", (message) => {
+          latestOnlineEmails = JSON.parse(message.body);
+          atualizarStatusDeAmigosNaUI();
+        });
+      },
+      (error) => console.error("ERRO WEBSOCKET:", error)
+    );
+  }
 
-        const formattedDate = formatTimeAgo(postData.dataCriacao);
+  async function fetchPublicPosts() {
+    try {
+      const response = await axios.get(`${backendUrl}/api/chat/publico`);
+      if (elements.postsContainer) elements.postsContainer.innerHTML = "";
+      const sortedPosts = response.data.sort(
+        (a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao)
+      );
+      sortedPosts.forEach((post) => showPublicPost(post));
+    } catch (error) {
+      console.error("Erro ao buscar postagens:", error);
+      if (elements.postsContainer)
+        elements.postsContainer.innerHTML =
+          "<p>Não foi possível carregar o feed.</p>";
+    }
+  }
 
-        // --- AQUI ESTÁ A CORREÇÃO ---
-        const mediaUrl = postData.urlsMidia && postData.urlsMidia.length > 0 ? postData.urlsMidia[0] : null;
-        const finalMediaUrl = mediaUrl && (mediaUrl.startsWith('http') || mediaUrl.startsWith('https')) ? mediaUrl : `${backendUrl}${mediaUrl}`;
-        const mediaHTML = finalMediaUrl ? `<div class="post-images"><img src="${finalMediaUrl}" alt="Post image"></div>` : '';
-        // --- FIM DA CORREÇÃO ---
+  // --- FUNÇÕES DE RENDERIZAÇÃO ---
+  function renderCommentWithReplies(comment, allComments, post) {
+    let commentHtml = createCommentElement(comment, post);
+    const replies = allComments
+      .filter((reply) => reply.parentId === comment.id)
+      .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao));
+    if (replies.length > 0) {
+      commentHtml += `<div class="comment-replies">`;
+      replies.forEach((reply) => {
+        commentHtml += renderCommentWithReplies(reply, allComments, post);
+      });
+      commentHtml += `</div>`;
+    }
+    return commentHtml;
+  }
 
-        const commentsHTML = postData.comentarios.map(comment => renderComment(comment)).join('');
-        const likeCount = postData.totalCurtidas || 0;
-        const commentCount = postData.comentarios?.length || 0;
-        const isLiked = postData.curtidoPeloUsuario;
-
-        postElement.innerHTML = `
-            <div class="post-header">
-                <div class="post-author">
-                    <div class="post-icon">
-                        <img src="${postImage}" alt="${postData.nomeAutor}">
-                    </div>
-                    <div class="post-info">
-                        <h2><a href="perfil.html?id=${postData.autorId}" class="post-author-link">${postData.nomeAutor}</a></h2>
-                        <span>${formattedDate} • <i class="fas fa-globe-americas"></i></span>
-                    </div>
+  function createCommentElement(comment, post) {
+    const commentAuthorName =
+      comment.autor?.nome || comment.nomeAutor || "Usuário";
+    const commentAuthorAvatar = comment.urlFotoAutor
+      ? `${backendUrl}/api/arquivos/${comment.urlFotoAutor}`
+      : `${backendUrl}/images/default-avatar.png`;
+    const autorIdDoComentario = comment.autor?.id || comment.autorId;
+    const autorIdDoPost = post.autor?.id || post.autorId;
+    const isAuthor = currentUser && autorIdDoComentario == currentUser.id;
+    const isPostOwner = currentUser && autorIdDoPost == currentUser.id;
+    let optionsMenu = "";
+    if (isAuthor || isPostOwner) {
+      optionsMenu = `
+                <button class="comment-options-btn" onclick="event.stopPropagation(); window.openCommentMenu(${comment.id
+        })">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+                <div class="options-menu" id="comment-menu-${comment.id
+        }" onclick="event.stopPropagation();">
+                    ${isAuthor
+          ? `<button onclick="window.openEditCommentModal(${comment.id
+          }, '${comment.conteudo.replace(
+            /'/g,
+            "\\'"
+          )}')"><i class="fas fa-pen"></i> Editar</button>`
+          : ""
+        }
+                    ${isAuthor || isPostOwner
+          ? `<button class="danger" onclick="window.deleteComment(${comment.id})"><i class="fas fa-trash"></i> Excluir</button>`
+          : ""
+        }
+                    ${isPostOwner
+          ? `<button onclick="window.highlightComment(${comment.id
+          })"><i class="fas fa-star"></i> ${comment.destacado ? "Remover Destaque" : "Destacar"
+          }</button>`
+          : ""
+        }
                 </div>
-                <div class="post-options-btn"><i class="fas fa-ellipsis-h"></i></div>
-            </div>
-            <div class="post-text">${postData.conteudo || ''}</div>
-            ${mediaHTML}
-            <div class="post-actions">
-                <button class="like-btn ${isLiked ? 'liked' : ''}" data-post-id="${postData.id}">
-                    <i class="${isLiked ? 'fas' : 'far'} fa-thumbs-up"></i> 
-                    <span>Curtir</span> 
-                    <span class="count">${likeCount}</span>
-                </button>
-                <button class="comment-btn">
-                    <i class="far fa-comment"></i> 
-                    <span>Comentar</span> 
-                    <span class="count">${commentCount}</span>
-                </button>
-                <button class="share-btn">
-                    <i class="far fa-share-square"></i> 
-                    <span>Compartilhar</span>
-                </button>
-            </div>
-            <div class="post-comments">${commentsHTML}</div>
-            <div class="add-comment">
-                <div class="avatar-small">
-                    <img src="${currentUser.urlFotoPerfil ? `${backendUrl}${currentUser.urlFotoPerfil}` : defaultAvatarUrl}" alt="${currentUser.nome}">
+            `;
+    }
+    return `
+            <div class="comment-container">
+                <div class="comment ${comment.destacado ? "destacado" : ""
+      }" id="comment-${comment.id}">
+                    <div class="comment-avatar"><img src="${commentAuthorAvatar}" alt="Avatar de ${commentAuthorName}"></div>
+                    <div class="comment-body">
+                        <span class="comment-author">${commentAuthorName}</span>
+                        <p class="comment-content">${comment.conteudo}</p>
+                    </div>
+                    ${optionsMenu}
                 </div>
-                <input type="text" placeholder="Adicione um comentário..." data-post-id="${postData.id}">
+                <div class="comment-actions-footer">
+                    <button class="action-btn-like ${comment.curtidoPeloUsuario ? "liked" : ""
+      }" onclick="window.toggleLike(event, ${post.id}, ${comment.id
+      })">Curtir</button>
+                    <button class="action-btn-reply" onclick="window.toggleReplyForm(${comment.id
+      })">Responder</button>
+                    <span class="like-count" id="like-count-comment-${comment.id
+      }"><i class="fas fa-heart"></i> ${comment.totalCurtidas || 0
+      }</span>
+                </div>
+                <div class="reply-form" id="reply-form-${comment.id}">
+                    <input type="text" id="reply-input-${comment.id
+      }" placeholder="Escreva sua resposta..."><button onclick="window.sendComment(${post.id
+      }, ${comment.id})"><i class="fas fa-paper-plane"></i></button>
+                </div>
             </div>
         `;
-        
-        if (prepend) {
-            elements.postsContainer.prepend(postElement);
-        } else {
-            elements.postsContainer.appendChild(postElement);
+  }
+
+  function createPostElement(post) {
+    const postElement = document.createElement("div");
+    postElement.className = "post";
+    postElement.id = `post-${post.id}`;
+
+    // Extrai informações do autor de forma segura
+    const autorNome = post.nomeAutor || "Usuário Desconhecido";
+    const autorIdDoPost = post.autorId;
+
+    // Lógica para obter a URL da foto do autor
+    const fotoAutorPath = post.urlFotoAutor;
+
+    // Se a URL já for uma URL completa (ex: começa com http), use-a diretamente.
+    // Caso contrário, concatene a URL base do backend.
+    const autorAvatar = fotoAutorPath
+      ? fotoAutorPath.startsWith("http")
+        ? fotoAutorPath
+        : `${backendUrl}/api/arquivos/${fotoAutorPath}`
+      : `${backendUrl}/images/default-avatar.png`;
+
+    const dataFormatada = new Date(post.dataCriacao).toLocaleString("pt-BR");
+    const isAuthor = currentUser && autorIdDoPost === currentUser.id;
+
+    // Constrói o HTML da mídia
+    let mediaHtml = "";
+    if (post.urlsMidia && post.urlsMidia.length > 0) {
+      mediaHtml = `<div class="post-media">${post.urlsMidia
+        .map((url) => {
+          const fullMediaUrl = url.startsWith("http")
+            ? url
+            : `${backendUrl}${url}`;
+          if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i))
+            return `<img src="${fullMediaUrl}" alt="Mídia da postagem">`;
+          if (url.match(/\.(mp4|webm|ogg)$/i))
+            return `<video controls src="${fullMediaUrl}"></video>`;
+          return "";
+        })
+        .join("")}</div>`;
+    }
+
+    // Constrói o HTML dos comentários
+    const rootComments = (post.comentarios || []).filter((c) => !c.parentId);
+    let commentsHtml = rootComments
+      .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao))
+      .map((comment) =>
+        renderCommentWithReplies(comment, post.comentarios, post)
+      )
+      .join("");
+
+    // Constrói o menu de opções
+    let optionsMenu = "";
+    if (isAuthor) {
+      optionsMenu = `
+            <div class="post-options">
+                <button class="post-options-btn" onclick="event.stopPropagation(); window.openPostMenu(${post.id
+        })"><i class="fas fa-ellipsis-h"></i></button>
+                <div class="options-menu" id="post-menu-${post.id
+        }" onclick="event.stopPropagation();">
+                    <button onclick="window.openEditPostModal(${post.id
+        }, '${post.conteudo.replace(
+          /'/g,
+          "\\'"
+        )}')"><i class="fas fa-pen"></i> Editar</button>
+                    <button class="danger" onclick="window.deletePost(${post.id
+        })"><i class="fas fa-trash"></i> Excluir</button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Define o conteúdo interno do elemento de postagem
+    postElement.innerHTML = `
+        <div class="post-header">
+            <div class="post-author-details">
+                <div class="post-author-avatar"><img src="${autorAvatar}" alt="${autorNome}" onerror="this.src='${backendUrl}/images/default-avatar.png';"></div>
+                <div class="post-author-info"><strong>${autorNome}</strong><span>${dataFormatada}</span></div>
+            </div>
+            ${optionsMenu}
+        </div>
+        <div class="post-content"><p>${post.conteudo}</p></div>
+        ${mediaHtml}
+        <div class="post-actions">
+            <button class="action-btn ${post.curtidoPeloUsuario ? "liked" : ""
+      }" onclick="window.toggleLike(event, ${post.id
+      }, null)"><i class="fas fa-heart"></i> <span id="like-count-post-${post.id
+      }">${post.totalCurtidas || 0}</span></button>
+            <button class="action-btn" onclick="window.toggleComments(${post.id
+      })"><i class="fas fa-comment"></i> <span>${post.comentarios?.length || 0
+      }</span></button>
+        </div>
+        <div class="comments-section" id="comments-section-${post.id
+      }" style="display: none;">
+            <div class="comments-list">${commentsHtml}</div>
+            <div class="comment-form">
+                <input type="text" id="comment-input-${post.id
+      }" placeholder="Adicione um comentário..."><button onclick="window.sendComment(${post.id
+      }, null)"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    `;
+
+    return postElement;
+  }
+
+  function createNotificationElement(notification) {
+    const item = document.createElement('div');
+    item.className = 'notification-item unread'; // Adiciona como não lida por padrão
+    item.id = `notification-item-${notification.id}`;
+
+    const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
+    let actionButtonsHtml = '';
+    let iconClass = 'fa-info-circle';
+
+    if (notification.tipo === 'PEDIDO_AMIZADE') {
+        iconClass = 'fa-user-plus';
+        actionButtonsHtml = `
+          <div class="notification-actions">
+            <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
+            <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
+          </div>
+        `;
+    }
+
+    item.innerHTML = `
+        <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
+            <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
+            <div class="notification-content">
+                <p>${notification.mensagem}</p>
+                <span class="timestamp">${data}</span>
+            </div>
+        </a>
+        <div class="notification-actions-wrapper">${actionButtonsHtml}</div>
+    `;
+
+    const actionsWrapper = item.querySelector('.notification-actions-wrapper');
+    if (actionsWrapper) {
+        actionsWrapper.addEventListener('click', e => e.stopPropagation());
+    }
+    return item;
+}
+
+  function showPublicPost(post, prepend = false) {
+    if (elements.postsContainer) {
+      const postElement = createPostElement(post);
+      prepend
+        ? elements.postsContainer.prepend(postElement)
+        : elements.postsContainer.appendChild(postElement);
+    }
+  }
+
+  async function fetchAndReplacePost(postId) {
+    try {
+      const response = await axios.get(`${backendUrl}/postagem/${postId}`);
+      const oldPostElement = document.getElementById(`post-${postId}`);
+      if (oldPostElement) {
+        const wasCommentsVisible =
+          oldPostElement.querySelector(".comments-section").style.display ===
+          "block";
+        const newPostElement = createPostElement(response.data);
+        if (wasCommentsVisible) {
+          newPostElement.querySelector(".comments-section").style.display =
+            "block";
         }
+        oldPostElement.replaceWith(newPostElement);
+      } else {
+        showPublicPost(response.data, true);
+      }
+    } catch (error) {
+      console.error(`Falha ao recarregar post ${postId}:`, error);
+    }
+  }
 
-        addPostEvents(postElement);
+  function handlePublicFeedUpdate(payload) {
+    if (
+      payload.autorAcaoId &&
+      currentUser &&
+      payload.autorAcaoId == currentUser.id
+    ) {
+      return;
+    }
+    const postId = payload.postagem?.id || payload.id || payload.postagemId;
+    if (payload.tipo === "remocao" && payload.postagemId) {
+      const postElement = document.getElementById(`post-${payload.postagemId}`);
+      if (postElement) postElement.remove();
+    } else if (postId) {
+      fetchAndReplacePost(postId);
+    }
+  }
+
+  // --- NOVAS FUNÇÕES PARA NOTIFICAÇÕES ---
+  async function fetchNotifications() {
+    try {
+      const response = await axios.get(`${backendUrl}/api/notificacoes`);
+      renderNotifications(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar notificações:", error);
+    }
+  }
+
+  function renderNotifications(notifications) {
+    if (!elements.notificationsList) return;
+    elements.notificationsList.innerHTML = '';
+    const unreadCount = notifications.filter(n => !n.lida).length;
+
+    if (elements.notificationsBadge) {
+      elements.notificationsBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+      elements.notificationsBadge.textContent = unreadCount;
     }
 
-    function renderComment(commentData) {
-        const isMyComment = commentData.autorId === currentUser.id;
-        const commentImage = commentData.urlFotoAutor ? `${backendUrl}/api/arquivos/${commentData.urlFotoAutor}` : defaultAvatarUrl;
-        const formattedTime = formatTimeAgo(commentData.dataCriacao);
-        const isHighlighted = commentData.destacado ? 'highlighted-comment' : '';
+    if (notifications.length === 0) {
+      elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
+      return;
+    }
 
-        return `
-            <div class="comment ${isHighlighted}" data-comment-id="${commentData.id}" data-author-id="${commentData.autorId}">
-                <div class="avatar-small">
-                    <img src="${commentImage}" alt="${commentData.nomeAutor}">
+    notifications.forEach(notification => {
+       const item = createNotificationElement(notification);
+      item.className = 'notification-item';
+      item.id = `notification-item-${notification.id}`;
+      if (!notification.lida) item.classList.add('unread');
+
+      const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
+      let actionButtonsHtml = '';
+      let iconClass = 'fa-info-circle';
+
+      if (notification.tipo === 'PEDIDO_AMIZADE' && !notification.lida) { // Mostra botões apenas se não foi lida
+        iconClass = 'fa-user-plus';
+        actionButtonsHtml = `
+              <div class="notification-actions">
+                <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
+                <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
+              </div>
+            `;
+      }
+
+      // ADICIONADO "onclick" AO LINK ABAIXO
+      item.innerHTML = `
+            <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(${notification.id})">
+                <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
+                <div class="notification-content">
+                    <p>${notification.mensagem}</p>
+                    <span class="timestamp">${data}</span>
                 </div>
-                <div class="comment-content">
-                    <div class="comment-header">
-                        <span class="comment-author"><a href="perfil.html?id=${commentData.autorId}" class="post-author-link">${commentData.nomeAutor}</a></span>
-                        <span class="comment-time">${formattedTime}</span>
-                        ${isMyComment ? `<button class="comment-options-btn"><i class="fas fa-ellipsis-h"></i></button>` : ''}
-                    </div>
-                    <p>${commentData.conteudo}</p>
-                </div>
-            </div>`;
+            </a>
+            <div class="notification-actions-wrapper">${actionButtonsHtml}</div>
+        `;
+
+      const actionsWrapper = item.querySelector('.notification-actions-wrapper');
+      if (actionsWrapper) {
+        actionsWrapper.addEventListener('click', e => e.stopPropagation());
+      }
+      elements.notificationsList.appendChild(item);
+    });
+  }
+
+  async function markNotificationAsRead(notificationId) {
+    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+
+
+    if (!notificationItem || !notificationItem.classList.contains('unread')) {
+      return;
     }
 
-    function formatTimeAgo(dateString) {
-        const now = new Date();
-        const past = new Date(dateString);
-        const diffInSeconds = Math.floor((now - past) / 1000);
-        const minute = 60;
-        const hour = minute * 60;
-        const day = hour * 24;
-        const month = day * 30;
-        const year = day * 365;
+    notificationItem.classList.remove('unread');
 
-        if (diffInSeconds < minute) return "agora";
-        if (diffInSeconds < hour) return `${Math.floor(diffInSeconds / minute)}m`;
-        if (diffInSeconds < day) return `${Math.floor(diffInSeconds / hour)}h`;
-        if (diffInSeconds < month) return `${Math.floor(diffInSeconds / day)}d`;
-        if (diffInSeconds < year) return `${Math.floor(diffInSeconds / year)}a`;
-        return `${Math.floor(diffInSeconds / year)}a`;
+    try {
+      await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+
+      fetchNotifications();
+    } catch (error) {
+      console.error("Erro ao marcar notificação como lida:", error);
+      notificationItem.classList.add('unread');
+      showNotification('Erro ao atualizar notificação.', 'error');
+    }
+  }
+
+  // --- FUNÇÕES PARA AMIGOS ONLINE ---
+
+  async function fetchFriends() {
+    try {
+      const response = await axios.get(`${backendUrl}/api/amizades/`);
+      userFriends = response.data;
+      friendsLoaded = true;
+
+      if (elements.connectionsCount) {
+        elements.connectionsCount.textContent = userFriends.length;
+      }
+      atualizarStatusDeAmigosNaUI();
+      
+    } catch (error) {
+      console.error("Erro ao buscar lista de amigos:", error);
+      friendsLoaded = true; 
+       atualizarStatusDeAmigosNaUI();
+    }
+  }
+
+
+
+  /**
+   * Função centralizada para atualizar todos os indicadores visuais de amigos online.
+   * Isso inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
+   */
+  function atualizarStatusDeAmigosNaUI() {
+    if (!elements.onlineFriendsList) return;
+
+    // Condição de guarda: Só renderiza se a lista de amigos já foi carregada.
+    if (!friendsLoaded) {
+        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
+        return;
     }
 
-    // ==================== LÓGICA DE WEBSOCKETS (STOMP.JS) ====================
+    const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
 
-    function connectToWebSocket() {
-        if (stompClient) return;
+    elements.onlineFriendsList.innerHTML = '';
+    if (onlineFriends.length === 0) {
+        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+    } else {
+        onlineFriends.forEach(friend => {
+            const friendElement = document.createElement('div');
+            friendElement.className = 'friend-item';
+            const friendAvatar = friend.fotoPerfil
+                ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}`
+                : defaultAvatarUrl;
 
-        const socket = new SockJS(`${backendUrl}/ws`);
-        stompClient = Stomp.over(socket);
-
-        stompClient.connect({ Authorization: `Bearer ${jwtToken}` }, frame => {
-            console.log('Conectado ao WebSocket: ' + frame);
-
-            stompClient.subscribe('/topic/publico', message => {
-                const payload = JSON.parse(message.body);
-                handleWebSocketMessage(payload);
-            });
-        }, error => {
-            console.error('Erro na conexão WebSocket', error);
-            showNotification('Falha na conexão em tempo real.', 'error');
-            setTimeout(connectToWebSocket, 5000);
+            friendElement.innerHTML = `
+                <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
+                <span class="friend-name">${friend.nome}</span>
+                <div class="status online"></div>
+            `;
+            elements.onlineFriendsList.appendChild(friendElement);
         });
     }
 
-    function handleWebSocketMessage(payload) {
-        const existingPost = document.querySelector(`.post[data-id="${payload.id}"]`);
-        
-        if (!existingPost) {
-            renderPost(payload, true);
-            showNotification('Nova postagem no feed!', 'info');
+    // Lógica para atualizar os pontos de status em outros lugares da página
+    const statusDots = document.querySelectorAll('.status[data-user-email]');
+    statusDots.forEach(dot => {
+        const email = dot.getAttribute('data-user-email');
+        if (latestOnlineEmails.includes(email)) {
+            dot.classList.add('online');
+            dot.classList.remove('offline');
         } else {
-            if (payload.tipo === 'edicao' || payload.tipo === 'remocao') {
-                const postagemAtualizada = payload.postagem;
-                if(postagemAtualizada) {
-                    const postTextEl = existingPost.querySelector('.post-text');
-                    postTextEl.textContent = postagemAtualizada.conteudo;
-                    const mediaContainer = existingPost.querySelector('.post-images');
-                    if(mediaContainer) {
-                        mediaContainer.innerHTML = postagemAtualizada.urlsMidia && postagemAtualizada.urlsMidia.length > 0
-                            ? `<img src="${backendUrl}${postagemAtualizada.urlsMidia[0]}" alt="Post image">` : '';
-                    }
-                    showNotification('Uma postagem foi editada.', 'info');
-                } else if (payload.id) {
-                    existingPost.remove();
-                    showNotification('Uma postagem foi removida.', 'info');
-                }
-            } else {
-                const likesCountEl = existingPost.querySelector('.like-btn .count');
-                likesCountEl.textContent = payload.totalCurtidas || 0;
+            dot.classList.remove('online');
+            dot.classList.add('offline');
+        }
+    });
+  }
+
+  // Função modificada para fechar todos os tipos de menu
+  const closeAllMenus = () => {
+    document
+      .querySelectorAll(".options-menu, .dropdown-menu")
+      .forEach((m) => (m.style.display = "none"));
+  };
+
+  window.openPostMenu = (postId) => {
+    closeAllMenus();
+    const menu = document.getElementById(`post-menu-${postId}`);
+    if (menu) menu.style.display = "block";
+  };
+  window.openCommentMenu = (commentId) => {
+    closeAllMenus();
+    const menu = document.getElementById(`comment-menu-${commentId}`);
+    if (menu) menu.style.display = "block";
+  };
+  window.toggleComments = (postId) => {
+    const commentsSection = document.getElementById(
+      `comments-section-${postId}`
+    );
+    if (commentsSection)
+      commentsSection.style.display =
+        commentsSection.style.display === "block" ? "none" : "block";
+  };
+
+  window.sendComment = (postId, parentId = null) => {
+    const inputId = parentId
+      ? `reply-input-${parentId}`
+      : `comment-input-${postId}`;
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const content = input.value.trim();
+    if (stompClient?.connected && content) {
+      stompClient.send(
+        `/app/postagem/${postId}/comentar`,
+        {},
+        JSON.stringify({ conteudo: content, parentId: parentId })
+      );
+      input.value = "";
+      if (parentId) {
+        const form = document.getElementById(`reply-form-${parentId}`);
+        if (form) form.style.display = "none";
+      }
+    }
+  };
+
+  window.toggleReplyForm = (commentId) => {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    if (form)
+      form.style.display = form.style.display === "flex" ? "none" : "flex";
+  };
+
+  window.toggleLike = async (event, postagemId, comentarioId = null) => {
+    const likeButton = event.currentTarget;
+    if (!likeButton) return;
+
+    // Determina se é um like de post ou de comentário
+    const isPostLike = comentarioId === null;
+    const likeCountSpanId = isPostLike
+      ? `like-count-post-${postagemId}`
+      : `like-count-comment-${comentarioId}`;
+    const likeCountSpan = document.getElementById(likeCountSpanId);
+
+    if (!likeCountSpan) return;
+
+    const isLiked = likeButton.classList.contains("liked");
+    // Pega o número diretamente do texto do span, ignorando o ícone
+    let currentLikes = parseInt(likeCountSpan.innerText.trim(), 10);
+
+    // Altera o estado visual imediatamente para dar feedback ao usuário
+    likeButton.classList.toggle("liked");
+    const newLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
+
+    // Atualiza a contagem visualmente
+    if (isPostLike) {
+      likeCountSpan.textContent = newLikes; // Para posts, só o número
+    } else {
+      likeCountSpan.innerHTML = `<i class="fas fa-heart"></i> ${newLikes}`; // Para comentários, mantém o ícone
+    }
+
+    try {
+      // Envia a requisição para o backend
+      await axios.post(`${backendUrl}/curtidas/toggle`, {
+        postagemId,
+        comentarioId,
+      });
+
+      // A requisição foi um sucesso, nenhuma ação extra é necessária
+    } catch (error) {
+      // Se a requisição falhar, reverte as alterações visuais
+      showNotification("Erro ao processar curtida.", "error");
+      console.error("Erro ao curtir:", error);
+
+      likeButton.classList.toggle("liked"); // Reverte o botão
+      if (isPostLike) {
+        likeCountSpan.textContent = currentLikes; // Reverte a contagem do post
+      } else {
+        likeCountSpan.innerHTML = `<i class="fas fa-heart"></i> ${currentLikes}`; // Reverte a contagem do comentário
+      }
+    }
+  };
+
+ window.openEditPostModal = async (postId) => {
+    const existingMediaContainer = document.getElementById('edit-existing-media-container');
     
-                const commentsContainer = existingPost.querySelector('.post-comments');
-                if (payload.comentarios) {
-                    commentsContainer.innerHTML = payload.comentarios.map(c => renderComment(c)).join('');
-                    const commentsCountEl = existingPost.querySelector('.comment-btn .count');
-                    commentsCountEl.textContent = payload.comentarios.length || 0;
+    if (!elements.editPostModal || !elements.editPostIdInput || !elements.editPostTextarea || !existingMediaContainer) return;
+
+    // Limpa o estado anterior
+    selectedFilesForEdit = [];
+    urlsParaRemover = [];
+    updateEditFilePreview();
+    existingMediaContainer.innerHTML = '';
+    
+    try {
+        // Busca os dados mais recentes do post
+        const response = await axios.get(`${backendUrl}/postagem/${postId}`);
+        const post = response.data;
+
+        elements.editPostIdInput.value = post.id;
+        elements.editPostTextarea.value = post.conteudo;
+
+        // Renderiza as mídias que já existem
+        post.urlsMidia.forEach(url => {
+            const item = document.createElement('div');
+            item.className = 'existing-media-item';
+
+            const preview = document.createElement('img');
+            preview.src = url;
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'remove-existing-media-checkbox';
+            checkbox.title = 'Marcar para remover';
+            checkbox.onchange = (e) => {
+                if (e.target.checked) {
+                    urlsParaRemover.push(url);
+                    item.style.opacity = '0.5';
+                } else {
+                    urlsParaRemover = urlsParaRemover.filter(u => u !== url);
+                    item.style.opacity = '1';
                 }
-            }
-        }
-    }
-
-    // ==================== EVENT LISTENERS GERAIS ====================
-    function setupEventListeners() {
-        // Dropdown do usuário
-        document.body.addEventListener('click', () => {
-            const dropdownMenu = document.querySelector('.user-dropdown .dropdown-menu');
-            if (dropdownMenu) dropdownMenu.style.display = 'none';
-        });
-
-        if (elements.userDropdownTrigger) {
-            elements.userDropdownTrigger.addEventListener('click', (event) => {
-                event.stopPropagation();
-                const dropdownMenu = elements.userDropdownTrigger.nextElementSibling;
-                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-            });
-        }
-        
-        // Logout
-        document.querySelector('.dropdown-menu a[href="login.html"]').addEventListener('click', (e) => {
-            e.preventDefault();
-            localStorage.clear();
-            window.location.href = 'login.html';
-        });
-
-        // Eventos do modal de criação de post
-        if (elements.simpleViewTrigger) elements.simpleViewTrigger.addEventListener('click', openPostCreator);
-        if (elements.cancelBtn) elements.cancelBtn.addEventListener('click', closePostCreator);
-        if (elements.textarea) elements.textarea.addEventListener('input', () => {
-            elements.publishBtn.disabled = !elements.textarea.value.trim();
-        });
-
-        // Envio do post
-        if (elements.publishBtn) elements.publishBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const content = elements.textarea.value.trim();
-            if (!content && !elements.fileInput.files[0]) return;
-            
-            const formData = new FormData();
-            
-            const postagemDto = {
-                conteudo: content,
-                projetoId: null,
-                urlsParaRemover: null
             };
 
-            formData.append(
-              "postagem",
-              new Blob([JSON.stringify(postagemDto)], {
-                type: "application/json",
-              })
+            item.appendChild(preview);
+            item.appendChild(checkbox);
+            existingMediaContainer.appendChild(item);
+        });
+
+        elements.editPostModal.style.display = "flex";
+
+    } catch (error) {
+        showNotification("Erro ao carregar dados da postagem.", "error");
+        console.error("Erro ao buscar post para edição:", error);
+    }
+};
+  window.deletePost = async (postId) => {
+    if (confirm("Tem certeza que deseja excluir esta postagem?")) {
+      try {
+        await axios.delete(`${backendUrl}/postagem/${postId}`);
+        showNotification("Postagem excluída com sucesso.", "success");
+      } catch (error) {
+        showNotification("Não foi possível excluir a postagem.", "error");
+        console.error("Erro ao excluir post:", error);
+      }
+    }
+  };
+
+  function closeAndResetEditCommentModal() {
+    if (elements.editCommentModal) {
+      elements.editCommentModal.style.display = "none";
+    }
+    if (elements.editCommentIdInput) {
+      elements.editCommentIdInput.value = "";
+    }
+    if (elements.editCommentTextarea) {
+      elements.editCommentTextarea.value = "";
+    }
+  }
+
+  window.openEditCommentModal = (commentId, content) => {
+    if (elements.editCommentIdInput)
+      elements.editCommentIdInput.value = commentId;
+    if (elements.editCommentTextarea)
+      elements.editCommentTextarea.value = content;
+    if (elements.editCommentModal)
+      elements.editCommentModal.style.display = "flex";
+  };
+  window.deleteComment = async (commentId) => {
+    if (confirm("Tem certeza que deseja excluir este comentário?")) {
+      try {
+        await axios.delete(`${backendUrl}/comentarios/${commentId}`);
+        showNotification("Comentário excluído.", "success");
+      } catch (error) {
+        showNotification("Não foi possível excluir o comentário.", "error");
+        console.error("Erro ao excluir comentário:", error);
+      }
+    }
+  };
+  window.highlightComment = async (commentId) => {
+    try {
+      await axios.put(`${backendUrl}/comentarios/${commentId}/destacar`);
+    } catch (error) {
+      showNotification("Não foi possível destacar o comentário.", "error");
+      console.error("Erro ao destacar comentário:", error);
+    }
+  };
+
+  // --- FUNÇÕES DE AÇÕES DE AMIZADE (para notificações) ---
+  function handleFriendRequestFeedback(notificationId, message, type = 'info') {
+    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+    if (notificationItem) {
+      const actionsDiv = notificationItem.querySelector('.notification-actions-wrapper');
+      if (actionsDiv) {
+        actionsDiv.innerHTML = `<p class="feedback-text ${type === 'success' ? 'success' : ''}">${message}</p>`;
+      }
+      // Remove a notificação da lista após um tempo para o usuário ler a mensagem
+      setTimeout(() => {
+        notificationItem.classList.add('removing');
+        // Permite que a animação CSS finalize antes de remover o elemento do DOM
+        setTimeout(() => {
+          notificationItem.remove();
+          // Após remover, reavalia se a lista de notificações está vazia
+          if (elements.notificationsList && elements.notificationsList.children.length === 0) {
+            elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
+          }
+        }, 500); // Deve corresponder ao tempo da transição no CSS
+      }, 2500); // Tempo que a mensagem de feedback fica visível
+    }
+    // Re-busca as notificações para atualizar o contador (badge)
+    fetchNotifications();
+  }
+  function updateEditFilePreview() {
+    if (!elements.editFilePreviewContainer) return;
+    elements.editFilePreviewContainer.innerHTML = "";
+    selectedFilesForEdit.forEach((file, index) => {
+      const item = document.createElement("div");
+      item.className = "file-preview-item";
+      
+      const previewElement = document.createElement("img");
+      previewElement.src = URL.createObjectURL(file);
+      item.appendChild(previewElement);
+      
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button"; // Impede o envio do formulário
+      removeBtn.className = "remove-file-btn";
+      removeBtn.innerHTML = "&times;";
+      removeBtn.title = "Remover este arquivo";
+      removeBtn.onclick = () => {
+        selectedFilesForEdit.splice(index, 1); // Remove o arquivo do array
+        updateEditFilePreview(); // Atualiza a visualização
+      };
+      
+      item.appendChild(removeBtn);
+      elements.editFilePreviewContainer.appendChild(item);
+    });
+}
+
+  function openEditProfileModal() {
+    if (!currentUser || !elements.editProfileModal) return;
+    elements.editProfilePicPreview.src = currentUser.urlFotoPerfil
+      ? `${backendUrl}${currentUser.urlFotoPerfil}`
+      : defaultAvatarUrl;
+    elements.editProfileName.value = currentUser.nome;
+    elements.editProfileBio.value = currentUser.bio || "";
+    if (currentUser.dataNascimento) {
+      elements.editProfileDob.value = currentUser.dataNascimento.split("T")[0];
+    }
+    elements.editProfilePassword.value = "";
+    elements.editProfilePasswordConfirm.value = "";
+    elements.editProfileModal.style.display = "flex";
+  }
+
+  function openDeleteAccountModal() {
+    if (elements.deleteConfirmPassword)
+      elements.deleteConfirmPassword.value = "";
+    if (elements.deleteAccountModal)
+      elements.deleteAccountModal.style.display = "flex";
+  }
+
+  function filterPosts() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const posts = document.querySelectorAll(".post");
+
+    posts.forEach((post) => {
+      const authorNameElement = post.querySelector(".post-author-info strong");
+      const postContentElement = post.querySelector(".post-content p");
+
+      if (authorNameElement && postContentElement) {
+        const authorName = authorNameElement.textContent.toLowerCase();
+        const postContent = postContentElement.textContent.toLowerCase();
+
+        if (
+          authorName.includes(searchTerm) ||
+          postContent.includes(searchTerm)
+        ) {
+          post.style.display = "block"; // Mostra o post
+        } else {
+          post.style.display = "none"; // Esconde o post
+        }
+      }
+    });
+  }
+
+  function setupEventListeners() {
+    //  Listener principal no body para fechar menus e o painel de notificações ao clicar fora
+    document.body.addEventListener("click", (e) => {
+      // Fecha o painel de notificações se o clique for fora dele e fora do ícone
+      if (elements.notificationsPanel && !elements.notificationsPanel.contains(e.target) && !elements.notificationsIcon.contains(e.target)) {
+        elements.notificationsPanel.style.display = 'none';
+      }
+      // A função closeAllMenus fecha os menus de post/comentário e o dropdown do usuário
+      closeAllMenus();
+    });
+
+    // Listener para o ícone de notificações para abrir/fechar o painel
+    if (elements.notificationsIcon) {
+      elements.notificationsIcon.addEventListener('click', (event) => {
+        event.stopPropagation(); // Impede que o clique no body feche o painel imediatamente
+        const isVisible = elements.notificationsPanel.style.display === 'block';
+        elements.notificationsPanel.style.display = isVisible ? 'none' : 'block';
+      });
+    }
+
+    // Listener para abrir o dropdown do usuário
+    if (elements.userDropdownTrigger) {
+      elements.userDropdownTrigger.addEventListener("click", (event) => {
+        event.stopPropagation(); // Impede que o clique no body feche o menu imediatamente
+        const menu = elements.userDropdownTrigger.nextElementSibling;
+        if (menu && menu.classList.contains("dropdown-menu")) {
+          const isVisible = menu.style.display === "block";
+          closeAllMenus(); // Garante que outros menus (como de posts) fechem
+          if (!isVisible) {
+            menu.style.display = "block";
+          }
+        }
+      });
+    }
+
+    // Listener para o campo de busca
+    if (searchInput) {
+      searchInput.addEventListener("input", filterPosts);
+    }
+
+    // Listener do botão de Logout
+    if (elements.logoutBtn)
+      elements.logoutBtn.addEventListener("click", () => {
+        localStorage.clear();
+        window.location.href = "login.html";
+      });
+
+    // Listeners para os botões de perfil e conta
+    if (elements.editProfileBtn)
+      elements.editProfileBtn.addEventListener("click", openEditProfileModal);
+    if (elements.deleteAccountBtn)
+      elements.deleteAccountBtn.addEventListener(
+        "click",
+        openDeleteAccountModal
+      );
+
+    // Listeners do Modal de Edição de Perfil
+    if (elements.cancelEditProfileBtn)
+      elements.cancelEditProfileBtn.addEventListener(
+        "click",
+        () => (elements.editProfileModal.style.display = "none")
+      );
+    if (elements.editProfilePicInput)
+      elements.editProfilePicInput.addEventListener("change", () => {
+        const file = elements.editProfilePicInput.files[0];
+        if (file && elements.editProfilePicPreview) {
+          elements.editProfilePicPreview.src = URL.createObjectURL(file);
+        }
+      });
+    if (elements.editProfileForm)
+      elements.editProfileForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (elements.editProfilePicInput.files[0]) {
+          const formData = new FormData();
+          formData.append("foto", elements.editProfilePicInput.files[0]);
+          try {
+            const response = await axios.put(
+              `${backendUrl}/usuarios/me/foto`,
+              formData
             );
-            
-            if (elements.fileInput && elements.fileInput.files[0]) {
-                formData.append('arquivos', elements.fileInput.files[0]);
-            }
-            
-            try {
-                await axios.post(`${backendUrl}/postagem/upload-mensagem`, formData);
-                showNotification('Postagem criada com sucesso!', 'success');
-                closePostCreator();
-            } catch (error) {
-                console.error('Erro ao criar postagem:', error);
-                showNotification('Erro ao criar postagem. Verifique os dados e tente novamente.', 'error');
-            }
-        });
-        
-        // Botão de upload de mídia
-        if (elements.photoOptionBtn) {
-            const mediaInput = document.createElement('input');
-            mediaInput.type = 'file';
-            mediaInput.id = 'post-media-input';
-            mediaInput.accept = 'image/*,video/*';
-            mediaInput.style.display = 'none';
-            document.body.appendChild(mediaInput);
-
-            elements.photoOptionBtn.addEventListener('click', () => {
-                mediaInput.click();
-            });
-
-            mediaInput.addEventListener('change', () => {
-                const file = mediaInput.files[0];
-                if (file) {
-                    const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
-                    const mediaElement = mediaType === 'image' ? document.createElement('img') : document.createElement('video');
-                    mediaElement.src = URL.createObjectURL(file);
-                    
-                    const removeBtn = document.createElement('button');
-                    removeBtn.className = 'remove-media-btn';
-                    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                    removeBtn.onclick = () => {
-                        elements.mediaPreviewContainer.innerHTML = '';
-                        mediaInput.value = '';
-                    };
-
-                    elements.mediaPreviewContainer.innerHTML = '';
-                    elements.mediaPreviewContainer.appendChild(mediaElement);
-                    elements.mediaPreviewContainer.appendChild(removeBtn);
-                    openPostCreator();
-                }
-            });
+            currentUser = response.data;
+            updateUIWithUserData(currentUser);
+            showNotification("Foto de perfil atualizada!", "success");
+          } catch (error) {
+            showNotification("Erro ao atualizar a foto.", "error");
+            console.error("Erro na foto:", error);
+          }
         }
+        const password = elements.editProfilePassword.value;
+        const passwordConfirm = elements.editProfilePasswordConfirm.value;
+        if (password && password !== passwordConfirm) {
+          showNotification("As novas senhas não coincidem.", "error");
+          return;
+        }
+        const updateData = {
+          nome: elements.editProfileName.value,
+          bio: elements.editProfileBio.value,
+          dataNascimento: elements.editProfileDob.value
+            ? new Date(elements.editProfileDob.value).toISOString()
+            : null,
+          senha: password || null,
+        };
+        try {
+          const response = await axios.put(
+            `${backendUrl}/usuarios/me`,
+            updateData
+          );
+          currentUser = response.data;
+          updateUIWithUserData(currentUser);
+          showNotification("Perfil atualizado com sucesso!", "success");
+          elements.editProfileModal.style.display = "none";
+        } catch (error) {
+          showNotification("Erro ao atualizar o perfil.", "error");
+          console.error("Erro no perfil:", error);
+        }
+      });
+
+    // Listeners do Modal de Exclusão de Conta
+    if (elements.cancelDeleteAccountBtn)
+      elements.cancelDeleteAccountBtn.addEventListener(
+        "click",
+        () => (elements.deleteAccountModal.style.display = "none")
+      );
+    if (elements.deleteAccountForm)
+      elements.deleteAccountForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const password = elements.deleteConfirmPassword.value;
+        if (!password) {
+          showNotification(
+            "Por favor, digite sua senha para confirmar.",
+            "error"
+          );
+          return;
+        }
+        try {
+          await axios.post(`${backendUrl}/autenticacao/login`, {
+            email: currentUser.email,
+            senha: password,
+          });
+          if (
+            confirm(
+              "Você tem ABSOLUTA CERTEZA? Esta ação não pode ser desfeita."
+            )
+          ) {
+            await axios.delete(`${backendUrl}/usuarios/me`);
+            alert("Sua conta foi excluída com sucesso.");
+            localStorage.clear();
+            window.location.href = "login.html";
+          }
+        } catch (error) {
+          showNotification(
+            "Senha incorreta. A conta não foi excluída.",
+            "error"
+          );
+          console.error("Erro na confirmação de senha:", error);
+        }
+      });
+
+    // Listeners do Modal de Edição de Post
+    if (elements.editPostFileInput)
+      elements.editPostFileInput.addEventListener("change", (event) => {
+        Array.from(event.target.files).forEach((file) => {
+          if (!selectedFilesForEdit.some((f) => f.name === file.name)) {
+            selectedFilesForEdit.push(file);
+          }
+        });
+        updateEditFilePreview();
+      });
+      
+    if (elements.editPostForm)
+  elements.editPostForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const saveButton = elements.editPostForm.querySelector('button[type="submit"]');
+    saveButton.disabled = true;
+    saveButton.textContent = 'Salvando...';
+
+    try {
+        const postId = elements.editPostIdInput.value;
+        const content = elements.editPostTextarea.value;
+        
+        // Inclui a lista de URLs a serem removidas
+        const postagemDTO = { 
+            conteudo: content,
+            urlsParaRemover: urlsParaRemover 
+        };
+        
+        const formData = new FormData();
+        formData.append(
+          "postagem",
+          new Blob([JSON.stringify(postagemDTO)], { type: "application/json" })
+        );
+        
+        selectedFilesForEdit.forEach((file) => formData.append("arquivos", file));
+        
+        await axios.put(`${backendUrl}/postagem/${postId}`, formData);
+        
+        if (elements.editPostModal) elements.editPostModal.style.display = "none";
+        showNotification("Postagem editada com sucesso.", "success");
+
+    } catch (error) {
+      showNotification("Não foi possível salvar as alterações.", "error");
+      console.error("Erro ao editar post:", error);
+    } finally {
+      saveButton.disabled = false;
+      saveButton.textContent = 'Salvar';
+    }
+  });
+    if (elements.cancelEditPostBtn)
+      elements.cancelEditPostBtn.addEventListener(
+        "click",
+        () => (elements.editPostModal.style.display = "none")
+      );
+
+    // Listeners do Modal de Edição de Comentário
+    if (elements.editCommentForm) {
+      elements.editCommentForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const commentId = elements.editCommentIdInput.value;
+        const content = elements.editCommentTextarea.value;
+        try {
+          await axios.put(
+            `${backendUrl}/comentarios/${commentId}`,
+            { conteudo: content },
+            {
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+          showNotification("Comentário editado.", "success");
+          closeAndResetEditCommentModal();
+        } catch (error) {
+          showNotification("Não foi possível salvar o comentário.", "error");
+          console.error("Erro ao editar comentário:", error);
+        }
+      });
+    }
+    if (elements.cancelEditCommentBtn)
+      elements.cancelEditCommentBtn.addEventListener(
+        "click",
+        () => {
+          closeAndResetEditCommentModal();
+        });
+
+    // Listeners do Criador de Post
+    if (elements.postFileInput)
+      elements.postFileInput.addEventListener("change", (event) => {
+        selectedFilesForPost = Array.from(event.target.files);
+        updateFilePreview();
+      });
+
+    function updateFilePreview() {
+      if (!elements.filePreviewContainer) return;
+      elements.filePreviewContainer.innerHTML = "";
+      selectedFilesForPost.forEach((file, index) => {
+        const item = document.createElement("div");
+        item.className = "file-preview-item";
+        let previewElement;
+        if (file.type.startsWith("image/")) {
+          previewElement = document.createElement("img");
+        } else {
+          previewElement = document.createElement("video");
+        }
+        previewElement.src = URL.createObjectURL(file);
+        item.appendChild(previewElement);
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-file-btn";
+        removeBtn.innerHTML = "&times;";
+        removeBtn.onclick = () => {
+          selectedFilesForPost.splice(index, 1);
+          if (elements.postFileInput) elements.postFileInput.value = "";
+          updateFilePreview();
+        };
+        item.appendChild(removeBtn);
+        elements.filePreviewContainer.appendChild(item);
+      });
     }
 
-    // --- Funções do modal de criação de postagem ---
-    function openPostCreator() {
-        elements.postCreatorSimpleView.style.display = 'none';
-        elements.postCreatorExpandedView.style.display = 'block';
-        elements.textarea.focus();
-    }
+    if (elements.publishBtn)
+      elements.publishBtn.addEventListener("click", async () => {
+        const content = elements.postTextarea.value.trim();
+        if (!content && selectedFilesForPost.length === 0) {
+          showNotification("Escreva algo ou anexe um arquivo.", "info");
+          return;
+        }
 
-    function closePostCreator() {
-        elements.postCreatorSimpleView.style.display = 'flex';
-        elements.postCreatorExpandedView.style.display = 'none';
-        elements.textarea.value = '';
+        // --- INÍCIO DA MODIFICAÇÃO ---
+
+        // Ativa o estado de carregamento
         elements.publishBtn.disabled = true;
-        if (elements.mediaPreviewContainer) {
-            elements.mediaPreviewContainer.innerHTML = '';
-        }
-        if (elements.fileInput) {
-            elements.fileInput.value = '';
-        }
-    }
+        elements.publishBtn.classList.add("loading");
+        elements.publishBtn.innerHTML = `<i class="fas fa-spinner"></i> Publicando...`;
 
-    // --- Funções para lidar com eventos em posts renderizados ---
-    function addPostEvents(postElement) {
-        // Lógica para o menu de opções do post
-        const optionsBtn = postElement.querySelector('.post-options-btn');
-        optionsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showPostOptionsMenu(postElement, e.currentTarget);
-        });
+        // --- FIM DA MODIFICAÇÃO ---
 
-        // Lógica para curtir um post
-        const likeBtn = postElement.querySelector('.like-btn');
-        likeBtn.addEventListener('click', async () => {
-            const postId = likeBtn.dataset.postId;
-            try {
-                await axios.post(`${backendUrl}/curtidas/toggle`, { postagemId: postId });
-            } catch (error) {
-                console.error("Erro ao curtir:", error);
-                showNotification('Não foi possível curtir a postagem.', 'error');
-            }
-        });
-
-        // Lógica para comentar
-        const commentInput = postElement.querySelector('.add-comment input');
-        commentInput.addEventListener('keypress', async (e) => {
-            if (e.key === 'Enter' && commentInput.value.trim()) {
-                const postId = commentInput.dataset.postId;
-                const content = commentInput.value.trim();
-                try {
-                    await axios.post(`${backendUrl}/comentarios`, {
-                        postagem: { id: postId },
-                        conteudo: content
-                    });
-                    showNotification('Comentário adicionado!', 'success');
-                    commentInput.value = '';
-                } catch (error) {
-                    console.error("Erro ao comentar:", error);
-                    showNotification('Não foi possível adicionar o comentário.', 'error');
-                }
-            }
-        });
-    }
-
-    // --- Função para mostrar o menu de opções do post ---
-    function showPostOptionsMenu(postElement, targetButton) {
-        document.querySelectorAll('.post-options-menu').forEach(menu => menu.remove());
-        const postId = postElement.dataset.id;
-        const postAuthorId = postElement.dataset.autorId;
-        const isMyPost = postAuthorId == currentUser.id;
-
-        const menu = document.createElement('div');
-        menu.className = 'post-options-menu';
-        
-        let menuHTML = `<button data-action="save"><i class="far fa-bookmark"></i> Salvar</button>`;
-        if (isMyPost) {
-            menuHTML += `<button data-action="edit"><i class="far fa-edit"></i> Editar</button>
-                         <button data-action="delete" class="delete-btn"><i class="far fa-trash-alt"></i> Excluir</button>`;
-        }
-        menu.innerHTML = menuHTML;
-        document.body.appendChild(menu);
-        
-        const rect = targetButton.getBoundingClientRect();
-        menu.style.top = `${rect.bottom + window.scrollY}px`;
-        menu.style.right = `${window.innerWidth - rect.right}px`;
-
-        menu.querySelector('[data-action="delete"]')?.addEventListener('click', async () => {
-            if (confirm("Tem certeza que deseja excluir esta postagem?")) {
-                try {
-                    await axios.delete(`${backendUrl}/postagem/${postId}`);
-                    showNotification('Postagem excluída com sucesso!', 'success');
-                } catch (error) {
-                    console.error('Erro ao excluir postagem:', error);
-                    showNotification('Erro ao excluir postagem.', 'error');
-                }
-            }
-            menu.remove();
-        });
-        
-        menu.querySelector('[data-action="edit"]')?.addEventListener('click', () => {
-            showNotification('Funcionalidade de edição em desenvolvimento.', 'info');
-            menu.remove();
-        });
-
-        setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 10);
-    }
-
-    // ==================== LÓGICA DE NOTIFICAÇÕES ====================
-
-    function setupNotificationListeners() {
-        if (elements.notificationIconLink && elements.notificationMenu) {
-            elements.notificationIconLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                const isVisible = elements.notificationMenu.classList.toggle('show');
-                // Se o menu acabou de ficar visível, busca as notificações.
-                if (isVisible) {
-                    // fetchNotifications(); // Descomente quando a API estiver pronta
-                }
-            });
-
-            elements.notificationMenu.addEventListener('click', (event) => {
-                event.stopPropagation();
-            });
-
-            window.addEventListener('click', () => {
-                if (elements.notificationMenu.classList.contains('show')) {
-                    elements.notificationMenu.classList.remove('show');
-                }
-            });
-        }
-    }
-
-    async function fetchNotifications() {
-        if (!elements.followRequestsList || !elements.activityList) return;
-
-        elements.followRequestsList.innerHTML = '<p class="loading-message">Carregando...</p>';
-        elements.activityList.innerHTML = '';
+        const formData = new FormData();
+        formData.append(
+          "postagem",
+          new Blob([JSON.stringify({ conteudo: content })], {
+            type: "application/json",
+          })
+        );
+        selectedFilesForPost.forEach((file) =>
+          formData.append("arquivos", file)
+        );
 
         try {
-            // --- PONTO DE INTEGRAÇÃO COM O BACK-END ---
-            // const response = await axios.get(`${backendUrl}/api/notificacoes`);
-            // const notifications = response.data;
-            
-            // --- DADOS MOCKADOS PARA TESTE (REMOVER DEPOIS) ---
-            const notifications = [
-                { id: 1, type: 'FOLLOW_REQUEST', fromUser: { name: 'João Pedro', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' }},
-                { id: 2, type: 'LIKE', fromUser: { name: 'Ana Silva', avatar: 'https://randomuser.me/api/portraits/women/33.jpg' }, postTitle: 'Workshop de APIs...', time: 'há 5 minutos' },
-                { id: 3, type: 'COMMENT', fromUser: { name: 'Carlos Souza', avatar: 'https://randomuser.me/api/portraits/men/45.jpg' }, postTitle: 'Meu Portfólio', time: 'há 2 horas' }
-            ];
-            // --- FIM DOS DADOS MOCKADOS ---
-
-            elements.followRequestsList.innerHTML = '';
-            elements.activityList.innerHTML = '';
-
-            if (notifications.length === 0) {
-                elements.activityList.innerHTML = '<p class="empty-message">Nenhuma notificação nova.</p>';
-                return;
-            }
-
-            notifications.forEach(notif => {
-                if (notif.type === 'FOLLOW_REQUEST') {
-                    const itemHTML = `
-                        <div class="notification-item follow-request">
-                            <img src="${notif.fromUser.avatar}" alt="Avatar do usuário">
-                            <div class="notification-text">
-                                <p><strong>${notif.fromUser.name}</strong> quer seguir você.</p>
-                            </div>
-                            <div class="notification-actions">
-                                <button class="btn-accept" title="Aceitar" data-notif-id="${notif.id}">✓</button>
-                                <button class="btn-decline" title="Recusar" data-notif-id="${notif.id}">×</button>
-                            </div>
-                        </div>`;
-                    elements.followRequestsList.innerHTML += itemHTML;
-                } else {
-                    const actionText = notif.type === 'LIKE' ? 'curtiu sua publicação' : 'comentou no seu projeto';
-                    const itemHTML = `
-                        <div class="notification-item">
-                            <img src="${notif.fromUser.avatar}" alt="Avatar do usuário">
-                            <div class="notification-text">
-                                <p><strong>${notif.fromUser.name}</strong> ${actionText}: "${notif.postTitle}"</p>
-                                <span class="notification-time">${notif.time}</span>
-                            </div>
-                        </div>`;
-                    elements.activityList.innerHTML += itemHTML;
-                }
-            });
-
+          await axios.post(`${backendUrl}/postagem/upload-mensagem`, formData);
+          if (elements.postTextarea) elements.postTextarea.value = "";
+          selectedFilesForPost = [];
+          if (elements.postFileInput) elements.postFileInput.value = "";
+          updateFilePreview();
+          showNotification("Publicado com sucesso!", "success");
         } catch (error) {
-            console.error("Erro ao buscar notificações:", error);
-            elements.followRequestsList.innerHTML = '<p class="error-message">Erro ao carregar.</p>';
+          showNotification("Erro ao publicar postagem.", "error");
+          console.error("Erro ao publicar:", error);
+        } finally {
+          // --- INÍCIO DA MODIFICAÇÃO ---
+
+          // Restaura o botão ao estado original
+          elements.publishBtn.disabled = false;
+          elements.publishBtn.classList.remove("loading");
+          elements.publishBtn.innerHTML = "Publicar";
+          
+          // --- FIM DA MODIFICAÇÃO ---
         }
-    }
+      });
+  }
 
-
-    // ==================== WIDGETS E OUTRAS FUNÇÕES AUXILIARES ====================
-    function loadOnlineFriends() {
-        const onlineFriendsContainer = document.querySelector('.online-friends');
-        if (!onlineFriendsContainer) return;
-        const mockFriends = [
-            { id: 'miguel', name: "Miguel Piscki", avatar: "https://randomuser.me/api/portraits/men/22.jpg", status: "online" },
-            { id: 'senai', name: "Senai", avatar: "https://yt3.googleusercontent.com/wyGnsuVLCBoHStdhQ3Tj7Wr48yb_Oi2e1OmP2Rly99xB6wwe66T64bhCNDZkP5xxNHxF-lsE1A=s900-c-k-c0x00ffffff-no-rj", status: "online" },
-            { id: 'vinicius', name: "Vinicius Gallo", avatar: "./img/viniciusGallo.jpg", status: "online" }
-        ];
-        const friendsHTML = mockFriends.map(friend => `
-            <a href="perfil.html?id=${friend.id}" class="friend" title="${friend.name}">
-                <div class="friend-avatar ${friend.status}"><img src="${friend.avatar}" alt="${friend.name}"></div>
-                <span>${friend.name.split(' ')[0]}</span>
-            </a>`).join('');
-        onlineFriendsContainer.innerHTML = `<div class="section-header"><h3><i class="fas fa-user-friends"></i> Colegas Online</h3><a href="#" class="see-all">Ver todos</a></div><div class="friends-grid">${friendsHTML}</div>`;
-    }
-
-    function loadAllWidgets() {
-        const eventsWidget = document.getElementById('upcoming-events-widget');
-        if (eventsWidget) {
-            const mockEventos = [
-                { id: 5, titulo: "Semana da Cibersegurança", data: new Date(2025, 9, 9), formato: "Híbrido" },
-                { id: 2, titulo: "Workshop de APIs com Node.js", data: new Date(2025, 9, 15), formato: "Online" },
-                { id: 6, titulo: "Construindo seu Portfólio", data: new Date(2025, 10, 12), formato: "Online" }
-            ];
-            const proximosEventos = mockEventos.filter(e => e.data >= new Date()).sort((a, b) => a.data - b.data).slice(0, 3);
-            let eventsHTML = `<div class="widget-header"><h3><i class="fas fa-calendar-star"></i> Próximos Eventos</h3><a href="evento.html" class="see-all">Ver todos</a></div><div class="events-preview-list">`;
-            if (proximosEventos.length) {
-                proximosEventos.forEach(evento => {
-                    const dia = evento.data.getDate();
-                    const mes = evento.data.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
-                    eventsHTML += `<div class="event-preview-item"><div class="event-preview-date"><span>${dia}</span><span>${mes}</span></div><div class="event-preview-info"><h4>${evento.titulo}</h4><p><i class="fas fa-map-marker-alt"></i> ${evento.formato}</p></div></div>`;
-                });
-            } else {
-                eventsHTML += '<p class="empty-message">Nenhum evento programado.</p>';
-            }
-            eventsWidget.innerHTML = eventsHTML + '</div>';
-        }
-    }
-
-    // ==================== INICIALIZAÇÃO ====================
-    init();
+  init();
 });

@@ -2,94 +2,173 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SENAI Community | Vagas</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="Principal/CSS/principal.css">
   <link rel="stylesheet" href="Vaga/CSS/vaga.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-  
-  <script src="Principal/JS/principal.js" defer></script>
-  <script src="Vaga/JS/vaga.js" defer></script>
 </head>
 <body>
-  <div class="notification-center"></div>
   <header class="topbar">
-      <div class="header-left"><div class="menu-toggle"><i class="fas fa-bars"></i></div><h1 class="logo"><span class="highlight">SENAI </span>Community</h1></div>
-      <div class="search"><i class="fas fa-search"></i><input type="text" placeholder="Pesquisar cursos, projetos, amigos..."><div class="search-results"></div></div>
-      <nav class="nav-icons">
-          <div class="nav-icon" data-tooltip="Início"><a href="principal.html"><i class="fas fa-home"></i></a></div>
-          <div class="nav-icon" data-tooltip="Mensagens"><a href="mensagem.html"><i class="fas fa-comment-dots"></i></a><span class="badge">3</span></div>
-          <div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell" id="notification-icon"></i><span class="badge">5</span><div id="notification-menu" class="notification-menu"><div class="notification"><p>Nova mensagem recebida</p></div><div class="notification"><p>Seu projeto foi aprovado</p></div></div></div>
-          <div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div>
-      </nav>
-      <div class="user-dropdown">
-          <div class="user"><div class="profile-pic"><img src="img/perfil.png" alt="Perfil"></div><i class="fas fa-chevron-down"></i></div>
-<div class="dropdown-menu">
-    <a href="perfil.html"><i class="fas fa-user"></i> Meu Perfil</a>
-    <a href="#"><i class="fas fa-cog"></i> Configurações</a>
-    <a href="login.html"><i class="fas fa-sign-out-alt"></i> Sair</a>
-</div>      </div>
+    <div class="header-left">
+      <div class="menu-toggle">
+        <i class="fas fa-bars"></i>
+      </div>
+      <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+    </div>
+    
+    <div class="search">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Pesquisar cursos, projetos, amigos...">
+      <div class="search-results"></div>
+    </div>
+
+    <nav class="nav-icons">
+      <div class="nav-icon" data-tooltip="Início">
+        <a href="principal.html"><i class="fas fa-home"></i></a>
+      </div>
+      <div class="nav-icon" data-tooltip="Mensagens">
+        <a href="grupo.html"><i class="fas fa-comment-dots"></i></a>
+        <span class="badge">3</span>
+      </div>
+      <div class="nav-icon" data-tooltip="Notificações">
+        <i class="fas fa-bell"></i>
+        <span class="badge">5</span>
+      </div>
+      <div class="theme-toggle" data-tooltip="Alternar tema">
+        <i class="fas fa-moon"></i>
+      </div>
+    </nav>
+
+    <div class="user-dropdown">
+      <div class="user">
+        <div class="profile-pic">
+          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil">
+        </div>
+        <span>Vinicius G.</span>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="dropdown-menu">
+        <a href="#"><i class="fas fa-user"></i> Meu Perfil</a>
+        <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+        <a href="principal.html"><i class="fas fa-sign-out-alt"></i> Sair</a>
+      </div>
+    </div>
   </header>
+
   <div class="container">
     <aside class="sidebar">
       <div class="user-info">
-        <div class="avatar"><img src="img/perfil.png" alt="Perfil"><div class="status online"></div></div>
-        <h2>Usuário Temporário</h2>
-        <p class="user-title">Sem Curso</p>
+        <div class="avatar">
+          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil">
+          <div class="status online"></div>
+        </div>
+        <h2>Vinicius Gallo Santos</h2>
+        <p class="user-title">Estudante de ADS</p>
         <div class="user-stats">
-          <div class="stat"><strong>3</strong><span>Conexões</span></div>
-          <div class="stat"><strong>1</strong><span>Projetos</span></div>
+          <div class="stat">
+            <strong>11</strong>
+            <span>Conexões</span>
+          </div>
+          <div class="stat">
+            <strong>2</strong>
+            <span>Projetos</span>
+          </div>
         </div>
       </div>
-      <nav class="menu">
-        <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
-        <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
-        <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
-        <a href="vaga.html" class="active"><i class="fas fa-briefcase"></i> Vagas de Emprego</a>
-        <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
-      </nav>
+
+ <nav class="menu">
+    <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
+    <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
+    <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
+    <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
+    <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+    <a href="buscar_amigos.html"><i class="fas fa-user-plus"></i> Encontrar Pessoas</a>
+    
+    <a href="amizades.html"><i class="fas fa-user-friends"></i> Minhas Conexões</a> 
+</nav>
+      
       <div class="online-friends">
+        <div class="section-header">
+          <h3><i class="fas fa-user-friends"></i> Colegas Online</h3>
+          <a href="#" class="see-all">Ver todos</a>
+        </div>
+        <div class="friends-grid">
           </div>
+      </div>
     </aside>
+
     <main class="main-content">
       <div class="vagas-header">
         <h1>Encontre sua Próxima Oportunidade</h1>
         <p>Explore vagas de estágio e emprego em empresas de tecnologia parceiras do SENAI.</p>
       </div>
+
       <div class="filters-container">
-        <div class="search-vaga"><i class="fas fa-search"></i><input type="text" id="search-input" placeholder="Cargo, empresa ou palavra-chave"></div>
+        <div class="search-vaga">
+          <i class="fas fa-search"></i>
+          <input type="text" id="search-input" placeholder="Cargo, empresa ou palavra-chave">
+        </div>
         <div class="filters">
-          <select id="filter-tipo"><option value="todos">Tipo de Vaga</option><option value="Tempo Integral">Tempo Integral</option><option value="Meio Período">Meio Período</option><option value="Estágio">Estágio</option><option value="Trainee">Trainee</option></select>
-          <select id="filter-local"><option value="todos">Localização</option><option value="Remoto">Remoto</option><option value="Híbrido">Híbrido</option><option value="Presencial">Presencial</option></select>
-          <select id="filter-nivel"><option value="todos">Nível</option><option value="Júnior">Júnior</option><option value="Pleno">Pleno</option><option value="Sênior">Sênior</option></select>
+          <select id="filter-tipo">
+            <option value="todos">Tipo de Vaga</option>
+            <option value="Tempo Integral">Tempo Integral</option>
+            <option value="Meio Período">Meio Período</option>
+            <option value="Estágio">Estágio</option>
+            <option value="Trainee">Trainee</option>
+          </select>
+          <select id="filter-local">
+            <option value="todos">Localização</option>
+            <option value="Remoto">Remoto</option>
+            <option value="Híbrido">Híbrido</option>
+            <option value="Presencial">Presencial</option>
+          </select>
+          <select id="filter-nivel">
+            <option value="todos">Nível</option>
+            <option value="Júnior">Júnior</option>
+            <option value="Pleno">Pleno</option>
+            <option value="Sênior">Sênior</option>
+          </select>
         </div>
       </div>
-      <div class="vagas-list"></div>
+      
+      <div class="vagas-list">
+        </div>
+
     </main>
+    
     <aside class="right-sidebar">
       <div class="job-alerts-card">
         <h3><i class="fas fa-bell"></i> Crie um Alerta de Vaga</h3>
         <p>Receba notificações sobre novas vagas que combinam com seu perfil.</p>
         <button class="create-alert-btn">Criar Alerta</button>
       </div>
+      
       <div class="featured-companies">
         <div class="section-header">
           <h3><i class="far fa-building"></i> Empresas em Destaque</h3>
           <a href="#" class="see-all">Ver todas</a>
         </div>
         <div class="company-list">
-          <div class="company-item"><img src="https://placehold.co/40x40/58a6ff/ffffff?text=T" alt="Tech Solutions"><span>Tech Solutions Inc.</span></div>
-          <div class="company-item"><img src="https://placehold.co/40x40/f78166/ffffff?text=I" alt="Inova Dev"><span>Inova Dev</span></div>
-          <div class="company-item"><img src="https://placehold.co/40x40/3fb950/ffffff?text=C" alt="Code Masters"><span>Code Masters</span></div>
+          <div class="company-item">
+            <img src="https://placehold.co/40x40/58a6ff/ffffff?text=T" alt="Tech Solutions">
+            <span>Tech Solutions Inc.</span>
+          </div>
+          <div class="company-item">
+            <img src="https://placehold.co/40x40/f78166/ffffff?text=I" alt="Inova Dev">
+            <span>Inova Dev</span>
+          </div>
+          <div class="company-item">
+            <img src="https://placehold.co/40x40/3fb950/ffffff?text=C" alt="Code Masters">
+            <span>Code Masters</span>
+          </div>
         </div>
       </div>
     </aside>
   </div>
-  
+
+  <script src="Principal/JS/principal.js"></script>
+  <script src="Vaga/JS/vaga.js"></script>
 </body>
 </html>
