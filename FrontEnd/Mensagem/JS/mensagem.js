@@ -1,333 +1,307 @@
-const ChatApp = {
-    state: {
-        currentUser: { id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" },
-        allUsers: [
-            { id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" },
-            { id: 2, nome: "Miguel Piscki", avatar: "https://randomuser.me/api/portraits/men/22.jpg" },
-            { id: 3, nome: "Ana Silva", avatar: "https://randomuser.me/api/portraits/women/33.jpg" },
-            { id: 4, nome: "Matheus B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg" },
-            { id: 5, nome: "Yuri Bragança", avatar: "https://randomuser.me/api/portraits/men/67.jpg" },
-            { id: 6, nome: "Julia Costa", avatar: "https://randomuser.me/api/portraits/women/48.jpg" },
-            { id: 7, nome: "Ricardo Neves", avatar: "https://randomuser.me/api/portraits/men/78.jpg" },
-            { id: 8, nome: "Beatriz Lima", avatar: "https://randomuser.me/api/portraits/women/88.jpg" }
-        ],
-        conversations: [
-            {
-                id: 'g1', type: 'group', nome: "Projeto IoT", avatar: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80",
-                membros: [{ id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" }, { id: 2, nome: "Miguel Piscki", avatar: "https://randomuser.me/api/portraits/men/22.jpg" }, { id: 3, nome: "Ana Silva", avatar: "https://randomuser.me/api/portraits/women/33.jpg" }],
-                mensagens: [
-                    { autor: 2, texto: "Oi pessoal, novidades do projeto?", hora: "19:01" },
-                    { autor: 1, texto: "Ainda não, mas terminei o layout!", hora: "19:02" },
-                    { autor: 1, texto: "Vejam o que acham e me deem um feedback depois.", hora: "19:02" },
-                    { autor: 3, texto: "Ficou ótimo, Vini! Parabéns!", hora: "19:05" },
-                    { autor: 3, texto: "Posso revisar o código depois.", hora: "19:05" }
-                ]
-            },
-            {
-                id: 'g2', type: 'group', nome: "PrecisionCraft", avatar: "/img/cnc.png",
-                membros: [{ id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" },  { id: 2, nome: "Julia", avatar: "https://randomuser.me/api/portraits/men/22.jpg" }, 
-                    { id: 8, nome: "Carlos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" }, { id: 9, nome: "Laura", avatar: "https://randomuser.me/api/portraits/men/22.jpg" }
-                ],
-                mensagens: [
-                    { autor: 6, texto: "Olá Pessoal!", hora: "11:22" },
-                    
-                ]
-            },
-            {
-                id: 'dm1', type: 'dm',
-                otherUser: { id: 4, nome: "Eliezer B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg", online: true },
-                membros: [{ id: 1, nome: "Vinicius Gallo Santos", avatar: "https://randomuser.me/api/portraits/men/32.jpg" }, { id: 4, nome: "Eliezer B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg" }],
-                mensagens: [
-                    { autor: 4, texto: "E aí, Vinicius! Tudo certo?", hora: "14:50"},
-                    { autor: 1, texto: "Opa, tudo joia e você?", hora: "14:51"}
-                ]
-            }
-        ],
-        selectedConversationId: null,
-        filteredConversations: []
-    },
-    elements: {
+document.addEventListener("DOMContentLoaded", () => {
+    // --- CONFIGURAÇÕES E VARIÁVEIS GLOBAIS ---
+    const backendUrl = "http://localhost:8080";
+    const jwtToken = localStorage.getItem("token");
+    let stompClient = null;
+    let currentUser = null;
+    let conversas = []; // Armazenará as conversas (amigos e projetos)
+    let selectedConversationId = null; // Guardará o ID da conversa ativa (ex: 'user_42' ou 'project_15')
+
+    // --- ELEMENTOS DO DOM ---
+    const elements = {
         conversationsList: document.getElementById('conversations-list'),
-        conversationSearch: document.getElementById('convo-search'),
         chatHeaderArea: document.getElementById('chat-header-area'),
         chatMessagesArea: document.getElementById('chat-messages-area'),
         chatForm: document.getElementById('chat-form'),
         chatInput: document.getElementById('chat-input'),
         chatSendBtn: document.getElementById('chat-send-btn'),
-        addGroupBtn: document.querySelector('.add-convo-btn'),
-        addConvoModal: document.getElementById('add-convo-modal'),
-        closeModalBtn: document.getElementById('close-modal-btn'),
-        userSearchInput: document.getElementById('user-search-input'),
-        newConvoUserList: document.getElementById('new-convo-user-list')
-    },
-    render: {
-        conversationsList() {
-            // ... (código sem alterações)
-            const { conversationsList } = ChatApp.elements;
-            const { filteredConversations, selectedConversationId } = ChatApp.state;
-            if (!conversationsList) return;
-            conversationsList.innerHTML = '';
-            filteredConversations.forEach(convo => {
-                const convoCard = document.createElement('div');
-                convoCard.className = 'convo-card';
-                if (selectedConversationId === convo.id) convoCard.classList.add('selected');
-                convoCard.dataset.convoId = convo.id;
-                const lastMsg = convo.mensagens.length ? convo.mensagens[convo.mensagens.length - 1] : null;
-                let cardHTML = '';
-                if (convo.type === 'group') {
-                    cardHTML = `<div class="convo-avatar-wrapper"><img src="${convo.avatar}" class="avatar" alt="Grupo"></div><div class="group-info"><div class="group-title">${convo.nome}</div><div class="group-last-msg">${lastMsg ? `<strong>${ChatApp.utils.getUser(convo, lastMsg.autor).nome.split(' ')[0]}:</strong> ${lastMsg.texto}` : "Nenhuma mensagem"}</div></div>`;
-                } else {
-                    cardHTML = `<div class="convo-avatar-wrapper"><img src="${convo.otherUser.avatar}" class="avatar" alt="Usuário">${convo.otherUser.online ? '<div class="status-dot"></div>' : ''}</div><div class="group-info"><div class="group-title">${convo.otherUser.nome}</div><div class="group-last-msg">${lastMsg ? `${lastMsg.autor === ChatApp.state.currentUser.id ? "Você: " : ""}${lastMsg.texto}` : "Nenhuma mensagem"}</div></div>`;
-                }
-                convoCard.innerHTML = cardHTML;
-                conversationsList.appendChild(convoCard);
-            });
-        },
-        chatHeader() {
-            // ... (código sem alterações)
-            const { chatHeaderArea } = ChatApp.elements;
-            const convo = ChatApp.utils.getSelectedConversation();
-            if (!chatHeaderArea) return;
-            if (!convo) { if(chatHeaderArea) chatHeaderArea.innerHTML = ''; return; }
-            let headerHTML = '';
-            if (convo.type === 'group') {
-                headerHTML = `<div class="chat-group-info"><img src="${convo.avatar}" class="chat-group-avatar" alt="Grupo"><div><h3 class="chat-group-title">${convo.nome}</h3><div class="chat-members-list">${convo.membros.map(m => m.nome.split(" ")[0]).join(", ")}</div></div></div>`;
-            } else {
-                headerHTML = `<div class="chat-group-info"><img src="${convo.otherUser.avatar}" class="chat-group-avatar" alt="Usuário"><div><h3 class="chat-group-title">${convo.otherUser.nome}</h3>${convo.otherUser.online ? `<div class="chat-user-status">Online</div>` : ''}</div></div>`;
-            }
-            chatHeaderArea.innerHTML = headerHTML;
-        },
-        
-        // FUNÇÃO DE RENDERIZAR MENSAGENS ATUALIZADA
-        chatMessages() {
-            const { chatMessagesArea } = ChatApp.elements;
-            const convo = ChatApp.utils.getSelectedConversation();
-            if (!chatMessagesArea || !convo) { 
-                if(chatMessagesArea) chatMessagesArea.innerHTML = `<div class="empty-chat">Selecione uma conversa para começar.</div>`;
-                return; 
-            }
+    };
 
-            chatMessagesArea.innerHTML = '';
-            let lastAuthorId = null;
-            let currentMessageBlock = null;
-
-            convo.mensagens.forEach(msg => {
-                const user = ChatApp.utils.getUser(convo, msg.autor);
-                const sideClass = msg.autor === ChatApp.state.currentUser.id ? 'me' : 'outro';
-
-                if (msg.autor !== lastAuthorId) {
-                    const currentMessageGroup = document.createElement('div');
-                    currentMessageGroup.className = `message-group ${sideClass}`;
-                    
-                    const avatarHTML = (sideClass === 'outro') ? `<div class="message-avatar"><img src="${user.avatar}" alt="${user.nome}"></div>` : '';
-                    
-                    currentMessageBlock = document.createElement('div');
-                    currentMessageBlock.className = 'message-block';
-                    
-                    // *** A CORREÇÃO ESTÁ AQUI ***
-                    // Adiciona o cabeçalho (nome e hora) APENAS se a mensagem for de outra pessoa
-                    if (sideClass === 'outro') {
-                        const header = document.createElement('div');
-                        header.className = 'message-author-header';
-                        header.innerHTML = `<strong>${user.nome.split(" ")[0]}</strong><span>${msg.hora}</span>`;
-                        currentMessageBlock.appendChild(header);
-                    }
-
-                    if (avatarHTML) {
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = avatarHTML;
-                        currentMessageGroup.appendChild(tempDiv.firstChild);
-                    }
-                    currentMessageGroup.appendChild(currentMessageBlock);
-                    
-                    chatMessagesArea.appendChild(currentMessageGroup);
-                }
-
-                const messageContent = document.createElement('div');
-                messageContent.className = 'message-content';
-                messageContent.innerHTML = msg.texto.replace(/\n/g, '<br>');
-
-                if (currentMessageBlock) {
-                    currentMessageBlock.appendChild(messageContent);
-                }
-                
-                lastAuthorId = msg.autor;
-            });
-
-            chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+    // --- INICIALIZAÇÃO ---
+    async function init() {
+        if (!jwtToken) {
+            window.location.href = "login.html";
+            return;
         }
-    },
-    handlers: {
-        // ... (código sem alterações)
-        selectConversation(convoId) {
-            ChatApp.state.selectedConversationId = convoId;
-            const { chatInput, chatSendBtn } = ChatApp.elements;
-            ChatApp.render.conversationsList();
-            ChatApp.render.chatHeader();
-            ChatApp.render.chatMessages();
-            if (chatInput) chatInput.disabled = false;
-            if (chatSendBtn) chatSendBtn.disabled = false;
-            if (chatInput) chatInput.focus();
-        },
-        sendMessage(e) {
-            e.preventDefault();
-            const { chatInput } = ChatApp.elements;
-            const convo = ChatApp.utils.getSelectedConversation();
-            if (!convo || !chatInput) return;
-            const texto = chatInput.value.trim();
-            if (!texto) return;
-            convo.mensagens.push({
-                autor: ChatApp.state.currentUser.id,
-                texto: texto,
-                hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
-            chatInput.value = '';
-            chatInput.focus();
-            ChatApp.render.chatMessages();
-            ChatApp.render.conversationsList();
-        },
-        filterConversations(e) {
-            const query = e.target.value.toLowerCase();
-            ChatApp.state.filteredConversations = ChatApp.state.conversations.filter(c => {
-                const nameToSearch = c.type === 'group' ? c.nome : c.otherUser.nome;
-                return nameToSearch.toLowerCase().includes(query);
-            });
-            ChatApp.render.conversationsList();
-        },
-        openNewConversationModal() {
-            const { newConvoUserList, addConvoModal, userSearchInput } = ChatApp.elements;
-            if (!newConvoUserList || !addConvoModal) return;
+        axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
 
-            const existingDmUserIds = ChatApp.state.conversations
-                .filter(c => c.type === 'dm')
-                .map(c => c.otherUser.id);
+        try {
+            // 1. Busca os dados do usuário logado
+            const response = await axios.get(`${backendUrl}/usuarios/me`);
+            currentUser = response.data;
             
-            const availableUsers = ChatApp.state.allUsers.filter(user => 
-                user.id !== ChatApp.state.currentUser.id && !existingDmUserIds.includes(user.id)
-            );
+            // 2. Conecta ao WebSocket
+            connectWebSocket();
 
-            newConvoUserList.innerHTML = ''; 
+            // 3. Busca as conversas (amigos e projetos)
+            await fetchConversations();
 
-            if (availableUsers.length === 0) {
-                newConvoUserList.innerHTML = `<p style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">Não há novos usuários para conversar.</p>`;
-            } else {
-                availableUsers.forEach(user => {
-                    const userItem = document.createElement('div');
-                    userItem.className = 'user-list-item';
-                    userItem.dataset.userId = user.id;
-                    userItem.innerHTML = `<img src="${user.avatar}" alt="${user.nome}"><span>${user.nome}</span>`;
-                    newConvoUserList.appendChild(userItem);
+            // 4. Verifica se a URL veio com um ID de usuário para abrir a conversa
+            const urlParams = new URLSearchParams(window.location.search);
+            const userIdToOpen = urlParams.get('withUser');
+
+            if (userIdToOpen) {
+                // Se um ID foi passado, seleciona a conversa com esse usuário
+                const conversationId = `user_${userIdToOpen}`;
+                await selectConversation(conversationId);
+            }
+
+            // 5. Configura os event listeners
+            setupEventListeners();
+        } catch (error) {
+            console.error("ERRO CRÍTICO NA INICIALIZAÇÃO DO CHAT:", error);
+            // Lógica de erro, como redirecionar para o login
+        }
+    }
+
+    // --- LÓGICA DO WEBSOCKET ---
+    function connectWebSocket() {
+        const socket = new SockJS(`${backendUrl}/ws`);
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null; // Desativa logs do stomp no console
+        const headers = { Authorization: `Bearer ${jwtToken}` };
+
+        stompClient.connect(headers, (frame) => {
+            console.log("CONECTADO AO WEBSOCKET DE MENSAGENS");
+
+            // Inscrição para receber mensagens privadas
+            stompClient.subscribe(`/user/${currentUser.email}/queue/usuario`, (message) => {
+                const novaMensagem = JSON.parse(message.body);
+                handleNovaMensagem(novaMensagem, 'private');
+            });
+
+            // Inscrição em todos os chats de projeto do usuário
+            conversas.filter(c => c.type === 'project').forEach(proj => {
+                stompClient.subscribe(`/topic/projeto/${proj.id}`, (message) => {
+                    const payload = JSON.parse(message.body);
+                    handleNovaMensagem(payload, 'project', proj.id);
                 });
-            }
-            
-            userSearchInput.value = '';
-            addConvoModal.style.display = 'flex';
-            userSearchInput.focus();
-        },
-        closeNewConversationModal() {
-            const { addConvoModal } = ChatApp.elements;
-            if (addConvoModal) {
-                addConvoModal.style.display = 'none';
-            }
-        },
-        startNewDmConversation(e) {
-            const userItem = e.target.closest('.user-list-item');
-            if (!userItem) return;
-
-            const targetUserId = parseInt(userItem.dataset.userId, 10);
-            const targetUser = ChatApp.state.allUsers.find(u => u.id === targetUserId);
-            const currentUser = ChatApp.state.currentUser;
-
-            if (!targetUser) return;
-
-            const newConvoId = `dm_${currentUser.id}-${targetUser.id}`;
-            const newConversation = {
-                id: newConvoId,
-                type: 'dm',
-                otherUser: { id: targetUser.id, nome: targetUser.nome, avatar: targetUser.avatar, online: false },
-                membros: [currentUser, targetUser],
-                mensagens: []
-            };
-
-            ChatApp.state.conversations.unshift(newConversation);
-            ChatApp.state.filteredConversations = [...ChatApp.state.conversations];
-            
-            ChatApp.handlers.closeNewConversationModal();
-            ChatApp.render.conversationsList();
-            ChatApp.handlers.selectConversation(newConvoId);
-        },
-        filterAvailableUsers(e) {
-            const query = e.target.value.toLowerCase();
-            const allItems = ChatApp.elements.newConvoUserList.querySelectorAll('.user-list-item');
-            allItems.forEach(item => {
-                const userName = item.querySelector('span').textContent.toLowerCase();
-                if (userName.includes(query)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
             });
-        }
-    },
-    utils: {
-        // ... (código sem alterações)
-        getSelectedConversation() {
-            return ChatApp.state.conversations.find(c => c.id === ChatApp.state.selectedConversationId);
-        },
-        getUser(convo, userId) {
-            let user = convo.membros.find(m => m.id === userId);
-            if (!user) {
-                user = ChatApp.state.allUsers.find(u => u.id === userId);
-            }
-            return user || { nome: 'Desconhecido', avatar: '' };
-        }
-    },
-    init() {
-        // ... (código sem alterações)
-        this.state.filteredConversations = [...this.state.conversations];
-        const { conversationsList, conversationSearch, chatForm, addGroupBtn, closeModalBtn, addConvoModal, newConvoUserList, userSearchInput } = this.elements;
-        
-        if (conversationsList) {
-            conversationsList.addEventListener('click', (e) => {
-                const card = e.target.closest('.convo-card');
-                if (card) this.handlers.selectConversation(card.dataset.convoId);
-            });
-        }
-        if (conversationSearch) {
-            conversationSearch.addEventListener('input', (e) => this.handlers.filterConversations(e));
-        }
-        if (chatForm) {
-            chatForm.addEventListener('submit', (e) => this.handlers.sendMessage(e));
-        }
-        if (addGroupBtn) {
-            addGroupBtn.addEventListener('click', () => this.handlers.openNewConversationModal());
-        }
-        
-        if (closeModalBtn) {
-            closeModalBtn.addEventListener('click', () => this.handlers.closeNewConversationModal());
-        }
-        if (addConvoModal) {
-            addConvoModal.addEventListener('click', (e) => {
-                if (e.target === addConvoModal) {
-                    this.handlers.closeNewConversationModal();
-                }
-            });
-        }
-        if (newConvoUserList) {
-            newConvoUserList.addEventListener('click', (e) => this.handlers.startNewDmConversation(e));
-        }
-        if(userSearchInput) {
-            userSearchInput.addEventListener('input', (e) => this.handlers.filterAvailableUsers(e));
-        }
 
-        this.render.conversationsList();
-        this.render.chatHeader();
-        this.render.chatMessages();
+        }, (error) => console.error("ERRO WEBSOCKET:", error));
     }
-};
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof ChatApp !== 'undefined') {
-        ChatApp.init();
+    // --- BUSCA DE DADOS (API) ---
+    async function fetchConversations() {
+        try {
+            // Busca amigos e projetos em paralelo para mais performance
+            const [amigosResponse, projetosResponse] = await Promise.all([
+                axios.get(`${backendUrl}/api/amizades/`),
+                axios.get(`${backendUrl}/projetos/meus`) // Supondo que este endpoint exista
+            ]);
+
+            // Mapeia amigos para o formato de conversa
+            const conversasAmigos = amigosResponse.data.map(amigo => ({
+                id: `user_${amigo.amigoId}`,
+                type: 'user',
+                displayName: amigo.nome,
+                avatarUrl: amigo.fotoPerfil ? `${backendUrl}/api/arquivos/${amigo.fotoPerfil}` : 'caminho/para/avatar/padrao.png',
+                targetId: amigo.amigoId, // ID do outro usuário
+                messages: [] // Começa vazio, será carregado ao clicar
+            }));
+
+            // Mapeia projetos para o formato de conversa
+            const conversasProjetos = projetosResponse.data.map(projeto => ({
+                id: `project_${projeto.id}`,
+                type: 'project',
+                displayName: projeto.titulo,
+                avatarUrl: projeto.imagemUrl ? `${backendUrl}/projetos/imagens/${projeto.imagemUrl}` : 'caminho/para/avatar/padrao_projeto.png',
+                targetId: projeto.id, // ID do projeto
+                messages: []
+            }));
+
+            conversas = [...conversasAmigos, ...conversasProjetos];
+            renderConversationsList();
+        } catch (error) {
+            console.error("Erro ao buscar conversas:", error);
+        }
     }
+
+    // --- FUNÇÕES DE RENDERIZAÇÃO (UI) ---
+    function renderConversationsList() {
+        elements.conversationsList.innerHTML = '';
+        conversas.forEach(convo => {
+            const card = document.createElement('div');
+            card.className = 'convo-card';
+            card.dataset.convoId = convo.id;
+            if (convo.id === selectedConversationId) {
+                card.classList.add('selected');
+            }
+
+            const iconClass = convo.type === 'project' ? 'fa-users' : 'fa-user';
+
+            card.innerHTML = `
+                <div class="convo-avatar-wrapper">
+                    <img src="${convo.avatarUrl}" class="avatar" alt="Avatar">
+                </div>
+                <div class="group-info">
+                    <div class="group-title">
+                        <i class="fas ${iconClass}"></i> ${convo.displayName}
+                    </div>
+                    <div class="group-last-msg" id="last-msg-${convo.id}">Nenhuma mensagem</div>
+                </div>
+            `;
+            elements.conversationsList.appendChild(card);
+        });
+    }
+
+    function renderChatHeader() {
+        const convo = conversas.find(c => c.id === selectedConversationId);
+        if (!convo) {
+            elements.chatHeaderArea.innerHTML = '';
+            return;
+        }
+        elements.chatHeaderArea.innerHTML = `
+            <div class="chat-group-info">
+                <img src="${convo.avatarUrl}" class="chat-group-avatar" alt="Avatar">
+                <div>
+                    <h3 class="chat-group-title">${convo.displayName}</h3>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderChatMessages() {
+        const convo = conversas.find(c => c.id === selectedConversationId);
+        elements.chatMessagesArea.innerHTML = '';
+        if (!convo || convo.messages.length === 0) {
+            elements.chatMessagesArea.innerHTML = `<div class="empty-chat">Nenhuma mensagem ainda. Envie a primeira!</div>`;
+            return;
+        }
+
+        convo.messages.forEach(msg => {
+            const messageElement = createMessageElement(msg);
+            elements.chatMessagesArea.appendChild(messageElement);
+        });
+        elements.chatMessagesArea.scrollTop = elements.chatMessagesArea.scrollHeight;
+    }
+
+    function createMessageElement(msg) {
+        const userIsAuthor = msg.autorId === currentUser.id;
+        const sideClass = userIsAuthor ? 'me' : 'outro';
+
+        const messageGroup = document.createElement('div');
+        messageGroup.className = `message-group ${sideClass}`;
+
+        const dataFormatada = new Date(msg.dataEnvio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        messageGroup.innerHTML = `
+            ${!userIsAuthor ? `<div class="message-avatar"><img src="${msg.urlFotoAutor || 'caminho/padrao'}" alt="${msg.nomeAutor}"></div>` : ''}
+            <div class="message-block">
+                ${!userIsAuthor ? `
+                    <div class="message-author-header">
+                        <strong>${msg.nomeAutor.split(" ")[0]}</strong>
+                        <span>${dataFormatada}</span>
+                    </div>` : ''}
+                <div class="message-content">
+                    ${msg.conteudo}
+                </div>
+            </div>
+        `;
+        return messageGroup;
+    }
+
+    // --- FUNÇÕES DE MANIPULAÇÃO DE ESTADO E EVENTOS ---
+    async function selectConversation(convoId) {
+        if (selectedConversationId === convoId) return;
+
+        selectedConversationId = convoId;
+        const convo = conversas.find(c => c.id === convoId);
+
+        if (!convo) return;
+        
+        // Habilitar a área de input
+        elements.chatInput.disabled = false;
+        elements.chatSendBtn.disabled = false;
+
+        renderConversationsList();
+        renderChatHeader();
+
+        try {
+            let historyResponse;
+            if (convo.type === 'user') {
+                // Endpoint para buscar histórico de chat privado
+                historyResponse = await axios.get(`${backendUrl}/api/chat/privado/${currentUser.id}/${convo.targetId}`);
+            } else { // project
+                // Endpoint para buscar histórico de chat de projeto
+                historyResponse = await axios.get(`${backendUrl}/projetos/${convo.targetId}/chat/mensagens`);
+            }
+            convo.messages = historyResponse.data;
+            renderChatMessages();
+            elements.chatInput.focus();
+        } catch (error) {
+            console.error(`Erro ao buscar histórico da conversa ${convoId}:`, error);
+            elements.chatMessagesArea.innerHTML = `<div class="empty-chat">Erro ao carregar mensagens.</div>`;
+        }
+    }
+
+    function handleNovaMensagem(mensagemPayload, type, projectId = null) {
+        let convoId;
+        if (type === 'private') {
+            // Se a mensagem veio de outro usuário para mim, o ID do remetente é o alvo.
+            // Se fui eu que enviei, o ID do destinatário é o alvo.
+            const otherUserId = mensagemPayload.remetenteId === currentUser.id ? mensagemPayload.destinatarioId : mensagemPayload.remetenteId;
+            convoId = `user_${otherUserId}`;
+        } else { // project
+            convoId = `project_${projectId}`;
+        }
+
+        const convo = conversas.find(c => c.id === convoId);
+        if (convo) {
+            convo.messages.push(mensagemPayload);
+            // Se a conversa da nova mensagem estiver selecionada, renderiza o chat.
+            if (convo.id === selectedConversationId) {
+                renderChatMessages();
+            }
+            // Atualiza a prévia da última mensagem na lista de conversas
+            const lastMsgEl = document.getElementById(`last-msg-${convo.id}`);
+            if(lastMsgEl) lastMsgEl.textContent = mensagemPayload.conteudo;
+        }
+    }
+
+    async function sendMessage() {
+        const content = elements.chatInput.value.trim();
+        if (!content || !selectedConversationId) return;
+
+        const convo = conversas.find(c => c.id === selectedConversationId);
+        if (!convo) return;
+
+        if (convo.type === 'user') {
+            // Lógica para enviar mensagem privada via WebSocket
+            const destination = `/app/privado/${convo.targetId}`;
+            stompClient.send(destination, {}, JSON.stringify({ conteudo: content }));
+        } else { // project
+            // Lógica para enviar mensagem de projeto via REST (pois aceita arquivos)
+            const formData = new FormData();
+            formData.append('conteudo', new Blob([JSON.stringify({conteudo: content})], { type: 'application/json' }));
+            // Aqui você poderia adicionar lógica para anexar arquivos se quisesse
+            
+            try {
+                // O backend já envia a mensagem via WebSocket após salvar
+                await axios.post(`${backendUrl}/projetos/${convo.targetId}/chat/mensagens`, formData);
+            } catch (error) {
+                console.error("Erro ao enviar mensagem de projeto:", error);
+            }
+        }
+
+        elements.chatInput.value = '';
+        elements.chatInput.focus();
+    }
+
+    function setupEventListeners() {
+        elements.conversationsList.addEventListener('click', (e) => {
+            const card = e.target.closest('.convo-card');
+            if (card) {
+                selectConversation(card.dataset.convoId);
+            }
+        });
+
+        elements.chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
+    }
+
+    // --- INÍCIO DA EXECUÇÃO ---
+    init();
 });

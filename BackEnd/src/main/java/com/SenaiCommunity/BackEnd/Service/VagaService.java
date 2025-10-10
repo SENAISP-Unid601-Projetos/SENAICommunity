@@ -24,6 +24,9 @@ public class VagaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private NotificacaoService notificacaoService;
+
     @Transactional
     public VagaSaidaDTO criar(VagaEntradaDTO dto, String autorEmail) {
         Usuario autor = usuarioRepository.findByEmail(autorEmail)
@@ -40,6 +43,23 @@ public class VagaService {
         vaga.setAutor(autor);
 
         Vaga vagaSalva = vagaRepository.save(vaga);
+
+        // Após salvar a vaga, notifica todos os outros usuários.
+        List<Usuario> todosOsUsuarios = usuarioRepository.findAll();
+        String mensagem = String.format("Nova vaga publicada: '%s' na empresa %s.", vagaSalva.getTitulo(), vagaSalva.getEmpresa());
+
+        for (Usuario destinatario : todosOsUsuarios) {
+            // Não envia notificação para o próprio autor da vaga
+            if (!destinatario.getId().equals(autor.getId())) {
+                notificacaoService.criarNotificacao(
+                        destinatario,
+                        mensagem,
+                        "NOVA_VAGA",
+                        vagaSalva.getId()
+                );
+            }
+        }
+
         return new VagaSaidaDTO(vagaSalva);
     }
 

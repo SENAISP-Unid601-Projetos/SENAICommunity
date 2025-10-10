@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByEmail(String email);
 
+    List<Usuario> findAllByEmailIn(List<String> emails);
+
     // Busca usuários aonde o nome tenha o termo de pesquisa (ignorando maiúsculas/minúsculas)
     List<Usuario> findByNomeContainingIgnoreCaseAndIdNot(String nome, Long id);
 

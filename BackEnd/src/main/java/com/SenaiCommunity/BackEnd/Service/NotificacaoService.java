@@ -29,8 +29,7 @@ public class NotificacaoService {
     private SimpMessagingTemplate messagingTemplate;
 
     /**
-     * MÉTODO DE CONVERSÃO MODIFICADO E MAIS SEGURO.
-     * Ele agora verifica se os campos são nulos antes de usá-los.
+     * MÉTODO DE CONVERSÃO
      */
     private NotificacaoSaidaDTO toDTO(Notificacao notificacao) {
         return NotificacaoSaidaDTO.builder()
@@ -38,9 +37,8 @@ public class NotificacaoService {
                 .mensagem(notificacao.getMensagem())
                 .dataCriacao(notificacao.getDataCriacao())
                 .lida(notificacao.isLida())
-                // Verifica se o tipo é nulo, se for, define como "GERAL" por padrão.
                 .tipo(notificacao.getTipo() != null ? notificacao.getTipo() : "GERAL")
-                .idReferencia(notificacao.getIdReferencia()) // Long pode ser nulo, então não há problema aqui.
+                .idReferencia(notificacao.getIdReferencia())
                 .build();
     }
 
@@ -99,12 +97,11 @@ public class NotificacaoService {
         Usuario destinatario = usuarioRepository.findByEmail(emailUsuarioLogado)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o email: " + emailUsuarioLogado));
 
-        // Usa o novo método do repositório
         List<Notificacao> notificacoesNaoLidas = notificacaoRepository.findByDestinatarioAndLidaIsFalse(destinatario);
 
         if (!notificacoesNaoLidas.isEmpty()) {
             for (Notificacao notificacao : notificacoesNaoLidas) {
-                notificacao.setLida(true); // O campo 'lida' existe na sua entidade
+                notificacao.setLida(true);
             }
             notificacaoRepository.saveAll(notificacoesNaoLidas);
         }

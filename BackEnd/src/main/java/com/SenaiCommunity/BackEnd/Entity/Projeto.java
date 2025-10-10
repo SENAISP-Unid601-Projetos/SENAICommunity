@@ -31,7 +31,7 @@ public class Projeto {
     private Boolean grupoPrivado = false; // Se true, apenas por convite
 
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL)
-    private List<MensagemGrupo> mensagens;
+    private List<MensagemProjeto> mensagens;
 
     @ManyToOne
     @JoinColumn(name = "autor_id")
