@@ -10,26 +10,63 @@
     <link rel="stylesheet" href="Projeto/CSS/projeto.css">
 </head>
 <body>
+    <div class="notification-center"></div>
+
     <header class="topbar">
-        <div class="header-left"><h1 class="logo"><span class="highlight">SENAI </span>Community</h1></div><div class="search"><i class="fas fa-search"></i><input type="text" placeholder="Pesquisar projetos..."></div><nav class="nav-icons"><a href="/Principal/HTML/principal.html" data-tooltip="Feed"><i class="fas fa-home"></i></a><a href="/Mensagem/HTML/mensagem.html" data-tooltip="Mensagens"><i class="fas fa-comment-dots"></i></a><div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell"></i><span class="badge">5</span></div><div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div></nav><div class="user-dropdown"><div class="user"><div class="profile-pic"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"></div><span>Vinicius G.</span><i class="fas fa-chevron-down"></i></div><div class="dropdown-menu"><a href="#"><i class="fas fa-user"></i> Meu Perfil</a><a href="#"><i class="fas fa-cog"></i> Configurações</a><a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a></div></div>
+        <div class="header-left"><h1 class="logo"><span class="highlight">SENAI </span>Community</h1></div>
+        <div class="search"><i class="fas fa-search"></i><input type="text" placeholder="Pesquisar projetos..."></div>
+        <nav class="nav-icons">
+            <a href="principal.html" class="nav-icon" data-tooltip="Feed"><i class="fas fa-home"></i></a>
+            <a href="mensagem.html" class="nav-icon" data-tooltip="Mensagens"><i class="fas fa-comment-dots"></i></a>
+            <div class="nav-icon" data-tooltip="Notificações" id="notifications-icon">
+                <i class="fas fa-bell"></i><span class="badge" id="notifications-badge" style="display: none;">0</span>
+            </div>
+            <div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div>
+        </nav>
+        <div class="user-dropdown">
+            <div class="user">
+                <div class="profile-pic"><img src="https://via.placeholder.com/40" id="topbar-user-img" alt="Perfil"></div>
+                <span id="topbar-user-name">Carregando...</span><i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="perfil.html"><i class="fas fa-user"></i> Meu Perfil</a>
+                <a href="#" id="edit-profile-btn"><i class="fas fa-cog"></i> Editar Perfil</a>
+                <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </div>
+        </div>
     </header>
 
     <div class="container">
         <aside class="sidebar">
-            <div class="user-info">
-                <div class="avatar"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"><div class="status online"></div></div>
-                <h2>Vinicius Gallo Santos</h2><p class="user-title">Estudante de ADS</p><div class="user-stats"><div class="stat"><strong>11</strong><span>Conexões</span></div><div class="stat"><strong>2</strong><span>Projetos</span></div></div>
-            </div>
+             <a href="perfil.html" class="user-info-link">
+                <div class="user-info">
+                    <div class="avatar">
+                        <img src="https://via.placeholder.com/80" alt="Perfil" id="sidebar-user-img">
+                        <div class="status online"></div>
+                    </div>
+                    <h2 id="sidebar-user-name">Carregando...</h2>
+                    <p class="user-title" id="sidebar-user-title">Carregando...</p>
+                    <div class="user-stats">
+                        <div class="stat">
+                            <strong id="connections-count">-</strong>
+                            <span>Conexões</span>
+                        </div>
+                        <div class="stat">
+                            <strong id="projects-count">-</strong>
+                            <span>Projetos</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
            <nav class="menu">
-    <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
-    <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge">3</span></a>
-    <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
-    <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
-    <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
-    <a href="buscar_amigos.html"><i class="fas fa-user-plus"></i> Encontrar Pessoas</a>
-    
-    <a href="amizades.html"><i class="fas fa-user-friends"></i> Minhas Conexões</a> 
-</nav>
+                <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
+                <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens</a>
+                <a href="projeto.html" class="active"><i class="fas fa-users"></i> Projetos</a>
+                <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
+                <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+                <a href="buscar_amigos.html"><i class="fas fa-user-plus"></i> Encontrar Pessoas</a>
+                <a href="amizades.html"><i class="fas fa-user-friends"></i> Minhas Conexões</a> 
+            </nav>
         </aside>
 
         <main class="main-content">
@@ -56,7 +93,7 @@
             </div>
 
             <div class="projetos-grid" id="projetos-grid">
-            </div>
+                </div>
         </main>
 
         <aside class="right-sidebar">
@@ -79,6 +116,12 @@
             </div>
             <form id="novo-projeto-form">
                 <div class="modal-body">
+                    <div class="post-creator-input-area" id="modal-user-header" style="border: none; padding-bottom: 1rem; align-items: center;">
+                        <div class="avatar-small">
+                            <img src="https://via.placeholder.com/40" alt="Seu Perfil" id="modal-user-avatar">
+                        </div>
+                        <span id="modal-user-name" style="font-weight: 600;">Carregando...</span>
+                    </div>
                     <div class="form-group">
                         <label for="proj-titulo">Título do Projeto</label>
                         <input type="text" id="proj-titulo" required>
@@ -88,19 +131,8 @@
                         <textarea id="proj-descricao" rows="4" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="proj-imagem">URL da Imagem de Capa</label>
-                        <input type="url" id="proj-imagem" placeholder="https://exemplo.com/imagem.png">
-                    </div>
-                    <div class="form-group">
-                        <label for="proj-techs">Tecnologias (separadas por vírgula)</label>
-                        <input type="text" id="proj-techs" placeholder="React, Node.js, Arduino...">
-                    </div>
-                     <div class="form-group">
-                        <label for="proj-status">Status</label>
-                        <select id="proj-status">
-                            <option value="Em Andamento">Em Andamento</option>
-                            <option value="Concluído">Concluído</option>
-                        </select>
+                        <label for="proj-imagem">Imagem de Capa (Opcional)</label>
+                        <input type="file" id="proj-imagem" accept="image/*">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -110,7 +142,11 @@
         </div>
     </div>
 
-    <script src="Principal/JS/principal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="Principal/JS/principal.js"></script> 
     <script src="Projeto/JS/projeto.js"></script>
 </body>
 </html>

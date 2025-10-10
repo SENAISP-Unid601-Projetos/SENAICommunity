@@ -38,6 +38,7 @@ public class ProjetoDTO {
         private Long usuarioId;
         private String usuarioNome;
         private String usuarioEmail;
+        private String usuarioFotoPerfil;
         private ProjetoMembro.RoleMembro role;
         private LocalDateTime dataEntrada;
         private String convidadoPorNome;
