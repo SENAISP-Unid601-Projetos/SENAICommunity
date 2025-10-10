@@ -883,6 +883,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  window.aceitarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
+      // A função 'handleFriendRequestFeedback' já existe no seu código para dar o feedback visual.
+      handleFriendRequestFeedback(notificationId, 'Pedido aceito!', 'success');
+      fetchFriends(); // Atualiza a contagem de conexões
+    } catch (error) {
+      console.error('Erro ao aceitar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao aceitar.', 'error');
+    }
+  };
+
+  window.recusarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`);
+      handleFriendRequestFeedback(notificationId, 'Pedido recusado.', 'info');
+    } catch (error) {
+      console.error('Erro ao recusar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao recusar.', 'error');
+    }
+  };
+
   // --- FUNÇÕES DE AÇÕES DE AMIZADE (para notificações) ---
   function handleFriendRequestFeedback(notificationId, message, type = 'info') {
     const notificationItem = document.getElementById(`notification-item-${notificationId}`);
@@ -906,6 +928,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     // Re-busca as notificações para atualizar o contador (badge)
     fetchNotifications();
+  }
+
+  async function markAllNotificationsAsRead() {
+    // Verifica se há notificações não lidas antes de fazer a chamada
+    const unreadCount = parseInt(elements.notificationsBadge.textContent, 10);
+    if (isNaN(unreadCount) || unreadCount === 0) {
+      return; // Sai da função se não houver nada a fazer
+    }
+
+    try {
+      // Chama o endpoint do backend para marcar todas como lidas
+      // NOTA: Certifique-se de que este endpoint POST /api/notificacoes/ler-todas exista no seu backend.
+      await axios.post(`${backendUrl}/api/notificacoes/ler-todas`);
+
+      // Atualiza a UI imediatamente para dar feedback ao usuário
+      if (elements.notificationsBadge) {
+        elements.notificationsBadge.style.display = 'none';
+        elements.notificationsBadge.textContent = '0';
+      }
+      if (elements.notificationsList) {
+        const unreadItems = elements.notificationsList.querySelectorAll('.notification-item.unread');
+        unreadItems.forEach(item => item.classList.remove('unread'));
+      }
+    } catch (error){
+      console.error("Erro ao marcar todas as notificações como lidas:", error);
+      showNotification('Não foi possível atualizar as notificações.', 'error');
+    }
   }
   function updateEditFilePreview() {
     if (!elements.editFilePreviewContainer) return;

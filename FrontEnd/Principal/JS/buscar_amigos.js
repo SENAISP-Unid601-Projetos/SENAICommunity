@@ -485,6 +485,28 @@ function updateThemeIcon(theme) {
     }
   };
 
+  window.aceitarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
+      // A função 'handleFriendRequestFeedback' já existe no seu código para dar o feedback visual.
+      handleFriendRequestFeedback(notificationId, 'Pedido aceito!', 'success');
+      fetchFriends(); // Atualiza a contagem de conexões
+    } catch (error) {
+      console.error('Erro ao aceitar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao aceitar.', 'error');
+    }
+  };
+
+  window.recusarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`);
+      handleFriendRequestFeedback(notificationId, 'Pedido recusado.', 'info');
+    } catch (error) {
+      console.error('Erro ao recusar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao recusar.', 'error');
+    }
+  };
+
   window.enviarSolicitacao = async (idSolicitado, buttonElement) => {
     buttonElement.disabled = true;
     buttonElement.textContent = 'Enviando...';

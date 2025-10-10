@@ -1854,3 +1854,10 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+/* Estilo para a lista de amigos na vertical */
+.user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Adiciona um espaçamento entre os cards */
+}

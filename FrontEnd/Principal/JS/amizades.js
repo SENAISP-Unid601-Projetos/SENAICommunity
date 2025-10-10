@@ -190,7 +190,7 @@ function updateThemeIcon(theme) {
     }
     // Re-busca as notificações para atualizar o contador (badge)
     fetchNotifications();
-  };
+  }
 
   async function markAllNotificationsAsRead() {
     // Verifica se há notificações não lidas antes de fazer a chamada
@@ -516,6 +516,28 @@ function updateThemeIcon(theme) {
     }
   };
 
+  window.aceitarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
+      // A função 'handleFriendRequestFeedback' já existe no seu código para dar o feedback visual.
+      handleFriendRequestFeedback(notificationId, 'Pedido aceito!', 'success');
+      fetchFriends(); // Atualiza a contagem de conexões
+    } catch (error) {
+      console.error('Erro ao aceitar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao aceitar.', 'error');
+    }
+  };
+
+  window.recusarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`);
+      handleFriendRequestFeedback(notificationId, 'Pedido recusado.', 'info');
+    } catch (error) {
+      console.error('Erro ao recusar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao recusar.', 'error');
+    }
+  };
+
 
     // --- FUNÇÕES DE AÇÃO GLOBAIS ---
 
@@ -627,7 +649,7 @@ function updateThemeIcon(theme) {
         });
 
         if (elements.notificationsIcon) {
-        elements.notificationsIcon.addEventListener('click', (event) => {
+      elements.notificationsIcon.addEventListener('click', (event) => {
         event.stopPropagation();
         const panel = elements.notificationsPanel;
         const isVisible = panel.style.display === 'block';
