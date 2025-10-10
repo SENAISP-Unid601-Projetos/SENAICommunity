@@ -1,13 +1,14 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
-import com.SenaiCommunity.BackEnd.DTO.VagaDTO;
+import com.SenaiCommunity.BackEnd.DTO.VagaEntradaDTO;
+import com.SenaiCommunity.BackEnd.DTO.VagaSaidaDTO;
 import com.SenaiCommunity.BackEnd.Service.VagaService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -17,13 +18,19 @@ public class VagaController {
     @Autowired
     private VagaService vagaService;
 
+    // Endpoint PÚBLICO para listar todas as vagas
     @GetMapping
-    public List<VagaDTO> listarVagas(
-            @RequestParam(required = false, defaultValue = "") String busca,
-            @RequestParam(required = false, defaultValue = "todos") String tipo,
-            @RequestParam(required = false, defaultValue = "todos") String local,
-            @RequestParam(required = false, defaultValue = "todos") String nivel
-    ) {
-        return vagaService.listarVagas(busca, tipo, local, nivel);
+    public ResponseEntity<List<VagaSaidaDTO>> listarVagas() {
+        return ResponseEntity.ok(vagaService.listarTodas());
     }
+
+    // Endpoint RESTRITO para criar uma vaga
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
+    public ResponseEntity<VagaSaidaDTO> criarVaga(@RequestBody VagaEntradaDTO dto, Principal principal) {
+        VagaSaidaDTO vagaCriada = vagaService.criar(dto, principal.getName());
+        return ResponseEntity.status(201).body(vagaCriada);
+    }
+
+    // Implemente também endpoints para GET por ID (público), PUT (restrito) e DELETE (restrito)
 }

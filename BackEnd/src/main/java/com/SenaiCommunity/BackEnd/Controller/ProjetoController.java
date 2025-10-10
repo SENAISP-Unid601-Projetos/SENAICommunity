@@ -45,8 +45,8 @@ public class ProjetoController {
             @RequestParam Integer maxMembros,
             @RequestParam Boolean grupoPrivado,
             @RequestParam Long autorId,
-            @RequestParam(required = false) List<Long> professorIds,
-            @RequestParam(required = false) List<Long> alunoIds,
+            @RequestParam List<Long> professorIds,
+            @RequestParam List<Long> alunoIds,
             @RequestPart(required = false) MultipartFile foto) {
         try {
             if (foto != null && !foto.isEmpty()) {

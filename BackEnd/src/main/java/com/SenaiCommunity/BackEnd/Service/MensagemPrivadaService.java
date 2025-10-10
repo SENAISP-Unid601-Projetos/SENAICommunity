@@ -28,6 +28,9 @@ public class MensagemPrivadaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private NotificacaoService notificacaoService;
+
     private MensagemPrivadaSaidaDTO toDTO(MensagemPrivada mensagem) {
         return MensagemPrivadaSaidaDTO.builder()
                 .id(mensagem.getId())
@@ -52,17 +55,22 @@ public class MensagemPrivadaService {
     }
 
     @Transactional
-    public MensagemPrivadaSaidaDTO salvarMensagemPrivada(MensagemPrivadaEntradaDTO dto, String remetenteUsername) { //
+    public MensagemPrivadaSaidaDTO salvarMensagemPrivada(MensagemPrivadaEntradaDTO dto, String remetenteUsername) {
         Usuario remetente = usuarioRepository.findByEmail(remetenteUsername)
-                .orElseThrow(() -> new NoSuchElementException("Remetente não encontrado")); //
-
+                .orElseThrow(() -> new NoSuchElementException("Remetente não encontrado"));
         Usuario destinatario = usuarioRepository.findById(dto.getDestinatarioId())
-                .orElseThrow(() -> new NoSuchElementException("Destinatário não encontrado")); //
+                .orElseThrow(() -> new NoSuchElementException("Destinatário não encontrado"));
 
-        MensagemPrivada novaMensagem = toEntity(dto, remetente, destinatario); //
-        MensagemPrivada mensagemSalva = mensagemPrivadaRepository.save(novaMensagem); //
+        MensagemPrivada novaMensagem = toEntity(dto, remetente, destinatario);
+        MensagemPrivada mensagemSalva = mensagemPrivadaRepository.save(novaMensagem);
 
-        return toDTO(mensagemSalva); //
+        // Adiciona a notificação
+        notificacaoService.criarNotificacao(
+                destinatario,
+                "Você recebeu uma nova mensagem de " + remetente.getNome()
+        );
+
+        return toDTO(mensagemSalva);
     }
 
     public MensagemPrivadaSaidaDTO editarMensagemPrivada(Long id, String novoConteudo, String autorUsername) {

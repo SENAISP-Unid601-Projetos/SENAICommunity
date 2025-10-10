@@ -15,7 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class JWTUtil {
+public class
+JWTUtil {
 
     @Value("${jwt.secret}")
     private String secret;

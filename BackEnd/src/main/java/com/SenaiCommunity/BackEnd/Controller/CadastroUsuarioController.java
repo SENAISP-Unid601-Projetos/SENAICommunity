@@ -46,8 +46,6 @@ public class CadastroUsuarioController {
         dto.setSenha(senha);
         dto.setCurso(curso);
         dto.setPeriodo(periodo);
-
-        // ✅ LINHA FALTANTE ADICIONADA AQUI
         dto.setDataNascimento(dataNascimento);
 
         return ResponseEntity.ok(alunoService.criarAlunoComFoto(dto, foto));

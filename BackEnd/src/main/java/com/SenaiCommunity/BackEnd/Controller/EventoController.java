@@ -29,14 +29,10 @@ public class EventoController {
         return eventoService.criarEventoComImagem(eventoDTO, imagem);
     }
 
+    // ... outros endpoints ...
     @GetMapping
-    public List<EventoSaidaDTO> listarTodos(
-            @RequestParam(required = false, defaultValue = "") String busca,
-            @RequestParam(required = false, defaultValue = "proximos") String periodo,
-            @RequestParam(required = false, defaultValue = "todos") String formato,
-            @RequestParam(required = false, defaultValue = "todos") String categoria
-    ) {
-        return eventoService.listarEventos(busca, periodo, formato, categoria);
+    public List<EventoSaidaDTO> listarTodos() {
+        return eventoService.listarTodos();
     }
 
     @GetMapping("/{id}")

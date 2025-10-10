@@ -1,16 +1,13 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.SenaiCommunity.BackEnd.Enum.*;
+import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
 
-@Entity
 @Data
+@Entity
+@Table(name = "vagas")
 public class Vaga {
 
     @Id
@@ -18,15 +15,25 @@ public class Vaga {
     private Long id;
 
     private String titulo;
-    private String empresa;
-    private String logoUrl;
-    private String local; // Remoto, Híbrido, Presencial
-    private String cidade;
-    private String nivel; // Júnior, Pleno, Sênior
-    private String tipo;  // Tempo Integral, Meio Período, Estágio
-    private String descricao;
-    private LocalDate dataPublicacao;
 
-    @ElementCollection
-    private List<String> tags;
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String descricao;
+
+    private String empresa;
+
+    @Enumerated(EnumType.STRING)
+    private LocalizacaoVaga localizacao;
+
+    @Enumerated(EnumType.STRING)
+    private NivelVaga nivel;
+
+    @Enumerated(EnumType.STRING)
+    private TipoContratacao tipoContratacao;
+
+    private LocalDateTime dataPublicacao;
+
+    @ManyToOne
+    @JoinColumn(name = "autor_id")
+    private Usuario autor; // Usuário (Admin/Professor) que publicou a vaga
 }

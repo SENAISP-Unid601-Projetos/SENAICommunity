@@ -30,6 +30,9 @@ public class CurtidaService {
     @Autowired
     private ComentarioRepository comentarioRepository;
 
+    @Autowired
+    private NotificacaoService notificacaoService;
+
     @Transactional
     public Long toggleCurtida(String username, Long postagemId, Long comentarioId) {
         Usuario usuario = usuarioRepository.findByEmail(username)
@@ -49,6 +52,13 @@ public class CurtidaService {
                 novaCurtida.setUsuario(usuario);
                 novaCurtida.setComentario(comentario);
                 curtidaRepository.save(novaCurtida);
+
+                if (!comentario.getAutor().getId().equals(usuario.getId())) {
+                    notificacaoService.criarNotificacao(
+                            comentario.getAutor(),
+                            usuario.getNome() + " curtiu seu comentário."
+                    );
+                }
             }
             return comentario.getPostagem().getId(); // Retorna o ID da postagem pai para notificação
 
@@ -65,6 +75,14 @@ public class CurtidaService {
                 novaCurtida.setUsuario(usuario);
                 novaCurtida.setPostagem(postagem);
                 curtidaRepository.save(novaCurtida);
+
+                // NOTIFICAR o autor da postagem (se não for ele mesmo)
+                if (!postagem.getAutor().getId().equals(usuario.getId())) {
+                    notificacaoService.criarNotificacao(
+                            postagem.getAutor(),
+                            usuario.getNome() + " curtiu sua postagem."
+                    );
+                }
             }
             return postagemId;
 
