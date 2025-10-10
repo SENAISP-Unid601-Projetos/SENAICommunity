@@ -328,6 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `;
   }
+  
 
   function createPostElement(post) {
     const postElement = document.createElement("div");
@@ -518,91 +519,152 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- NOVAS FUNÇÕES PARA NOTIFICAÇÕES ---
-  async function fetchNotifications() {
-    try {
-      const response = await axios.get(`${backendUrl}/api/notificacoes`);
-      renderNotifications(response.data);
-    } catch (error) {
-      console.error("Erro ao buscar notificações:", error);
-    }
-  }
-
-  function renderNotifications(notifications) {
-    if (!elements.notificationsList) return;
-    elements.notificationsList.innerHTML = '';
-    const unreadCount = notifications.filter(n => !n.lida).length;
-
-    if (elements.notificationsBadge) {
-      elements.notificationsBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
-      elements.notificationsBadge.textContent = unreadCount;
+  // --- FUNÇÕES DE NOTIFICAÇÃO (CORRIGIDAS E COMPLETAS) ---
+    async function fetchNotifications() {
+        try {
+            const response = await axios.get(`${backendUrl}/api/notificacoes`);
+            renderNotifications(response.data);
+        } catch (error) {
+            console.error("Erro ao buscar notificações:", error);
+        }
     }
 
-    if (notifications.length === 0) {
-      elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
-      return;
+    function renderNotifications(notifications) {
+        if (!elements.notificationsList) return;
+        elements.notificationsList.innerHTML = '';
+        const unreadCount = notifications.filter(n => !n.lida).length;
+        if (elements.notificationsBadge) {
+            elements.notificationsBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+            elements.notificationsBadge.textContent = unreadCount;
+        }
+        if (notifications.length === 0) {
+            elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
+            return;
+        }
+        notifications.forEach(notification => {
+            const item = createNotificationElement(notification);
+            elements.notificationsList.appendChild(item);
+        });
     }
 
-    notifications.forEach(notification => {
-       const item = createNotificationElement(notification);
-      item.className = 'notification-item';
-      item.id = `notification-item-${notification.id}`;
-      if (!notification.lida) item.classList.add('unread');
+    function createNotificationElement(notification) {
+        const item = document.createElement('div');
+        item.className = 'notification-item';
+        item.id = `notification-item-${notification.id}`;
+        if (!notification.lida) item.classList.add('unread');
+        const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
+        let actionButtonsHtml = '';
+        let iconClass = 'fa-info-circle';
 
-      const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
-      let actionButtonsHtml = '';
-      let iconClass = 'fa-info-circle';
-
-      if (notification.tipo === 'PEDIDO_AMIZADE' && !notification.lida) { // Mostra botões apenas se não foi lida
-        iconClass = 'fa-user-plus';
-        actionButtonsHtml = `
+        if (notification.tipo === 'PEDIDO_AMIZADE' && !notification.lida) {
+            iconClass = 'fa-user-plus';
+            actionButtonsHtml = `
               <div class="notification-actions">
-                <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
-                <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
-              </div>
-            `;
-      }
-
-      // ADICIONADO "onclick" AO LINK ABAIXO
-      item.innerHTML = `
-            <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(${notification.id})">
+                 <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
+                 <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
+              </div>`;
+        }
+        item.innerHTML = `
+            <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
                 <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
                 <div class="notification-content">
                     <p>${notification.mensagem}</p>
                     <span class="timestamp">${data}</span>
                 </div>
             </a>
-            <div class="notification-actions-wrapper">${actionButtonsHtml}</div>
-        `;
+            <div class="notification-actions-wrapper">${actionButtonsHtml}</div>`;
+        const actionsWrapper = item.querySelector('.notification-actions-wrapper');
+        if (actionsWrapper) {
+            actionsWrapper.addEventListener('click', e => e.stopPropagation());
+        }
+        return item;
+    }
+    
+    window.markNotificationAsRead = async (event, notificationId) => {
+        if (event) {
+            event.preventDefault();
+        }
+        const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+        if (notificationItem && notificationItem.classList.contains('unread')) {
+            notificationItem.classList.remove('unread');
+            try {
+                await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+                fetchNotifications(); 
+            } catch (error) {
+                console.error("Erro ao marcar notificação como lida:", error);
+                notificationItem.classList.add('unread'); 
+                showNotification('Erro ao atualizar notificação.', 'error');
+            } finally {
+                if (event && event.currentTarget) {
+                    window.location.href = event.currentTarget.href;
+                }
+            }
+        } else {
+            if (event && event.currentTarget) {
+                window.location.href = event.currentTarget.href;
+            }
+        }
+    };
 
-      const actionsWrapper = item.querySelector('.notification-actions-wrapper');
-      if (actionsWrapper) {
-        actionsWrapper.addEventListener('click', e => e.stopPropagation());
-      }
-      elements.notificationsList.appendChild(item);
-    });
-  }
-
-  async function markNotificationAsRead(notificationId) {
-    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
-
-
-    if (!notificationItem || !notificationItem.classList.contains('unread')) {
-      return;
+    async function markAllNotificationsAsRead() {
+        const unreadCount = parseInt(elements.notificationsBadge.textContent, 10);
+        if (isNaN(unreadCount) || unreadCount === 0) return;
+        try {
+            await axios.post(`${backendUrl}/api/notificacoes/ler-todas`);
+            if (elements.notificationsBadge) {
+                elements.notificationsBadge.style.display = 'none';
+                elements.notificationsBadge.textContent = '0';
+            }
+            if (elements.notificationsList) {
+                elements.notificationsList.querySelectorAll('.notification-item.unread').forEach(item => item.classList.remove('unread'));
+            }
+        } catch (error) {
+            console.error("Erro ao marcar todas as notificações como lidas:", error);
+            showNotification('Não foi possível atualizar as notificações.', 'error');
+        }
     }
 
-    notificationItem.classList.remove('unread');
+    // --- FUNÇÕES DE AÇÕES DE AMIZADE ---
+    window.aceitarSolicitacao = async (amizadeId, notificationId) => {
+        try {
+            await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
+            handleFriendRequestFeedback(notificationId, 'Pedido aceito!', 'success');
+            fetchFriends();
+        } catch (error) {
+            console.error('Erro ao aceitar solicitação:', error);
+            handleFriendRequestFeedback(notificationId, 'Erro ao aceitar.', 'error');
+        }
+    };
 
-    try {
-      await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+    window.recusarSolicitacao = async (amizadeId, notificationId) => {
+        try {
+            await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`);
+            handleFriendRequestFeedback(notificationId, 'Pedido recusado.', 'info');
+        } catch (error) {
+            console.error('Erro ao recusar solicitação:', error);
+            handleFriendRequestFeedback(notificationId, 'Erro ao recusar.', 'error');
+        }
+    };
 
-      fetchNotifications();
-    } catch (error) {
-      console.error("Erro ao marcar notificação como lida:", error);
-      notificationItem.classList.add('unread');
-      showNotification('Erro ao atualizar notificação.', 'error');
+    function handleFriendRequestFeedback(notificationId, message, type = 'info') {
+        const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+        if (notificationItem) {
+            const actionsDiv = notificationItem.querySelector('.notification-actions-wrapper');
+            if (actionsDiv) {
+                actionsDiv.innerHTML = `<p class="feedback-text ${type === 'success' ? 'success' : ''}">${message}</p>`;
+            }
+            setTimeout(() => {
+                notificationItem.classList.add('removing');
+                setTimeout(() => {
+                    notificationItem.remove();
+                    if (elements.notificationsList && elements.notificationsList.children.length === 0) {
+                        elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
+                    }
+                }, 500);
+            }, 2500);
+        }
+        fetchNotifications();
     }
-  }
 
   // --- FUNÇÕES PARA AMIGOS ONLINE ---
 
@@ -906,6 +968,28 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // --- FUNÇÕES DE AÇÕES DE AMIZADE (para notificações) ---
+
+  window.aceitarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
+      handleFriendRequestFeedback(notificationId, 'Pedido aceito!', 'success');
+      fetchFriends(); // Atualiza a contagem de conexões
+    } catch (error) {
+      console.error('Erro ao aceitar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao aceitar.', 'error');
+    }
+  };
+
+  window.recusarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`);
+      handleFriendRequestFeedback(notificationId, 'Pedido recusado.', 'info');
+    } catch (error) {
+      console.error('Erro ao recusar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao recusar.', 'error');
+    }
+  };
+
   function handleFriendRequestFeedback(notificationId, message, type = 'info') {
     const notificationItem = document.getElementById(`notification-item-${notificationId}`);
     if (notificationItem) {
@@ -913,49 +997,45 @@ document.addEventListener("DOMContentLoaded", () => {
       if (actionsDiv) {
         actionsDiv.innerHTML = `<p class="feedback-text ${type === 'success' ? 'success' : ''}">${message}</p>`;
       }
-      // Remove a notificação da lista após um tempo para o usuário ler a mensagem
       setTimeout(() => {
         notificationItem.classList.add('removing');
-        // Permite que a animação CSS finalize antes de remover o elemento do DOM
         setTimeout(() => {
           notificationItem.remove();
-          // Após remover, reavalia se a lista de notificações está vazia
           if (elements.notificationsList && elements.notificationsList.children.length === 0) {
             elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
           }
-        }, 500); // Deve corresponder ao tempo da transição no CSS
-      }, 2500); // Tempo que a mensagem de feedback fica visível
+        }, 500);
+      }, 2500);
     }
-    // Re-busca as notificações para atualizar o contador (badge)
     fetchNotifications();
   }
 
-  async function markAllNotificationsAsRead() {
-    // Verifica se há notificações não lidas antes de fazer a chamada
-    const unreadCount = parseInt(elements.notificationsBadge.textContent, 10);
-    if (isNaN(unreadCount) || unreadCount === 0) {
-      return; // Sai da função se não houver nada a fazer
+  window.markNotificationAsRead = async (event, notificationId) => {
+    if (event) {
+        event.preventDefault();
     }
-
-    try {
-      // Chama o endpoint do backend para marcar todas como lidas
-      // NOTA: Certifique-se de que este endpoint POST /api/notificacoes/ler-todas exista no seu backend.
-      await axios.post(`${backendUrl}/api/notificacoes/ler-todas`);
-
-      // Atualiza a UI imediatamente para dar feedback ao usuário
-      if (elements.notificationsBadge) {
-        elements.notificationsBadge.style.display = 'none';
-        elements.notificationsBadge.textContent = '0';
-      }
-      if (elements.notificationsList) {
-        const unreadItems = elements.notificationsList.querySelectorAll('.notification-item.unread');
-        unreadItems.forEach(item => item.classList.remove('unread'));
-      }
-    } catch (error){
-      console.error("Erro ao marcar todas as notificações como lidas:", error);
-      showNotification('Não foi possível atualizar as notificações.', 'error');
+    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+    if (notificationItem && notificationItem.classList.contains('unread')) {
+        notificationItem.classList.remove('unread');
+        try {
+            await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+            fetchNotifications(); 
+        } catch (error) {
+            console.error("Erro ao marcar notificação como lida:", error);
+            notificationItem.classList.add('unread'); 
+            showNotification('Erro ao atualizar notificação.', 'error');
+        } finally {
+            if (event && event.currentTarget) {
+                window.location.href = event.currentTarget.href;
+            }
+        }
+    } else {
+        if (event && event.currentTarget) {
+            window.location.href = event.currentTarget.href;
+        }
     }
-  }
+  };
+
   function updateEditFilePreview() {
     if (!elements.editFilePreviewContainer) return;
     elements.editFilePreviewContainer.innerHTML = "";
@@ -1029,24 +1109,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setupEventListeners() {
-    //  Listener principal no body para fechar menus e o painel de notificações ao clicar fora
-    document.body.addEventListener("click", (e) => {
-      // Fecha o painel de notificações se o clique for fora dele e fora do ícone
-      if (elements.notificationsPanel && !elements.notificationsPanel.contains(e.target) && !elements.notificationsIcon.contains(e.target)) {
-        elements.notificationsPanel.style.display = 'none';
-      }
-      // A função closeAllMenus fecha os menus de post/comentário e o dropdown do usuário
-      closeAllMenus();
-    });
+        document.body.addEventListener("click", (e) => {
+            if (elements.notificationsPanel && !elements.notificationsPanel.contains(e.target) && !elements.notificationsIcon.contains(e.target)) {
+                elements.notificationsPanel.style.display = 'none';
+            }
+            closeAllMenus();
+        });
 
-    // Listener para o ícone de notificações para abrir/fechar o painel
-    if (elements.notificationsIcon) {
-      elements.notificationsIcon.addEventListener('click', (event) => {
-        event.stopPropagation(); // Impede que o clique no body feche o painel imediatamente
-        const isVisible = elements.notificationsPanel.style.display === 'block';
-        elements.notificationsPanel.style.display = isVisible ? 'none' : 'block';
-      });
-    }
+        if (elements.notificationsIcon) {
+            elements.notificationsIcon.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const panel = elements.notificationsPanel;
+                const isVisible = panel.style.display === 'block';
+                panel.style.display = isVisible ? 'none' : 'block';
+                if (!isVisible) {
+                    markAllNotificationsAsRead();
+                }
+            });
+        }
 
     // Listener para abrir o dropdown do usuário
     if (elements.userDropdownTrigger) {
