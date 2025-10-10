@@ -386,30 +386,39 @@ function updateThemeIcon(theme) {
 
         requests.forEach(req => {
             const card = document.createElement('div');
-            card.className = 'request-card';
+            card.className = 'user-card';
             card.id = `${type}-card-${req.idAmizade}`;
 
             const data = new Date(req.dataSolicitacao).toLocaleDateString('pt-BR');
             const nome = (type === 'received') ? req.nomeSolicitante : req.nomeSolicitado;
             const fotoPath = (type === 'received') ? req.fotoPerfilSolicitante : req.fotoPerfilSolicitado;
-            const fotoUrl = fotoPath ? `${backendUrl}${fotoPath}` : defaultAvatarUrl;
+
+            // --- LINHA CORRIGIDA ABAIXO ---
+            // Adicionado '/api/arquivos/' para montar o URL correto da imagem
+            const fotoUrl = fotoPath ? `${backendUrl}/api/arquivos/${fotoPath}` : defaultAvatarUrl;
 
             let actionsHtml = '';
             if (type === 'received') {
                 actionsHtml = `
-                <button class="btn btn-primary" onclick="window.aceitar(${req.idAmizade})">Aceitar</button>
-                <button class="btn btn-secondary" onclick="window.recusar(${req.idAmizade})">Recusar</button>
-            `;
-            } else {
+                    <button class="btn btn-primary" onclick="window.aceitar(${req.idAmizade})">Aceitar</button>
+                    <button class="btn btn-secondary" onclick="window.recusar(${req.idAmizade})">Recusar</button>
+                `;
+            } else { // Pedidos enviados
                 actionsHtml = `<button class="btn btn-danger" onclick="window.cancelar(${req.idAmizade})">Cancelar Pedido</button>`;
             }
 
             card.innerHTML = `
-            <img src="${fotoUrl}" alt="Foto de ${nome}">
-            <h4>${nome}</h4>
-            <p class="timestamp">Enviado em: ${data}</p>
-            <div class="request-card-actions">${actionsHtml}</div>
-        `;
+                <div class="user-card-avatar">
+                    <img src="${fotoUrl}" alt="Foto de ${nome}">
+                </div>
+                <div class="user-card-info">
+                    <h4>${nome}</h4>
+                    <p>Pedido enviado em: ${data}</p>
+                </div>
+                <div class="user-card-action">
+                    ${actionsHtml}
+                </div>
+            `;
             container.appendChild(card);
         });
     }
