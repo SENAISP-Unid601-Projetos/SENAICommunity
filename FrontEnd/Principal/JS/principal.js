@@ -1,53 +1,4 @@
-// Bloco de código para controle de tema.
-// Este bloco será executado em todas as páginas que importam o principal.js.
-document.addEventListener('DOMContentLoaded', () => {
-    
-    // --- FUNÇÕES DE CONTROLE DE TEMA ---
-    function setInitialTheme() {
-        const savedTheme = localStorage.getItem('theme') || 'dark'; // Garante 'dark' como padrão
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
-    }
-
-    function toggleTheme() {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateThemeIcon(newTheme);
-    }
-
-    function updateThemeIcon(theme) {
-        const themeToggleIcon = document.querySelector('.theme-toggle i');
-        if (themeToggleIcon) {
-            if (theme === 'dark') {
-                themeToggleIcon.classList.remove('fa-sun');
-                themeToggleIcon.classList.add('fa-moon');
-            } else {
-                themeToggleIcon.classList.remove('fa-moon');
-                themeToggleIcon.classList.add('fa-sun');
-            }
-        }
-    }
-
-    // --- INICIALIZAÇÃO DO TEMA ---
-    setInitialTheme();
-    const themeToggle = document.querySelector('.theme-toggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-    }
-});
-
-
-// Lógica específica para a página principal (feed)
-// Esta parte só será executada completamente na principal.html
 document.addEventListener("DOMContentLoaded", () => {
-  
-  // Verifica se estamos na página principal antes de executar o código do feed
-  if (!document.querySelector(".posts-container")) {
-    return;
-  }
-    
   // --- CONFIGURAÇÕES E VARIÁVEIS GLOBAIS ---
   const backendUrl = "http://localhost:8080";
   const jwtToken = localStorage.getItem("token");
@@ -58,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedFilesForEdit = [];
   let friendsLoaded = false;
   let latestOnlineEmails = [];
+  const defaultAvatarUrl = `${backendUrl}/images/default-avatar.png`;
 
   const searchInput = document.getElementById("search-input");
 
@@ -125,7 +77,8 @@ document.addEventListener("DOMContentLoaded", () => {
       currentUser = response.data;
       updateUIWithUserData(currentUser);
       connectWebSocket();
-      fetchFriends();
+      await fetchFriends();
+      await fetchInitialOnlineFriends();
       setupEventListeners();
       fetchNotifications();
     } catch (error) {
@@ -565,7 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // ADICIONADO "onclick" AO LINK ABAIXO
       item.innerHTML = `
-            <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(${notification.id})">
+            <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
                 <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
                 <div class="notification-content">
                     <p>${notification.mensagem}</p>
@@ -583,30 +536,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  async function markNotificationAsRead(notificationId) {
-    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
-
-
-    if (!notificationItem || !notificationItem.classList.contains('unread')) {
-      return;
-    }
-
-    notificationItem.classList.remove('unread');
-
-    try {
-      await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
-
-      fetchNotifications();
-    } catch (error) {
-      console.error("Erro ao marcar notificação como lida:", error);
-      notificationItem.classList.add('unread');
-      showNotification('Erro ao atualizar notificação.', 'error');
-    }
-  }
-
   // --- FUNÇÕES PARA AMIGOS ONLINE ---
-
-  async function fetchFriends() {
+ async function fetchFriends() {
     try {
       const response = await axios.get(`${backendUrl}/api/amizades/`);
       userFriends = response.data;
@@ -615,7 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.connectionsCount) {
         elements.connectionsCount.textContent = userFriends.length;
       }
-      atualizarStatusDeAmigosNaUI();
+  
       
     } catch (error) {
       console.error("Erro ao buscar lista de amigos:", error);
@@ -624,13 +555,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-
+ async function fetchInitialOnlineFriends() {
+    try {
+        const response = await axios.get(`${backendUrl}/api/amizades/online`); 
+        const amigosOnlineDTOs = response.data;
+        latestOnlineEmails = amigosOnlineDTOs.map(amigo => amigo.email);
+        atualizarStatusDeAmigosNaUI(); 
+    } catch (error) {
+        console.error("Erro ao buscar status inicial de amigos online:", error);
+    }
+}
 
   /**
    * Função centralizada para atualizar todos os indicadores visuais de amigos online.
    * Isso inclui o widget da sidebar e os pontos de status em qualquer card de usuário.
    */
-  function atualizarStatusDeAmigosNaUI() {
+   function atualizarStatusDeAmigosNaUI() {
     if (!elements.onlineFriendsList) return;
 
     // Condição de guarda: Só renderiza se a lista de amigos já foi carregada.
@@ -778,59 +718,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
- window.openEditPostModal = async (postId) => {
-    const existingMediaContainer = document.getElementById('edit-existing-media-container');
-    
-    if (!elements.editPostModal || !elements.editPostIdInput || !elements.editPostTextarea || !existingMediaContainer) return;
-
-    // Limpa o estado anterior
+  window.openEditPostModal = (postId, content) => {
+    if (elements.editPostIdInput) elements.editPostIdInput.value = postId;
+    if (elements.editPostTextarea) elements.editPostTextarea.value = content;
     selectedFilesForEdit = [];
-    urlsParaRemover = [];
     updateEditFilePreview();
-    existingMediaContainer.innerHTML = '';
-    
-    try {
-        // Busca os dados mais recentes do post
-        const response = await axios.get(`${backendUrl}/postagem/${postId}`);
-        const post = response.data;
-
-        elements.editPostIdInput.value = post.id;
-        elements.editPostTextarea.value = post.conteudo;
-
-        // Renderiza as mídias que já existem
-        post.urlsMidia.forEach(url => {
-            const item = document.createElement('div');
-            item.className = 'existing-media-item';
-
-            const preview = document.createElement('img');
-            preview.src = url;
-            
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.className = 'remove-existing-media-checkbox';
-            checkbox.title = 'Marcar para remover';
-            checkbox.onchange = (e) => {
-                if (e.target.checked) {
-                    urlsParaRemover.push(url);
-                    item.style.opacity = '0.5';
-                } else {
-                    urlsParaRemover = urlsParaRemover.filter(u => u !== url);
-                    item.style.opacity = '1';
-                }
-            };
-
-            item.appendChild(preview);
-            item.appendChild(checkbox);
-            existingMediaContainer.appendChild(item);
-        });
-
-        elements.editPostModal.style.display = "flex";
-
-    } catch (error) {
-        showNotification("Erro ao carregar dados da postagem.", "error");
-        console.error("Erro ao buscar post para edição:", error);
-    }
-};
+    if (elements.editPostModal) elements.editPostModal.style.display = "flex";
+  };
   window.deletePost = async (postId) => {
     if (confirm("Tem certeza que deseja excluir esta postagem?")) {
       try {
@@ -854,6 +748,42 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.editCommentTextarea.value = "";
     }
   }
+
+  window.markNotificationAsRead = async (event, notificationId) => {
+    // 1. Impede a navegação imediata para o link do href
+    if (event) {
+        event.preventDefault();
+    }
+
+    const notificationItem = document.getElementById(`notification-item-${notificationId}`);
+
+    // Só executa a lógica se a notificação estiver marcada como não lida
+    if (notificationItem && notificationItem.classList.contains('unread')) {
+        notificationItem.classList.remove('unread'); // Atualização otimista da UI
+
+        try {
+            // 2. Espera a confirmação do backend
+            await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
+            // Busca novamente para atualizar o contador (badge)
+            fetchNotifications(); 
+        } catch (error) {
+            console.error("Erro ao marcar notificação como lida:", error);
+            // Em caso de erro, reverte a mudança na UI
+            notificationItem.classList.add('unread'); 
+            showNotification('Erro ao atualizar notificação.', 'error');
+        } finally {
+            // 3. Navega para a página de destino após a operação ser concluída (com sucesso ou falha)
+            if (event && event.currentTarget) {
+                window.location.href = event.currentTarget.href;
+            }
+        }
+    } else {
+        // Se a notificação já foi lida, apenas navega
+        if (event && event.currentTarget) {
+            window.location.href = event.currentTarget.href;
+        }
+    }
+};
 
   window.openEditCommentModal = (commentId, content) => {
     if (elements.editCommentIdInput)
@@ -883,6 +813,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  window.aceitarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
+      // A função 'handleFriendRequestFeedback' já existe no seu código para dar o feedback visual.
+      handleFriendRequestFeedback(notificationId, 'Pedido aceito!', 'success');
+      fetchFriends(); // Atualiza a contagem de conexões
+    } catch (error) {
+      console.error('Erro ao aceitar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao aceitar.', 'error');
+    }
+  };
+
+  window.recusarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`);
+      handleFriendRequestFeedback(notificationId, 'Pedido recusado.', 'info');
+    } catch (error) {
+      console.error('Erro ao recusar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao recusar.', 'error');
+    }
+  };
+
   // --- FUNÇÕES DE AÇÕES DE AMIZADE (para notificações) ---
   function handleFriendRequestFeedback(notificationId, message, type = 'info') {
     const notificationItem = document.getElementById(`notification-item-${notificationId}`);
@@ -906,32 +858,55 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     // Re-busca as notificações para atualizar o contador (badge)
     fetchNotifications();
-  }
+  };
+
+  async function markAllNotificationsAsRead() {
+    // Verifica se há notificações não lidas antes de fazer a chamada
+    const unreadCount = parseInt(elements.notificationsBadge.textContent, 10);
+    if (isNaN(unreadCount) || unreadCount === 0) {
+      return; // Sai da função se não houver nada a fazer
+    };
+
+    try {
+      // Chama o endpoint do backend para marcar todas como lidas
+      // NOTA: Certifique-se de que este endpoint POST /api/notificacoes/ler-todas exista no seu backend.
+      await axios.post(`${backendUrl}/api/notificacoes/ler-todas`);
+
+      // Atualiza a UI imediatamente para dar feedback ao usuário
+      if (elements.notificationsBadge) {
+        elements.notificationsBadge.style.display = 'none';
+        elements.notificationsBadge.textContent = '0';
+      }
+      if (elements.notificationsList) {
+        const unreadItems = elements.notificationsList.querySelectorAll('.notification-item.unread');
+        unreadItems.forEach(item => item.classList.remove('unread'));
+      }
+    } catch (error){
+      console.error("Erro ao marcar todas as notificações como lidas:", error);
+      showNotification('Não foi possível atualizar as notificações.', 'error');
+    }
+  };
+  
   function updateEditFilePreview() {
     if (!elements.editFilePreviewContainer) return;
     elements.editFilePreviewContainer.innerHTML = "";
     selectedFilesForEdit.forEach((file, index) => {
       const item = document.createElement("div");
       item.className = "file-preview-item";
-      
       const previewElement = document.createElement("img");
       previewElement.src = URL.createObjectURL(file);
       item.appendChild(previewElement);
-      
       const removeBtn = document.createElement("button");
-      removeBtn.type = "button"; // Impede o envio do formulário
       removeBtn.className = "remove-file-btn";
       removeBtn.innerHTML = "&times;";
-      removeBtn.title = "Remover este arquivo";
       removeBtn.onclick = () => {
-        selectedFilesForEdit.splice(index, 1); // Remove o arquivo do array
-        updateEditFilePreview(); // Atualiza a visualização
+        selectedFilesForEdit.splice(index, 1);
+        updateEditFilePreview();
       };
-      
       item.appendChild(removeBtn);
       elements.editFilePreviewContainer.appendChild(item);
     });
-}
+  }
 
   function openEditProfileModal() {
     if (!currentUser || !elements.editProfileModal) return;
@@ -993,9 +968,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Listener para o ícone de notificações para abrir/fechar o painel
     if (elements.notificationsIcon) {
       elements.notificationsIcon.addEventListener('click', (event) => {
-        event.stopPropagation(); // Impede que o clique no body feche o painel imediatamente
-        const isVisible = elements.notificationsPanel.style.display === 'block';
-        elements.notificationsPanel.style.display = isVisible ? 'none' : 'block';
+        event.stopPropagation();
+        const panel = elements.notificationsPanel;
+        const isVisible = panel.style.display === 'block';
+        panel.style.display = isVisible ? 'none' : 'block';
+
+        // Se o painel está sendo aberto, marca todas as notificações como lidas
+        if (!isVisible) {
+          markAllNotificationsAsRead();
+        }
       });
     }
 
@@ -1147,45 +1128,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         updateEditFilePreview();
       });
-      
     if (elements.editPostForm)
-  elements.editPostForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const saveButton = elements.editPostForm.querySelector('button[type="submit"]');
-    saveButton.disabled = true;
-    saveButton.textContent = 'Salvando...';
-
-    try {
+      elements.editPostForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
         const postId = elements.editPostIdInput.value;
         const content = elements.editPostTextarea.value;
-        
-        // Inclui a lista de URLs a serem removidas
-        const postagemDTO = { 
-            conteudo: content,
-            urlsParaRemover: urlsParaRemover 
-        };
-        
+        const postagemDTO = { conteudo: content };
         const formData = new FormData();
         formData.append(
           "postagem",
           new Blob([JSON.stringify(postagemDTO)], { type: "application/json" })
         );
-        
-        selectedFilesForEdit.forEach((file) => formData.append("arquivos", file));
-        
-        await axios.put(`${backendUrl}/postagem/${postId}`, formData);
-        
-        if (elements.editPostModal) elements.editPostModal.style.display = "none";
-        showNotification("Postagem editada com sucesso.", "success");
-
-    } catch (error) {
-      showNotification("Não foi possível salvar as alterações.", "error");
-      console.error("Erro ao editar post:", error);
-    } finally {
-      saveButton.disabled = false;
-      saveButton.textContent = 'Salvar';
-    }
-  });
+        selectedFilesForEdit.forEach((file) =>
+          formData.append("arquivos", file)
+        );
+        try {
+          await axios.put(`${backendUrl}/postagem/${postId}`, formData);
+          if (elements.editPostModal)
+            elements.editPostModal.style.display = "none";
+          showNotification("Postagem editada com sucesso.", "success");
+        } catch (error) {
+          showNotification("Não foi possível salvar as alterações.", "error");
+          console.error("Erro ao editar post:", error);
+        }
+      });
     if (elements.cancelEditPostBtn)
       elements.cancelEditPostBtn.addEventListener(
         "click",
@@ -1262,16 +1228,6 @@ document.addEventListener("DOMContentLoaded", () => {
           showNotification("Escreva algo ou anexe um arquivo.", "info");
           return;
         }
-
-        // --- INÍCIO DA MODIFICAÇÃO ---
-
-        // Ativa o estado de carregamento
-        elements.publishBtn.disabled = true;
-        elements.publishBtn.classList.add("loading");
-        elements.publishBtn.innerHTML = `<i class="fas fa-spinner"></i> Publicando...`;
-
-        // --- FIM DA MODIFICAÇÃO ---
-
         const formData = new FormData();
         formData.append(
           "postagem",
@@ -1282,7 +1238,6 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedFilesForPost.forEach((file) =>
           formData.append("arquivos", file)
         );
-
         try {
           await axios.post(`${backendUrl}/postagem/upload-mensagem`, formData);
           if (elements.postTextarea) elements.postTextarea.value = "";
@@ -1293,15 +1248,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
           showNotification("Erro ao publicar postagem.", "error");
           console.error("Erro ao publicar:", error);
-        } finally {
-          // --- INÍCIO DA MODIFICAÇÃO ---
-
-          // Restaura o botão ao estado original
-          elements.publishBtn.disabled = false;
-          elements.publishBtn.classList.remove("loading");
-          elements.publishBtn.innerHTML = "Publicar";
-          
-          // --- FIM DA MODIFICAÇÃO ---
         }
       });
   }
