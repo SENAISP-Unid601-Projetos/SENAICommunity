@@ -18,6 +18,8 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,6 +47,12 @@ public class ProjetoService {
 
     @Autowired
     private NotificacaoService notificacaoService;
+
+    // <<< NOVO MÉTODO HELPER >>>
+    private Usuario getUsuarioFromEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com email: " + email));
+    }
 
     public List<ProjetoDTO> listarTodos() {
         List<Projeto> projetos = projetoRepository.findAll();
@@ -246,6 +254,45 @@ public class ProjetoService {
         String mensagem = String.format("%s recusou o convite para o projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
         notificacaoService.criarNotificacao(convite.getConvidadoPor(), mensagem, "CONVITE_RECUSADO", convite.getProjeto().getId());
     }
+
+    // <<< INÍCIO DOS NOVOS MÉTODOS >>>
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> buscarConvitesRecebidos(String email) {
+        Usuario usuario = getUsuarioFromEmail(email);
+        List<ConviteProjeto> convites = conviteProjetoRepository.findByUsuarioConvidadoIdAndStatus(
+                usuario.getId(), ConviteProjeto.StatusConvite.PENDENTE);
+
+        return convites.stream().map(convite -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("conviteId", convite.getId());
+            map.put("projetoId", convite.getProjeto().getId());
+            map.put("nomeProjeto", convite.getProjeto().getTitulo());
+            map.put("convidadoPorNome", convite.getConvidadoPor().getNome());
+            map.put("dataConvite", convite.getDataConvite());
+            return map;
+        }).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> buscarConvitesEnviados(String email) {
+        Usuario usuario = getUsuarioFromEmail(email);
+        List<ConviteProjeto> convites = conviteProjetoRepository.findByConvidadoPorIdAndStatus(
+                usuario.getId(), ConviteProjeto.StatusConvite.PENDENTE);
+
+        return convites.stream().map(convite -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("conviteId", convite.getId());
+            map.put("projetoId", convite.getProjeto().getId());
+            map.put("nomeProjeto", convite.getProjeto().getTitulo());
+            map.put("convidadoNome", convite.getUsuarioConvidado().getNome());
+            map.put("convidadoEmail", convite.getUsuarioConvidado().getEmail());
+            map.put("dataConvite", convite.getDataConvite());
+            return map;
+        }).collect(Collectors.toList());
+    }
+
+    // <<< FIM DOS NOVOS MÉTODOS >>>
 
     @Transactional
     public void expulsarMembro(Long projetoId, Long membroId, Long adminId) {

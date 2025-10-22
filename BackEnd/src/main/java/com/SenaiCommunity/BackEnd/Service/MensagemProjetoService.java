@@ -1,4 +1,4 @@
-package com.SenaiCommunity.BackEnd.Service;
+package com.SenaiCommunity.BackEnd.Service; // Ou o pacote correto do seu serviço
 
 import com.SenaiCommunity.BackEnd.DTO.MensagemProjetoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.ArquivoMensagemProjeto;
@@ -34,26 +34,54 @@ public class MensagemProjetoService {
     @Autowired
     private NotificacaoService notificacaoService;
     @Autowired
-    private ArquivoMidiaService midiaService;
+    private ArquivoMidiaService midiaService; // Assumindo que este serviço lida com uploads
     @Autowired
     private ProjetoMembroRepository projetoMembroRepository;
 
+    // --- MÉTODO toDTO MODIFICADO ---
     private MensagemProjetoSaidaDTO toDTO(MensagemProjeto mensagem) {
-        List<String> urls = mensagem.getArquivos() != null
-                ? mensagem.getArquivos().stream().map(ArquivoMensagemProjeto::getUrl).collect(Collectors.toList())
-                : Collections.emptyList();
+        if (mensagem == null) {
+            return null;
+        }
 
+        Usuario autor = mensagem.getAutor(); // Obtém o autor da mensagem
+        String nomeAutor = (autor != null) ? autor.getNome() : "Desconhecido";
+        Long autorId = (autor != null) ? autor.getId() : null;
+
+        // --- LÓGICA CORRIGIDA PARA CONSTRUIR A URL DA FOTO ---
+        String urlFotoAutor = null;
+        // Verifica se autor existe e se tem uma foto de perfil definida (não nula/vazia)
+        if (autor != null && autor.getFotoPerfil() != null && !autor.getFotoPerfil().isBlank()) {
+            // *** IMPORTANTE: Confirme se "/api/arquivos/" é o prefixo correto ***
+            // Se o endpoint que serve as fotos for outro (ex: "/uploads/"), ajuste a string abaixo.
+            // Esta lógica agora espelha a do UsuarioService.
+            urlFotoAutor = "/api/arquivos/" + autor.getFotoPerfil(); // Monta a URL relativa
+        } else {
+            // Caminho padrão relativo se não houver foto ou autor
+            urlFotoAutor = "/images/default-avatar.png";
+        }
+        // --- FIM DA LÓGICA CORRIGIDA ---
+
+        // Lógica para obter as URLs de mídia da mensagem
+        List<String> urlsMidia = mensagem.getArquivos() != null
+                ? mensagem.getArquivos().stream()
+                .map(ArquivoMensagemProjeto::getUrl) // Pega a URL de cada arquivo anexo
+                .collect(Collectors.toList())
+                : Collections.emptyList(); // Retorna lista vazia se não houver anexos
+
+        // Constrói o DTO usando os valores obtidos/construídos
         return MensagemProjetoSaidaDTO.builder()
                 .id(mensagem.getId())
                 .conteudo(mensagem.getConteudo())
                 .dataEnvio(mensagem.getDataEnvio())
-                .projetoId(mensagem.getProjeto().getId())
-                .autorId(mensagem.getAutor().getId())
-                .nomeAutor(mensagem.getAutor().getNome())
-                .urlFotoAutor(mensagem.getAutor().getFotoPerfil())
-                .urlsMidia(urls)
+                .projetoId(mensagem.getProjeto() != null ? mensagem.getProjeto().getId() : null) // Verifica se projeto não é nulo
+                .autorId(autorId)
+                .nomeAutor(nomeAutor)
+                .urlFotoAutor(urlFotoAutor) // <-- Usa a URL relativa construída corretamente
+                .urlsMidia(urlsMidia)
                 .build();
     }
+    // --- FIM DO MÉTODO toDTO MODIFICADO ---
 
     @Transactional
     public MensagemProjetoSaidaDTO salvarMensagem(String autorUsername, Long projetoId, String conteudo, List<MultipartFile> arquivos) {
@@ -78,44 +106,44 @@ public class MensagemProjetoService {
             List<ArquivoMensagemProjeto> midias = new ArrayList<>();
             for (MultipartFile file : arquivos) {
                 try {
-                    String url = midiaService.upload(file);
+                    // Assume que midiaService.upload retorna a URL completa ou o nome do arquivo,
+                    // dependendo de como ArquivoMidiaService está implementado
+                    String urlOuNomeArquivo = midiaService.upload(file);
                     ArquivoMensagemProjeto midia = ArquivoMensagemProjeto.builder()
-                            .url(url)
-                            .tipo(midiaService.detectarTipoPelaUrl(url))
+                            .url(urlOuNomeArquivo) // Salva o que o serviço de mídia retornar
+                            .tipo(midiaService.detectarTipoPelaUrl(urlOuNomeArquivo))
                             .mensagem(novaMensagem)
                             .build();
                     midias.add(midia);
                 } catch (IOException e) {
+                    // Considerar tratamento de erro mais robusto (ex: logar e continuar?)
                     throw new RuntimeException("Erro ao fazer upload do arquivo: " + file.getOriginalFilename(), e);
                 }
             }
-            novaMensagem.setArquivos(midias);
+            novaMensagem.setArquivos(midias); // Associa os arquivos à mensagem
         }
 
         MensagemProjeto mensagemSalva = mensagemProjetoRepository.save(novaMensagem);
 
         // LÓGICA DE NOTIFICAÇÃO AO ENVIAR MENSAGEM
-        // 1. Identificar menções no conteúdo da mensagem
         Set<String> emailsMencionados = extrairEmailsMencionados(conteudo);
 
-        // 2. Notificar usuários mencionados
         if (!emailsMencionados.isEmpty()) {
             List<Usuario> usuariosMencionados = usuarioRepository.findAllByEmailIn(new ArrayList<>(emailsMencionados));
             String msgMencao = String.format("%s mencionou você no projeto '%s'.", autor.getNome(), projeto.getTitulo());
 
             usuariosMencionados.forEach(destinatario -> {
-                // Apenas notifica se não for o próprio autor se mencionando
-                if (!destinatario.getId().equals(autor.getId())) {
+                if (!destinatario.getId().equals(autor.getId())) { // Não notifica a si mesmo
                     notificacaoService.criarNotificacao(destinatario, msgMencao, "MENSAGEM_MEMBER_MENTION", projeto.getId());
                 }
             });
         }
 
-        // 3. Notificar outros membros do grupo (que não foram mencionados)
         String msgGeral = String.format("Nova mensagem de %s no projeto '%s'.", autor.getNome(), projeto.getTitulo());
-        projeto.getMembros().stream()
-                .map(membro -> membro.getUsuario())
-                // Filtra para não notificar o próprio autor E para não notificar quem já foi notificado por menção
+        // Busca os membros do projeto para notificar
+        projetoMembroRepository.findByProjetoId(projetoId).stream()
+                .map(membro -> membro.getUsuario()) // Pega o objeto Usuario de cada membro
+                // Filtra para não notificar o autor e quem já foi mencionado
                 .filter(usuario -> !usuario.getId().equals(autor.getId()) && !emailsMencionados.contains(usuario.getEmail()))
                 .forEach(membro -> notificacaoService.criarNotificacao(
                         membro,
@@ -124,6 +152,7 @@ public class MensagemProjetoService {
                         projeto.getId()
                 ));
 
+        // Retorna o DTO com a URL da foto corrigida
         return toDTO(mensagemSalva);
     }
 
@@ -132,38 +161,50 @@ public class MensagemProjetoService {
         MensagemProjeto mensagem = mensagemProjetoRepository.findById(mensagemId)
                 .orElseThrow(() -> new EntityNotFoundException("Mensagem não encontrada"));
 
+        // Validação de permissão
         if (!mensagem.getAutor().getEmail().equals(autorUsername)) {
             throw new SecurityException("Você não tem permissão para editar esta mensagem.");
         }
 
         mensagem.setConteudo(novoConteudo);
 
-        if (urlsParaRemover != null && !urlsParaRemover.isEmpty()) {
-            Set<String> setUrlsParaRemover = Set.copyOf(urlsParaRemover);
-            mensagem.getArquivos().removeIf(arquivo -> {
-                if (setUrlsParaRemover.contains(arquivo.getUrl())) {
-                    try {
-                        midiaService.deletar(arquivo.getUrl());
-                        return true;
-                    } catch (IOException e) {
-                        System.err.println("Erro ao deletar arquivo do Cloudinary: " + arquivo.getUrl());
-                        return false;
-                    }
-                }
-                return false;
-            });
+        // Garante que a lista de arquivos não seja nula antes de tentar modificá-la
+        if (mensagem.getArquivos() == null) {
+            mensagem.setArquivos(new ArrayList<>());
         }
 
+        // Remove arquivos antigos
+        if (urlsParaRemover != null && !urlsParaRemover.isEmpty()) {
+            Set<String> setUrlsParaRemover = Set.copyOf(urlsParaRemover);
+            // É mais seguro usar um Iterator para remover elementos enquanto itera
+            Iterator<ArquivoMensagemProjeto> iterator = mensagem.getArquivos().iterator();
+            while (iterator.hasNext()) {
+                ArquivoMensagemProjeto arquivo = iterator.next();
+                if (setUrlsParaRemover.contains(arquivo.getUrl())) {
+                    try {
+                        midiaService.deletar(arquivo.getUrl()); // Deleta do serviço de armazenamento
+                        iterator.remove(); // Remove da coleção da entidade
+                    } catch (IOException e) {
+                        // Logar o erro é importante
+                        System.err.println("Erro ao deletar arquivo: " + arquivo.getUrl() + " - " + e.getMessage());
+                        // Decide-se não remover da lista se a deleção falhar, para evitar inconsistência
+                        // ou pode-se optar por remover mesmo assim, dependendo da regra de negócio.
+                    }
+                }
+            }
+        }
+
+        // Adiciona novos arquivos
         if (novosArquivos != null && !novosArquivos.isEmpty()) {
             for (MultipartFile file : novosArquivos) {
                 try {
-                    String url = midiaService.upload(file);
+                    String urlOuNomeArquivo = midiaService.upload(file);
                     ArquivoMensagemProjeto midia = ArquivoMensagemProjeto.builder()
-                            .url(url)
-                            .tipo(midiaService.detectarTipoPelaUrl(url))
-                            .mensagem(mensagem)
+                            .url(urlOuNomeArquivo)
+                            .tipo(midiaService.detectarTipoPelaUrl(urlOuNomeArquivo))
+                            .mensagem(mensagem) // Associa à mensagem existente
                             .build();
-                    mensagem.getArquivos().add(midia);
+                    mensagem.getArquivos().add(midia); // Adiciona à lista
                 } catch (IOException e) {
                     throw new RuntimeException("Erro ao fazer upload do novo arquivo: " + file.getOriginalFilename(), e);
                 }
@@ -175,9 +216,10 @@ public class MensagemProjetoService {
         // LÓGICA DE NOTIFICAÇÃO AO EDITAR MENSAGEM
         String msgEdicao = String.format("%s editou uma mensagem no projeto '%s'.", mensagem.getAutor().getNome(), mensagem.getProjeto().getTitulo());
 
-        mensagem.getProjeto().getMembros().stream()
+        // Busca os membros do projeto para notificar
+        projetoMembroRepository.findByProjetoId(mensagem.getProjeto().getId()).stream()
                 .map(membro -> membro.getUsuario())
-                .filter(usuario -> !usuario.getId().equals(mensagem.getAutor().getId()))
+                .filter(usuario -> !usuario.getId().equals(mensagem.getAutor().getId())) // Não notifica o próprio autor
                 .forEach(membro -> notificacaoService.criarNotificacao(
                         membro,
                         msgEdicao,
@@ -185,6 +227,7 @@ public class MensagemProjetoService {
                         mensagem.getProjeto().getId()
                 ));
 
+        // Retorna o DTO com a URL da foto corrigida
         return toDTO(mensagemAtualizada);
     }
 
@@ -193,44 +236,77 @@ public class MensagemProjetoService {
         MensagemProjeto mensagem = mensagemProjetoRepository.findById(mensagemId)
                 .orElseThrow(() -> new EntityNotFoundException("Mensagem não encontrada"));
 
+        // Validação de permissão (apenas o autor pode excluir)
+        // Adicionar lógica para admins/mods se necessário
         if (!mensagem.getAutor().getEmail().equals(autorUsername)) {
             throw new SecurityException("Você não tem permissão para excluir esta mensagem.");
         }
 
+        // Deleta os arquivos associados primeiro do serviço de armazenamento
         if (mensagem.getArquivos() != null && !mensagem.getArquivos().isEmpty()) {
+            // Itera sobre uma cópia da lista para segurança, embora não seja estritamente necessário aqui
+            // já que vamos deletar a mensagem toda depois.
             for (ArquivoMensagemProjeto midia : new ArrayList<>(mensagem.getArquivos())) {
                 try {
                     midiaService.deletar(midia.getUrl());
                 } catch (Exception e) {
-                    System.err.println("AVISO: Falha ao deletar arquivo no Cloudinary: " + midia.getUrl() + ". Erro: " + e.getMessage());
+                    // Loga o erro mas continua, para tentar deletar a mensagem do DB mesmo assim
+                    System.err.println("AVISO: Falha ao deletar arquivo associado à mensagem " + mensagemId +
+                            ": " + midia.getUrl() + ". Erro: " + e.getMessage());
                 }
             }
         }
 
+        // Deleta a mensagem do banco de dados.
+        // Se houver Cascade configurado corretamente na entidade MensagemProjeto para a lista de ArquivoMensagemProjeto
+        // (ex: CascadeType.REMOVE ou orphanRemoval=true), o JPA/Hibernate removerá as entradas órfãs
+        // da tabela arquivo_mensagem_projeto automaticamente.
         mensagemProjetoRepository.deleteById(mensagemId);
+
+        // (Opcional) Notificar sobre a exclusão, se desejado
+        /*
+        String msgExclusao = String.format("%s excluiu uma mensagem no projeto '%s'.", mensagem.getAutor().getNome(), mensagem.getProjeto().getTitulo());
+        projetoMembroRepository.findByProjetoId(mensagem.getProjeto().getId()).stream()
+                .map(membro -> membro.getUsuario())
+                .filter(usuario -> !usuario.getId().equals(mensagem.getAutor().getId()))
+                .forEach(membro -> notificacaoService.criarNotificacao(
+                        membro,
+                        msgExclusao,
+                        "MENSAGEM_PROJETO_EXCLUIDA",
+                        mensagem.getProjeto().getId()
+                ));
+        */
     }
 
+    // Método buscarMensagensPorProjeto já usa o toDTO correto
     public List<MensagemProjetoSaidaDTO> buscarMensagensPorProjeto(Long projetoId) {
+        // Validação se o projeto existe (opcional, mas bom)
+        if (!projetoRepository.existsById(projetoId)) {
+            // Ou retornar lista vazia, dependendo da preferência
+            throw new EntityNotFoundException("Projeto não encontrado com ID: " + projetoId);
+        }
         List<MensagemProjeto> mensagens = mensagemProjetoRepository.findByProjetoIdOrderByDataEnvioAsc(projetoId);
         return mensagens.stream()
-                .map(this::toDTO)
+                .map(this::toDTO) // Aplica a conversão corrigida
                 .collect(Collectors.toList());
     }
 
     /**
      * Extrai e-mails de menções no formato @usuario@dominio.com de um texto.
      * @param texto O conteúdo da mensagem.
-     * @return Um Set de e-mails encontrados.
+     * @return Um Set de e-mails encontrados (sem o '@' inicial).
      */
     private Set<String> extrairEmailsMencionados(String texto) {
-        if (texto == null || texto.isEmpty()) {
+        if (texto == null || texto.isBlank()) {
             return Collections.emptySet();
         }
-        final Pattern pattern = Pattern.compile("@[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}");
+        // Pattern para encontrar @email.valido (ajustado para ser um pouco mais flexível)
+        // Considera letras, números, '.', '-', '_' no nome e domínio. Domínio TLD com 2+ letras.
+        final Pattern pattern = Pattern.compile("@[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
         Matcher matcher = pattern.matcher(texto);
         Set<String> emails = new HashSet<>();
         while (matcher.find()) {
-            emails.add(matcher.group().substring(1));
+            emails.add(matcher.group().substring(1)); // Remove o '@' inicial
         }
         return emails;
     }
