@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedFilesForEdit = [];
   let friendsLoaded = false;
   let latestOnlineEmails = [];
+  const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`; // <-- ADICIONE ESTA LINHA
 
   const searchInput = document.getElementById("search-input");
 
@@ -125,7 +126,14 @@ document.addEventListener("DOMContentLoaded", () => {
       currentUser = response.data;
       updateUIWithUserData(currentUser);
       connectWebSocket();
-      fetchFriends();
+
+      // Espera as DUAS funções terminarem
+      await fetchFriends();
+      await fetchInitialOnlineFriends();
+      
+      // Chama a renderização DEPOIS que ambas terminaram
+      atualizarStatusDeAmigosNaUI();
+
       setupEventListeners();
       fetchNotifications();
     } catch (error) {
@@ -672,17 +680,29 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await axios.get(`${backendUrl}/api/amizades/`);
       userFriends = response.data;
-      friendsLoaded = true;
 
       if (elements.connectionsCount) {
         elements.connectionsCount.textContent = userFriends.length;
       }
-      atualizarStatusDeAmigosNaUI();
       
     } catch (error) {
       console.error("Erro ao buscar lista de amigos:", error);
+      userFriends = []; // Garante que seja um array vazio em caso de falha
+    } finally {
+      // Isso garante que 'friendsLoaded' seja definido
+      // mesmo se a busca falhar (ex: usuário sem amigos)
       friendsLoaded = true; 
-       atualizarStatusDeAmigosNaUI();
+    }
+  }
+
+  async function fetchInitialOnlineFriends() {
+    try {
+        const response = await axios.get(`${backendUrl}/api/amizades/online`); 
+        const amigosOnlineDTOs = response.data;
+        latestOnlineEmails = amigosOnlineDTOs.map(amigo => amigo.email);
+    } catch (error) {
+        console.error("Erro ao buscar status inicial de amigos online:", error);
+        latestOnlineEmails = []; // Garante que seja um array vazio em caso de falha
     }
   }
 
