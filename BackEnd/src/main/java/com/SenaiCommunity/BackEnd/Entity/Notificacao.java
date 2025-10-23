@@ -29,4 +29,8 @@ public class Notificacao {
     private String tipo; // Ex: "PEDIDO_AMIZADE", "GERAL"
     private Long idReferencia; // Ex: o ID da Amizade
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ator_id", nullable = true) // nullable=true permite notificações do "Sistema"
+    private Usuario ator; // "Ator" é quem executa a ação
+
 }
