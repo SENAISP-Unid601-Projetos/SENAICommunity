@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const backendUrl = 'http://localhost:8080';
     const jwtToken = localStorage.getItem('token');
     const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
+    let stompClient = null; 
+    let currentUser = null;
+
 
     // --- FUNÇÕES DE CONTROLE DE TEMA ---
 function setInitialTheme() {
@@ -31,7 +34,6 @@ function updateThemeIcon(theme) {
         }
     }
 }
-    let currentUser = null;
 
     // --- ELEMENTOS DO DOM ---
     const elements = {
@@ -95,7 +97,8 @@ function updateThemeIcon(theme) {
 
             updateUIWithUserData(currentUser);
             populateProfileData(currentUser);
-            fetchUserConnections(); // NOVA CHAMADA DE FUNÇÃO
+            connectWebSocket();
+            fetchUserConnections(); 
             fetchNotifications()
             setupEventListeners();
             setInitialTheme();
@@ -247,6 +250,19 @@ function updateThemeIcon(theme) {
             notification.classList.remove('show');
             setTimeout(() => { notification.remove(); }, 300);
         }, 5000);
+    }
+
+    function connectWebSocket() {
+        const socket = new SockJS(`${backendUrl}/ws`);
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null; 
+        const headers = { Authorization: `Bearer ${jwtToken}` };
+        
+        stompClient.connect(headers, () => {
+            console.log("CONECTADO AO WEBSOCKET (Perfil)");
+        }, (error) => {
+            console.error("ERRO WEBSOCKET (Perfil):", error);
+        });
     }
 
     // --- LÓGICA DOS MODAIS E MENUS ---
