@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
+import com.SenaiCommunity.BackEnd.DTO.MensagemProjetoEdicaoDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemProjetoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Service.MensagemProjetoService;
 import jakarta.persistence.EntityNotFoundException;
@@ -49,12 +50,19 @@ public class MensagemProjetoController {
     public ResponseEntity<?> editarMensagem(
             @PathVariable Long projetoId,
             @PathVariable Long mensagemId,
-            @RequestPart("conteudo") String novoConteudo,
+            // 2. RECEBA O DTO com a chave "dadosEdicao"
+            @RequestPart("dadosEdicao") MensagemProjetoEdicaoDTO dadosEdicao,
             @RequestPart(value = "novosArquivos", required = false) List<MultipartFile> novosArquivos,
-            @RequestPart(value = "urlsParaRemover", required = false) List<String> urlsParaRemover,
             Principal principal) {
         try {
-            MensagemProjetoSaidaDTO mensagemAtualizada = mensagemProjetoService.editarMensagem(mensagemId, principal.getName(), novoConteudo, novosArquivos, urlsParaRemover);
+            // 3. PASSE OS DADOS DO DTO PARA O SERVIÇO
+            MensagemProjetoSaidaDTO mensagemAtualizada = mensagemProjetoService.editarMensagem(
+                    mensagemId,
+                    principal.getName(),
+                    dadosEdicao.getConteudo(), // <-- Pega o conteúdo de dentro do DTO
+                    novosArquivos,
+                    dadosEdicao.getUrlsParaRemover() // <-- Pega as URLs de dentro do DTO
+            );
 
             // Notifica via WebSocket que uma mensagem foi editada
             Map<String, Object> payload = Map.of("tipo", "edicao", "mensagem", mensagemAtualizada);
@@ -65,6 +73,9 @@ public class MensagemProjetoController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            // Adicionado um catch-all para ver outros possíveis erros
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno: " + e.getMessage());
         }
     }
 

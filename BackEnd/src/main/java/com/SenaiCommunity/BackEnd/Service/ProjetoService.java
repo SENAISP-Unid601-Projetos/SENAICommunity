@@ -16,10 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -115,6 +112,26 @@ public class ProjetoService {
                 .orElseThrow(() -> new EntityNotFoundException("Autor não encontrado com id: " + dto.getAutorId()));
         projeto.setAutor(autor);
 
+
+        // 1. Valida se o autor é do tipo Aluno ou Professor
+        if (isNovoGrupo) { // Só valida na criação
+            if (!(autor instanceof Professor) && !(autor instanceof Aluno)) {
+                throw new IllegalArgumentException("O criador do projeto (autor) deve ser um Aluno ou um Professor.");
+            }
+        }
+
+        // 2. Garante que as listas não sejam nulas e sejam mutáveis (para podermos remover o autor)
+        List<Long> professorIds = (dto.getProfessorIds() != null) ? new ArrayList<>(dto.getProfessorIds()) : new ArrayList<>();
+        List<Long> alunoIds = (dto.getAlunoIds() != null) ? new ArrayList<>(dto.getAlunoIds()) : new ArrayList<>();
+
+        // 3. Remove o ID do autor das listas de convite, pois ele já será o Admin
+        professorIds.remove(autor.getId());
+        alunoIds.remove(autor.getId());
+
+        // 4. Atualiza o DTO com as listas "limpas" (sem o autor)
+        dto.setProfessorIds(professorIds);
+        dto.setAlunoIds(alunoIds);
+
         if (dto.getProfessorIds() != null && !dto.getProfessorIds().isEmpty()) {
             List<Professor> professores = dto.getProfessorIds().stream()
                     .map(id -> professorRepository.findById(id)
@@ -134,7 +151,10 @@ public class ProjetoService {
         Projeto salvo = projetoRepository.save(projeto);
 
         if (isNovoGrupo) {
+            // 1. Adiciona o autor como ADMIN
             adicionarMembroComoAdmin(salvo, autor);
+
+            // 2. Envia convites apenas para os IDs restantes nas listas (pois o autor foi removido)
             enviarConvitesAutomaticos(salvo, dto.getProfessorIds(), dto.getAlunoIds(), autor.getId());
         }
 

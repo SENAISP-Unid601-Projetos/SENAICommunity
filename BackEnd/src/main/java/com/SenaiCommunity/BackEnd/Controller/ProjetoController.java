@@ -47,8 +47,9 @@ public class ProjetoController {
             @RequestParam Integer maxMembros,
             @RequestParam Boolean grupoPrivado,
             @RequestParam Long autorId,
-            @RequestParam List<Long> professorIds,
-            @RequestParam List<Long> alunoIds,
+
+            @RequestParam(required = false) List<Long> professorIds,
+            @RequestParam(required = false) List<Long> alunoIds,
             @RequestPart(required = false) MultipartFile foto) {
         try {
             if (foto != null && !foto.isEmpty()) {
@@ -71,6 +72,8 @@ public class ProjetoController {
                     "message", "Projeto criado com sucesso! Convites enviados automaticamente para professores e alunos.",
                     "projeto", salvo
             ));
+        } catch (IllegalArgumentException e) { // Pega a validação do Service
+            return ResponseEntity.badRequest().body("Erro ao criar projeto: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("[ERROR] Erro ao criar projeto: " + e.getMessage());
             e.printStackTrace();
