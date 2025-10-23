@@ -1,3 +1,5 @@
+/* src/components/Layout/Topbar.css - CORRIGIDO */
+
 .topbar {
     display: flex;
     align-items: center;
@@ -28,17 +30,20 @@
 }
 
 .search {
-    position: relative;
+    /* --- CORREÇÃO AQUI --- */
+    position: relative; 
+    /* --------------------- */
     flex: 0.5;
     min-width: 200px;
 }
 
-.search i {
+.search svg { /* Alvo no ícone do FontAwesome */
     position: absolute;
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-secondary);
+    pointer-events: none; /* Adicionado para que o clique vá para o input */
 }
 
 .search input {
