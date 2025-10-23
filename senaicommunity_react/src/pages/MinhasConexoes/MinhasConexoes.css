@@ -1,52 +1,196 @@
-/* src/pages/MinhasConexoes/MinhasConexoes.css */
+/* src/pages/MinhasConexoes/MinhasConexoes.css (NOVO DESIGN RESPONSIVO) */
 
-.connections-section {
-    margin-top: 2rem;
+/* --- Estilo Geral da Página (dentro do main-content) --- */
+.connections-page-card {
+    /* Usa o estilo de card padrão para a página inteira */
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    padding: 1.5rem 2rem; /* Mais padding lateral */
+    border: 1px solid var(--border-color);
 }
-.connections-section h3 {
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
+
+.widget-title { 
+    font-size: 1.5rem; /* Título maior */
+    font-weight: 600; 
+    margin-bottom: 2rem; /* Mais espaço abaixo */
+    color: var(--text-primary);
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border-color);
 }
 
-.request-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1.5rem;
+/* --- Estilo das Seções (Recebidos, Enviados, Amigos) --- */
+.connections-section {
+    margin-bottom: 2.5rem; /* Mais espaço entre seções */
 }
-.request-list .empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: var(--text-secondary);
-    padding: 1rem;
+.connections-section:last-child {
+    margin-bottom: 0; /* Remove margem da última seção */
 }
 
-.request-card {
+.connections-section h3 {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem; /* Mais espaço abaixo do título da seção */
+    font-weight: 500;
+}
+
+/* --- GRID RESPONSIVO PARA OS CARDS --- */
+.conexao-grid {
+    display: grid;
+    /* Colunas com tamanho mínimo de 240px, ajustando-se ao espaço */
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem; /* Espaçamento entre cards */
+}
+
+/* --- NOVO DESIGN DO ConexaoCard --- */
+.conexao-card {
     background-color: var(--bg-tertiary);
     border-radius: var(--card-radius);
     padding: 1.5rem;
     text-align: center;
     border: 1px solid var(--border-color);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column; /* Organiza verticalmente */
+    align-items: center; /* Centraliza horizontalmente */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-.request-card img {
+.conexao-card:hover {
+     transform: translateY(-4px);
+     box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+     border-color: var(--accent-primary);
+}
+
+/* Link que envolve avatar e nome */
+.conexao-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex; /* Para centralizar avatar e nome */
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem; /* Espaço antes dos botões */
+    width: 100%; /* Garante que o link ocupe a área */
+}
+
+.conexao-avatar {
     width: 80px;
     height: 80px;
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 1rem;
+    border: 3px solid var(--border-color); /* Borda sutil */
 }
-.request-card h4 { margin-bottom: 0.25rem; font-size: 1.1rem; }
 
-.request-card-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 1rem;
+.conexao-nome { 
+    margin: 0; 
+    font-size: 1.1rem; 
+    font-weight: 600;
+    color: var(--text-primary);
+    /* Limita nome a uma linha */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%; /* Garante que ellipsis funcione */
 }
-.request-card-actions .btn { width: 100%; padding: 0.6rem; font-size: 0.9rem; }
-.btn-primary { background-color: var(--accent-primary); color: white; border: none; }
-.btn-secondary { background-color: var(--bg-quaternary); color: var(--text-primary); border: none; }
-.btn-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); }
-.btn-danger:hover { background-color: var(--danger); color: white; }
+
+.conexao-actions {
+    display: flex;
+    flex-direction: column; /* Botões empilhados */
+    gap: 0.75rem; /* Espaço entre botões */
+    margin-top: auto; /* Empurra os botões para baixo */
+    width: 100%; /* Faz os botões ocuparem a largura */
+}
+.conexao-actions .btn, .conexao-actions .respond-link { 
+    width: 100%; 
+    padding: 0.65rem; 
+    font-size: 0.875rem; 
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex; /* Alinha ícone e texto */
+    align-items: center;
+    justify-content: center; /* Centraliza conteúdo */
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+
+/* Estilos específicos dos botões */
+.btn-primary.btn-accept { background-color: var(--success); color: white; border: none; }
+.btn-primary.btn-accept:hover { background-color: #269c40; } /* Tom mais escuro de verde */
+
+.btn-secondary.btn-decline, .btn-secondary.btn-cancel { 
+    background-color: var(--bg-quaternary); 
+    color: var(--text-secondary); 
+    border: 1px solid var(--border-color);
+}
+.btn-secondary.btn-decline:hover, .btn-secondary.btn-cancel:hover {
+    background-color: var(--bg-primary); /* Fundo mais escuro no hover */
+    border-color: var(--text-secondary);
+}
+
+.btn-secondary.btn-message {
+    background-color: var(--accent-primary);
+    color: white;
+    border: none;
+}
+.btn-secondary.btn-message:hover { background-color: var(--accent-secondary); }
+
+.btn-danger.btn-remove { 
+    background-color: transparent; 
+    color: var(--danger); 
+    border: 1px solid var(--danger); 
+}
+.btn-danger.btn-remove:hover { 
+    background-color: var(--danger); 
+    color: white; 
+}
+
+
+/* --- ESTADOS DE LOADING E VAZIO --- */
+.empty-state, .loading-state {
+    text-align: center;
+    padding: 3rem 1rem; /* Menos padding vertical */
+    color: var(--text-secondary);
+    background-color: transparent; /* Sem fundo extra */
+    border-radius: var(--card-radius);
+    /* border: 1px dashed var(--border-color); */ /* Borda opcional */
+    grid-column: 1 / -1; /* Ocupa toda a largura do grid */
+}
+.empty-state a { /* Link no estado vazio */
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+.empty-state a:hover { text-decoration: underline; }
+
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 1200px) {
+    .container { grid-template-columns: 280px 1fr; }
+    .right-sidebar { display: none; }
+}
+
+@media (max-width: 768px) {
+    .container { grid-template-columns: 1fr; }
+    
+    .connections-page-card { padding: 1rem 1.25rem; }
+    .widget-title { font-size: 1.25rem; margin-bottom: 1.5rem; }
+    .connections-section h3 { font-size: 1rem; margin-bottom: 1rem; }
+    
+    .conexao-grid {
+        /* Mantém 2 colunas se houver espaço, senão 1 */
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+        gap: 1rem;
+    }
+
+    .conexao-card { padding: 1rem; }
+    .conexao-avatar { width: 60px; height: 60px; }
+    .conexao-nome { font-size: 1rem; }
+    .conexao-actions .btn { padding: 0.5rem; font-size: 0.8rem; }
+}
+
+@media (max-width: 480px) {
+     .conexao-grid {
+        /* Garante 1 coluna em telas muito pequenas */
+        grid-template-columns: 1fr; 
+    }
+}

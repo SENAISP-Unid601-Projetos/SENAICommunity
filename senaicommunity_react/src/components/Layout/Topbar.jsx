@@ -1,36 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // ✅ CORREÇÃO: Importa o Link
+// src/components/Layout/Topbar.jsx (COM THEME TOGGLE INTEGRADO)
+
+import React, { useState, useEffect } from 'react'; // Hooks já estavam aqui
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faCommentDots, faBell, faMoon, faSun, faChevronDown, faUserEdit, faUserSlash, faSignOutAlt, faSearch } from '@fortawesome/free-solid-svg-icons';
-import './Topbar.css';
+// Ícone do Sol/Lua já está importado de ThemeToggle, mas podemos precisar deles aqui
+import { faHome, faCommentDots, faBell, faChevronDown, faUserEdit, faUserSlash, faSignOutAlt, faSearch, faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
+// ✅ 1. Importa o componente ThemeToggle que criamos
+// import ThemeToggle from '../Auth/ThemeToggle'; // Não precisa mais importar separado se a lógica está aqui
+import './Topbar.css'; // Carrega o CSS atualizado
 
 const Topbar = ({ onLogout, currentUser }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    
-    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
 
+    // ✅ 2. Lógica do Tema MOVIDA para cá
+    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
-    }, [theme]); 
+    }, [theme]);
+    const handleThemeToggle = () => {
+        setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
+    };
+    // Fim da lógica do Tema
 
     const handleToggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
 
-    const handleThemeToggle = () => {
-        setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
-    };
-    
-    // ✅ MELHORIA: A URL da foto é construída corretamente
-    const userImage = currentUser?.urlFotoPerfil 
-        ? `http://localhost:8080${currentUser.urlFotoPerfil}` 
+    const userImage = currentUser?.urlFotoPerfil
+        ? `http://localhost:8080${currentUser.urlFotoPerfil}`
         : "https://via.placeholder.com/40";
 
     return (
         <header className="topbar">
             <div className="header-left">
-                <h1 className="logo"><span className="highlight">SENAI </span>Community</h1>
+                {/* Link para a página principal */}
+                <Link to="/principal" className="logo-link"> 
+                    <h1 className="logo"><span className="highlight">SENAI </span>Community</h1>
+                </Link>
             </div>
 
             <div className="search">
@@ -39,21 +46,21 @@ const Topbar = ({ onLogout, currentUser }) => {
             </div>
 
             <nav className="nav-icons">
-                {/* ✅ CORREÇÃO: Trocado <a> por <Link> */}
                 <Link to="/principal" className="nav-icon" data-tooltip="Início">
                     <FontAwesomeIcon icon={faHome} />
                 </Link>
-                {/* ✅ CORREÇÃO: Trocado <div> por <Link> para levar às mensagens */}
                 <Link to="/mensagens" className="nav-icon" data-tooltip="Mensagens">
                     <FontAwesomeIcon icon={faCommentDots} />
-                    <span className="badge">3</span>
+                    <span className="badge">3</span> {/* Manter ou buscar dinamicamente */}
                 </Link>
                 <div className="nav-icon" data-tooltip="Notificações" id="notifications-icon">
                     <FontAwesomeIcon icon={faBell} />
-                    {/* Badge de notificações virá de um estado no futuro */}
+                    {/* Badge de notificações */}
                 </div>
 
-                <div className="theme-toggle" data-tooltip="Alternar tema" onClick={handleThemeToggle}>
+                {/* ✅ 3. Botão ThemeToggle ADICIONADO AQUI DENTRO */}
+                {/* Usamos um 'div' com 'onClick' e estilizamos como os outros nav-icon */}
+                <div className="nav-icon theme-toggle-button" data-tooltip="Alternar tema" onClick={handleThemeToggle}>
                     <FontAwesomeIcon icon={theme === 'dark' ? faMoon : faSun} />
                 </div>
             </nav>
@@ -63,16 +70,16 @@ const Topbar = ({ onLogout, currentUser }) => {
                     <div className="profile-pic">
                         <img src={userImage} alt="Perfil" />
                     </div>
-                    <span>{currentUser?.nome || 'Usuário'}</span>
-                    <FontAwesomeIcon icon={faChevronDown} />
+                    {/* Ocultar nome em telas pequenas se necessário */}
+                    <span className="username-display">{currentUser?.nome || 'Usuário'}</span> 
+                    <FontAwesomeIcon icon={faChevronDown} className={`dropdown-arrow ${isMenuOpen ? 'open' : ''}`} />
                 </div>
                 
                 {isMenuOpen && (
-                    <div className="dropdown-menu" style={{ display: 'block' }}>
-                        {/* ✅ CORREÇÃO: Trocado <a> por <Link> */}
-                        <Link to="/perfil"><FontAwesomeIcon icon={faUserEdit} /> Meu Perfil</Link>
-                        <a href="#" className="danger"><FontAwesomeIcon icon={faUserSlash} /> Excluir Conta</a>
-                        <a href="#" onClick={onLogout}><FontAwesomeIcon icon={faSignOutAlt} /> Sair</a>
+                    <div className="dropdown-menu show" /* Usar classe 'show' */> 
+                        <Link to="/perfil" onClick={() => setIsMenuOpen(false)}><FontAwesomeIcon icon={faUserEdit} /> Meu Perfil</Link>
+                        {/* <a href="#" className="danger"><FontAwesomeIcon icon={faUserSlash} /> Excluir Conta</a> */}
+                        <a href="#" onClick={() => { onLogout(); setIsMenuOpen(false); }}><FontAwesomeIcon icon={faSignOutAlt} /> Sair</a>
                     </div>
                 )}
             </div>

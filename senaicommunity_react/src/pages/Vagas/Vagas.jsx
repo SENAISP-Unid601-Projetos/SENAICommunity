@@ -1,49 +1,84 @@
-// src/pages/Vagas/Vagas.jsx
+// src/pages/Vagas/Vagas.jsx (CORRIGIDO)
 
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Topbar from '../../components/Layout/Topbar';
 import Sidebar from '../../components/Layout/Sidebar';
-import './Vagas.css';
+import './Vagas.css'; // Vamos carregar o NOVO CSS
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMapMarkerAlt, faBookmark, faSearch } from '@fortawesome/free-solid-svg-icons';
+// ✅ CORREÇÃO AQUI: Removidos 'faMapMarkerAlt' e 'faBriefcase' que não estavam sendo usados.
+import { faBookmark, faSearch, faBuilding, faClock } from '@fortawesome/free-solid-svg-icons';
 
-// Componente para o Card de Vaga (Melhora a organização)
+// --- COMPONENTE VagaCard MELHORADO ---
 const VagaCard = ({ vaga }) => {
-    const tags = [vaga.nivel, vaga.tipoContratacao];
+    // Transforma os enums em texto legível
+    const nivelMap = {
+        'JUNIOR': 'Júnior',
+        'PLENO': 'Pleno',
+        'SENIOR': 'Sênior'
+    };
+    const localMap = {
+        'REMOTO': 'Remoto',
+        'HIBRIDO': 'Híbrido',
+        'PRESENCIAL': 'Presencial'
+    };
+    const tipoMap = {
+        'TEMPO_INTEGRAL': 'Tempo Integral',
+        'MEIO_PERIODO': 'Meio Período',
+        'ESTAGIO': 'Estágio',
+        'TRAINEE': 'Trainee'
+    };
+
+    const tags = [
+        localMap[vaga.localizacao] || vaga.localizacao,
+        nivelMap[vaga.nivel] || vaga.nivel,
+        tipoMap[vaga.tipoContratacao] || vaga.tipoContratacao
+    ];
+
+    // Limita a descrição para um visual limpo
+    const shortDesc = vaga.descricao.length > 100 
+        ? vaga.descricao.substring(0, 100) + '...' 
+        : vaga.descricao;
 
     return (
-        <div className="vaga-card">
-            <div className="vaga-card-header">
+        <article className="vaga-card">
+            <header className="vaga-card-header">
                 <div className="vaga-empresa-logo">
-                    {/* Lógica para mostrar iniciais caso não tenha logo */}
                     <img src={vaga.logoUrl || `https://placehold.co/100x100/161b22/ffffff?text=${vaga.empresa.substring(0, 2)}`} alt={`Logo da ${vaga.empresa}`} />
                 </div>
                 <div className="vaga-info-principal">
                     <h2 className="vaga-titulo">{vaga.titulo}</h2>
-                    <p className="vaga-empresa">{vaga.empresa}</p>
-                    <div className="vaga-localidade">
-                        <FontAwesomeIcon icon={faMapMarkerAlt} /> {vaga.localizacao}
-                    </div>
+                    <p className="vaga-empresa">
+                        <FontAwesomeIcon icon={faBuilding} /> {vaga.empresa}
+                    </p>
                 </div>
-                <button className="save-vaga-btn" title="Salvar vaga"><FontAwesomeIcon icon={faBookmark} /></button>
-            </div>
+                <button className="save-vaga-btn" title="Salvar vaga">
+                    <FontAwesomeIcon icon={faBookmark} />
+                </button>
+            </header>
+            
+            <p className="vaga-descricao">{shortDesc}</p>
+
             <div className="vaga-tags">
                 {tags.map((tag, index) => tag && <span key={index} className="tag">{tag}</span>)}
             </div>
-            <p className="vaga-descricao">{vaga.descricao}</p>
-            <div className="vaga-card-footer">
-                <span className="vaga-publicado">Publicado em {new Date(vaga.dataPublicacao).toLocaleDateString('pt-BR')}</span>
+            
+            <footer className="vaga-card-footer">
+                <span className="vaga-publicado">
+                    <FontAwesomeIcon icon={faClock} /> 
+                    {new Date(vaga.dataPublicacao).toLocaleDateString('pt-BR')}
+                </span>
                 <button className="vaga-candidatar-btn">Ver Detalhes</button>
-            </div>
-        </div>
+            </footer>
+        </article>
     );
 };
 
-// Componente Principal da Página
+// --- COMPONENTE PRINCIPAL DA PÁGINA ---
 const Vagas = ({ onLogout }) => {
     const [vagas, setVagas] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentUser, setCurrentUser] = useState(null); // Precisamos do usuário para a sidebar
     const [filters, setFilters] = useState({
         busca: '',
         tipo: 'todos',
@@ -51,29 +86,40 @@ const Vagas = ({ onLogout }) => {
         nivel: 'todos'
     });
 
+    // Hook para buscar dados do usuário e das vagas
     useEffect(() => {
         document.title = 'Senai Community | Vagas';
-        const fetchVagas = async () => {
-            const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('authToken');
+        
+        const fetchData = async () => {
             try {
-                const response = await axios.get('http://localhost:8080/api/vagas', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                setVagas(response.data);
+                // Busca usuário e vagas em paralelo
+                const [userRes, vagasRes] = await Promise.all([
+                    axios.get('http://localhost:8080/usuarios/me', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    axios.get('http://localhost:8080/api/vagas', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                ]);
+                setCurrentUser(userRes.data);
+                setVagas(vagasRes.data);
             } catch (error) {
-                console.error("Erro ao buscar vagas:", error);
+                console.error("Erro ao buscar dados:", error);
+                if (error.response?.status === 401) onLogout();
             } finally {
                 setLoading(false);
             }
         };
-        fetchVagas();
-    }, []);
+        fetchData();
+    }, [onLogout]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({ ...prev, [name]: value }));
     };
 
+    // Filtra as vagas com base no estado dos filtros
     const filteredVagas = useMemo(() => {
         return vagas.filter(vaga => {
             const { busca, tipo, local, nivel } = filters;
@@ -81,11 +127,9 @@ const Vagas = ({ onLogout }) => {
 
             const searchMatch = !busca ||
                 vaga.titulo.toLowerCase().includes(searchLower) ||
-                vaga.empresa.toLowerCase().includes(searchLower) ||
-                vaga.descricao.toLowerCase().includes(searchLower);
-
-            // No backend, os enums estão em maiúsculo (ex: "TEMPO_INTEGRAL")
-            const tipoMatch = tipo === 'todos' || vaga.tipoContratacao.replace('_', ' ') === tipo;
+                vaga.empresa.toLowerCase().includes(searchLower);
+                
+            const tipoMatch = tipo === 'todos' || vaga.tipoContratacao === tipo;
             const localMatch = local === 'todos' || vaga.localizacao === local;
             const nivelMatch = nivel === 'todos' || vaga.nivel === nivel;
 
@@ -95,55 +139,63 @@ const Vagas = ({ onLogout }) => {
 
     return (
         <div>
-            <Topbar onLogout={onLogout} />
+            <Topbar onLogout={onLogout} currentUser={currentUser} />
             <div className="container">
-                <Sidebar />
+                <Sidebar currentUser={currentUser} />
                 <main className="main-content">
-                    <div className="vagas-header">
+                    
+                    <header className="vagas-header">
                         <h1>Encontre sua Próxima Oportunidade</h1>
                         <p>Explore vagas de estágio e emprego em empresas de tecnologia parceiras do SENAI.</p>
-                    </div>
-                    <div className="filters-container">
+                    </header>
+                    
+                    <section className="filters-container">
                         <div className="search-vaga">
                             <FontAwesomeIcon icon={faSearch} />
-                            <input type="text" name="busca" placeholder="Cargo, empresa ou palavra-chave" onChange={handleFilterChange} />
+                            <input 
+                                type="text" 
+                                name="busca" 
+                                placeholder="Cargo, empresa ou palavra-chave" 
+                                onChange={handleFilterChange} 
+                                value={filters.busca}
+                            />
                         </div>
                         <div className="filters">
-                            <select name="tipo" onChange={handleFilterChange}>
+                            <select name="tipo" onChange={handleFilterChange} value={filters.tipo}>
                                 <option value="todos">Tipo de Vaga</option>
-                                <option value="TEMPO INTEGRAL">Tempo Integral</option>
-                                <option value="MEIO PERIODO">Meio Período</option>
+                                <option value="TEMPO_INTEGRAL">Tempo Integral</option>
+                                <option value="MEIO_PERIODO">Meio Período</option>
                                 <option value="ESTAGIO">Estágio</option>
                                 <option value="TRAINEE">Trainee</option>
                             </select>
-                            <select name="local" onChange={handleFilterChange}>
+                            <select name="local" onChange={handleFilterChange} value={filters.local}>
                                 <option value="todos">Localização</option>
                                 <option value="REMOTO">Remoto</option>
                                 <option value="HIBRIDO">Híbrido</option>
                                 <option value="PRESENCIAL">Presencial</option>
                             </select>
-                            <select name="nivel" onChange={handleFilterChange}>
+                            <select name="nivel" onChange={handleFilterChange} value={filters.nivel}>
                                 <option value="todos">Nível</option>
                                 <option value="JUNIOR">Júnior</option>
                                 <option value="PLENO">Pleno</option>
                                 <option value="SENIOR">Sênior</option>
                             </select>
                         </div>
-                    </div>
+                    </section>
 
-                    <div className="vagas-list">
-                        {loading ? <p>Carregando vagas...</p> : 
+                    <section className="vagas-grid">
+                        {loading ? <p className="loading-state">Carregando vagas...</p> : 
                             filteredVagas.length > 0 ? (
                                 filteredVagas.map(vaga => <VagaCard key={vaga.id} vaga={vaga} />)
                             ) : (
-                                <p className="sem-vagas">Nenhuma vaga encontrada com os filtros selecionados.</p>
+                                <div className="sem-vagas">
+                                    <h3>Nenhuma vaga encontrada</h3>
+                                    <p>Tente ajustar seus filtros para encontrar mais oportunidades.</p>
+                                </div>
                             )
                         }
-                    </div>
+                    </section>
                 </main>
-                <aside className="right-sidebar">
-                    {/* Widgets da sidebar direita podem ser adicionados aqui como componentes */}
-                </aside>
             </div>
         </div>
     );

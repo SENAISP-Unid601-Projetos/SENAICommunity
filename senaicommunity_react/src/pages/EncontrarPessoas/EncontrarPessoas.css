@@ -1,32 +1,51 @@
-/* src/pages/EncontrarPessoas/EncontrarPessoas.css */
+/* src/pages/EncontrarPessoas/EncontrarPessoas.css (NOVO DESIGN RESPONSIVO) */
 
-.widget-card {
-    background-color: var(--bg-secondary);
-    border-radius: var(--card-radius);
-    padding: 1.5rem;
-    border: 1px solid var(--border-color);
+/* --- Card do Cabeçalho de Busca --- */
+.search-header-card {
+    margin-bottom: 1.5rem; /* Espaçamento abaixo do header */
 }
-.widget-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
-.search-box { position: relative; }
-.search-box svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
-.search-box input {
-    width: 100%;
-    padding: 0.85rem 1rem 0.85rem 2.75rem;
-    background-color: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
+.widget-title { 
+    font-size: 1.25rem; 
+    font-weight: 600; 
+    margin-bottom: 1rem; 
     color: var(--text-primary);
+}
+.search-box { 
+    position: relative; 
+}
+.search-box svg { 
+    position: absolute; 
+    left: 1rem; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    color: var(--text-secondary); 
     font-size: 1rem;
 }
-
-.search-results-container {
-    margin-top: 1.5rem;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
+.search-box input {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 2.75rem; /* Aumenta padding esquerdo */
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px; /* Mais arredondado */
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: var(--transition);
 }
-.empty-state { padding: 2rem; text-align: center; color: var(--text-secondary); }
+.search-box input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+}
 
+/* --- Container dos Resultados --- */
+.search-results-container {
+    display: flex; /* Mudar para flex para estados de loading/vazio */
+    flex-direction: column;
+    gap: 1rem; /* Espaçamento entre os cards */
+}
+
+/* --- NOVO DESIGN DO UserCard --- */
 .user-card {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
@@ -35,17 +54,144 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+    transition: var(--transition);
 }
-.user-card-avatar { position: relative; flex-shrink: 0; }
-.user-card-avatar img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
-.user-card-avatar .status { position: absolute; bottom: 2px; right: 2px; width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--bg-secondary); }
-.user-card-avatar .status.online { background-color: var(--online); }
-.user-card-avatar .status.offline { background-color: var(--text-tertiary); }
-.user-card-info { flex-grow: 1; }
-.user-card-info h4 { margin: 0 0 0.25rem 0; font-size: 1.1rem; }
-.user-card-info p { margin: 0; font-size: 0.85rem; color: var(--text-secondary); }
-.user-card-action { margin-left: auto; }
-.user-card-action .btn { padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
-.user-card-action .btn-primary { background-color: var(--accent-primary); color: white; }
-.user-card-action .btn-secondary { background-color: var(--bg-quaternary); color: var(--text-primary); }
-.user-card-action .btn:disabled { cursor: not-allowed; opacity: 0.7; }
+.user-card:hover {
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Link que envolve avatar e info */
+.user-card-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-grow: 1; /* Ocupa o espaço disponível */
+    text-decoration: none; /* Remove sublinhado padrão */
+    color: inherit; /* Herda a cor do texto */
+}
+
+.user-card-avatar { 
+    position: relative; 
+    flex-shrink: 0; /* Impede que o avatar encolha */
+}
+.user-card-avatar img { 
+    width: 60px; 
+    height: 60px; 
+    border-radius: 50%; 
+    object-fit: cover; 
+    border: 2px solid var(--border-color);
+}
+/* Estilo para status online/offline (se for usar) */
+/* .user-card-avatar .status { ... } */
+
+.user-card-info { 
+    flex-grow: 1; 
+    overflow: hidden; /* Evita que texto longo quebre o layout */
+}
+.user-card-info h4 { 
+    margin: 0 0 0.25rem 0; 
+    font-size: 1.1rem; 
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap; /* Impede quebra de linha */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Adiciona "..." se nome for muito longo */
+}
+.user-card-info p { 
+    margin: 0; 
+    font-size: 0.85rem; 
+    color: var(--text-secondary); 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-card-action { 
+    margin-left: auto; /* Empurra o botão para a direita */
+    flex-shrink: 0; /* Impede que o botão encolha */
+}
+.user-card-action .btn, .user-card-action .respond-link { 
+    padding: 0.6rem 1rem; 
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: 600; 
+    font-size: 0.8rem; 
+    display: inline-flex; /* Usa inline-flex para alinhar ícone e texto */
+    align-items: center; 
+    gap: 0.5rem; 
+    text-decoration: none; /* Para o Link */
+    white-space: nowrap; /* Evita quebra de linha no botão */
+    transition: var(--transition);
+}
+.user-card-action .btn-primary, .user-card-action .respond-link { 
+    background-color: var(--accent-primary); 
+    color: white; 
+}
+.user-card-action .btn-primary:hover, .user-card-action .respond-link:hover {
+     background-color: var(--accent-secondary);
+     transform: scale(1.03);
+}
+.user-card-action .btn-secondary { 
+    background-color: var(--bg-quaternary); 
+    color: var(--text-secondary); 
+    border: 1px solid var(--border-color);
+}
+.user-card-action .btn.disabled { 
+    cursor: default; 
+    opacity: 0.7; 
+}
+.user-card-action .btn.disabled:hover {
+    transform: none;
+    background-color: var(--bg-quaternary); /* Garante que não mude no hover */
+}
+
+
+/* --- ESTADOS DE LOADING E VAZIO --- */
+.empty-state, .loading-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    border: 1px dashed var(--border-color);
+    margin-top: 1.5rem; /* Adiciona espaço acima */
+}
+.empty-state h3, .loading-state h3 {
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 1200px) {
+    .container {
+        grid-template-columns: 280px 1fr;
+    }
+    .right-sidebar { display: none; }
+}
+
+@media (max-width: 768px) {
+    .container { grid-template-columns: 1fr; }
+    
+    .widget-title { font-size: 1.1rem; }
+    
+    .user-card {
+        padding: 0.75rem; /* Menor padding */
+        gap: 0.75rem;
+    }
+    .user-card-avatar img {
+        width: 50px;
+        height: 50px;
+    }
+    .user-card-info h4 { font-size: 1rem; }
+    .user-card-info p { font-size: 0.8rem; }
+    
+    .user-card-action .btn, .user-card-action .respond-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    /* Opcional: Esconder texto e mostrar só ícone em telas MUITO pequenas */
+    /* @media (max-width: 400px) { ... } */
+}

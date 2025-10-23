@@ -1,170 +1,164 @@
-/* src/components/Layout/Topbar.css - CORRIGIDO */
+/* src/components/Layout/Topbar.css (ATUALIZADO PARA INCLUIR THEME TOGGLE) */
 
 .topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 2rem;
+    padding: 0.75rem 1.5rem; /* Reduzido padding lateral */
     background-color: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
-    position: sticky;
+    position: sticky; /* Mantém no topo */
     top: 0;
     z-index: 1000;
-    box-shadow: var(--shadow);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra mais sutil */
+    height: 70px; /* Altura fixa para cálculo em outros lugares */
+    box-sizing: border-box;
 }
 
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
+.header-left { display: flex; align-items: center; gap: 1rem; }
+
+/* Link do logo */
+.logo-link { text-decoration: none; } 
 
 .logo {
-    font-size: 1.5rem;
+    font-size: 1.4rem; /* Pouco menor */
     font-weight: 700;
-    color: var(--accent-primary);
+    color: var(--text-primary); /* Cor base */
+    white-space: nowrap; /* Impede quebra de linha */
 }
+.logo .highlight { color: var(--highlight); } /* Cor SENAI */
+.logo span:not(.highlight) { color: var(--accent-primary); } /* Cor Community */
 
-.logo .highlight {
-    color: var(--danger);
-}
 
-.search {
-    /* --- CORREÇÃO AQUI --- */
-    position: relative; 
-    /* --------------------- */
-    flex: 0.5;
-    min-width: 200px;
-}
-
-.search svg { /* Alvo no ícone do FontAwesome */
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-    pointer-events: none; /* Adicionado para que o clique vá para o input */
-}
-
+.search { position: relative; flex: 1; /* Ocupa mais espaço */ max-width: 450px; /* Limita largura máxima */ margin: 0 1rem; /* Adiciona margem */ }
+.search svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
 .search input {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    padding: 0.65rem 1rem 0.65rem 2.75rem; /* Ajuste padding */
     background-color: var(--bg-tertiary);
-    border: none;
-    border-radius: 20px;
+    border: 1px solid var(--border-color); /* Adiciona borda sutil */
+    border-radius: 8px; /* Menos arredondado */
     color: var(--text-primary);
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+.search input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
 }
 
-.nav-icons {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
 
-.nav-icon {
+.nav-icons { display: flex; align-items: center; gap: 0.75rem; /* Aumenta gap */ }
+
+/* Estilo base para todos os ícones da NAV, incluindo o de tema */
+.nav-icon, .theme-toggle-button {
     position: relative;
     padding: 0.75rem;
     border-radius: 50%;
     cursor: pointer;
     transition: var(--transition);
-    color: var(--text-secondary); /* Garante que o ícone tenha cor */
+    color: var(--text-secondary);
+    display: flex; /* Para centralizar o ícone */
+    align-items: center;
+    justify-content: center;
+    width: 40px; /* Tamanho fixo */
+    height: 40px; /* Tamanho fixo */
+    box-sizing: border-box;
 }
-
-.nav-icon:hover {
+.nav-icon:hover, .theme-toggle-button:hover {
     background-color: var(--bg-tertiary);
+    color: var(--text-primary); /* Muda cor no hover */
 }
-
-.nav-icon svg { /* Alvo no ícone do FontAwesome */
-    font-size: 1.25rem;
-}
+.nav-icon svg, .theme-toggle-button svg { font-size: 1.1rem; /* Tamanho do ícone */ }
 
 .badge {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 4px; /* Ajuste posição */
+    right: 4px; /* Ajuste posição */
     background-color: var(--danger);
     color: white;
     border-radius: 50%;
-    width: 16px;
-    height: 16px;
+    width: 18px; /* Pouco maior */
+    height: 18px; /* Pouco maior */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.65rem;
-    font-weight: bold;
+    font-size: 0.7rem; /* Maior */
+    font-weight: 500; /* Normal */
+    border: 1px solid var(--bg-secondary); /* Borda para destacar */
 }
 
-.theme-toggle {
-    cursor: pointer;
-    padding: 0.75rem;
-    border-radius: 50%;
-    transition: var(--transition);
-    color: var(--text-secondary);
-}
-
-.theme-toggle:hover {
-    background-color: var(--bg-tertiary);
-}
-
-.user-dropdown {
-    position: relative;
-}
+/* --- User Dropdown --- */
+.user-dropdown { position: relative; margin-left: 0.5rem; /* Espaço antes do dropdown */ }
 
 .user {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: var(--transition);
+    display: flex; align-items: center; gap: 0.75rem; /* Aumenta gap */
+    padding: 0.5rem 0.75rem; /* Ajuste padding */
+    border-radius: 20px; cursor: pointer; transition: var(--transition);
+    border: 1px solid transparent; /* Para efeito de hover */
 }
+.user:hover { background-color: var(--bg-tertiary); border-color: var(--border-color); }
 
-.user:hover {
-    background-color: var(--bg-tertiary);
-}
+.profile-pic { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+.profile-pic img { width: 100%; height: 100%; object-fit: cover; }
 
-.profile-pic {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+.username-display {
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap; /* Impede quebra de nome */
     overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px; /* Limita largura do nome */
 }
 
-.profile-pic img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.dropdown-arrow {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+}
+.dropdown-arrow.open {
+    transform: rotate(180deg);
 }
 
 .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    width: 200px;
+    display: none; /* Escondido por padrão */
+    position: absolute; top: calc(100% + 10px); /* Abaixo do botão com espaço */
+    right: 0; width: 220px; /* Mais largo */
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: 8px; /* Menos arredondado */
     padding: 0.5rem 0;
-    box-shadow: var(--shadow);
-    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1001; /* Acima de outros elementos */
+    opacity: 0; /* Para animação */
+    transform: translateY(-10px); /* Para animação */
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.dropdown-menu.show {
+    display: block; /* Mostra o menu */
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .dropdown-menu a {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: var(--transition);
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1.25rem; /* Mais padding */
+    color: var(--text-secondary); /* Cor secundária por padrão */
+    text-decoration: none; transition: var(--transition);
+    font-size: 0.9rem;
 }
+.dropdown-menu a svg { width: 16px; text-align: center; } /* Tamanho ícone dropdown */
+.dropdown-menu a:hover { background-color: var(--bg-tertiary); color: var(--text-primary); }
+.dropdown-menu a.danger { color: var(--danger); }
+.dropdown-menu a.danger:hover { background-color: rgba(248, 81, 73, 0.1); } /* Fundo vermelho suave */
 
-.dropdown-menu a:hover {
-    background-color: var(--bg-tertiary);
-}
-
-.dropdown-menu a.danger {
-    color: var(--danger);
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+    .topbar { padding: 0.5rem 1rem; }
+    .search { display: none; } /* Esconde busca no mobile */
+    .username-display { display: none; } /* Esconde nome no mobile */
+    .user { padding: 0.5rem; } /* Menor padding no user */
+    .nav-icons { gap: 0.25rem; } /* Menor gap entre ícones */
 }
