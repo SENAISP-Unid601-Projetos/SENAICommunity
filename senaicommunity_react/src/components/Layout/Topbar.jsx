@@ -1,37 +1,34 @@
-import React, { useState, useEffect } from 'react'; // ✅ Hooks do React para estado e efeitos
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // ✅ CORREÇÃO: Importa o Link
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// ✅ Ícones necessários, incluindo SOL e LUA
 import { faHome, faCommentDots, faBell, faMoon, faSun, faChevronDown, faUserEdit, faUserSlash, faSignOutAlt, faSearch } from '@fortawesome/free-solid-svg-icons';
 import './Topbar.css';
 
 const Topbar = ({ onLogout, currentUser }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
-    // ✅ Estado para controlar o tema atual, lendo do localStorage ou usando 'dark' como padrão
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
 
-    // ✅ Efeito que aplica o tema na página inteira (no <html>) e salva a escolha
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
-    }, [theme]); // Roda sempre que o 'theme' mudar
+    }, [theme]); 
 
     const handleToggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
 
-    // ✅ Função que é chamada ao clicar no ícone para trocar o tema
     const handleThemeToggle = () => {
         setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
     };
     
+    // ✅ MELHORIA: A URL da foto é construída corretamente
     const userImage = currentUser?.urlFotoPerfil 
         ? `http://localhost:8080${currentUser.urlFotoPerfil}` 
         : "https://via.placeholder.com/40";
 
     return (
         <header className="topbar">
-            {/* ... outras partes do seu header ... */}
             <div className="header-left">
                 <h1 className="logo"><span className="highlight">SENAI </span>Community</h1>
             </div>
@@ -42,19 +39,20 @@ const Topbar = ({ onLogout, currentUser }) => {
             </div>
 
             <nav className="nav-icons">
-                <a href="/principal" className="nav-icon" data-tooltip="Início">
+                {/* ✅ CORREÇÃO: Trocado <a> por <Link> */}
+                <Link to="/principal" className="nav-icon" data-tooltip="Início">
                     <FontAwesomeIcon icon={faHome} />
-                </a>
-                <div className="nav-icon" data-tooltip="Mensagens">
+                </Link>
+                {/* ✅ CORREÇÃO: Trocado <div> por <Link> para levar às mensagens */}
+                <Link to="/mensagens" className="nav-icon" data-tooltip="Mensagens">
                     <FontAwesomeIcon icon={faCommentDots} />
                     <span className="badge">3</span>
-                </div>
+                </Link>
                 <div className="nav-icon" data-tooltip="Notificações" id="notifications-icon">
                     <FontAwesomeIcon icon={faBell} />
                     {/* Badge de notificações virá de um estado no futuro */}
                 </div>
 
-                {/* ✅ JSX DO BOTÃO QUE CHAMA A FUNÇÃO E MUDA O ÍCONE */}
                 <div className="theme-toggle" data-tooltip="Alternar tema" onClick={handleThemeToggle}>
                     <FontAwesomeIcon icon={theme === 'dark' ? faMoon : faSun} />
                 </div>
@@ -71,7 +69,8 @@ const Topbar = ({ onLogout, currentUser }) => {
                 
                 {isMenuOpen && (
                     <div className="dropdown-menu" style={{ display: 'block' }}>
-                        <a href="/perfil"><FontAwesomeIcon icon={faUserEdit} /> Meu Perfil</a>
+                        {/* ✅ CORREÇÃO: Trocado <a> por <Link> */}
+                        <Link to="/perfil"><FontAwesomeIcon icon={faUserEdit} /> Meu Perfil</Link>
                         <a href="#" className="danger"><FontAwesomeIcon icon={faUserSlash} /> Excluir Conta</a>
                         <a href="#" onClick={onLogout}><FontAwesomeIcon icon={faSignOutAlt} /> Sair</a>
                     </div>

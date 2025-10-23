@@ -12,7 +12,19 @@ const FileUpload = ({ file, setFile }) => {
         }
     }, [setFile]);
 
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: 'image/*' });
+    // ✅ --- CORREÇÃO APLICADA AQUI --- ✅
+    // Substituído 'image/*' por um objeto com tipos MIME específicos
+    // para corrigir os avisos no console do react-dropzone.
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: {
+            'image/jpeg': ['.jpeg', '.jpg'],
+            'image/png': ['.png'],
+            'image/webp': ['.webp'],
+            'image/gif': ['.gif']
+        }
+    });
+    // --- FIM DA CORREÇÃO ---
 
     const removeImage = () => {
         setFile(null);

@@ -41,7 +41,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilita o CORS
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
@@ -75,7 +75,18 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://127.0.0.1:5501", "http://localhost:3000", "http://127.0.0.1:5502"));
+
+        // ✅ --- CORREÇÃO APLICADA AQUI --- ✅
+        // Adicionado "http://localhost:5173" (seu frontend React) à lista de origens permitidas.
+        configuration.setAllowedOrigins(List.of(
+                "http://127.0.0.1:5500",
+                "http://127.0.0.1:5501",
+                "http://localhost:3000",
+                "http://127.0.0.1:5502",
+                "http://localhost:5173" // <-- ADICIONADO
+        ));
+        // --- FIM DA CORREÇÃO ---
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

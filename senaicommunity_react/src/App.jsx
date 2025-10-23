@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-// Importe as novas páginas
+// Importe as páginas de autenticação
 import Login from './pages/Login/Login.jsx';
 import Cadastro from './pages/Cadastro/Cadastro.jsx';
+
+// ✅ IMPORTANDO TODAS AS SUAS PÁGINAS NOVAS
 import Principal from './pages/Principal/Principal.jsx';
 import Perfil from './pages/Perfil/Perfil.jsx';
-import Amizades from './pages/Amizades/Amizades.jsx';
-import BuscarAmigos from './pages/BuscarAmigos/BuscarAmigos.jsx';
+import Projetos from './pages/Projetos/Projetos.jsx';
+import Vagas from './pages/Vagas/Vagas.jsx';
+import Eventos from './pages/Eventos/Eventos.jsx';
+import Mensagens from './pages/Mensagens/Mensagens.jsx';
+import EncontrarPessoas from './pages/EncontrarPessoas/EncontrarPessoas.jsx'; // Usando o componente mais novo
+import MinhasConexoes from './pages/MinhasConexoes/MinhasConexoes.jsx'; // Usando o componente mais novo
 
+// Componente para proteger rotas
 const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem('authToken');
     return token ? children : <Navigate to="/login" />;
@@ -30,10 +37,11 @@ function App() {
     return (
         <Router>
             <Routes>
+                {/* Rotas Públicas */}
                 <Route path="/login" element={<Login onLogin={handleLogin} />} />
                 <Route path="/cadastro" element={<Cadastro />} />
                 
-                {/* Rotas Privadas */}
+                {/* Rotas Privadas (dentro do PrivateRoute) */}
                 <Route 
                     path="/principal"
                     element={
@@ -50,23 +58,59 @@ function App() {
                         </PrivateRoute>
                     } 
                 />
+                
+                {/* ✅ NOVAS ROTAS ADICIONADAS */}
                 <Route 
-                    path="/amizades"
+                    path="/projetos"
                     element={
                         <PrivateRoute>
-                            <Amizades onLogout={handleLogout} />
+                            <Projetos onLogout={handleLogout} />
                         </PrivateRoute>
                     } 
                 />
-                 <Route 
-                    path="/buscar-amigos"
+                <Route 
+                    path="/vagas"
                     element={
                         <PrivateRoute>
-                            <BuscarAmigos onLogout={handleLogout} />
+                            <Vagas onLogout={handleLogout} />
                         </PrivateRoute>
                     } 
                 />
+                <Route 
+                    path="/eventos"
+                    element={
+                        <PrivateRoute>
+                            <Eventos onLogout={handleLogout} />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/mensagens"
+                    element={
+                        <PrivateRoute>
+                            <Mensagens onLogout={handleLogout} />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/encontrar-pessoas"
+                    element={
+                        <PrivateRoute>
+                            <EncontrarPessoas onLogout={handleLogout} />
+                        </PrivateRoute>
+                    } 
+                />
+                <Route 
+                    path="/conexoes"
+                    element={
+                        <PrivateRoute>
+                            <MinhasConexoes onLogout={handleLogout} />
+                        </PrivateRoute>
+                    } 
+                />
+                {/* ✅ FIM DAS NOVAS ROTAS */}
 
+                {/* Rota Padrão: Redireciona para /principal se logado, senão para /login */}
                 <Route path="/" element={<Navigate to={token ? "/principal" : "/login"} />} />
             </Routes>
         </Router>

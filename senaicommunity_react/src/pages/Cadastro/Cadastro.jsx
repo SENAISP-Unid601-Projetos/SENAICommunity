@@ -115,8 +115,8 @@ const Cadastro = () => {
         setLoading(true);
 
         try {
-            // ✅ CORREÇÃO: Removido o header 'Content-Type'. 
-            // O navegador o define automaticamente com o 'boundary' correto quando usa FormData.
+            // Este POST estava falhando por causa do CORS, não por causa deste código.
+            // A lógica de não enviar 'Content-Type' está CORRETA.
             await axios.post('http://localhost:8080/cadastro/alunos', submissionData);
 
             await Swal.fire({
@@ -125,7 +125,6 @@ const Cadastro = () => {
                 timer: 2500, showConfirmButton: false, allowOutsideClick: false
             });
             
-            // ✅ CORREÇÃO: Usando useNavigate para redirecionar
             navigate('/login'); 
             
         } catch (error) {
