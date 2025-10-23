@@ -1,10 +1,11 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter; // Adicionado para garantir
+import lombok.Setter; // Adicionado para garantir
 
-@Data
+@Data // @Data já inclui @Getter, @Setter, @ToString, etc.
 @Entity
 @Table(name = "tb_roles")
 public class Role {
@@ -30,6 +31,4 @@ public class Role {
         }
 
     }
-
-
 }

@@ -1,4 +1,4 @@
-// BackEnd/src/main/java/com/SenaiCommunity/BackEnd/BackEndApplication.java (CONTEÚDO COMPLETO E ATUALIZADO)
+// BackEnd/src/main/java/com/SenaiCommunity/BackEnd/BackEndApplication.java
 
 package com.SenaiCommunity.BackEnd;
 
@@ -121,7 +121,7 @@ public class BackEndApplication {
 		private void createRoleIfNotFound(String roleName) {
 			if (!roleRepository.existsByNome(roleName)) {
 				Role role = new Role();
-				role.setNome(roleName);
+				role.setNome(roleName); // O erro que a IDE mostra é aqui
 				roleRepository.save(role);
 				System.out.println("Role criada: " + roleName);
 			}

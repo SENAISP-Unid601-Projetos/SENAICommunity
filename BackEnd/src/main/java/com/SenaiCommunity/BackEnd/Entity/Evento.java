@@ -3,43 +3,35 @@ package com.SenaiCommunity.BackEnd.Entity;
 import com.SenaiCommunity.BackEnd.Enum.CategoriaEvento;
 import com.SenaiCommunity.BackEnd.Enum.FormatoEvento;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import lombok.Data;
 import java.time.LocalDate;
 
+@Data
 @Entity
-@Table(name = "eventos")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "tb_eventos")
 public class Evento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
     private String nome;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT")
+    private String descricao;
+
     private LocalDate data;
 
-    @Column(nullable = false, length = 150)
     private String local;
 
+    // --- NOVO CAMPO ADICIONADO ---
+    // Este campo será usado para armazenar a URL ou o caminho da imagem
+    private String imagemCapa;
+    // --- FIM DO NOVO CAMPO ---
+
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private FormatoEvento formato;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private CategoriaEvento categoria;
-
-    // Armazena apenas o nome do arquivo da imagem de capa (ex: "uuid-nome-do-arquivo.jpg")
-    @Column(name = "imagem_capa")
-    private String imagemCapa;
 }
