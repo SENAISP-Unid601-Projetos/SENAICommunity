@@ -12,7 +12,58 @@
     <div class="notification-center"></div>
 
     <header class="topbar">
-        </header>
+        <div class="header-left">
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+        </div>
+
+        <div class="search">
+            <i class="fas fa-search"></i>
+         <input type="text" id="search-input" placeholder="Pesquisar no feed...">
+        </div>
+
+        <nav class="nav-icons">
+            <div class="nav-icon" data-tooltip="Início">
+                <a href="principal.html"><i class="fas fa-home"></i></a>
+            </div>
+            <div class="nav-icon" data-tooltip="Mensagens">
+                <a href="mensagem.html"><i class="fas fa-comment-dots"></i></a>
+                <span class="badge">3</span>
+            </div>
+            <div class="nav-icon" data-tooltip="Notificações" id="notifications-icon">
+                <i class="fas fa-bell"></i>
+                <span class="badge" id="notifications-badge" style="display: none;">0</span>
+                <div class="notifications-panel" id="notifications-panel">
+                    <div class="notifications-header">
+                        <h3>Notificações</h3>
+                    </div>
+                    <div class="notifications-list" id="notifications-list">
+                        <p class="empty-state">Nenhuma notificação nova.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-toggle" data-tooltip="Alternar tema">
+                <i class="fas fa-moon"></i>
+            </div>
+        </nav>
+
+        <div class="user-dropdown">
+            <div class="user">
+                <div class="profile-pic">
+                    <img src="https://via.placeholder.com/40" alt="Perfil" id="topbar-user-img">
+                </div>
+                <span id="topbar-user-name">Carregando...</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="#" id="edit-profile-btn"><i class="fas fa-user-edit"></i> Editar Perfil</a>
+                <a href="#" id="delete-account-btn" class="danger"><i class="fas fa-user-slash"></i> Excluir Conta</a>
+                <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </div>
+        </div>
+    </header>
 
     <div class="container">
         <aside class="sidebar">
@@ -58,15 +109,15 @@
                 <h2 class="widget-title">Gerenciar Conexões</h2>
                 
                 <div class="connections-section">
-                    <h3>Pedidos de Amizade Recebidos</h3>
-                    <div class="request-list" id="received-requests-list">
-                        <p class="empty-state">Nenhum pedido recebido.</p>
-                    </div>
-                </div>
+    <h3>Pedidos de Amizade Recebidos</h3>
+    <div class="user-list" id="received-requests-list">
+        ...
+    </div>
+</div>
 
                 <div class="connections-section">
                     <h3>Pedidos de Amizade Enviados</h3>
-                    <div class="request-list" id="sent-requests-list">
+                    <div class="user-list" id="sent-requests-list">
                         <p class="empty-state">Nenhum pedido enviado.</p>
                     </div>
                 </div>
@@ -74,7 +125,7 @@
                 <div class="connections-section">
                     <h3>Meus Amigos</h3>
                     <div class="user-list" id="friends-list">
-                    </div>
+                        </div>
                 </div>
             </div>
         </main>

@@ -432,6 +432,11 @@ public class ProjetoService {
             membroDTO.setUsuarioId(membro.getUsuario().getId());
             membroDTO.setUsuarioNome(membro.getUsuario().getNome());
             membroDTO.setUsuarioEmail(membro.getUsuario().getEmail());
+
+            // --- CORREÇÃO APLICADA AQUI ---
+            membroDTO.setUsuarioFotoPerfil(membro.getUsuario().getFotoPerfil());
+            // --------------------------------
+
             membroDTO.setRole(membro.getRole());
             membroDTO.setDataEntrada(membro.getDataEntrada());
             membroDTO.setConvidadoPorNome(membro.getConvidadoPor() != null ?

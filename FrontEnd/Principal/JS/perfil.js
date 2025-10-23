@@ -3,6 +3,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const backendUrl = 'http://localhost:8080';
     const jwtToken = localStorage.getItem('token');
     const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
+
+    // --- FUNÇÕES DE CONTROLE DE TEMA ---
+function setInitialTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+    const themeToggleIcon = document.querySelector('.theme-toggle i');
+    if (themeToggleIcon) {
+        if (theme === 'dark') {
+            themeToggleIcon.classList.remove('fa-sun');
+            themeToggleIcon.classList.add('fa-moon');
+        } else {
+            themeToggleIcon.classList.remove('fa-moon');
+            themeToggleIcon.classList.add('fa-sun');
+        }
+    }
+}
     let currentUser = null;
 
     // --- ELEMENTOS DO DOM ---
@@ -70,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchUserConnections(); // NOVA CHAMADA DE FUNÇÃO
             fetchNotifications()
             setupEventListeners();
+            setInitialTheme();
         } catch (error) {
             console.error("ERRO CRÍTICO NA INICIALIZAÇÃO DO PERFIL:", error);
             localStorage.removeItem('token');
@@ -246,6 +275,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- SETUP DOS EVENT LISTENERS ---
     function setupEventListeners() {
+        const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
         document.body.addEventListener('click', closeAllMenus);
 
         // Listener para abrir o dropdown do usuário

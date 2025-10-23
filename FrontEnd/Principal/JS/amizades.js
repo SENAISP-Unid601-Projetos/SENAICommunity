@@ -9,6 +9,34 @@ document.addEventListener("DOMContentLoaded", () => {
     let latestOnlineEmails = [];
     const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
 
+    // --- FUNÇÕES DE CONTROLE DE TEMA ---
+function setInitialTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+    const themeToggleIcon = document.querySelector('.theme-toggle i');
+    if (themeToggleIcon) {
+        if (theme === 'dark') {
+            themeToggleIcon.classList.remove('fa-sun');
+            themeToggleIcon.classList.add('fa-moon');
+        } else {
+            themeToggleIcon.classList.remove('fa-moon');
+            themeToggleIcon.classList.add('fa-sun');
+        }
+    }
+}
+
     // --- ELEMENTOS DO DOM (Seleção Centralizada e Completa) ---
     const elements = {
         // UI Geral
@@ -72,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
             fetchReceivedRequests();
             fetchSentRequests();
             fetchNotifications();
+            setInitialTheme();
 
         } catch (error) {
             console.error("ERRO CRÍTICO NA INICIALIZAÇÃO:", error);
@@ -161,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     // Re-busca as notificações para atualizar o contador (badge)
     fetchNotifications();
-  };
+  }
 
   async function markAllNotificationsAsRead() {
     // Verifica se há notificações não lidas antes de fazer a chamada
@@ -357,30 +386,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
         requests.forEach(req => {
             const card = document.createElement('div');
-            card.className = 'request-card';
+            card.className = 'user-card';
             card.id = `${type}-card-${req.idAmizade}`;
 
             const data = new Date(req.dataSolicitacao).toLocaleDateString('pt-BR');
             const nome = (type === 'received') ? req.nomeSolicitante : req.nomeSolicitado;
             const fotoPath = (type === 'received') ? req.fotoPerfilSolicitante : req.fotoPerfilSolicitado;
-            const fotoUrl = fotoPath ? `${backendUrl}${fotoPath}` : defaultAvatarUrl;
+
+            // --- LINHA CORRIGIDA ABAIXO ---
+            // Adicionado '/api/arquivos/' para montar o URL correto da imagem
+            const fotoUrl = fotoPath ? `${backendUrl}/api/arquivos/${fotoPath}` : defaultAvatarUrl;
 
             let actionsHtml = '';
             if (type === 'received') {
                 actionsHtml = `
-                <button class="btn btn-primary" onclick="window.aceitar(${req.idAmizade})">Aceitar</button>
-                <button class="btn btn-secondary" onclick="window.recusar(${req.idAmizade})">Recusar</button>
-            `;
-            } else {
+                    <button class="btn btn-primary" onclick="window.aceitar(${req.idAmizade})">Aceitar</button>
+                    <button class="btn btn-secondary" onclick="window.recusar(${req.idAmizade})">Recusar</button>
+                `;
+            } else { // Pedidos enviados
                 actionsHtml = `<button class="btn btn-danger" onclick="window.cancelar(${req.idAmizade})">Cancelar Pedido</button>`;
             }
 
             card.innerHTML = `
-            <img src="${fotoUrl}" alt="Foto de ${nome}">
-            <h4>${nome}</h4>
-            <p class="timestamp">Enviado em: ${data}</p>
-            <div class="request-card-actions">${actionsHtml}</div>
-        `;
+                <div class="user-card-avatar">
+                    <img src="${fotoUrl}" alt="Foto de ${nome}">
+                </div>
+                <div class="user-card-info">
+                    <h4>${nome}</h4>
+                    <p>Pedido enviado em: ${data}</p>
+                </div>
+                <div class="user-card-action">
+                    ${actionsHtml}
+                </div>
+            `;
             container.appendChild(card);
         });
     }
@@ -464,6 +502,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
   }
+
+  window.aceitarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
+      // A função 'handleFriendRequestFeedback' já existe no seu código para dar o feedback visual.
+      handleFriendRequestFeedback(notificationId, 'Pedido aceito!', 'success');
+      fetchFriends(); // Atualiza a contagem de conexões
+    } catch (error) {
+      console.error('Erro ao aceitar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao aceitar.', 'error');
+    }
+  };
+
+  window.recusarSolicitacao = async (amizadeId, notificationId) => {
+    try {
+      await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`);
+      handleFriendRequestFeedback(notificationId, 'Pedido recusado.', 'info');
+    } catch (error) {
+      console.error('Erro ao recusar solicitação:', error);
+      handleFriendRequestFeedback(notificationId, 'Erro ao recusar.', 'error');
+    }
+  };
 
   window.aceitarSolicitacao = async (amizadeId, notificationId) => {
     try {
@@ -586,6 +646,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- SETUP DOS EVENT LISTENERS ---
     function setupEventListeners() {
+        const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
         document.body.addEventListener("click", (e) => {
             if (elements.notificationsPanel && !elements.notificationsPanel.contains(e.target) && !elements.notificationsIcon.contains(e.target)) {
                 elements.notificationsPanel.style.display = 'none';
@@ -594,7 +658,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         if (elements.notificationsIcon) {
-        elements.notificationsIcon.addEventListener('click', (event) => {
+      elements.notificationsIcon.addEventListener('click', (event) => {
         event.stopPropagation();
         const panel = elements.notificationsPanel;
         const isVisible = panel.style.display === 'block';

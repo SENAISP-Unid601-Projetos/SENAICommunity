@@ -38,6 +38,7 @@ public class ProjetoController {
         return ResponseEntity.ok(dto);
     }
 
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> criar(
             @RequestParam String titulo,
@@ -45,8 +46,10 @@ public class ProjetoController {
             @RequestParam Integer maxMembros,
             @RequestParam Boolean grupoPrivado,
             @RequestParam Long autorId,
-            @RequestParam List<Long> professorIds,
-            @RequestParam List<Long> alunoIds,
+            // ADICIONE (required = false) AQUI
+            @RequestParam(required = false) List<Long> professorIds,
+            // E AQUI
+            @RequestParam(required = false) List<Long> alunoIds,
             @RequestPart(required = false) MultipartFile foto) {
         try {
             if (foto != null && !foto.isEmpty()) {
