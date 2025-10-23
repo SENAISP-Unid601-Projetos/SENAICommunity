@@ -1,6 +1,6 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
-import com.SenaiCommunity.BackEnd.DTO.NotificacaoSaidaDTO; // Você precisará criar este DTO
+import com.SenaiCommunity.BackEnd.DTO.NotificacaoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Service.NotificacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

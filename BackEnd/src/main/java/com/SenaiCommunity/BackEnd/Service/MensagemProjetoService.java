@@ -1,4 +1,4 @@
-package com.SenaiCommunity.BackEnd.Service; // Ou o pacote correto do seu serviço
+package com.SenaiCommunity.BackEnd.Service;
 
 import com.SenaiCommunity.BackEnd.DTO.MensagemProjetoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.ArquivoMensagemProjeto;
@@ -34,7 +34,7 @@ public class MensagemProjetoService {
     @Autowired
     private NotificacaoService notificacaoService;
     @Autowired
-    private ArquivoMidiaService midiaService; // Assumindo que este serviço lida com uploads
+    private ArquivoMidiaService midiaService;
     @Autowired
     private ProjetoMembroRepository projetoMembroRepository;
 
@@ -48,19 +48,14 @@ public class MensagemProjetoService {
         String nomeAutor = (autor != null) ? autor.getNome() : "Desconhecido";
         Long autorId = (autor != null) ? autor.getId() : null;
 
-        // --- LÓGICA CORRIGIDA PARA CONSTRUIR A URL DA FOTO ---
         String urlFotoAutor = null;
         // Verifica se autor existe e se tem uma foto de perfil definida (não nula/vazia)
         if (autor != null && autor.getFotoPerfil() != null && !autor.getFotoPerfil().isBlank()) {
-            // *** IMPORTANTE: Confirme se "/api/arquivos/" é o prefixo correto ***
-            // Se o endpoint que serve as fotos for outro (ex: "/uploads/"), ajuste a string abaixo.
-            // Esta lógica agora espelha a do UsuarioService.
             urlFotoAutor = "/api/arquivos/" + autor.getFotoPerfil(); // Monta a URL relativa
         } else {
             // Caminho padrão relativo se não houver foto ou autor
             urlFotoAutor = "/images/default-avatar.png";
         }
-        // --- FIM DA LÓGICA CORRIGIDA ---
 
         // Lógica para obter as URLs de mídia da mensagem
         List<String> urlsMidia = mensagem.getArquivos() != null
@@ -77,7 +72,7 @@ public class MensagemProjetoService {
                 .projetoId(mensagem.getProjeto() != null ? mensagem.getProjeto().getId() : null) // Verifica se projeto não é nulo
                 .autorId(autorId)
                 .nomeAutor(nomeAutor)
-                .urlFotoAutor(urlFotoAutor) // <-- Usa a URL relativa construída corretamente
+                .urlFotoAutor(urlFotoAutor)
                 .urlsMidia(urlsMidia)
                 .build();
     }
@@ -106,17 +101,14 @@ public class MensagemProjetoService {
             List<ArquivoMensagemProjeto> midias = new ArrayList<>();
             for (MultipartFile file : arquivos) {
                 try {
-                    // Assume que midiaService.upload retorna a URL completa ou o nome do arquivo,
-                    // dependendo de como ArquivoMidiaService está implementado
                     String urlOuNomeArquivo = midiaService.upload(file);
                     ArquivoMensagemProjeto midia = ArquivoMensagemProjeto.builder()
-                            .url(urlOuNomeArquivo) // Salva o que o serviço de mídia retornar
+                            .url(urlOuNomeArquivo)
                             .tipo(midiaService.detectarTipoPelaUrl(urlOuNomeArquivo))
                             .mensagem(novaMensagem)
                             .build();
                     midias.add(midia);
                 } catch (IOException e) {
-                    // Considerar tratamento de erro mais robusto (ex: logar e continuar?)
                     throw new RuntimeException("Erro ao fazer upload do arquivo: " + file.getOriginalFilename(), e);
                 }
             }
@@ -187,8 +179,6 @@ public class MensagemProjetoService {
                     } catch (IOException e) {
                         // Logar o erro é importante
                         System.err.println("Erro ao deletar arquivo: " + arquivo.getUrl() + " - " + e.getMessage());
-                        // Decide-se não remover da lista se a deleção falhar, para evitar inconsistência
-                        // ou pode-se optar por remover mesmo assim, dependendo da regra de negócio.
                     }
                 }
             }

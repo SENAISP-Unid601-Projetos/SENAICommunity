@@ -45,7 +45,6 @@ public class ProjetoService {
     @Autowired
     private NotificacaoService notificacaoService;
 
-    // <<< NOVO MÉTODO HELPER >>>
     private Usuario getUsuarioFromEmail(String email) {
         return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com email: " + email));
@@ -275,8 +274,6 @@ public class ProjetoService {
         notificacaoService.criarNotificacao(convite.getConvidadoPor(), mensagem, "CONVITE_RECUSADO", convite.getProjeto().getId());
     }
 
-    // <<< INÍCIO DOS NOVOS MÉTODOS >>>
-
     @Transactional(readOnly = true)
     public List<Map<String, Object>> buscarConvitesRecebidos(String email) {
         Usuario usuario = getUsuarioFromEmail(email);
@@ -311,8 +308,6 @@ public class ProjetoService {
             return map;
         }).collect(Collectors.toList());
     }
-
-    // <<< FIM DOS NOVOS MÉTODOS >>>
 
     @Transactional
     public void expulsarMembro(Long projetoId, Long membroId, Long adminId) {

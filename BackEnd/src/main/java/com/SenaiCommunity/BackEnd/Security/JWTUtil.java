@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 import io.jsonwebtoken.JwtParser;
 import java.util.Base64;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 public class
@@ -89,6 +87,4 @@ JWTUtil {
         JwtParser parser = Jwts.parser().verifyWith(getSigningKey()).build();
         return parser.parseSignedClaims(token).getPayload();
     }
-
-
 }

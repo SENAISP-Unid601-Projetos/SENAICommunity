@@ -94,8 +94,6 @@ public class ProjetoController {
         return ResponseEntity.noContent().build();
     }
 
-    // <<< INÍCIO DOS NOVOS ENDPOINTS >>>
-
     @GetMapping("/convites/recebidos")
     public ResponseEntity<List<Map<String, Object>>> getConvitesRecebidos(Principal principal) {
         if (principal == null) {
@@ -121,8 +119,6 @@ public class ProjetoController {
             return ResponseEntity.internalServerError().body(null);
         }
     }
-
-    // <<< FIM DOS NOVOS ENDPOINTS >>>
 
     @PostMapping("/{projetoId}/convites")
     public ResponseEntity<?> enviarConvite(

@@ -1,6 +1,5 @@
 package com.SenaiCommunity.BackEnd.Repository;
 
-
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -16,5 +15,4 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     // Busca usuários aonde o nome tenha o termo de pesquisa (ignorando maiúsculas/minúsculas)
     List<Usuario> findByNomeContainingIgnoreCaseAndIdNot(String nome, Long id);
-
 }

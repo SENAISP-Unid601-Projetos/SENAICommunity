@@ -30,7 +30,7 @@ public class MensagemProjetoController {
     @PostMapping("/mensagens")
     public ResponseEntity<MensagemProjetoSaidaDTO> enviarMensagem(
             @PathVariable Long projetoId,
-            @RequestPart("conteudo") String conteudo, // Usamos RequestPart para dados e arquivos
+            @RequestPart("conteudo") String conteudo,
             @RequestPart(value = "arquivos", required = false) List<MultipartFile> arquivos,
             Principal principal) {
 

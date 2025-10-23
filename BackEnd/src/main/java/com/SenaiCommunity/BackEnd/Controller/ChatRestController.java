@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/chat")
-//Essa controller serve buscar os históricos de conversa dos chats
 public class ChatRestController {
 
     @Autowired

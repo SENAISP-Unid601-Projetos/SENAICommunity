@@ -69,5 +69,5 @@ public class VagaService {
                 .collect(Collectors.toList());
     }
 
-    // Adicione outros métodos como atualizar, deletar, etc. conforme a necessidade
+    // Adicione outros métodos como atualizar, deletar, etc.
 }
