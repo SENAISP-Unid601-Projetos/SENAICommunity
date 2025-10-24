@@ -12,8 +12,10 @@ const RightSidebar = () => {
                 <div className="widget-header">
                     <h3><FontAwesomeIcon icon={faBullhorn} /> Buscando Colaboradores</h3>
                 </div>
+                {/* Você pode preencher esta lista dinamicamente da API se quiser */}
                 <ul className="lista-colaboracao" style={{listStyle: 'none', padding: 0}}>
                     <li>
+                        {/* Use <Link> do react-router-dom se for link interno */}
                         <a href="#">
                             <strong>App de Gestão Financeira</strong>
                             <span>UX/UI Designer</span>
@@ -32,10 +34,12 @@ const RightSidebar = () => {
             <div className="widget-card">
                 <div className="widget-header">
                     <h3><FontAwesomeIcon icon={faUserPlus} /> Quem Seguir</h3>
-                    <a href="#" className="see-all">Ver todos</a>
+                    {/* Use <Link> do react-router-dom se for link interno */}
+                    <a href="/encontrar-pessoas" className="see-all">Ver todos</a>
                 </div>
                 <div className="follow-list">
                     {/* Item de exemplo para seguir */}
+                    {/* Você pode preencher esta lista dinamicamente da API */}
                     <div className="follow-item">
                         <div className="follow-item-left" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <div className="follow-avatar" style={{ width: '48px', height: '48px', borderRadius: '50%' }}>
@@ -50,8 +54,10 @@ const RightSidebar = () => {
                             <FontAwesomeIcon icon={faPlus} />
                         </button>
                     </div>
+                    {/* Adicione mais itens .follow-item aqui */}
                 </div>
             </div>
+            {/* Você pode adicionar mais widgets aqui */}
         </aside>
     );
 };

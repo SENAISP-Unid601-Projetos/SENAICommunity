@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/autenticacao/login/google").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/eventos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/projetos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/vagas/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/vagas/**").permitAll()

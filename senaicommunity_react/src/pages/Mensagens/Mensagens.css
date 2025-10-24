@@ -1,7 +1,12 @@
-/* src/pages/Mensagens/Mensagens.css (CORRIGIDO PARA THEME TOGGLE) */
+/* src/pages/Mensagens/Mensagens.css (COMPLETO E FINAL) */
 
 /* --- Layout Principal da Página de Mensagens --- */
-.layout-mensagens { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.layout-mensagens {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
 
 /* Container do Grid Principal */
 .container-chat {
@@ -10,7 +15,7 @@
     grid-template-rows: 1fr; /* Garante que a linha ocupe a altura */
     gap: 0;
     flex-grow: 1;
-    height: calc(100vh - 70px); /* Ajuste 70px se a altura do Topbar for diferente */
+    height: calc(100vh - 70px); /* Altura do Topbar é 70px */
     max-height: calc(100vh - 70px);
     overflow: hidden;
     width: 100%;
@@ -22,7 +27,7 @@
     height: 100%; max-height: 100%; overflow-y: auto;
     border-right: 1px solid var(--border-color);
     box-sizing: border-box;
-    padding-top: 1rem; /* Adicionado na correção anterior */
+    padding-top: 1rem;
 }
 
 /* Sidebar de Conversas (do Meio) */
@@ -40,37 +45,41 @@
 .conv-search input:focus { outline: none; border-color: var(--accent-primary); background: var(--bg-primary); }
 
 .conversations-list { flex-grow: 1; overflow-y: auto; padding: 0.5rem; min-height: 0; }
-.convo-list-item { display: flex; align-items: center; gap: 1rem; border-radius: 8px; padding: 0.9rem 1rem; cursor: pointer; transition: background-color 0.2s ease; border-bottom: 1px solid transparent; }
+.convo-list-item { display: flex; align-items: center; gap: 1rem; border-radius: 8px; padding: 0.9rem 1rem; cursor: pointer; transition: background-color 0.2s ease; }
 .convo-list-item:hover { background: var(--bg-tertiary); }
 .convo-list-item.selected { background: var(--accent-primary); color: white; }
 .convo-list-item.selected .convo-snippet, .convo-list-item.selected .convo-meta { color: rgba(255, 255, 255, 0.8); }
-.convo-list-item .avatar { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; }
+.convo-list-item .avatar { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; object-fit: cover; }
 .convo-info { flex-grow: 1; overflow: hidden; }
-.convo-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.convo-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary); }
+.convo-list-item.selected .convo-title { color: white; } /* Garante cor no selecionado */
 .convo-snippet { font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.convo-meta { text-align: right; font-size: 0.75rem; color: var(--text-tertiary); display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; flex-shrink: 0; }
-.unread-count { background-color: var(--danger); color: white; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; }
+.convo-list-item.selected .convo-snippet { color: rgba(255, 255, 255, 0.8); }
 
 /* --- Área Principal do Chat (Direita) --- */
 .chat-main-area { display: flex; height: 100%; max-height: 100%; overflow: hidden; box-sizing: border-box; }
+.chat-active-card { display: flex; flex-direction: column; width: 100%; height: 100%; background-color: var(--bg-primary); position: relative; /* Para o input */ }
 
-.chat-active-card {
-    display: flex; flex-direction: column; width: 100%; height: 100%;
-    background-color: var(--bg-primary);
-    /* ✅ CORREÇÃO AQUI: Adiciona padding-bottom para criar espaço para o botão flutuante */
-    /* Ajuste '6rem' se o botão for maior/menor ou o espaçamento inferior for diferente */
-    padding-bottom: 6rem; 
-    box-sizing: border-box; /* Garante que o padding não aumente a altura total */
+.chat-header-area {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg-secondary); padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color); flex-shrink: 0; z-index: 10;
 }
-
-.chat-header-area { display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-.chat-header-info { display: flex; align-items: center; gap: 1rem; }
-.chat-header-info .avatar { width: 40px; height: 40px; border-radius: 10px; }
-.chat-header-info h3 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+.chat-header-info { display: flex; align-items: center; gap: 1rem; overflow: hidden; }
+.chat-header-info .avatar { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; }
+.chat-header-info h3 { margin: 0; font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chat-options-btn { background: none; border: none; color: var(--text-secondary); font-size: 1.1rem; cursor: pointer; padding: 0.5rem; border-radius: 50%; }
 .chat-options-btn:hover { background-color: var(--bg-tertiary); }
+/* Botão de voltar (escondido por padrão) */
+.chat-back-btn { display: none; }
 
-.chat-messages-area { flex-grow: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; min-height: 0; }
+.chat-messages-area {
+    flex-grow: 1; padding: 1.5rem; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    padding-bottom: 6rem; /* Espaço para o input não sobrepor a última msg */
+}
+
+/* Bolha de Mensagem */
 .message-bubble-wrapper { display: flex; max-width: 70%; word-wrap: break-word; }
 .message-bubble-wrapper.me { justify-content: flex-end; margin-left: auto; }
 .message-bubble-wrapper.other { justify-content: flex-start; margin-right: auto; }
@@ -81,17 +90,26 @@
 .message-time { font-size: 0.7rem; color: rgba(255, 255, 255, 0.7); margin-top: 0.25rem; display: block; text-align: right; }
 .message-bubble-wrapper.other .message-time { color: var(--text-tertiary); }
 
+/* Nome do autor em chats de grupo */
+.message-bubble .message-author {
+    font-size: 0.8rem; font-weight: 600;
+    color: var(--accent-primary); margin-bottom: 0.25rem; display: block;
+}
+.message-bubble-wrapper.other .message-author { color: var(--highlight); }
+.message-bubble-wrapper.me .message-author { display: none; } /* Não mostra meu nome nas minhas msgs */
+
+/* Input de Chat */
 .chat-input-area {
     display: flex; gap: 0.8rem; background: var(--bg-secondary);
-    border-top: 1px solid var(--border-color); padding: 1rem 1.5rem; flex-shrink: 0;
-    /* Adiciona posicionamento para ficar sobre o padding do .chat-active-card */
-    position: absolute; /* Ou fixed se preferir */
+    border-top: 1px solid var(--border-color); padding: 1rem 1.5rem;
+    flex-shrink: 0;
+    /* Fixa o input no fundo da coluna */
+    position: absolute;
     bottom: 0;
-    left: 0; /* Começa da borda esquerda da coluna do chat */
-    right: 0; /* Vai até a borda direita da coluna do chat */
-    width: 100%; /* Garante que ocupe a largura da coluna */
-    box-sizing: border-box; /* Inclui padding na largura */
-    z-index: 10; /* Garante que fique acima das mensagens */
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 20;
 }
 .chat-input-area input { flex-grow: 1; padding: 0.9rem 1.2rem; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-tertiary); color: var(--text-primary); font-size: 1rem; }
 .chat-input-area input:focus { outline: none; border-color: var(--accent-primary); background: var(--bg-primary); }
@@ -99,27 +117,59 @@
 .chat-input-area button:hover { background-color: var(--accent-secondary); }
 .chat-input-area button:disabled { background-color: var(--button-disabled); cursor: not-allowed; }
 
+/* View de Chat Vazio */
 .empty-chat-view { margin: auto; text-align: center; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; padding: 2rem; }
 .empty-chat-view svg { opacity: 0.3; margin-bottom: 1.5rem; color: var(--text-tertiary);}
 .empty-chat-view h3 { color: var(--text-primary); font-size: 1.25rem; margin-bottom: 0.5rem; }
-.loading-state { padding: 1rem; text-align: center; color: var(--text-secondary); }
+.loading-state, .empty-state { padding: 1rem; text-align: center; color: var(--text-secondary); }
+.empty-state { font-style: italic; }
 
 /* --- RESPONSIVIDADE --- */
 @media (max-width: 1200px) {
     .container-chat { grid-template-columns: 340px 1fr; }
      .container-chat > .sidebar { display: none; }
-     /* Ajusta o posicionamento do input para ocupar a coluna correta */
-     .chat-input-area { left: 340px; /* Largura da sidebar de conversas */ }
+     .chat-input-area {
+        /* Ajusta o 'left' para começar depois da sidebar de conversas */
+        left: 340px; 
+        width: calc(100% - 340px);
+     }
 }
 
 @media (max-width: 768px) {
     .container-chat { grid-template-columns: 1fr; }
-    .chat-conversations-sidebar.hidden-mobile { display: none; }
-    .chat-main-area.hidden-mobile { display: none; }
+    
+    /* Esconde a lista se o chat estiver ativo */
+    .chat-conversations-sidebar.hidden-mobile {
+        display: none;
+    }
+    /* Esconde o chat se a lista estiver ativa */
+    .chat-main-area.hidden-mobile {
+        display: none;
+    }
+    /* Garante que apareçam por padrão se a classe não estiver lá */
     .chat-conversations-sidebar:not(.hidden-mobile) { display: flex; }
     .chat-main-area:not(.hidden-mobile) { display: flex; }
-    /* No mobile, o input volta a ocupar a tela inteira */
-    .chat-input-area { left: 0; }
-    /* Reduz o padding inferior no mobile se o botão de tema for menor */
-    .chat-active-card { padding-bottom: 5rem; } 
+
+    /* Mostra o botão de voltar no mobile */
+    .chat-back-btn {
+        display: block;
+        background: none; border: none;
+        color: var(--text-primary);
+        font-size: 1.2rem;
+        padding: 0.5rem;
+        margin-right: 0.5rem;
+        cursor: pointer;
+    }
+    .chat-header-area {
+        padding: 0.75rem 1rem; /* Ajusta padding */
+    }
+    .chat-input-area {
+        left: 0; /* Ocupa 100% da largura */
+        width: 100%;
+        padding-bottom: 1rem; /* Garante espaço em iPhones com barra inferior */
+    }
+    .chat-messages-area {
+        /* Aumenta o padding inferior para compensar o input */
+        padding-bottom: 8rem;
+    }
 }

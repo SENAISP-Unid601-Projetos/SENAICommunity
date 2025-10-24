@@ -40,6 +40,7 @@ public class ConviteProjeto {
         PENDENTE,
         ACEITO,
         RECUSADO,
-        EXPIRADO
+        EXPIRADO,
+        CANCELADO // ✅ --- CORREÇÃO APLICADA AQUI --- ✅
     }
 }

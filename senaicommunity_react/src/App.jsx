@@ -15,6 +15,9 @@ import Mensagens from './pages/Mensagens/Mensagens.jsx';
 import EncontrarPessoas from './pages/EncontrarPessoas/EncontrarPessoas.jsx'; // Usando o componente mais novo
 import MinhasConexoes from './pages/MinhasConexoes/MinhasConexoes.jsx'; // Usando o componente mais novo
 
+// ✅ 1. IMPORTAÇÃO DA NOVA PÁGINA
+import Configuracoes from './pages/Configuracoes/Configuracoes.jsx';
+
 // Componente para proteger rotas
 const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem('authToken');
@@ -105,6 +108,16 @@ function App() {
                     element={
                         <PrivateRoute>
                             <MinhasConexoes onLogout={handleLogout} />
+                        </PrivateRoute>
+                    } 
+                />
+                
+                {/* ✅ 2. NOVA ROTA DE CONFIGURAÇÕES ADICIONADA */}
+                <Route 
+                    path="/configuracoes"
+                    element={
+                        <PrivateRoute>
+                            <Configuracoes onLogout={handleLogout} />
                         </PrivateRoute>
                     } 
                 />
