@@ -1,20 +1,19 @@
-<<<<<<< HEAD
+
 // src/pages/Eventos/Eventos.jsx (NOVO DESIGN - Assumindo Subdiretório 'eventoPictures')
 
-=======
->>>>>>> ccf9cc30eca8c59f855877b1cf9eaaf39f162b33
+
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Topbar from '../../components/Layout/Topbar';
 import Sidebar from '../../components/Layout/Sidebar';
-<<<<<<< HEAD
+
 import RightSidebar from '../../pages/Principal/RightSidebar';
 import './Eventos.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTag, faClock, faMapMarkerAlt, faArrowRight, faUsers } from '@fortawesome/free-solid-svg-icons';
 
 // --- COMPONENTE EventoCard CORRIGIDO (Assumindo Subdiretório) ---
-=======
+
 import RightSidebar from '../../pages/Principal/RightSidebar'; // ✅ REVERTIDO (Importado)
 import './Eventos.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -23,7 +22,7 @@ import { faTag, faClock, faMapMarkerAlt, faArrowRight, faUsers } from '@fortawes
 // ... (código dos componentes EventoCard e Eventos) ...
 // (O conteúdo interno dos componentes permanece o mesmo)
 // --- COMPONENTE EventoCard MELHORADO ---
->>>>>>> ccf9cc30eca8c59f855877b1cf9eaaf39f162b33
+
 const EventoCard = ({ evento }) => {
     // Lógica da data (mantida)
     const data = new Date(evento.data + 'T00:00:00');
@@ -205,11 +204,10 @@ const Eventos = ({ onLogout }) => {
                         }
                     </section>
                 </main>
-<<<<<<< HEAD
+
                 <RightSidebar />
-=======
                 <RightSidebar /> {/* ✅ REVERTIDO (Renderizado) */}
->>>>>>> ccf9cc30eca8c59f855877b1cf9eaaf39f162b33
+
             </div>
         </div>
     );
