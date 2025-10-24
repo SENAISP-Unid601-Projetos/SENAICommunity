@@ -29,6 +29,7 @@ public class EventoController {
         return eventoService.criarEventoComImagem(eventoDTO, imagem);
     }
 
+    // ... outros endpoints ...
     @GetMapping
     public List<EventoSaidaDTO> listarTodos() {
         return eventoService.listarTodos();

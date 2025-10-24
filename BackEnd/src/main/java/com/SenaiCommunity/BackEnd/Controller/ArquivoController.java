@@ -18,7 +18,7 @@ import java.nio.file.Paths;
 
 @Controller
 @RequestMapping("/api/arquivos")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*") // Lembre-se de configurar o CORS
 public class ArquivoController {
 
     // Injeta o valor da propriedade que definimos no application.properties

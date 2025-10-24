@@ -10,6 +10,7 @@ import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -139,6 +140,7 @@ public class PostagemService {
                 }
             }
         }
+
         // Deleta a postagem do banco de dados
         postagemRepository.deleteById(id);
     }
@@ -148,7 +150,7 @@ public class PostagemService {
 
         // Converte cada Postagem da lista para um PostagemSaidaDTO
         return posts.stream()
-                .map(this::toDTO)
+                .map(this::toDTO) // Usa o método de conversão que você já tem!
                 .collect(Collectors.toList());
     }
 
@@ -183,6 +185,7 @@ public class PostagemService {
 
     // Lógica de conversão Entidade -> DTO de Saída
     // Em PostagemService.java
+
     private PostagemSaidaDTO toDTO(Postagem postagem) {
         // Converte a lista de entidades ArquivoMidia para uma lista de Strings (URLs)
         List<String> urls = postagem.getArquivos() != null

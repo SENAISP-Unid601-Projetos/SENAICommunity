@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.DTO;
 
+import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

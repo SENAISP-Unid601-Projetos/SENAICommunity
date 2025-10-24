@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -72,8 +70,6 @@ public class ProjetoController {
                     "message", "Projeto criado com sucesso! Convites enviados automaticamente para professores e alunos.",
                     "projeto", salvo
             ));
-        } catch (IllegalArgumentException e) { // Pega a validação do Service
-            return ResponseEntity.badRequest().body("Erro ao criar projeto: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("[ERROR] Erro ao criar projeto: " + e.getMessage());
             e.printStackTrace();
@@ -92,32 +88,6 @@ public class ProjetoController {
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         projetoService.deletar(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/convites/recebidos")
-    public ResponseEntity<List<Map<String, Object>>> getConvitesRecebidos(Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        try {
-            List<Map<String, Object>> convites = projetoService.buscarConvitesRecebidos(principal.getName());
-            return ResponseEntity.ok(convites);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(null);
-        }
-    }
-
-    @GetMapping("/convites/enviados")
-    public ResponseEntity<List<Map<String, Object>>> getConvitesEnviados(Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        try {
-            List<Map<String, Object>> convites = projetoService.buscarConvitesEnviados(principal.getName());
-            return ResponseEntity.ok(convites);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(null);
-        }
     }
 
     @PostMapping("/{projetoId}/convites")
