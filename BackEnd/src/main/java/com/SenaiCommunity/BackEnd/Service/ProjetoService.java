@@ -5,6 +5,7 @@ import com.SenaiCommunity.BackEnd.Entity.*;
 import com.SenaiCommunity.BackEnd.Repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,8 +23,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProjetoService {
-
-    private static final String UPLOAD_DIR = "uploads/projeto-pictures/";
 
     @Autowired
     private ProjetoRepository projetoRepository;
@@ -45,6 +44,9 @@ public class ProjetoService {
 
     @Autowired
     private NotificacaoService notificacaoService;
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     public List<ProjetoDTO> listarTodos() {
         List<Projeto> projetos = projetoRepository.findAll();
@@ -396,7 +398,14 @@ public class ProjetoService {
         dto.setDataEntrega(projeto.getDataEntrega());
         dto.setStatus(projeto.getStatus());
 
-        dto.setImagemUrl(projeto.getImagemUrl());
+        String nomeFoto = projeto.getImagemUrl();
+        if (nomeFoto != null && !nomeFoto.isBlank()) {
+            dto.setImagemUrl("/api/arquivos/" + nomeFoto);
+        } else {
+            dto.setImagemUrl("/images/default-project.jpg");
+        }
+
+        dto.setDataCriacao(projeto.getDataCriacao());
         dto.setDataCriacao(projeto.getDataCriacao());
         dto.setMaxMembros(projeto.getMaxMembros());
         dto.setGrupoPrivado(projeto.getGrupoPrivado());
@@ -432,11 +441,7 @@ public class ProjetoService {
             membroDTO.setUsuarioId(membro.getUsuario().getId());
             membroDTO.setUsuarioNome(membro.getUsuario().getNome());
             membroDTO.setUsuarioEmail(membro.getUsuario().getEmail());
-
-            // --- CORREÇÃO APLICADA AQUI ---
             membroDTO.setUsuarioFotoPerfil(membro.getUsuario().getFotoPerfil());
-            // --------------------------------
-
             membroDTO.setRole(membro.getRole());
             membroDTO.setDataEntrada(membro.getDataEntrada());
             membroDTO.setConvidadoPorNome(membro.getConvidadoPor() != null ?
@@ -486,8 +491,7 @@ public class ProjetoService {
         String cleanFilename = StringUtils.cleanPath(originalFilename);
         String fileName = System.currentTimeMillis() + "_" + cleanFilename;
 
-        // Criar diretório se não existir
-        Path uploadPath = Paths.get(UPLOAD_DIR);
+        Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }

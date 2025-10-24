@@ -436,8 +436,8 @@ function updateThemeIcon(theme) {
             card.className = 'user-card';
             card.id = `friend-card-${friend.idAmizade}`;
             const fotoUrl = friend.fotoPerfil ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` : defaultAvatarUrl;
-            const actionsHtml = `
-                <a href="mensagem.html" class="btn btn-primary"><i class="fas fa-comment-dots"></i> Mensagem</a>
+          const actionsHtml = `
+                <a href="mensagem.html?userEmail=${friend.email}" class="btn btn-primary"><i class="fas fa-comment-dots"></i> Mensagem</a>
                 <button class="btn btn-danger" onclick="window.removerAmizade(${friend.idAmizade})"><i class="fas fa-user-minus"></i> Remover</button>
             `;
             card.innerHTML = `
