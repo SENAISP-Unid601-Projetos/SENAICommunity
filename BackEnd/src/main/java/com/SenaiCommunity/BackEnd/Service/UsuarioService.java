@@ -160,7 +160,9 @@ public class UsuarioService {
                 usuario.getEmail(),
                 urlFoto,
                 status,
-                userStatusService.isOnline(usuario.getEmail())
+                userStatusService.isOnline(usuario.getEmail()),
+                // ✅ NOVO CAMPO ADICIONADO
+                usuario.getTipoUsuario()
         );
     }
 

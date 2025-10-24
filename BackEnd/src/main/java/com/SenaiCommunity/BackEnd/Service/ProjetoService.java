@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,11 +32,11 @@ public class ProjetoService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private ProfessorRepository professorRepository;
-
-    @Autowired
-    private AlunoRepository alunoRepository;
+    // Removido Professor/Aluno Repository, pois agora usamos ProjetoMembro
+    // @Autowired
+    // private ProfessorRepository professorRepository;
+    // @Autowired
+    // private AlunoRepository alunoRepository;
 
     @Autowired
     private ProjetoMembroRepository projetoMembroRepository;
@@ -45,6 +46,9 @@ public class ProjetoService {
 
     @Autowired
     private NotificacaoService notificacaoService;
+
+    @Autowired
+    private MensagemGrupoService mensagemGrupoService;
 
     public List<ProjetoDTO> listarTodos() {
         List<Projeto> projetos = projetoRepository.findAll();
@@ -57,93 +61,122 @@ public class ProjetoService {
         return converterParaDTO(projeto);
     }
 
+    // ✅ --- NOVO MÉTODO ADICIONADO ---
+    @Transactional(readOnly = true) // Boa prática para métodos de leitura
+    public List<ProjetoDTO> listarMeusProjetos(String emailUsuario) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado: " + emailUsuario));
+
+        // 1. Encontra todas as participações (ProjetoMembro) do usuário
+        List<ProjetoMembro> minhasParticipacoes = projetoMembroRepository.findByUsuarioId(usuario.getId());
+
+        // 2. Mapeia essas participações de volta para uma lista de Projetos DTO
+        return minhasParticipacoes.stream()
+                .map(ProjetoMembro::getProjeto) // Pega o Projeto de cada participação
+                .map(this::converterParaDTO)    // Converte o Projeto para ProjetoDTO
+                .collect(Collectors.toList());
+    }
+    // --- FIM DO NOVO MÉTODO ---
+
     @Transactional
     public ProjetoDTO salvar(ProjetoDTO dto, MultipartFile foto) {
-        Projeto projeto = new Projeto();
+        Projeto projeto;
         boolean isNovoGrupo = dto.getId() == null;
 
-        if (!isNovoGrupo) {
+        // Pega o autor (necessário para verificação de permissão em 'atualizar')
+        Usuario autor = usuarioRepository.findById(dto.getAutorId())
+                .orElseThrow(() -> new EntityNotFoundException("Autor (usuário logado) não encontrado com id: " + dto.getAutorId()));
+
+        if (isNovoGrupo) {
+            projeto = new Projeto();
+            projeto.setAutor(autor);
+            projeto.setDataCriacao(LocalDateTime.now());
+            projeto.setDataInicio(new Date()); // Data atual automaticamente
+            projeto.setStatus("Em planejamento"); // Status padrão
+        } else {
             projeto = projetoRepository.findById(dto.getId())
-                    .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado para atualização"));
+                    .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado para atualização: " + dto.getId()));
+            // Verifica permissão para editar (somente admin do projeto pode)
+            if (!isAdmin(projeto.getId(), autor.getId())) {
+                throw new IllegalArgumentException("Apenas administradores podem editar o projeto.");
+            }
+            // Campos que só podem ser atualizados (não definidos na criação)
+            projeto.setDataInicio(dto.getDataInicio());
+            projeto.setStatus(dto.getStatus());
         }
 
         projeto.setTitulo(dto.getTitulo());
         projeto.setDescricao(dto.getDescricao());
-        if (isNovoGrupo) {
-            projeto.setDataInicio(new Date()); // Data atual automaticamente
-        } else {
-            projeto.setDataInicio(dto.getDataInicio());
-        }
         projeto.setDataEntrega(dto.getDataEntrega());
-        if (isNovoGrupo) {
-            projeto.setStatus("Em planejamento"); // Status padrão
-        } else {
-            projeto.setStatus(dto.getStatus());
-        }
-
-        if (foto != null && !foto.isEmpty()) {
-            try {
-                String fileName = salvarFoto(foto);
-                projeto.setImagemUrl(fileName);
-
-            } catch (IOException e) {
-                System.err.println("[ERROR] Erro ao salvar a foto do projeto: " + e.getMessage());
-                e.printStackTrace();
-                throw new RuntimeException("Erro ao salvar a foto do projeto", e);
-            }
-        } else if (dto.getImagemUrl() != null) {
-            projeto.setImagemUrl(dto.getImagemUrl());
-        } else {
-            projeto.setImagemUrl(null);
-        }
-
+        projeto.setLinksUteis(dto.getLinksUteis()); // Salva links
         projeto.setMaxMembros(dto.getMaxMembros() != null ? dto.getMaxMembros() : 50);
         projeto.setGrupoPrivado(dto.getGrupoPrivado() != null ? dto.getGrupoPrivado() : false);
 
-        if (isNovoGrupo) {
-            projeto.setDataCriacao(LocalDateTime.now());
-        }
-
-        // Autor
-        Usuario autor = usuarioRepository.findById(dto.getAutorId())
-                .orElseThrow(() -> new EntityNotFoundException("Autor não encontrado com id: " + dto.getAutorId()));
-        projeto.setAutor(autor);
-
-        // Manter compatibilidade com código existente
-        if (dto.getProfessorIds() != null && !dto.getProfessorIds().isEmpty()) {
-            List<Professor> professores = dto.getProfessorIds().stream()
-                    .map(id -> professorRepository.findById(id)
-                            .orElseThrow(() -> new EntityNotFoundException("Professor não encontrado com id: " + id)))
-                    .collect(Collectors.toList());
-            projeto.setProfessores(professores);
-        }
-
-        if (dto.getAlunoIds() != null && !dto.getAlunoIds().isEmpty()) {
-            List<Aluno> alunos = dto.getAlunoIds().stream()
-                    .map(id -> alunoRepository.findById(id)
-                            .orElseThrow(() -> new EntityNotFoundException("Aluno não encontrado com id: " + id)))
-                    .collect(Collectors.toList());
-            projeto.setAlunos(alunos);
-        }
+        // Lógica da Foto
+        if (foto != null && !foto.isEmpty()) {
+            try {
+                // Deleta foto antiga se for atualização e houver foto antiga
+                if (!isNovoGrupo && projeto.getImagemUrl() != null && !projeto.getImagemUrl().isBlank()) {
+                    deletarFotoAntiga(projeto.getImagemUrl());
+                }
+                String fileName = salvarFoto(foto);
+                projeto.setImagemUrl(fileName);
+            } catch (IOException e) {
+                System.err.println("[ERROR] Erro ao salvar a foto do projeto: " + e.getMessage());
+                // Não lança exceção fatal, apenas loga.
+            }
+        } else if (dto.getImagemUrl() != null && dto.getImagemUrl().isEmpty() && projeto.getImagemUrl() != null) {
+            // Se a URL veio vazia (indicando remoção) e existia uma foto antes
+            deletarFotoAntiga(projeto.getImagemUrl());
+            projeto.setImagemUrl(null);
+        } // Se não enviar foto nem URL, mantém a imagem existente
 
         Projeto salvo = projetoRepository.save(projeto);
 
         if (isNovoGrupo) {
             adicionarMembroComoAdmin(salvo, autor);
             enviarConvitesAutomaticos(salvo, dto.getProfessorIds(), dto.getAlunoIds(), autor.getId());
+
+            // --- LÓGICA DE CRIAÇÃO DE CHAT ---
+            List<Long> todosIdsConvidados = new ArrayList<>();
+            if (dto.getProfessorIds() != null) todosIdsConvidados.addAll(dto.getProfessorIds());
+            if (dto.getAlunoIds() != null) todosIdsConvidados.addAll(dto.getAlunoIds());
+            todosIdsConvidados.remove(autor.getId()); // Remove o próprio autor da contagem de convidados
+
+            if (todosIdsConvidados.isEmpty()) {
+                mensagemGrupoService.criarMensagemDeSistema(salvo,
+                        "Bem-vindo ao chat do seu novo projeto! Adicione participantes ao projeto para começar a conversar.");
+            } else {
+                mensagemGrupoService.criarMensagemDeSistema(salvo,
+                        "Chat do projeto '" + salvo.getTitulo() + "' criado. Convites enviados para " + todosIdsConvidados.size() + " membro(s).");
+            }
         }
 
         return converterParaDTO(salvo);
     }
 
+    // Método auxiliar para deletar foto antiga
+    private void deletarFotoAntiga(String nomeArquivo) {
+        if (nomeArquivo == null || nomeArquivo.isBlank()) return;
+        try {
+            Path filePath = Paths.get(UPLOAD_DIR).resolve(nomeArquivo).normalize();
+            Files.deleteIfExists(filePath);
+            System.out.println("[DEBUG] Foto antiga deletada: " + nomeArquivo);
+        } catch (IOException e) {
+            System.err.println("[WARN] Não foi possível deletar a foto antiga " + nomeArquivo + ": " + e.getMessage());
+        }
+    }
+
+
     private void enviarConvitesAutomaticos(Projeto projeto, List<Long> professorIds, List<Long> alunoIds, Long autorId) {
         if (professorIds != null) {
             for (Long professorId : professorIds) {
                 try {
-                    enviarConvite(projeto.getId(), professorId, autorId);
+                    if (!professorId.equals(autorId)) { // Não convida o próprio autor
+                        enviarConvite(projeto.getId(), professorId, autorId);
+                    }
                 } catch (Exception e) {
-                    // Log do erro mas não interrompe o processo
-                    System.out.println("Erro ao enviar convite para professor " + professorId + ": " + e.getMessage());
+                    System.err.println("[WARN] Erro ao enviar convite automático para professor " + professorId + ": " + e.getMessage());
                 }
             }
         }
@@ -151,10 +184,11 @@ public class ProjetoService {
         if (alunoIds != null) {
             for (Long alunoId : alunoIds) {
                 try {
-                    enviarConvite(projeto.getId(), alunoId, autorId);
+                    if (!alunoId.equals(autorId)) { // Não convida o próprio autor
+                        enviarConvite(projeto.getId(), alunoId, autorId);
+                    }
                 } catch (Exception e) {
-                    // Log do erro mas não interrompe o processo
-                    System.out.println("Erro ao enviar convite para aluno " + alunoId + ": " + e.getMessage());
+                    System.err.println("[WARN] Erro ao enviar convite automático para aluno " + alunoId + ": " + e.getMessage());
                 }
             }
         }
@@ -163,37 +197,26 @@ public class ProjetoService {
     @Transactional
     public void enviarConvite(Long projetoId, Long usuarioConvidadoId, Long usuarioConvidadorId) {
         Projeto projeto = projetoRepository.findById(projetoId)
-                .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado"));
-
+                .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado: " + projetoId));
         Usuario usuarioConvidado = usuarioRepository.findById(usuarioConvidadoId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário convidado não encontrado"));
-
+                .orElseThrow(() -> new EntityNotFoundException("Usuário convidado não encontrado: " + usuarioConvidadoId));
         Usuario usuarioConvidador = usuarioRepository.findById(usuarioConvidadorId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário convidador não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário convidador não encontrado: " + usuarioConvidadorId));
 
         if (!isAdminOuModerador(projetoId, usuarioConvidadorId)) {
-            throw new IllegalArgumentException("Apenas administradores e moderadores podem enviar convites");
+            throw new IllegalArgumentException("Apenas administradores ou moderadores podem enviar convites.");
         }
-
-        // Verificar se já é membro
         if (projetoMembroRepository.existsByProjetoIdAndUsuarioId(projetoId, usuarioConvidadoId)) {
-            throw new IllegalArgumentException("Usuário já é membro do grupo");
+            throw new IllegalArgumentException("Usuário já é membro deste projeto.");
         }
-
-        // Verificar se já tem convite pendente
-        if (conviteProjetoRepository.existsByProjetoIdAndUsuarioConvidadoIdAndStatus(
-                projetoId, usuarioConvidadoId, ConviteProjeto.StatusConvite.PENDENTE)) {
-            throw new IllegalArgumentException("Usuário já possui convite pendente");
+        if (conviteProjetoRepository.existsByProjetoIdAndUsuarioConvidadoIdAndStatus(projetoId, usuarioConvidadoId, ConviteProjeto.StatusConvite.PENDENTE)) {
+            throw new IllegalArgumentException("Já existe um convite pendente para este usuário neste projeto.");
         }
 
         Integer totalMembros = projetoMembroRepository.countMembrosByProjetoId(projetoId);
-        if (totalMembros == null) totalMembros = 0;
-
-        Integer maxMembros = projeto.getMaxMembros();
-        if (maxMembros == null) maxMembros = 50;
-
+        Integer maxMembros = projeto.getMaxMembros() != null ? projeto.getMaxMembros() : 50;
         if (totalMembros >= maxMembros) {
-            throw new IllegalArgumentException("Grupo atingiu o limite máximo de membros");
+            throw new IllegalArgumentException("O projeto atingiu o limite máximo de " + maxMembros + " membros.");
         }
 
         ConviteProjeto convite = new ConviteProjeto();
@@ -202,7 +225,6 @@ public class ProjetoService {
         convite.setConvidadoPor(usuarioConvidador);
         convite.setStatus(ConviteProjeto.StatusConvite.PENDENTE);
         convite.setDataConvite(LocalDateTime.now());
-
         conviteProjetoRepository.save(convite);
 
         String mensagem = String.format("Você foi convidado para o projeto '%s' por %s.", projeto.getTitulo(), usuarioConvidador.getNome());
@@ -212,86 +234,101 @@ public class ProjetoService {
     @Transactional
     public void aceitarConvite(Long conviteId, Long usuarioId) {
         ConviteProjeto convite = conviteProjetoRepository.findById(conviteId)
-                .orElseThrow(() -> new EntityNotFoundException("Convite não encontrado"));
-
+                .orElseThrow(() -> new EntityNotFoundException("Convite não encontrado: " + conviteId));
         if (!convite.getUsuarioConvidado().getId().equals(usuarioId)) {
-            throw new IllegalArgumentException("Usuário não autorizado a aceitar este convite");
+            throw new IllegalArgumentException("Este convite não é para você.");
         }
-
         if (convite.getStatus() != ConviteProjeto.StatusConvite.PENDENTE) {
-            throw new IllegalArgumentException("Convite não está pendente");
+            throw new IllegalArgumentException("Este convite já foi respondido (" + convite.getStatus() + ").");
         }
-
         Integer totalMembros = projetoMembroRepository.countMembrosByProjetoId(convite.getProjeto().getId());
-        if (totalMembros == null) totalMembros = 0;
-
-        Integer maxMembros = convite.getProjeto().getMaxMembros();
-        if (maxMembros == null) maxMembros = 50;
-
+        Integer maxMembros = convite.getProjeto().getMaxMembros() != null ? convite.getProjeto().getMaxMembros() : 50;
         if (totalMembros >= maxMembros) {
-            throw new IllegalArgumentException("Grupo atingiu o limite máximo de membros");
+            convite.setStatus(ConviteProjeto.StatusConvite.RECUSADO);
+            convite.setDataResposta(LocalDateTime.now());
+            conviteProjetoRepository.save(convite);
+            throw new IllegalArgumentException("O projeto atingiu o limite máximo de membros ("+ maxMembros +") enquanto o convite estava pendente.");
         }
 
-        // Aceitar convite
         convite.setStatus(ConviteProjeto.StatusConvite.ACEITO);
         convite.setDataResposta(LocalDateTime.now());
         conviteProjetoRepository.save(convite);
 
-        // Adicionar como membro
         ProjetoMembro membro = new ProjetoMembro();
         membro.setProjeto(convite.getProjeto());
         membro.setUsuario(convite.getUsuarioConvidado());
         membro.setRole(ProjetoMembro.RoleMembro.MEMBRO);
         membro.setDataEntrada(LocalDateTime.now());
         membro.setConvidadoPor(convite.getConvidadoPor());
-
         projetoMembroRepository.save(membro);
 
-        String mensagem = String.format("%s aceitou seu convite e agora faz parte do projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
-        // Notificar o autor do projeto
-        notificacaoService.criarNotificacao(convite.getProjeto().getAutor(), mensagem, "MEMBRO_ADICIONADO", convite.getProjeto().getId());
+        String mensagemNotificacao = String.format("%s aceitou seu convite para o projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
+        notificacaoService.criarNotificacao(convite.getConvidadoPor(), mensagemNotificacao, "CONVITE_ACEITO", convite.getProjeto().getId());
+    }
+
+    @Transactional
+    public void recusarConvite(Long conviteId, Long usuarioId) {
+        ConviteProjeto convite = conviteProjetoRepository.findById(conviteId)
+                .orElseThrow(() -> new EntityNotFoundException("Convite não encontrado: " + conviteId));
+
+        if (convite.getUsuarioConvidado().getId().equals(usuarioId)) {
+            if (convite.getStatus() != ConviteProjeto.StatusConvite.PENDENTE) {
+                throw new IllegalArgumentException("Este convite já foi respondido (" + convite.getStatus() + ").");
+            }
+            convite.setStatus(ConviteProjeto.StatusConvite.RECUSADO);
+            convite.setDataResposta(LocalDateTime.now());
+            conviteProjetoRepository.save(convite);
+            String msg = String.format("%s recusou seu convite para o projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
+            notificacaoService.criarNotificacao(convite.getConvidadoPor(), msg, "CONVITE_RECUSADO", convite.getProjeto().getId());
+
+        } else if (convite.getConvidadoPor() != null && convite.getConvidadoPor().getId().equals(usuarioId)) {
+            if (convite.getStatus() != ConviteProjeto.StatusConvite.PENDENTE) {
+                throw new IllegalArgumentException("Você não pode cancelar um convite que já foi respondido.");
+            }
+            convite.setStatus(ConviteProjeto.StatusConvite.CANCELADO); // Usa o enum correto
+            convite.setDataResposta(LocalDateTime.now());
+            conviteProjetoRepository.save(convite);
+            String msgCancelado = String.format("O convite de %s para o projeto '%s' foi cancelado.", convite.getConvidadoPor().getNome(), convite.getProjeto().getTitulo());
+            notificacaoService.criarNotificacao(convite.getUsuarioConvidado(), msgCancelado, "CONVITE_CANCELADO", convite.getProjeto().getId());
+        } else {
+            throw new IllegalArgumentException("Você não pode recusar/cancelar este convite.");
+        }
     }
 
     @Transactional
     public void expulsarMembro(Long projetoId, Long membroId, Long adminId) {
         if (!isAdminOuModerador(projetoId, adminId)) {
-            throw new IllegalArgumentException("Apenas administradores e moderadores podem expulsar membros");
+            throw new IllegalArgumentException("Apenas administradores ou moderadores podem expulsar membros.");
+        }
+        ProjetoMembro membroParaExpulsar = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, membroId)
+                .orElseThrow(() -> new EntityNotFoundException("Membro não encontrado no projeto."));
+        Projeto projeto = membroParaExpulsar.getProjeto();
+        if (membroParaExpulsar.getUsuario().getId().equals(projeto.getAutor().getId())) {
+            throw new IllegalArgumentException("Não é possível expulsar o criador do projeto.");
+        }
+        ProjetoMembro adminOuMod = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, adminId).orElse(null);
+        if (adminOuMod != null && adminOuMod.getRole() == ProjetoMembro.RoleMembro.MODERADOR &&
+                (membroParaExpulsar.getRole() == ProjetoMembro.RoleMembro.ADMIN || membroParaExpulsar.getUsuario().getId().equals(projeto.getAutor().getId())) ) {
+            throw new IllegalArgumentException("Moderadores não podem expulsar administradores.");
         }
 
-        ProjetoMembro membro = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, membroId)
-                .orElseThrow(() -> new EntityNotFoundException("Membro não encontrado no projeto"));
-
-        // Não pode expulsar o criador do projeto
-        Projeto projeto = projetoRepository.findById(projetoId).orElseThrow();
-        if (membro.getUsuario().getId().equals(projeto.getAutor().getId())) {
-            throw new IllegalArgumentException("Não é possível expulsar o criador do projeto");
-        }
-
-        ProjetoMembro membroAdmin = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, adminId).orElse(null);
-        if (membroAdmin != null && membroAdmin.getRole() == ProjetoMembro.RoleMembro.MODERADOR
-                && membro.getRole() == ProjetoMembro.RoleMembro.ADMIN) {
-            throw new IllegalArgumentException("Moderadores não podem expulsar administradores");
-        }
-
-        projetoMembroRepository.delete(membro);
+        projetoMembroRepository.delete(membroParaExpulsar);
 
         String mensagem = String.format("Você foi removido do projeto '%s'.", projeto.getTitulo());
-        notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "MEMBRO_REMOVIDO", projeto.getId());
+        notificacaoService.criarNotificacao(membroParaExpulsar.getUsuario(), mensagem, "MEMBRO_REMOVIDO", projeto.getId());
     }
+
 
     @Transactional
     public void alterarPermissao(Long projetoId, Long membroId, ProjetoMembro.RoleMembro novaRole, Long adminId) {
-        Projeto projeto = projetoRepository.findById(projetoId).orElseThrow();
+        Projeto projeto = projetoRepository.findById(projetoId).orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado"));
         if (!projeto.getAutor().getId().equals(adminId)) {
-            throw new IllegalArgumentException("Apenas o criador do projeto pode alterar permissões");
+            throw new IllegalArgumentException("Apenas o criador do projeto pode alterar permissões.");
         }
-
         ProjetoMembro membro = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, membroId)
-                .orElseThrow(() -> new EntityNotFoundException("Membro não encontrado no projeto"));
-
-        // Não pode alterar permissão do criador
-        if (membro.getUsuario().getId().equals(projeto.getAutor().getId())) {
-            throw new IllegalArgumentException("Não é possível alterar permissão do criador do projeto");
+                .orElseThrow(() -> new EntityNotFoundException("Membro não encontrado no projeto."));
+        if (membro.getUsuario().getId().equals(adminId)) {
+            throw new IllegalArgumentException("Não é possível alterar a permissão do criador do projeto.");
         }
 
         membro.setRole(novaRole);
@@ -299,16 +336,15 @@ public class ProjetoService {
 
         String mensagem = String.format("Sua permissão no projeto '%s' foi alterada para %s.", projeto.getTitulo(), novaRole.toString());
         notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "PERMISSAO_ALTERADA", projeto.getId());
-
     }
+
 
     @Transactional
     public void atualizarInfoGrupo(Long projetoId, String novoTitulo, String novaDescricao, String novaImagemUrl,
                                    String novoStatus, Integer novoMaxMembros, Boolean novoGrupoPrivado, Long adminId) {
         if (!isAdmin(projetoId, adminId)) {
-            throw new IllegalArgumentException("Apenas administradores podem alterar informações do grupo");
+            throw new IllegalArgumentException("Apenas administradores podem alterar informações do grupo.");
         }
-
         Projeto projeto = projetoRepository.findById(projetoId)
                 .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado"));
 
@@ -316,8 +352,8 @@ public class ProjetoService {
         if (novaDescricao != null) projeto.setDescricao(novaDescricao);
         if (novaImagemUrl != null) projeto.setImagemUrl(novaImagemUrl);
         if (novoStatus != null) {
-            if (!novoStatus.equals("Em planejamento") && !novoStatus.equals("Em progresso") && !novoStatus.equals("Concluído")) {
-                throw new IllegalArgumentException("Status deve ser: Em planejamento, Em progresso ou Concluído");
+            if (!List.of("Em planejamento", "Em progresso", "Concluído").contains(novoStatus)) {
+                throw new IllegalArgumentException("Status inválido. Use: Em planejamento, Em progresso ou Concluído");
             }
             projeto.setStatus(novoStatus);
         }
@@ -327,126 +363,85 @@ public class ProjetoService {
         projetoRepository.save(projeto);
     }
 
-    @Transactional
-    public void recusarConvite(Long conviteId, Long usuarioId) {
-        ConviteProjeto convite = conviteProjetoRepository.findById(conviteId)
-                .orElseThrow(() -> new EntityNotFoundException("Convite não encontrado"));
-
-        if (!convite.getUsuarioConvidado().getId().equals(usuarioId)) {
-            throw new IllegalArgumentException("Usuário não autorizado a recusar este convite");
-        }
-
-        if (convite.getStatus() != ConviteProjeto.StatusConvite.PENDENTE) {
-            throw new IllegalArgumentException("Convite não está pendente");
-        }
-
-        // Recusar convite
-        convite.setStatus(ConviteProjeto.StatusConvite.RECUSADO);
-        convite.setDataResposta(LocalDateTime.now());
-        conviteProjetoRepository.save(convite);
-
-        String mensagem = String.format("%s recusou o convite para o projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
-        // Notificar quem convidou
-        notificacaoService.criarNotificacao(convite.getConvidadoPor(), mensagem, "CONVITE_RECUSADO", convite.getProjeto().getId());
-    }
-
-    private boolean isAdminOuModerador(Long projetoId, Long usuarioId) {
-        // Verificar se é o criador do projeto
-        Projeto projeto = projetoRepository.findById(projetoId).orElse(null);
-        if (projeto != null && projeto.getAutor() != null && projeto.getAutor().getId().equals(usuarioId)) {
-            return true;
-        }
-
-        // Verificar se tem role de ADMIN ou MODERADOR
-        ProjetoMembro membro = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, usuarioId).orElse(null);
-        return membro != null && (membro.getRole() == ProjetoMembro.RoleMembro.ADMIN ||
-                membro.getRole() == ProjetoMembro.RoleMembro.MODERADOR);
-    }
 
     @Transactional
     public void deletar(Long id, Long adminId) {
         Projeto projeto = projetoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado com id: " + id));
-
-        // Verificar se o usuário é admin do projeto
         if (!isAdmin(id, adminId)) {
-            throw new IllegalArgumentException("Apenas administradores podem deletar o projeto");
+            throw new IllegalArgumentException("Apenas administradores podem deletar o projeto.");
         }
-
-        // Deletar o projeto (cascade irá remover membros automaticamente)
-        projetoRepository.deleteById(id);
-
-        System.out.println("[DEBUG] Projeto deletado com sucesso");
+        projetoRepository.delete(projeto); // Cascade deve cuidar do resto
+        System.out.println("[DEBUG] Projeto deletado com sucesso: " + id);
     }
 
+    // Sobrecarga mantida por segurança
+    @Deprecated
     public void deletar(Long id) {
-        if (!projetoRepository.existsById(id)) {
-            throw new EntityNotFoundException("Projeto não encontrado com id: " + id);
-        }
-        projetoRepository.deleteById(id);
+        Projeto projeto = projetoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado com id: " + id));
+        // Esta versão não tem verificação de admin, é perigosa.
+        // Recomenda-se usar a versão com adminId.
+        projetoRepository.delete(projeto);
     }
 
+    // Converte Entidade Projeto para ProjetoDTO
     private ProjetoDTO converterParaDTO(Projeto projeto) {
         ProjetoDTO dto = new ProjetoDTO();
-
         dto.setId(projeto.getId());
         dto.setTitulo(projeto.getTitulo());
         dto.setDescricao(projeto.getDescricao());
         dto.setDataInicio(projeto.getDataInicio());
         dto.setDataEntrega(projeto.getDataEntrega());
         dto.setStatus(projeto.getStatus());
-
-        dto.setImagemUrl(projeto.getImagemUrl());
+        dto.setLinksUteis(projeto.getLinksUteis()); // Mapeia links
+        dto.setImagemUrl(projeto.getImagemUrl()); // Passa o nome do arquivo
         dto.setDataCriacao(projeto.getDataCriacao());
         dto.setMaxMembros(projeto.getMaxMembros());
         dto.setGrupoPrivado(projeto.getGrupoPrivado());
-
         dto.setAutorId(projeto.getAutor() != null ? projeto.getAutor().getId() : null);
         dto.setAutorNome(projeto.getAutor() != null ? projeto.getAutor().getNome() : null);
 
-        // Manter compatibilidade
-        if (projeto.getProfessores() != null) {
-            dto.setProfessorIds(projeto.getProfessores().stream()
-                    .map(Professor::getId)
-                    .collect(Collectors.toList()));
-        }
-
-        if (projeto.getAlunos() != null) {
-            dto.setAlunoIds(projeto.getAlunos().stream()
-                    .map(Aluno::getId)
-                    .collect(Collectors.toList()));
-        }
-
-        List<ProjetoMembro> membros;
+        // Busca membros de forma segura
+        List<ProjetoMembro> membros = List.of();
         try {
             membros = projetoMembroRepository.findByProjetoId(projeto.getId());
         } catch (Exception e) {
-            membros = List.of(); // Lista vazia em caso de erro
+            System.err.println("[WARN] Erro ao buscar membros para DTO do projeto " + projeto.getId() + ": " + e.getMessage());
         }
 
         dto.setTotalMembros(membros.size());
 
+        // Mapeia os membros para MembroDTO
         dto.setMembros(membros.stream().map(membro -> {
             ProjetoDTO.MembroDTO membroDTO = new ProjetoDTO.MembroDTO();
             membroDTO.setId(membro.getId());
             membroDTO.setUsuarioId(membro.getUsuario().getId());
             membroDTO.setUsuarioNome(membro.getUsuario().getNome());
             membroDTO.setUsuarioEmail(membro.getUsuario().getEmail());
+
+            // Mapeia a foto do membro (agora o DTO tem o campo)
+            membroDTO.setUsuarioFotoUrl(membro.getUsuario().getFotoPerfil() != null ?
+                    "/api/arquivos/" + membro.getUsuario().getFotoPerfil() : // Usa o endpoint de arquivos
+                    "/images/default-avatar.png"); // Caminho para imagem padrão
+
             membroDTO.setRole(membro.getRole());
             membroDTO.setDataEntrada(membro.getDataEntrada());
             membroDTO.setConvidadoPorNome(membro.getConvidadoPor() != null ?
-                    membro.getConvidadoPor().getNome() : "Criador do grupo");
+                    membro.getConvidadoPor().getNome() : null); // Pode ser null se for o criador
             return membroDTO;
         }).collect(Collectors.toList()));
 
-        List<ConviteProjeto> convitesPendentes;
+        // Busca convites pendentes de forma segura
+        List<ConviteProjeto> convitesPendentes = List.of();
         try {
             convitesPendentes = conviteProjetoRepository
                     .findByProjetoIdAndStatus(projeto.getId(), ConviteProjeto.StatusConvite.PENDENTE);
         } catch (Exception e) {
-            convitesPendentes = List.of(); // Lista vazia em caso de erro
+            System.err.println("[WARN] Erro ao buscar convites pendentes para DTO do projeto " + projeto.getId() + ": " + e.getMessage());
         }
 
+        // Mapeia convites para ConviteDTO
         dto.setConvitesPendentes(convitesPendentes.stream().map(convite -> {
             ProjetoDTO.ConviteDTO conviteDTO = new ProjetoDTO.ConviteDTO();
             conviteDTO.setId(convite.getId());
@@ -461,64 +456,65 @@ public class ProjetoService {
         return dto;
     }
 
+    // Salva a foto do projeto
     private String salvarFoto(MultipartFile foto) throws IOException {
-        if (foto.isEmpty()) {
-            throw new IOException("Arquivo de imagem está vazio");
-        }
-
-        // Validar tipo de arquivo
+        if (foto.isEmpty()) { throw new IOException("Arquivo de imagem está vazio"); }
         String contentType = foto.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IOException("Arquivo deve ser uma imagem válida");
-        }
-
-        // Criar nome único para o arquivo
+        if (contentType == null || !contentType.startsWith("image/")) { throw new IOException("Arquivo deve ser uma imagem válida (ex: PNG, JPG, WEBP)"); }
         String originalFilename = foto.getOriginalFilename();
-        if (originalFilename == null) {
-            originalFilename = "image.jpg";
-        }
+        if (originalFilename == null) { originalFilename = "image"; } // Nome padrão se não houver
+        // Limpa caracteres inválidos e adiciona timestamp
+        String cleanFilename = StringUtils.cleanPath(originalFilename.replaceAll("[^a-zA-Z0-9.\\-]", "_"));
+        String fileExtension = StringUtils.getFilenameExtension(cleanFilename);
+        String baseName = cleanFilename.replace("." + fileExtension, "");
+        // Garante que a extensão não seja nula
+        fileExtension = (fileExtension != null && !fileExtension.isEmpty()) ? "." + fileExtension : ".png"; // Default .png
+        String fileName = baseName + "_" + System.currentTimeMillis() + fileExtension;
 
-        String cleanFilename = StringUtils.cleanPath(originalFilename);
-        String fileName = System.currentTimeMillis() + "_" + cleanFilename;
-
-        // Criar diretório se não existir
         Path uploadPath = Paths.get(UPLOAD_DIR);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
-        // Caminho completo do arquivo
+        Files.createDirectories(uploadPath); // Garante que o diretório exista
         Path filePath = uploadPath.resolve(fileName);
-
-        // Salvar arquivo
         try {
             Files.copy(foto.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            System.err.println("[ERROR] Erro ao salvar arquivo: " + e.getMessage());
+            System.err.println("[ERROR] Falha ao copiar arquivo para o destino: " + filePath + " - " + e.getMessage());
             throw new IOException("Erro ao salvar arquivo no servidor", e);
         }
-
-        return fileName;
+        return fileName; // Retorna apenas o nome do arquivo gerado
     }
 
-    private boolean isAdmin(Long projetoId, Long usuarioId) {
-        // Verificar se é o criador do projeto
+    // Verifica se é ADMIN (incluindo o criador)
+    protected boolean isAdmin(Long projetoId, Long usuarioId) {
         Projeto projeto = projetoRepository.findById(projetoId).orElse(null);
         if (projeto != null && projeto.getAutor() != null && projeto.getAutor().getId().equals(usuarioId)) {
-            return true;
+            return true; // Criador é admin
         }
-
-        // Verificar se tem role de ADMIN
         ProjetoMembro membro = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, usuarioId).orElse(null);
         return membro != null && membro.getRole() == ProjetoMembro.RoleMembro.ADMIN;
     }
 
+    // Verifica se é ADMIN ou MODERADOR (incluindo o criador)
+    protected boolean isAdminOuModerador(Long projetoId, Long usuarioId) {
+        Projeto projeto = projetoRepository.findById(projetoId).orElse(null);
+        if (projeto != null && projeto.getAutor() != null && projeto.getAutor().getId().equals(usuarioId)) {
+            return true; // Criador é admin implicitamente
+        }
+        ProjetoMembro membro = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, usuarioId).orElse(null);
+        return membro != null && (membro.getRole() == ProjetoMembro.RoleMembro.ADMIN ||
+                membro.getRole() == ProjetoMembro.RoleMembro.MODERADOR);
+    }
+
+    // Adiciona o criador como membro ADMIN do projeto
     private void adicionarMembroComoAdmin(Projeto projeto, Usuario usuario) {
-        ProjetoMembro membro = new ProjetoMembro();
-        membro.setProjeto(projeto);
-        membro.setUsuario(usuario);
-        membro.setRole(ProjetoMembro.RoleMembro.ADMIN);
-        membro.setDataEntrada(LocalDateTime.now());
-        projetoMembroRepository.save(membro);
+        // Verifica se já existe para evitar duplicatas
+        if (!projetoMembroRepository.existsByProjetoIdAndUsuarioId(projeto.getId(), usuario.getId())) {
+            ProjetoMembro membro = new ProjetoMembro();
+            membro.setProjeto(projeto);
+            membro.setUsuario(usuario);
+            membro.setRole(ProjetoMembro.RoleMembro.ADMIN); // Criador é sempre ADMIN
+            membro.setDataEntrada(LocalDateTime.now());
+            membro.setConvidadoPor(null); // O criador não foi convidado por ninguém
+            projetoMembroRepository.save(membro);
+        }
     }
 }

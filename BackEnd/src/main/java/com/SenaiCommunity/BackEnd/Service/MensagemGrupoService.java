@@ -30,14 +30,22 @@ public class MensagemGrupoService {
     @Autowired
     private NotificacaoService notificacaoService;
 
+    // ✅ INJETAR O MESSAGINGTEMPLATE (para notificar o chat em tempo real)
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     private MensagemGrupoSaidaDTO toDTO(MensagemGrupo mensagem) {
+        // Se o autor for null (mensagem de sistema), define como "Sistema"
+        String nomeAutor = (mensagem.getAutor() != null) ? mensagem.getAutor().getNome() : "Sistema";
+        Long autorId = (mensagem.getAutor() != null) ? mensagem.getAutor().getId() : null;
+
         return MensagemGrupoSaidaDTO.builder()
                 .id(mensagem.getId())
                 .conteudo(mensagem.getConteudo())
                 .dataEnvio(mensagem.getDataEnvio())
-                .grupoId(mensagem.getProjeto().getId()) // Adicionado para consistência
-                .autorId(mensagem.getAutor().getId())
-                .nomeAutor(mensagem.getAutor().getNome())
+                .grupoId(mensagem.getProjeto().getId())
+                .autorId(autorId)
+                .nomeAutor(nomeAutor)
                 .build();
     }
 
@@ -63,18 +71,23 @@ public class MensagemGrupoService {
                 projeto.getProfessores().stream().anyMatch(prof -> prof.getId().equals(autor.getId()));
 
         if (!isMember) {
-            throw new SecurityException("Acesso negado: você não é membro deste projeto.");
+            // Verifica se é membro pelo repositório de membros (lógica mais recente)
+            isMember = projeto.getMembros().stream().anyMatch(membro -> membro.getUsuario().getId().equals(autor.getId()));
         }
 
+        if (!isMember) {
+            throw new SecurityException("Acesso negado: você não é membro deste projeto.");
+        }
 
         MensagemGrupo novaMensagem = toEntity(dto, autor, projeto);
         MensagemGrupo mensagemSalva = mensagemGrupoRepository.save(novaMensagem);
 
-        // Notifica todos os membros do projeto, exceto o próprio autor da mensagem.
+        MensagemGrupoSaidaDTO dtoSaida = toDTO(mensagemSalva);
 
+        // Notifica todos os membros do projeto, exceto o próprio autor da mensagem.
         // Notifica Alunos
         projeto.getAlunos().stream()
-                .filter(aluno -> !aluno.getId().equals(autor.getId())) // Filtra para não notificar o próprio autor
+                .filter(aluno -> !aluno.getId().equals(autor.getId()))
                 .forEach(aluno -> notificacaoService.criarNotificacao(
                         aluno,
                         "Nova mensagem no projeto '" + projeto.getTitulo() + "': " + autor.getNome() + " disse..."
@@ -82,15 +95,34 @@ public class MensagemGrupoService {
 
         // Notifica Professores
         projeto.getProfessores().stream()
-                .filter(professor -> !professor.getId().equals(autor.getId())) // Filtra para não notificar o próprio autor
+                .filter(professor -> !professor.getId().equals(autor.getId()))
                 .forEach(professor -> notificacaoService.criarNotificacao(
                         professor,
                         "Nova mensagem no projeto '" + projeto.getTitulo() + "': " + autor.getNome() + " disse..."
                 ));
 
+        // ✅ NOTIFICA O WEBSOCKET
+        messagingTemplate.convertAndSend("/topic/grupo/" + projetoId, dtoSaida);
 
-        return toDTO(mensagemSalva);
+        return dtoSaida;
     }
+
+    // ✅ --- NOVO MÉTODO PARA MENSAGEM DE SISTEMA ---
+    @Transactional
+    public void criarMensagemDeSistema(Projeto projeto, String conteudo) {
+        MensagemGrupo mensagemSistema = MensagemGrupo.builder()
+                .conteudo(conteudo)
+                .dataEnvio(LocalDateTime.now())
+                .projeto(projeto)
+                .autor(null) // Autor nulo indica mensagem do sistema
+                .build();
+        MensagemGrupo msgSalva = mensagemGrupoRepository.save(mensagemSistema);
+
+        // Envia a mensagem de sistema para o tópico do grupo no WebSocket
+        messagingTemplate.convertAndSend("/topic/grupo/" + projeto.getId(), toDTO(msgSalva));
+    }
+    // --- FIM DO NOVO MÉTODO ---
+
 
     public MensagemGrupo editarMensagemGrupo(Long id, String novoConteudo, String autorUsername) {
         MensagemGrupo mensagem = mensagemGrupoRepository.findById(id)
