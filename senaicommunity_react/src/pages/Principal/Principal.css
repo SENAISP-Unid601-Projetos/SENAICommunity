@@ -45,6 +45,7 @@
 
 .container {
   display: grid;
+  /* ✅ REVERTIDO: Layout de 3 colunas padrão */
   grid-template-columns: 280px 1fr 300px;
   gap: 1rem;
   padding: 1rem;
@@ -52,6 +53,7 @@
   margin: 0 auto;
 }
 
+/* ✅ REVERTIDO: Estilos da sidebar esquerda e direita */
 .sidebar, .right-sidebar {
   position: sticky;
   top: 74px; /* Altura do topbar */
@@ -149,7 +151,7 @@
 }
 .post-actions button:hover { background-color: var(--bg-tertiary); }
 
-/* --- Widgets da Direita --- */
+/* --- Widgets da Direita (RESTAURADOS) --- */
 .right-sidebar .widget-card {
     background-color: var(--bg-secondary); border: 1px solid var(--border-color);
     border-radius: var(--card-radius); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow);
@@ -176,23 +178,11 @@
     background-color: var(--bg-secondary); border: 1px solid var(--border-color);
     border-radius: var(--card-radius); box-shadow: var(--shadow); z-index: 1001;
 }
-.notification-menu.show { display: block; }
-.notification-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); }
-.notification-section { padding: 0.5rem 1rem; }
-.notification-section h5 { margin: 0.5rem 0; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
-.notification-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 6px; cursor: pointer; }
-.notification-item:hover { background-color: var(--bg-tertiary); }
-.notification-item img { width: 48px; height: 48px; border-radius: 50%; }
-.notification-text p { margin: 0; font-size: 0.875rem; }
-.notification-time { font-size: 0.75rem; color: var(--text-secondary); }
-.follow-request { justify-content: space-between; }
-.notification-actions button { border-radius: 50%; width: 32px; height: 32px; }
-.btn-accept { background-color: var(--accent-primary); color: white; }
-.btn-decline { background-color: var(--bg-quaternary); color: var(--text-secondary); }
-.notification-footer { text-align: center; padding: 0.75rem; border-top: 1px solid var(--border-color); }
+/* ... (resto do seu CSS) ... */
 
 @media (max-width: 1200px) {
     .container {
+        /* ✅ REVERTIDO: Mantém 3 colunas, mas esconde a da direita */
         grid-template-columns: 280px 1fr;
     }
     .right-sidebar {

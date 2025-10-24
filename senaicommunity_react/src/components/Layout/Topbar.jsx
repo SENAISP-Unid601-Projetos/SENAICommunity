@@ -1,11 +1,14 @@
-// src/components/Layout/Topbar.jsx (COM THEME TOGGLE INTEGRADO)
+// src/components/Layout/Topbar.jsx (COM LINK DE CONFIGURAÇÃO)
 
 import React, { useState, useEffect } from 'react'; // Hooks já estavam aqui
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // Ícone do Sol/Lua já está importado de ThemeToggle, mas podemos precisar deles aqui
-import { faHome, faCommentDots, faBell, faChevronDown, faUserEdit, faUserSlash, faSignOutAlt, faSearch, faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
-// ✅ 1. Importa o componente ThemeToggle que criamos
+import { 
+    faHome, faCommentDots, faBell, faChevronDown, faUserEdit, faUserSlash, 
+    faSignOutAlt, faSearch, faMoon, faSun, 
+    faCog // ✅ 1. ÍCONE ADICIONADO
+} from '@fortawesome/free-solid-svg-icons';
 // import ThemeToggle from '../Auth/ThemeToggle'; // Não precisa mais importar separado se a lógica está aqui
 import './Topbar.css'; // Carrega o CSS atualizado
 
@@ -76,8 +79,12 @@ const Topbar = ({ onLogout, currentUser }) => {
                 </div>
                 
                 {isMenuOpen && (
-                    <div className="dropdown-menu show" /* Usar classe 'show' */> 
+                    <div className="dropdown-menu show"> 
                         <Link to="/perfil" onClick={() => setIsMenuOpen(false)}><FontAwesomeIcon icon={faUserEdit} /> Meu Perfil</Link>
+                        
+                        {/* ✅ 2. LINK DE CONFIGURAÇÕES ADICIONADO */}
+                        <Link to="/configuracoes" onClick={() => setIsMenuOpen(false)}><FontAwesomeIcon icon={faCog} /> Configurações</Link>
+                        
                         {/* <a href="#" className="danger"><FontAwesomeIcon icon={faUserSlash} /> Excluir Conta</a> */}
                         <a href="#" onClick={() => { onLogout(); setIsMenuOpen(false); }}><FontAwesomeIcon icon={faSignOutAlt} /> Sair</a>
                     </div>
