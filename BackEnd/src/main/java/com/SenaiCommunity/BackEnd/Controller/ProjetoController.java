@@ -48,14 +48,7 @@ public class ProjetoController {
             @RequestParam Integer maxMembros,
             @RequestParam Boolean grupoPrivado,
             @RequestParam Long autorId,
-<<<<<<< HEAD
-            // ADICIONE (required = false) AQUI
             @RequestParam(required = false) List<Long> professorIds,
-            // E AQUI
-=======
-
-            @RequestParam(required = false) List<Long> professorIds,
->>>>>>> Feature/ChatProjeto
             @RequestParam(required = false) List<Long> alunoIds,
             @RequestPart(required = false) MultipartFile foto) {
         try {
