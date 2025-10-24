@@ -1,4 +1,4 @@
-// src/pages/Projetos/Projetos.jsx (ATUALIZADO COM MODAL DE DETALHES)
+// src/pages/Projetos/Projetos.jsx (CORRIGIDO LÓGICA 'isAutor')
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
@@ -6,17 +6,17 @@ import Swal from 'sweetalert2';
 import Topbar from '../../components/Layout/Topbar';
 import Sidebar from '../../components/Layout/Sidebar';
 import RightSidebar from '../../pages/Principal/RightSidebar';
-import './Projetos.css'; // Carrega o CSS (que também será atualizado)
+import './Projetos.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faPlus, faSearch, faLink, faTimes, faSpinner, faUserPlus,
     faUserFriends, faExternalLinkAlt, faCalendarAlt, faInfoCircle,
-    faCommentDots
+    faCommentDots, faTrash, faUserShield 
 } from '@fortawesome/free-solid-svg-icons';
 import { debounce } from 'lodash';
-import { useNavigate } from 'react-router-dom'; // Importa o useNavigate
+import { useNavigate } from 'react-router-dom';
 
-// --- COMPONENTE ProjetoCard (Atualizado com onVerDetalhes) ---
+// --- COMPONENTE ProjetoCard ---
 const ProjetoCard = ({ projeto, onVerDetalhes }) => {
     const imageUrl = projeto.imagemUrl
         ? `http://localhost:8080/projetos/imagens/${projeto.imagemUrl}`
@@ -43,7 +43,6 @@ const ProjetoCard = ({ projeto, onVerDetalhes }) => {
                             <div className="membro-avatar more">+{projeto.membros.length - 5}</div>
                         )}
                     </div>
-                    {/* ✅ ATUALIZAÇÃO: Chama a função onVerDetalhes ao clicar */}
                     <button className="ver-projeto-btn" onClick={() => onVerDetalhes(projeto)}>
                         Ver Projeto
                     </button>
@@ -53,7 +52,7 @@ const ProjetoCard = ({ projeto, onVerDetalhes }) => {
     );
 };
 
-// --- COMPONENTE MODAL DE NOVO PROJETO (Sem alterações) ---
+// --- COMPONENTE MODAL DE NOVO PROJETO ---
 const NovoProjetoModal = ({ isOpen, onClose, onProjectCreated }) => {
     const [titulo, setTitulo] = useState('');
     const [descricao, setDescricao] = useState('');
@@ -95,11 +94,17 @@ const NovoProjetoModal = ({ isOpen, onClose, onProjectCreated }) => {
     };
 
     const debouncedSearch = useCallback(debounce(async (query) => {
-        if (query.length < 3) { setBuscaResultados([]); setIsSearching(false); return; }
+        if (!currentUser || query.length < 3) { 
+            setBuscaResultados([]); 
+            setIsSearching(false); 
+            return; 
+        }
         try {
             const response = await axios.get(`http://localhost:8080/usuarios/buscar?nome=${query}`);
             const idsAdicionados = new Set(participantes.map(p => p.id));
-            const resultadosFiltrados = response.data.filter(user => user.id !== currentUser.id && !idsAdicionados.has(user.id));
+            const resultadosFiltrados = response.data.filter(user => 
+                user.id !== currentUser.id && !idsAdicionados.has(user.id)
+            );
             setBuscaResultados(resultadosFiltrados);
         } catch (error) { console.error('Erro ao buscar usuários:', error); } 
         finally { setIsSearching(false); }
@@ -154,6 +159,7 @@ const NovoProjetoModal = ({ isOpen, onClose, onProjectCreated }) => {
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body">
+                        {/* ... (Form groups de Título, Descrição, Foto, Links) ... */}
                         <div className="form-group">
                             <label htmlFor="proj-titulo">Título do Projeto</label>
                             <input type="text" id="proj-titulo" value={titulo} onChange={e => setTitulo(e.target.value)} required />
@@ -195,7 +201,7 @@ const NovoProjetoModal = ({ isOpen, onClose, onProjectCreated }) => {
                                     <div className="search-results-dropdown">
                                         {buscaResultados.map(user => (
                                             <div key={user.id} className="search-result-item" onClick={() => addParticipante(user)}>
-                                                <img src={`http://localhost:8080${user.fotoPerfil}`} alt={user.nome} />
+                                                <img src={user.fotoPerfil ? `http://localhost:8080${user.fotoPerfil}` : `https://i.pravatar.cc/40?u=${user.id}`} alt={user.nome} />
                                                 <div className="search-result-info">
                                                     <span>{user.nome}</span><small>{user.email} ({user.tipoUsuario})</small>
                                                 </div>
@@ -218,8 +224,100 @@ const NovoProjetoModal = ({ isOpen, onClose, onProjectCreated }) => {
 };
 
 
-// --- ✅ NOVO COMPONENTE: MODAL DE DETALHES DO PROJETO ---
-const ProjetoDetalheModal = ({ projeto, onClose, onGoToChat }) => {
+// --- COMPONENTE MODAL DE DETALHES DO PROJETO ---
+const ProjetoDetalheModal = ({ projeto, currentUser, onClose, onGoToChat, onProjetoAtualizado, onProjetoExcluido }) => {
+    
+    const [searchTermParticipante, setSearchTermParticipante] = useState('');
+    const [buscaResultados, setBuscaResultados] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
+
+    // ✅ *** A CORREÇÃO ESTÁ AQUI ***
+    // Trocamos 'AUTOR' para 'ADMIN' para corresponder ao que o backend envia (visto na imagem)
+    const autor = useMemo(() => 
+        projeto?.membros.find(m => m.role === 'ADMIN'), 
+    [projeto]);
+    
+    const isAutor = autor?.usuarioId === currentUser?.id;
+
+    const debouncedSearch = useCallback(debounce(async (query) => {
+        if (!currentUser || !projeto || query.length < 3) {
+            setBuscaResultados([]);
+            setIsSearching(false);
+            return;
+        }
+        try {
+            const response = await axios.get(`http://localhost:8080/usuarios/buscar?nome=${query}`);
+            const idsMembrosAtuais = new Set(projeto.membros.map(m => m.usuarioId));
+            const resultadosFiltrados = response.data.filter(user => 
+                !idsMembrosAtuais.has(user.id)
+            );
+            setBuscaResultados(resultadosFiltrados);
+        } catch (error) { console.error('Erro ao buscar usuários:', error); } 
+        finally { setIsSearching(false); }
+    }, 500), [projeto, currentUser]);
+
+    const handleSearchChange = (e) => {
+        const query = e.target.value; setSearchTermParticipante(query);
+        setIsSearching(true); debouncedSearch(query);
+    };
+
+    const handleAddParticipante = async (usuario) => {
+        setIsAdding(true);
+        try {
+            const payload = {};
+            if (usuario.tipoUsuario === 'ALUNO') payload.alunoIds = [usuario.id];
+            else if (usuario.tipoUsuario === 'PROFESSOR') payload.professorIds = [usuario.id];
+            else throw new Error("Tipo de usuário desconhecido.");
+
+            await axios.post(`http://localhost:8080/projetos/${projeto.id}/membros`, payload);
+            
+            Swal.fire('Sucesso!', `${usuario.nome} foi adicionado ao projeto.`, 'success');
+            onProjetoAtualizado(projeto.id); 
+            setSearchTermParticipante('');
+            setBuscaResultados([]);
+
+        } catch (error) {
+            console.error("Erro ao adicionar membro:", error);
+            Swal.fire('Erro', 'Não foi possível adicionar o membro.', 'error');
+        } finally {
+            setIsAdding(false);
+        }
+    };
+
+    const handleExcluirProjeto = async () => {
+        const result = await Swal.fire({
+            title: 'Você tem certeza?',
+            text: `Excluir o projeto "${projeto.titulo}" é uma ação irreversível!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.delete(`http://localhost:8080/projetos/${projeto.id}`);
+                Swal.fire('Excluído!', 'O projeto foi excluído com sucesso.', 'success');
+                onProjetoExcluido(projeto.id); 
+            } catch (error) {
+                console.error("Erro ao excluir projeto:", error);
+                Swal.fire('Erro', 'Não foi possível excluir o projeto.', 'error');
+            }
+        }
+    };
+    
+    useEffect(() => {
+        if (!projeto) {
+            setSearchTermParticipante('');
+            setBuscaResultados([]);
+            setIsSearching(false);
+        }
+    }, [projeto]);
+
+
     if (!projeto) return null;
 
     const imageUrl = projeto.imagemUrl
@@ -262,6 +360,7 @@ const ProjetoDetalheModal = ({ projeto, onClose, onGoToChat }) => {
                                     src={membro.usuarioFotoUrl ? `http://localhost:8080${membro.usuarioFotoUrl}` : `https://i.pravatar.cc/40?u=${membro.usuarioId}`} 
                                     alt={membro.usuarioNome} 
                                 />
+                                {/* O CSS já deve ter a regra para .role-badge.admin */}
                                 <span className={`role-badge ${membro.role.toLowerCase()}`}>{membro.role}</span>
                             </div>
                         ))}
@@ -281,10 +380,60 @@ const ProjetoDetalheModal = ({ projeto, onClose, onGoToChat }) => {
                             </div>
                         </>
                     )}
+
+                    {/* Seção de Adicionar Membros (SÓ PARA O AUTOR/ADMIN) */}
+                    {isAutor && (
+                        <>
+                            <h3 className="admin-section-title"><FontAwesomeIcon icon={faUserShield} /> Gerenciamento (Admin)</h3>
+                            <div className="form-group">
+                                <label htmlFor="proj-add-participante">Adicionar Novo Membro</label>
+                                <div className="search-participantes-wrapper">
+                                    <FontAwesomeIcon 
+                                        icon={isSearching || isAdding ? faSpinner : faSearch} 
+                                        className={(isSearching || isAdding) ? 'spinner-icon' : ''} 
+                                    />
+                                    <input 
+                                        type="text" 
+                                        id="proj-add-participante" 
+                                        placeholder="Buscar por nome..." 
+                                        value={searchTermParticipante} 
+                                        onChange={handleSearchChange} 
+                                        autoComplete="off" 
+                                        disabled={isAdding}
+                                    />
+                                    {buscaResultados.length > 0 && (
+                                        <div className="search-results-dropdown">
+                                            {buscaResultados.map(user => (
+                                                <div key={user.id} className="search-result-item" onClick={() => handleAddParticipante(user)}>
+                                                    <img src={user.fotoPerfil ? `http://localhost:8080${user.fotoPerfil}` : `https://i.pravatar.cc/40?u=${user.id}`} alt={user.nome} />
+                                                    <div className="search-result-info">
+                                                        <span>{user.nome}</span><small>{user.email} ({user.tipoUsuario})</small>
+                                                    </div>
+                                                    <FontAwesomeIcon icon={faUserPlus} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
+
                 </div>
                 <div className="modal-footer">
-                    <button type="button" className="btn-cancel" onClick={onClose}>Fechar</button>
-                    {/* ✅ BOTÃO PARA IR AO CHAT */}
+                    {/* Botão de Excluir (SÓ PARA O AUTOR/ADMIN) */}
+                    {isAutor && (
+                        <button 
+                            type="button" 
+                            className="btn-cancel btn-delete" 
+                            onClick={handleExcluirProjeto}
+                        >
+                            <FontAwesomeIcon icon={faTrash} /> Excluir Projeto
+                        </button>
+                    )}
+                    <button type="button" className="btn-cancel" onClick={onClose} style={{ marginLeft: isAutor ? 'auto' : '0' }}>
+                        Fechar
+                    </button>
                     <button type="button" className="btn-publish btn-chat" onClick={() => onGoToChat(projeto.id)}>
                         <FontAwesomeIcon icon={faCommentDots} /> Ir para o Chat
                     </button>
@@ -295,7 +444,7 @@ const ProjetoDetalheModal = ({ projeto, onClose, onGoToChat }) => {
 };
 
 
-// --- COMPONENTE PRINCIPAL DA PÁGINA (Atualizado) ---
+// --- COMPONENTE PRINCIPAL DA PÁGINA ---
 const Projetos = ({ onLogout }) => {
     const [projetos, setProjetos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -303,9 +452,8 @@ const Projetos = ({ onLogout }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     
-    // ✅ NOVO ESTADO: Controla o modal de detalhes
     const [projetoSelecionado, setProjetoSelecionado] = useState(null);
-    const navigate = useNavigate(); // Hook para navegação
+    const navigate = useNavigate(); 
 
     const fetchAllData = useCallback(async () => {
         setLoading(true);
@@ -334,6 +482,32 @@ const Projetos = ({ onLogout }) => {
         setProjetos(prevProjetos => [novoProjeto, ...prevProjetos]);
     };
 
+    const handleGoToChat = (projetoId) => {
+        setProjetoSelecionado(null); 
+        navigate(`/mensagens?grupo=${projetoId}`); 
+    };
+
+    const handleProjetoExcluido = (projetoId) => {
+        setProjetos(prev => prev.filter(p => p.id !== projetoId));
+        setProjetoSelecionado(null); 
+    };
+
+    const handleProjetoAtualizado = async (projetoId) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/projetos/${projetoId}`);
+            const projetoAtualizado = response.data;
+            
+            setProjetos(prev => prev.map(p => 
+                p.id === projetoId ? projetoAtualizado : p
+            ));
+            
+            setProjetoSelecionado(projetoAtualizado);
+        } catch (error) {
+            console.error("Erro ao atualizar projeto:", error);
+            setProjetoSelecionado(null);
+        }
+    };
+
     const filteredProjetos = useMemo(() => {
         return projetos.filter(proj =>
             proj.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -341,11 +515,6 @@ const Projetos = ({ onLogout }) => {
         );
     }, [projetos, searchTerm]);
 
-    // ✅ NOVA FUNÇÃO: Navega para a página de mensagens com o ID do grupo
-    const handleGoToChat = (projetoId) => {
-        setProjetoSelecionado(null); // Fecha o modal
-        navigate(`/mensagens?grupo=${projetoId}`); // Navega para mensagens, passando o ID do projeto
-    };
 
     return (
         <div>
@@ -377,12 +546,11 @@ const Projetos = ({ onLogout }) => {
 
                     <section className="projetos-grid">
                         {loading ? <p className="loading-state">Carregando projetos...</p> :
-                            filteredProjetos.length > 0 ? (
+                            filteredProjetos.length > 0 ? ( 
                                 filteredProjetos.map(proj => 
                                     <ProjetoCard 
                                         key={proj.id} 
                                         projeto={proj} 
-                                        // ✅ PASSA A FUNÇÃO PARA O CARD
                                         onVerDetalhes={setProjetoSelecionado} 
                                     />
                                 )
@@ -405,11 +573,14 @@ const Projetos = ({ onLogout }) => {
                 onProjectCreated={handleProjectCreated}
             />
 
-            {/* ✅ NOVO MODAL DE DETALHES */}
+            {/* MODAL DE DETALHES ATUALIZADO com novas props */}
             <ProjetoDetalheModal
                 projeto={projetoSelecionado}
+                currentUser={currentUser} 
                 onClose={() => setProjetoSelecionado(null)}
                 onGoToChat={handleGoToChat}
+                onProjetoAtualizado={handleProjetoAtualizado}
+                onProjetoExcluido={handleProjetoExcluido}
             />
         </div>
     );

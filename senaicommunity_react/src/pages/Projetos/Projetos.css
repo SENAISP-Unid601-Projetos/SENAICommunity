@@ -1,404 +1,921 @@
-/* src/pages/Projetos/Projetos.css (COMPLETO E FINAL - COM MODAL DE DETALHES) */
+/* src/pages/Projetos/Projetos.css (COMPLETO E MELHORADO) */
 
-/* --- Cabeçalho da Página --- */
+/* --- Variáveis de Tema (Exemplo - ajuste conforme seu global.css) --- */
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-quaternary: #30363d;
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+  --accent-primary: #58a6ff;
+  --accent-secondary: #1f6feb;
+  --accent-primary-dark: #1f6feb; /* Cor mais escura para hover */
+  --accent-primary-light: rgba(88, 166, 255, 0.1); /* Cor clara para pills */
+  --highlight: #f85149;
+  --danger: #f85149;
+  --danger-color: #f85149; /* Cor do texto perigo */
+  --danger-color-light: rgba(248, 81, 73, 0.1); /* Fundo claro perigo */
+  --success: #238636;
+  --border-color: #30363d;
+  --border-color-hover: #8b949e;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --card-radius: 8px;
+  --transition: all 0.2s ease-in-out;
+  --background-hover: rgba(139, 148, 158, 0.1);
+  --button-disabled: #30363d;
+}
+
+/* --- 1. Layout Principal da Página --- */
+
 .projetos-header {
-    display: flex; flex-wrap: wrap; justify-content: space-between;
-    align-items: center; gap: 1rem; padding: 2rem;
-    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-    border-radius: var(--card-radius); border: 1px solid var(--border-color);
-    margin-bottom: 1.5rem;
-}
-.header-text h1 { font-size: 1.75rem; margin: 0 0 0.5rem 0; font-weight: 700; color: var(--text-primary); }
-.header-text p { color: var(--text-secondary); margin: 0; font-size: 1rem; }
-.btn-new-project {
-    background-color: var(--accent-primary); color: #fff; border: none;
-    padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600;
-    cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
-    transition: var(--transition); white-space: nowrap;
-}
-.btn-new-project:hover { background-color: var(--accent-secondary); transform: scale(1.03); }
-
-/* --- Filtros --- */
-.projetos-filters { margin-bottom: 1.5rem; padding: 1rem; background-color: var(--bg-secondary); border-radius: var(--card-radius); border: 1px solid var(--border-color); }
-.search-projetos { position: relative; }
-.search-projetos svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
-.search-projetos input {
-    width: 100%; padding: 0.85rem 1rem 0.85rem 2.75rem;
-    background-color: var(--bg-tertiary); border: 1px solid var(--border-color);
-    border-radius: 8px; color: var(--text-primary); font-size: 0.9375rem;
-}
-.search-projetos input:focus {
-    outline: none; border-color: var(--accent-primary);
-    background-color: var(--bg-primary); box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
-}
-
-/* --- GRID DE PROJETOS --- */
-.projetos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
-
-/* --- CARD DE PROJETO --- */
-.projeto-card {
-    background-color: var(--bg-secondary); border-radius: var(--card-radius);
-    border: 1px solid var(--border-color); overflow: hidden; display: flex;
-    flex-direction: column; transition: var(--transition);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-.projeto-card:hover { transform: translateY(-5px); border-color: var(--accent-primary); box-shadow: var(--shadow); }
-.projeto-imagem { height: 180px; background-size: cover; background-position: center; border-bottom: 1px solid var(--border-color); }
-.projeto-conteudo { padding: 1.25rem; display: flex; flex-direction: column; flex-grow: 1; }
-.projeto-titulo {
-    font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;
-    color: var(--text-primary); line-height: 1.3;
-    overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
-    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-}
-.projeto-descricao {
-    font-size: 0.9375rem; color: var(--text-secondary); line-height: 1.6;
-    margin-bottom: 1rem; flex-grow: 1;
-    overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
-    -webkit-line-clamp: 3; -webkit-box-orient: vertical;
-}
-.projeto-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--border-color); }
-.projeto-membros { display: flex; align-items: center; }
-.membro-avatar {
-    width: 32px; height: 32px; border-radius: 50%;
-    border: 3px solid var(--bg-secondary); margin-left: -12px;
-    object-fit: cover; background-color: var(--bg-tertiary);
-}
-.membro-avatar:first-child { margin-left: 0; }
-.membro-avatar.more {
-    background-color: var(--bg-tertiary); color: var(--text-secondary);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem; font-weight: 600;
-}
-.ver-projeto-btn {
-    background-color: transparent; border: 1px solid var(--accent-primary);
-    color: var(--accent-primary); padding: 0.5rem 1rem; border-radius: 6px;
-    font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: var(--transition);
-}
-.ver-projeto-btn:hover { background-color: var(--accent-primary); color: #fff; }
-
-/* --- ESTILOS DO MODAL DE CRIAÇÃO --- */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.7); z-index: 2000;
-    display: none; align-items: center; justify-content: center;
-    padding: 1rem; backdrop-filter: blur(5px);
-}
-.modal-overlay.visible { display: flex; }
-.modal-content {
-    background-color: var(--bg-secondary); width: 100%;
-    max-width: 600px; max-height: 90vh;
-    border-radius: var(--card-radius); box-shadow: var(--shadow);
-    display: flex; flex-direction: column;
-    border: 1px solid var(--border-color); overflow: hidden;
-}
-.modal-header {
-    padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);
-    display: flex; justify-content: space-between; align-items: center;
-    flex-shrink: 0;
-}
-.modal-header h2 { font-size: 1.25rem; margin: 0; color: var(--text-primary); }
-.close-modal-btn { background: none; border: none; font-size: 1.75rem; line-height: 1; color: var(--text-secondary); cursor: pointer; }
-.modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; overflow-y: auto; }
-.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-.form-group label { font-weight: 500; color: var(--text-secondary); font-size: 0.9rem; }
-.form-group input[type="text"], 
-.form-group input[type="url"], 
-.form-group textarea, 
-.form-group input[type="file"] {
-    width: 100%; background-color: var(--bg-tertiary);
-    border: 1px solid var(--border-color); border-radius: 6px;
-    padding: 0.75rem; color: var(--text-primary); font-size: 1rem;
-    box-sizing: border-box;
-}
-.form-group input[type="text"]:focus, 
-.form-group input[type="url"]:focus, 
-.form-group textarea:focus {
-    outline: none; border-color: var(--accent-primary);
-    background-color: var(--bg-primary);
-    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
-}
-.form-group input[type="file"] { padding: 0.5rem; }
-.file-name-preview { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; word-break: break-all; }
-
-.link-input-group { display: flex; align-items: center; gap: 0.5rem; position: relative; }
-.link-input-group svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-tertiary); }
-.link-input-group input { padding-left: 2.25rem; flex-grow: 1; }
-.btn-remove-link {
-    background: transparent; border: 1px solid var(--danger);
-    color: var(--danger); border-radius: 6px; padding: 0 0.5rem;
-    height: 38px; cursor: pointer; transition: var(--transition); flex-shrink: 0;
-}
-.btn-remove-link:hover { background-color: rgba(248, 81, 73, 0.1); }
-.btn-add-link {
-    background-color: transparent; border: 1px dashed var(--accent-primary);
-    color: var(--accent-primary); padding: 0.5rem; border-radius: 6px;
-    cursor: pointer; transition: var(--transition); font-size: 0.85rem;
-    display: flex; align-items: center; justify-content: center;
-    gap: 0.5rem; margin-top: 0.5rem;
-}
-.btn-add-link:hover { background-color: var(--bg-tertiary); }
-
-.participantes-pills-container {
-    display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;
-    padding: 0.5rem; background-color: var(--bg-tertiary);
-    border-radius: 6px; min-height: 40px; border: 1px solid var(--border-color);
-}
-.participante-pill {
-    background-color: var(--bg-secondary); color: var(--text-secondary);
-    padding: 0.3rem 0.5rem 0.3rem 0.75rem; border-radius: 15px;
-    font-size: 0.85rem; display: flex; align-items: center;
-    gap: 0.5rem; border: 1px solid var(--border-color);
-}
-.participante-pill button { background: none; border: none; color: var(--text-tertiary); cursor: pointer; padding: 0; line-height: 1; display: flex; font-size: 0.9rem; }
-.participante-pill button:hover { color: var(--danger); }
-.search-participantes-wrapper { position: relative; }
-.search-participantes-wrapper > svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-tertiary); z-index: 1; }
-.search-participantes-wrapper input { padding-left: 2.25rem; }
-@keyframes spin { from { transform: translateY(-50%) rotate(0deg); } to { transform: translateY(-50%) rotate(360deg); } }
-.spinner-icon { animation: spin 1s linear infinite; }
-.search-results-dropdown {
-    position: absolute; background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color); border-radius: 8px;
-    top: calc(100% + 5px); left: 0; right: 0;
-    max-height: 200px; overflow-y: auto;
-    z-index: 2001; box-shadow: var(--shadow);
-}
-.search-result-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; cursor: pointer; transition: var(--transition); }
-.search-result-item:hover { background-color: var(--bg-tertiary); }
-.search-result-item img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-.search-result-info { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
-.search-result-info span { color: var(--text-primary); font-size: 0.9rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.search-result-info small { color: var(--text-secondary); font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.search-result-item > svg { color: var(--accent-primary); margin-left: auto; flex-shrink: 0; }
-
-.modal-footer {
-    padding: 1rem 1.5rem; border-top: 1px solid var(--border-color);
-    display: flex; justify-content: flex-end;
-    gap: 0.75rem; flex-shrink: 0;
-}
-.btn-cancel {
-    background-color: var(--bg-quaternary); color: var(--text-primary);
-    border: none; padding: 0.75rem 1.5rem; border-radius: 6px;
-    font-weight: 600; cursor: pointer; transition: var(--transition);
-}
-.btn-cancel:hover { opacity: 0.9; }
-.btn-publish {
-    background-color: var(--accent-primary); color: white;
-    border: none; padding: 0.75rem 1.5rem; border-radius: 6px;
-    font-weight: 600; cursor: pointer; transition: var(--transition);
-}
-.btn-publish:hover { background-color: var(--accent-secondary); }
-.btn-publish:disabled { background-color: var(--button-disabled); cursor: not-allowed; opacity: 0.7; }
-
-/* --- ESTADOS DE LOADING E VAZIO --- */
-.empty-state, .loading-state {
-    text-align: center; padding: 4rem 2rem; color: var(--text-secondary);
-    background-color: var(--bg-secondary); border-radius: var(--card-radius);
-    border: 1px dashed var(--border-color);
-    grid-column: 1 / -1;
-}
-.empty-state h3, .loading-state h3 { color: var(--text-primary); font-size: 1.25rem; margin-bottom: 0.5rem; }
-
-
-/* --- ✅ NOVOS ESTILOS PARA O MODAL DE DETALHES --- */
-.modal-content.modal-detalhe {
-    max-width: 700px; /* Um pouco mais largo */
-}
-
-.detalhe-header {
-    height: 200px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    padding: 0; /* Remove padding do header padrão */
-}
-.header-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1.5rem 1.5rem;
-    background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap; /* Permite quebra de linha em telas pequenas */
 }
-.header-overlay h2 {
-    color: white; /* Texto branco sobre a imagem */
+
+.projetos-header .header-text h1 {
     font-size: 1.75rem;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+}
+
+.projetos-header .header-text p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.btn-new-project {
+    background-color: var(--accent-primary);
+    color: #fff;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-new-project:hover {
+    background-color: var(--accent-primary-dark);
+    transform: translateY(-2px);
+}
+
+.projetos-filters {
+    margin-bottom: 1.5rem;
+}
+
+.search-projetos {
+    position: relative;
+    max-width: 500px; /* Limita a largura da busca */
+}
+
+.search-projetos .svg-inline--fa { /* Estilo para o ícone da FontAwesome */
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+}
+
+.search-projetos input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.75rem; /* Espaço para o ícone */
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary); /* Fundo um pouco mais escuro */
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.search-projetos input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-primary-light); /* Sombra de foco azul */
+    background-color: var(--bg-primary); /* Fundo igual ao da página ao focar */
+}
+
+/* --- 2. Grid de Projetos e Cards --- */
+
+.projetos-grid {
+    display: grid;
+    /* Grid responsivo */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Mínimo 300px */
+    gap: 1.5rem;
+}
+
+.projeto-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra mais sutil */
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.projeto-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow); /* Sombra mais pronunciada no hover */
+    border-color: var(--accent-primary); /* Borda azul no hover */
+}
+
+.projeto-imagem {
+    height: 180px; /* Um pouco menor */
+    background-size: cover;
+    background-position: center;
+    background-color: var(--bg-tertiary); /* Cor de fallback */
+    border-bottom: 1px solid var(--border-color);
+}
+
+.projeto-conteudo {
+    padding: 1rem 1.25rem;
+    flex-grow: 1; /* Faz o conteúdo ocupar o espaço restante */
+    display: flex;
+    flex-direction: column; /* Organiza título, descrição e footer verticalmente */
+}
+
+.projeto-titulo {
+    font-size: 1.15rem; /* Pouco menor */
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+    /* Limita a 2 linhas */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.projeto-descricao {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    flex-grow: 1; /* Ocupa espaço vertical disponível */
+    line-height: 1.5;
+    /* Limita a 3 linhas */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.projeto-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto; /* Empurra para o final */
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.projeto-membros {
+    display: flex;
+    align-items: center;
+}
+
+.membro-avatar {
+    width: 30px; /* Pouco menor */
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary); /* Borda da cor do card */
+    object-fit: cover;
+    margin-left: -10px; /* Efeito de sobreposição */
+    background-color: var(--bg-tertiary); /* Cor de fundo para placeholders */
+}
+.membro-avatar:first-child {
+    margin-left: 0;
+}
+
+.membro-avatar.more {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-size: 0.7rem; /* Menor */
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ver-projeto-btn {
+    background: none;
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+    padding: 0.4rem 0.8rem; /* Pouco menor */
+    border-radius: 6px;
+    font-size: 0.8rem; /* Menor */
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.ver-projeto-btn:hover {
+    background-color: var(--accent-primary);
+    color: #fff;
+}
+
+
+/* --- 3. Estilos Gerais dos Modais --- */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Fundo mais escuro */
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem; /* Espaçamento interno */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    backdrop-filter: blur(4px); /* Efeito de desfoque */
+}
+
+.modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: var(--bg-secondary); /* Fundo do modal */
+    border-radius: var(--card-radius);
+    width: 100%;
+    max-width: 600px; /* Largura máxima padrão */
+    max-height: 90vh; /* Altura máxima */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Conteúdo interno não vaza */
+    border: 1px solid var(--border-color);
+    transform: scale(0.95) translateY(10px); /* Efeito de entrada */
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.visible .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.modal-header {
+    padding: 1rem 1.5rem; /* Padding padrão */
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0; /* Não encolhe */
+}
+
+.modal-header h2 {
+    font-size: 1.25rem; /* Tamanho padrão título */
+    font-weight: 600;
+    color: var(--text-primary);
     margin: 0;
 }
-.header-overlay .close-modal-btn {
-    color: white; /* Botão de fechar branco */
-    background: rgba(0,0,0,0.3);
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    line-height: 1;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.25rem; /* Área de clique maior */
+    transition: color 0.2s ease;
+}
+.close-modal-btn:hover {
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto; /* Scroll se necessário */
+    flex-grow: 1; /* Ocupa espaço vertical */
+    /* Custom scrollbar (opcional) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-quaternary) var(--bg-secondary);
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem; /* Padding padrão */
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-primary); /* Fundo um pouco diferente */
+    display: flex;
+    justify-content: flex-end; /* Botões à direita */
+    gap: 0.75rem;
+    flex-shrink: 0; /* Não encolhe */
+}
+
+/* Botões Padrão do Modal */
+.btn-cancel, .btn-publish, .btn-chat, .btn-delete {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex; /* Para alinhar ícone e texto */
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-cancel {
+    background-color: var(--bg-quaternary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+.btn-cancel:hover {
+    background-color: var(--background-hover);
+    border-color: var(--border-color-hover);
+    color: var(--text-primary);
+}
+
+.btn-publish {
+    background-color: var(--accent-primary);
+    color: #fff;
+}
+.btn-publish:hover {
+    background-color: var(--accent-primary-dark);
+}
+.btn-publish:disabled {
+    background-color: var(--button-disabled);
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+
+/* --- 4. Estilos Específicos: Modal de NOVO Projeto --- */
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-secondary); /* Cinza mais claro */
+}
+
+.form-group input[type="text"],
+.form-group input[type="url"],
+.form-group textarea,
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-tertiary); /* Fundo um pouco mais claro */
+    color: var(--text-primary);
+    font-size: 0.95rem; /* Tamanho de fonte consistente */
+    transition: var(--transition);
+}
+.form-group input[type="file"] {
+    padding: 0.5rem; /* Menor padding para input de file */
+    cursor: pointer;
+}
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+}
+.form-group input:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-primary-light);
+    background-color: var(--bg-primary);
+}
+.file-name-preview {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-left: 0.5rem;
+    word-break: break-all;
+}
+
+/* Links Úteis (Modal Novo Projeto) */
+.link-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.link-input-group .svg-inline--fa { /* Ícone dentro do grupo */
+    color: var(--text-tertiary);
+    margin-left: 0.75rem; /* Espaço antes do input */
+    position: absolute; /* Para sobrepor o input */
+    pointer-events: none; /* Para não bloquear o input */
+}
+.link-input-group input {
+    flex-grow: 1;
+    padding-left: 2.25rem; /* Espaço para o ícone */
+}
+.btn-remove-link {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
+    padding: 0.5rem; /* Área de clique */
+    transition: color 0.2s ease;
+    flex-shrink: 0; /* Não encolhe */
+}
+.btn-remove-link:hover {
+    color: #ff7b72; /* Vermelho mais claro no hover */
+}
+.btn-add-link {
+    background: none;
+    border: 1px dashed var(--border-color);
+    color: var(--text-secondary);
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    transition: var(--transition);
+    display: flex; /* Alinha ícone e texto */
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.btn-add-link:hover {
+    background-color: var(--background-hover);
+    color: var(--text-primary);
+    border-color: var(--border-color-hover);
+}
+
+/* Busca de Participantes (Estilos reutilizáveis para ambos os modais) */
+.participantes-pills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem; /* Adiciona padding interno */
+    background-color: var(--bg-tertiary); /* Fundo sutil */
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    min-height: 40px; /* Altura mínima */
+}
+
+.participante-pill {
+    background-color: var(--bg-secondary); /* Cor de fundo */
+    color: var(--text-secondary); /* Cor do texto */
+    padding: 0.25rem 0.5rem 0.25rem 0.75rem; /* Padding ajustado */
+    border-radius: 15px;
+    font-size: 0.8rem; /* Menor */
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem; /* Menor gap */
+    border: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+}
+.participante-pill:hover {
+    background-color: var(--bg-quaternary);
+}
+.participante-pill button {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.8rem; /* Tamanho do 'x' */
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+.participante-pill button:hover {
+    color: var(--danger-color);
+}
+
+.search-participantes-wrapper {
+    position: relative;
+    width: 100%;
+}
+.search-participantes-wrapper > .svg-inline--fa { /* Ícone de busca/spinner */
+    position: absolute;
+    left: 1rem; /* Alinhado com outros inputs */
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    z-index: 1; /* Acima do input */
+}
+.spinner-icon { /* Animação de giro */
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    100% { transform: translateY(-50%) rotate(360deg); }
+}
+
+.search-participantes-wrapper input[type="text"] {
+    width: 100%;
+    padding-left: 2.75rem; /* Espaço para o ícone, igual aos outros */
+}
+.search-participantes-wrapper input[type="text"]:disabled {
+    background-color: var(--bg-quaternary);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.search-results-dropdown {
+    position: absolute;
+    top: calc(100% + 4px); /* Espaço entre input e dropdown */
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: var(--bg-primary); /* Fundo um pouco diferente */
+    border: 1px solid var(--border-color);
+    border-radius: 8px; /* Borda arredondada */
+    z-index: 105; /* Acima do conteúdo do modal */
+    box-shadow: var(--shadow); /* Sombra */
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem; /* Padding interno */
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    gap: 0.75rem;
+    transition: background-color 0.2s ease;
+}
+.search-result-item:last-child {
+    border-bottom: none;
+}
+.search-result-item:hover {
+    background-color: var(--background-hover);
+}
+.search-result-item img {
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
-    width: 32px;
-    height: 32px;
+    object-fit: cover;
+    flex-shrink: 0; /* Não encolhe */
+}
+.search-result-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Evita que texto longo quebre layout */
+}
+.search-result-info span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap; /* Não quebra linha */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Adiciona "..." */
+}
+.search-result-info small {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.search-result-item > .svg-inline--fa { /* Ícone de adicionar (+) */
+    color: var(--accent-primary);
+    font-size: 0.9rem;
+    margin-left: auto; /* Empurra para a direita */
+    flex-shrink: 0;
+}
+
+
+/* --- 5. Estilos Específicos: Modal de DETALHES --- */
+
+.modal-content.modal-detalhe {
+    max-width: 700px; /* Mais largo */
+}
+
+.modal-header.detalhe-header {
+    height: 180px; /* Um pouco menor */
+    padding: 0; /* Remove padding */
+    position: relative; /* Para o overlay */
+    background-size: cover;
+    background-position: center;
+    color: #fff; /* Texto branco no overlay */
+    border-bottom: none; /* Remove borda inferior */
+}
+
+.detalhe-header .header-overlay {
+    position: absolute;
+    inset: 0; /* Cobre toda a área */
+    background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 40%, transparent 100%); /* Gradiente mais suave */
+    padding: 1rem 1.5rem; /* Padding do overlay */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Título no fundo */
+}
+
+.detalhe-header .header-overlay h2 {
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6); /* Sombra no texto */
+    font-size: 1.6rem; /* Tamanho do título */
+    margin: 0;
+    line-height: 1.3;
+}
+
+.detalhe-header .close-modal-btn {
+    position: absolute;
+    top: 0.75rem; /* Posição do botão */
+    right: 0.75rem;
+    color: rgba(255, 255, 255, 0.8); /* Branco semitransparente */
+    background: rgba(0, 0, 0, 0.3); /* Fundo semitransparente */
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    text-shadow: none; /* Remove sombra do botão */
     transition: var(--transition);
 }
-.header-overlay .close-modal-btn:hover {
-    background: rgba(0,0,0,0.6);
+.detalhe-header .close-modal-btn:hover {
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
 }
 
-.detalhe-body {
-    padding: 1rem 1.5rem; /* Ajuste no padding */
+.modal-body.detalhe-body {
+     padding: 1.5rem; /* Padding do corpo */
 }
-.detalhe-body h3 {
-    font-size: 1.1rem;
+.modal-body.detalhe-body h3 { /* Títulos das seções (Membros, Links, Gerenciamento) */
+    font-size: 1rem; /* Menor */
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-secondary); /* Cinza */
+    text-transform: uppercase; /* Maiúsculas */
+    letter-spacing: 0.5px; /* Espaçamento letras */
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--border-color);
-    margin-top: 1.5rem; /* Espaço acima de cada seção */
-    margin-bottom: 1rem;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem; /* Espaço ícone/texto */
 }
-.detalhe-body h3 svg {
-    color: var(--text-secondary); /* Ícone cinza */
+.modal-body.detalhe-body h3:first-of-type {
+    margin-top: 0.5rem; /* Menos espaço antes da primeira seção */
+}
+.modal-body.detalhe-body h3 .svg-inline--fa { /* Ícone do título */
+    font-size: 0.9rem;
 }
 
 .detalhe-info-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 2 colunas para info rápida */
-    gap: 1.5rem;
-    margin-top: 0.5rem;
+    grid-template-columns: 1fr; /* 1 coluna por padrão */
+    gap: 1rem; /* Menor gap */
+    margin-bottom: 1.5rem; /* Espaço antes da seção de membros */
 }
+
+/* Grid de 2 colunas para info em telas maiores */
+@media (min-width: 600px) {
+    .detalhe-info-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 colunas */
+        gap: 1.5rem;
+    }
+}
+
+
 .detalhe-info-item {
     display: flex;
-    gap: 1rem;
     align-items: flex-start;
+    gap: 0.75rem;
 }
-.detalhe-info-item svg {
-    color: var(--text-secondary);
-    font-size: 1.2rem;
-    margin-top: 0.25rem;
-    width: 20px;
+
+.detalhe-info-item .svg-inline--fa { /* Ícone de info (descrição, data) */
+    font-size: 1rem; /* Tamanho do ícone */
+    color: var(--text-tertiary); /* Cinza escuro */
+    margin-top: 0.1rem; /* Alinhamento vertical */
+    width: 18px; /* Largura fixa */
     text-align: center;
+    flex-shrink: 0; /* Não encolhe */
 }
-.detalhe-info-item strong {
-    display: block;
+
+.detalhe-info-item strong { /* "Descrição", "Criado em" */
     font-size: 0.8rem;
+    font-weight: 600;
     color: var(--text-secondary);
-    font-weight: 500;
-    text-transform: uppercase;
+    display: block;
     margin-bottom: 0.25rem;
 }
-.detalhe-info-item p {
+
+.detalhe-info-item p { /* Conteúdo da descrição, data */
     font-size: 0.95rem;
     color: var(--text-primary);
     margin: 0;
     line-height: 1.5;
-    word-break: break-word; /* Quebra palavras longas */
+    white-space: pre-wrap; /* Mantém quebras de linha */
+    word-break: break-word;
 }
 
-/* Lista de Membros no Modal */
+/* Lista de Membros (Modal Detalhes) */
 .detalhe-membros-lista {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 1.25rem 1rem; /* Espaçamento vertical e horizontal */
 }
+
 .detalhe-membro-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    position: relative;
-    width: 65px; /* Largura fixa */
+    gap: 0.3rem; /* Menor gap */
+    width: 60px; /* Largura fixa para alinhamento */
     text-align: center;
+    position: relative; /* Para o badge */
 }
+
 .detalhe-membro-item img {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--border-color);
 }
+
 .role-badge {
-    position: absolute;
-    bottom: -5px; /* Sobrepõe levemente */
-    font-size: 0.65rem;
+    font-size: 0.65rem; /* Bem pequeno */
     font-weight: 600;
     padding: 0.1rem 0.4rem;
-    border-radius: 6px;
-    color: white;
-    border: 2px solid var(--bg-secondary); /* Contorno */
+    border-radius: 4px; /* Menos arredondado */
+    text-transform: uppercase;
+    border: 1px solid;
+    line-height: 1.2;
+    /* Posicionamento do badge (opcional, pode ser abaixo da foto) */
+     position: absolute;
+     bottom: -6px;
+     left: 50%;
+     transform: translateX(-50%);
+     background-color: var(--bg-secondary); /* Fundo para cobrir a borda da foto */
+     border: 1px solid var(--border-color);
+     white-space: nowrap;
 }
-.role-badge.admin { background-color: var(--highlight); }
-.role-badge.moderador { background-color: var(--accent-primary); }
-.role-badge.membro { background-color: var(--text-tertiary); }
 
-/* Lista de Links Úteis */
+/* Cores dos Badges */
+.role-badge.autor { /* Mantido 'autor' para compatibilidade, mas pode ser 'admin' */
+    color: var(--highlight);
+    border-color: var(--highlight);
+}
+.role-badge.admin {
+     color: var(--highlight);
+     border-color: var(--highlight);
+}
+.role-badge.moderador {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+.role-badge.membro {
+    color: var(--text-secondary);
+    border-color: var(--text-tertiary);
+}
+
+
+/* Lista de Links (Modal Detalhes) */
 .detalhe-links-lista {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-}
-.link-util-item {
-    background-color: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: var(--transition);
-}
-.link-util-item:hover {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-    background-color: var(--bg-primary);
-}
-.link-util-item span {
-    flex-grow: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 0.9rem;
-}
-.link-util-item svg {
-    font-size: 0.8rem;
-}
-
-/* Botão de ir para o Chat */
-.btn-chat {
-    background-color: var(--success); /* Cor verde */
-    display: flex;
-    align-items: center;
     gap: 0.5rem;
 }
+
+.link-util-item {
+    display: inline-flex; /* Para o link não ocupar largura total */
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--accent-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 0; /* Só padding vertical */
+    border-radius: 6px;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+    word-break: break-all; /* Quebra links longos */
+}
+
+.link-util-item:hover {
+    color: var(--accent-secondary); /* Azul mais escuro */
+    text-decoration: underline;
+}
+
+.link-util-item .svg-inline--fa { /* Ícone de link externo */
+    font-size: 0.8rem;
+    flex-shrink: 0; /* Não encolhe */
+}
+.link-util-item span { /* O texto do link */
+     overflow: hidden;
+     text-overflow: ellipsis;
+     white-space: nowrap; /* Tenta manter em uma linha */
+}
+
+
+/* Seção de Gerenciamento (Autor) no Modal Detalhes */
+.admin-section-title { /* O h3 "Gerenciamento (Autor)" */
+    margin-top: 2rem; /* Mais espaço antes */
+    color: var(--highlight); /* Cor destaque */
+    border-top: 1px solid var(--border-color); /* Linha divisória */
+    padding-top: 1.5rem;
+}
+.admin-section-title svg {
+    color: var(--highlight); /* Ícone na cor destaque */
+}
+
+/* Reutiliza .form-group e .search-participantes-wrapper */
+.modal-detalhe .form-group {
+    margin-bottom: 1rem;
+}
+.modal-detalhe .form-group label {
+    color: var(--text-primary); /* Label mais visível */
+}
+
+
+/* Botões do Footer (Modal Detalhes) */
+.btn-chat {
+    background-color: var(--success); /* Verde */
+}
 .btn-chat:hover {
-    background-color: #2ea043; /* Verde mais escuro no hover */
+    background-color: #269c40; /* Verde escuro */
 }
-/* --- FIM DOS ESTILOS DO MODAL DE DETALHES --- */
+
+.btn-delete {
+    background-color: var(--danger-color-light); /* Fundo vermelho claro */
+    color: var(--danger-color);
+    border-color: var(--danger-color-light);
+    margin-right: auto; /* Empurra para a esquerda */
+}
+.btn-delete:hover {
+    background-color: var(--danger-color);
+    color: #fff;
+    border-color: var(--danger-color);
+}
+
+/* Ajuste no botão fechar quando o delete está presente */
+.modal-footer .btn-cancel[style*="marginLeft: auto"] {
+  margin-left: auto !important; /* Garante que funcione */
+}
 
 
-/* --- RESPONSIVIDADE --- */
-@media (max-width: 1200px) {
-    .container { grid-template-columns: 280px 1fr; }
-    .right-sidebar { display: none; }
-}
+/* --- 6. Responsividade (Geral) --- */
+
 @media (max-width: 768px) {
-    .container { grid-template-columns: 1fr; }
-    .projetos-header { flex-direction: column; align-items: flex-start; padding: 1.5rem; }
-    .header-text h1 { font-size: 1.5rem; }
-    .btn-new-project { width: 100%; justify-content: center; }
-    .projetos-filters { padding: 1rem; }
-    .projetos-grid { grid-template-columns: 1fr; gap: 1rem; }
-    .modal-content { max-width: 95%; }
+    .projetos-header {
+        flex-direction: column;
+        align-items: stretch; /* Botão ocupa largura total */
+    }
 
-    /* Responsividade do Modal de Detalhes */
-    .detalhe-info-grid { grid-template-columns: 1fr; } /* Coluna única no celular */
-    .detalhe-header { height: 150px; }
-    .header-overlay h2 { font-size: 1.4rem; }
+    .projetos-grid {
+        grid-template-columns: 1fr; /* Coluna única */
+        gap: 1rem;
+    }
+
+    .modal-content {
+        max-width: 95%; /* Modal ocupa quase toda a tela */
+        max-height: 95vh;
+    }
+
+    .modal-body { padding: 1rem; }
+    .modal-header, .modal-footer { padding: 1rem; }
+
+    .modal-footer {
+        flex-direction: column; /* Botões empilhados */
+    }
+    .modal-footer button {
+        width: 100%; /* Botões ocupam largura total */
+    }
+    .btn-delete {
+        margin-right: 0; /* Remove margem automática */
+        margin-bottom: 0.5rem; /* Espaço abaixo */
+        order: -1; /* Coloca o botão delete primeiro (opcional) */
+    }
+    .modal-footer .btn-cancel[style*="marginLeft: auto"] {
+      margin-left: 0 !important; /* Remove margem */
+    }
+}
+
+@media (max-width: 480px) {
+    /* Ajustes finos para telas muito pequenas */
+    .detalhe-header .header-overlay h2 { font-size: 1.3rem; }
+    .detalhe-info-grid { grid-template-columns: 1fr; } /* Garante 1 coluna */
+    .search-result-item { padding: 0.5rem; } /* Menor padding nos resultados */
+    .search-result-item img { width: 30px; height: 30px; }
 }
