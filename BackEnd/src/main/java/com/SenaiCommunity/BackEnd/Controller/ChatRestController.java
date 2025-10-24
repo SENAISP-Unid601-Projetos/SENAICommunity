@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
+import com.SenaiCommunity.BackEnd.DTO.ConversaResumoDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemProjetoSaidaDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaSaidaDTO;
 import com.SenaiCommunity.BackEnd.DTO.PostagemSaidaDTO;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -31,6 +33,12 @@ public class ChatRestController {
                                                                               @PathVariable Long userId2) {
         List<MensagemPrivadaSaidaDTO> historico = mensagemPrivadaService.buscarMensagensPrivadas(userId1, userId2);
         return ResponseEntity.ok(historico);
+    }
+
+    @GetMapping("/privado/minhas-conversas")
+    public ResponseEntity<List<ConversaResumoDTO>> getMinhasConversas(Principal principal) {
+        List<ConversaResumoDTO> resumo = mensagemPrivadaService.buscarResumoConversas(principal.getName());
+        return ResponseEntity.ok(resumo);
     }
 
     //  Histórico de mensagens de grupo
