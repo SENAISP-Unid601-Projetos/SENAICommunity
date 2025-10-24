@@ -217,7 +217,7 @@ public class ProjetoService {
         conviteProjetoRepository.save(convite);
 
         String mensagem = String.format("Você foi convidado para o projeto '%s' por %s.", projeto.getTitulo(), usuarioConvidador.getNome());
-        notificacaoService.criarNotificacao(usuarioConvidado, mensagem, "CONVITE_PROJETO", projeto.getId());
+        notificacaoService.criarNotificacao(usuarioConvidado, usuarioConvidador, mensagem, "CONVITE_PROJETO", projeto.getId());
     }
 
     @Transactional
@@ -251,8 +251,7 @@ public class ProjetoService {
         projetoMembroRepository.save(membro);
 
         String mensagem = String.format("%s aceitou seu convite para o projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
-        notificacaoService.criarNotificacao(convite.getConvidadoPor(), mensagem, "MEMBRO_ADICIONADO", convite.getProjeto().getId());
-    }
+        notificacaoService.criarNotificacao(convite.getConvidadoPor(), convite.getUsuarioConvidado(), mensagem, "MEMBRO_ADICIONADO", convite.getProjeto().getId());    }
 
     @Transactional
     public void recusarConvite(Long conviteId, Long usuarioId) {
@@ -271,8 +270,7 @@ public class ProjetoService {
         conviteProjetoRepository.save(convite);
 
         String mensagem = String.format("%s recusou o convite para o projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
-        notificacaoService.criarNotificacao(convite.getConvidadoPor(), mensagem, "CONVITE_RECUSADO", convite.getProjeto().getId());
-    }
+        notificacaoService.criarNotificacao(convite.getConvidadoPor(), convite.getUsuarioConvidado(), mensagem, "CONVITE_RECUSADO", convite.getProjeto().getId());    }
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> buscarConvitesRecebidos(String email) {
@@ -311,6 +309,8 @@ public class ProjetoService {
 
     @Transactional
     public void expulsarMembro(Long projetoId, Long membroId, Long adminId) {
+        Usuario admin = usuarioRepository.findById(adminId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário admin não encontrado"));
         if (!isAdminOuModerador(projetoId, adminId)) {
             throw new IllegalArgumentException("Apenas administradores e moderadores podem expulsar membros");
         }
@@ -330,11 +330,12 @@ public class ProjetoService {
         projetoMembroRepository.delete(membro);
 
         String mensagem = String.format("Você foi removido do projeto '%s'.", projeto.getTitulo());
-        notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "MEMBRO_REMOVIDO", projeto.getId());
-    }
+        notificacaoService.criarNotificacao(membro.getUsuario(), admin, mensagem, "MEMBRO_REMOVIDO", projeto.getId());    }
 
     @Transactional
     public void alterarPermissao(Long projetoId, Long membroId, ProjetoMembro.RoleMembro novaRole, Long adminId) {
+        Usuario admin = usuarioRepository.findById(adminId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário admin não encontrado"));
         Projeto projeto = projetoRepository.findById(projetoId).orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado"));
         if (!projeto.getAutor().getId().equals(adminId)) {
             throw new IllegalArgumentException("Apenas o criador do projeto pode alterar permissões");
@@ -350,12 +351,13 @@ public class ProjetoService {
         projetoMembroRepository.save(membro);
 
         String mensagem = String.format("Sua permissão no projeto '%s' foi alterada para %s.", projeto.getTitulo(), novaRole.toString());
-        notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "PERMISSAO_ALTERADA", projeto.getId());
-    }
+        notificacaoService.criarNotificacao(membro.getUsuario(), admin, mensagem, "PERMISSAO_ALTERADA", projeto.getId());    }
 
     @Transactional
     public void atualizarInfoGrupo(Long projetoId, String novoTitulo, String novaDescricao, String novaImagemUrl,
                                    String novoStatus, Integer novoMaxMembros, Boolean novoGrupoPrivado, Long adminId) {
+        Usuario admin = usuarioRepository.findById(adminId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário admin não encontrado"));
         if (!isAdmin(projetoId, adminId)) {
             throw new IllegalArgumentException("Apenas administradores podem alterar informações do grupo");
         }
@@ -380,13 +382,14 @@ public class ProjetoService {
         List<ProjetoMembro> membros = projetoMembroRepository.findByProjetoId(projetoId);
         for (ProjetoMembro membro : membros) {
             if (!membro.getUsuario().getId().equals(adminId)) {
-                notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "PROJETO_ATUALIZADO", projetoId);
-            }
+                notificacaoService.criarNotificacao(membro.getUsuario(), admin, mensagem, "PROJETO_ATUALIZADO", projetoId);            }
         }
     }
 
     @Transactional
     public void deletar(Long id, Long adminId) {
+        Usuario admin = usuarioRepository.findById(adminId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário admin não encontrado"));
         Projeto projeto = projetoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado com id: " + id));
 
@@ -402,8 +405,7 @@ public class ProjetoService {
         String mensagem = String.format("O projeto '%s' do qual você fazia parte foi excluído.", nomeProjetoExcluido);
         for (ProjetoMembro membro : membros) {
             if (!membro.getUsuario().getId().equals(adminId)) {
-                notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "PROJETO_EXCLUIDO", null);
-            }
+                notificacaoService.criarNotificacao(membro.getUsuario(), admin, mensagem, "PROJETO_EXCLUIDO", null);            }
         }
     }
 

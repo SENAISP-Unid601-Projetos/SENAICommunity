@@ -38,7 +38,6 @@ public class MensagemProjetoService {
     @Autowired
     private ProjetoMembroRepository projetoMembroRepository;
 
-    // --- MÉTODO toDTO MODIFICADO ---
     private MensagemProjetoSaidaDTO toDTO(MensagemProjeto mensagem) {
         if (mensagem == null) {
             return null;
@@ -126,7 +125,7 @@ public class MensagemProjetoService {
 
             usuariosMencionados.forEach(destinatario -> {
                 if (!destinatario.getId().equals(autor.getId())) { // Não notifica a si mesmo
-                    notificacaoService.criarNotificacao(destinatario, msgMencao, "MENSAGEM_MEMBER_MENTION", projeto.getId());
+                    notificacaoService.criarNotificacao(destinatario, autor, msgMencao, "MENSAGEM_MEMBER_MENTION", projeto.getId());
                 }
             });
         }
@@ -139,12 +138,12 @@ public class MensagemProjetoService {
                 .filter(usuario -> !usuario.getId().equals(autor.getId()) && !emailsMencionados.contains(usuario.getEmail()))
                 .forEach(membro -> notificacaoService.criarNotificacao(
                         membro,
+                        autor,
                         msgGeral,
                         "NOVA_MENSAGEM_PROJETO",
                         projeto.getId()
                 ));
 
-        // Retorna o DTO com a URL da foto corrigida
         return toDTO(mensagemSalva);
     }
 
@@ -212,6 +211,7 @@ public class MensagemProjetoService {
                 .filter(usuario -> !usuario.getId().equals(mensagem.getAutor().getId())) // Não notifica o próprio autor
                 .forEach(membro -> notificacaoService.criarNotificacao(
                         membro,
+                        mensagem.getAutor(),
                         msgEdicao,
                         "MENSAGEM_PROJETO_EDITADA",
                         mensagem.getProjeto().getId()
@@ -227,7 +227,6 @@ public class MensagemProjetoService {
                 .orElseThrow(() -> new EntityNotFoundException("Mensagem não encontrada"));
 
         // Validação de permissão (apenas o autor pode excluir)
-        // Adicionar lógica para admins/mods se necessário
         if (!mensagem.getAutor().getEmail().equals(autorUsername)) {
             throw new SecurityException("Você não tem permissão para excluir esta mensagem.");
         }
@@ -235,7 +234,6 @@ public class MensagemProjetoService {
         // Deleta os arquivos associados primeiro do serviço de armazenamento
         if (mensagem.getArquivos() != null && !mensagem.getArquivos().isEmpty()) {
             // Itera sobre uma cópia da lista para segurança, embora não seja estritamente necessário aqui
-            // já que vamos deletar a mensagem toda depois.
             for (ArquivoMensagemProjeto midia : new ArrayList<>(mensagem.getArquivos())) {
                 try {
                     midiaService.deletar(midia.getUrl());
@@ -246,29 +244,11 @@ public class MensagemProjetoService {
                 }
             }
         }
-
         // Deleta a mensagem do banco de dados.
-        // Se houver Cascade configurado corretamente na entidade MensagemProjeto para a lista de ArquivoMensagemProjeto
-        // (ex: CascadeType.REMOVE ou orphanRemoval=true), o JPA/Hibernate removerá as entradas órfãs
-        // da tabela arquivo_mensagem_projeto automaticamente.
         mensagemProjetoRepository.deleteById(mensagemId);
-
-        // (Opcional) Notificar sobre a exclusão, se desejado
-        /*
-        String msgExclusao = String.format("%s excluiu uma mensagem no projeto '%s'.", mensagem.getAutor().getNome(), mensagem.getProjeto().getTitulo());
-        projetoMembroRepository.findByProjetoId(mensagem.getProjeto().getId()).stream()
-                .map(membro -> membro.getUsuario())
-                .filter(usuario -> !usuario.getId().equals(mensagem.getAutor().getId()))
-                .forEach(membro -> notificacaoService.criarNotificacao(
-                        membro,
-                        msgExclusao,
-                        "MENSAGEM_PROJETO_EXCLUIDA",
-                        mensagem.getProjeto().getId()
-                ));
-        */
     }
 
-    // Método buscarMensagensPorProjeto já usa o toDTO correto
+    // Método buscarMensagensPorProjeto
     public List<MensagemProjetoSaidaDTO> buscarMensagensPorProjeto(Long projetoId) {
         // Validação se o projeto existe (opcional, mas bom)
         if (!projetoRepository.existsById(projetoId)) {

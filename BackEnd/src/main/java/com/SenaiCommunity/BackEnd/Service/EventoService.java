@@ -96,6 +96,7 @@ public class EventoService {
         for (Usuario destinatario : todosOsUsuarios) {
             notificacaoService.criarNotificacao(
                     destinatario,
+                    null,
                     mensagem,
                     "NOVO_EVENTO",
                     eventoSalvo.getId()

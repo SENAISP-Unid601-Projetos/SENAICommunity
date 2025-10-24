@@ -53,6 +53,7 @@ public class VagaService {
             if (!destinatario.getId().equals(autor.getId())) {
                 notificacaoService.criarNotificacao(
                         destinatario,
+                        null,
                         mensagem,
                         "NOVA_VAGA",
                         vagaSalva.getId()
