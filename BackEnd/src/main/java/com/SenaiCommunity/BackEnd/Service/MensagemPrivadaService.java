@@ -7,13 +7,17 @@ import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.MensagemPrivadaRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Transactional; // Importe esta anotação
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class MensagemPrivadaService {
@@ -98,7 +102,7 @@ public class MensagemPrivadaService {
         List<MensagemPrivada> mensagens = mensagemPrivadaRepository.findMensagensEntreUsuarios(user1, user2);
         // Converte a lista de entidades para uma lista de DTOs antes de retornar
         return mensagens.stream()
-                .map(this::toDTO)
+                .map(this::toDTO) // Usa o método toDTO que você já criou
                 .collect(Collectors.toList());
     }
 }

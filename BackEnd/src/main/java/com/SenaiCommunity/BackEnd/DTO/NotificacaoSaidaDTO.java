@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.DTO;
 
+import com.SenaiCommunity.BackEnd.Entity.Notificacao;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,8 +20,18 @@ public class NotificacaoSaidaDTO {
     private boolean lida;
     private String tipo;
     private Long idReferencia;
-    private Long atorId;        // ID de quem causou a notificação (null se for do sistema)
-    private String atorNome;    // Nome de quem causou (ex: "Sistema" ou "Nome do Usuário")
-    private String urlFotoAtor; // URL da foto de perfil de quem causou
+
+    // Método de conversão estático para facilitar a criação a partir da entidade
+    public static NotificacaoSaidaDTO fromEntity(Notificacao notificacao) {
+        return new NotificacaoSaidaDTO(
+                notificacao.getId(),
+                notificacao.getMensagem(),
+                notificacao.getDataCriacao(),
+                notificacao.isLida(),
+                notificacao.getTipo(),
+                notificacao.getIdReferencia()
+        );
+    }
+
 
 }

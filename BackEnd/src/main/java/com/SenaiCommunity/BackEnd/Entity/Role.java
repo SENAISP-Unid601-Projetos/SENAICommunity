@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,8 +24,12 @@ public class Role {
         ALUNO( 3L);
 
         long roleId;
+
         Values(long roleID) {
             this.roleId = roleID;
         }
+
     }
+
+
 }

@@ -1,9 +1,12 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
-import com.SenaiCommunity.BackEnd.DTO.MensagemProjetoSaidaDTO;
+import com.SenaiCommunity.BackEnd.DTO.MensagemGrupoSaidaDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaSaidaDTO;
 import com.SenaiCommunity.BackEnd.DTO.PostagemSaidaDTO;
-import com.SenaiCommunity.BackEnd.Service.MensagemProjetoService;
+import com.SenaiCommunity.BackEnd.Entity.MensagemGrupo;
+import com.SenaiCommunity.BackEnd.Entity.MensagemPrivada;
+import com.SenaiCommunity.BackEnd.Entity.Postagem;
+import com.SenaiCommunity.BackEnd.Service.MensagemGrupoService;
 import com.SenaiCommunity.BackEnd.Service.MensagemPrivadaService;
 import com.SenaiCommunity.BackEnd.Service.PostagemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +17,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/chat")
+//Essa controller serve buscar os históricos de conversa dos chats
 public class ChatRestController {
 
     @Autowired
     private MensagemPrivadaService mensagemPrivadaService;
 
     @Autowired
-    private MensagemProjetoService mensagemGrupoService;
+    private MensagemGrupoService mensagemGrupoService;
 
     @Autowired
     private PostagemService postagemService;
@@ -35,8 +39,8 @@ public class ChatRestController {
 
     //  Histórico de mensagens de grupo
     @GetMapping("/grupo/{projetoId}")
-    public ResponseEntity<List<MensagemProjetoSaidaDTO>> getMensagensDoGrupo(@PathVariable Long projetoId) {
-        List<MensagemProjetoSaidaDTO> mensagens = mensagemGrupoService.buscarMensagensPorProjeto(projetoId);
+    public ResponseEntity<List<MensagemGrupoSaidaDTO>> getMensagensDoGrupo(@PathVariable Long projetoId) {
+        List<MensagemGrupoSaidaDTO> mensagens = mensagemGrupoService.buscarMensagensPorProjeto(projetoId);
         return ResponseEntity.ok(mensagens);
     }
 

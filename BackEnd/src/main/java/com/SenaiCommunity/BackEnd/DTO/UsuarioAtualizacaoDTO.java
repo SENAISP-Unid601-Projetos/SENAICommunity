@@ -1,7 +1,7 @@
 package com.SenaiCommunity.BackEnd.DTO;
 
 import lombok.Data;
-import java.time.LocalDate;
+import java.time.LocalDate; // Importar LocalDate
 
 @Data
 public class UsuarioAtualizacaoDTO {

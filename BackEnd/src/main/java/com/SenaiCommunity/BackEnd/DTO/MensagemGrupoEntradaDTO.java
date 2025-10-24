@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class MensagemProjetoEntradaDTO {
+public class MensagemGrupoEntradaDTO {
 
     private String conteudo;
 }

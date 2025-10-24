@@ -34,7 +34,6 @@ function updateThemeIcon(theme) {
         }
     }
 }
-    let currentUser = null;
 
     // --- ELEMENTOS DO DOM ---
     const elements = {
@@ -102,6 +101,7 @@ function updateThemeIcon(theme) {
             fetchUserConnections(); 
             fetchNotifications()
             setupEventListeners();
+            setInitialTheme();
         } catch (error) {
             console.error("ERRO CRÍTICO NA INICIALIZAÇÃO DO PERFIL:", error);
             localStorage.removeItem('token');
@@ -291,6 +291,10 @@ function updateThemeIcon(theme) {
 
     // --- SETUP DOS EVENT LISTENERS ---
     function setupEventListeners() {
+        const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
         document.body.addEventListener('click', closeAllMenus);
 
         // Listener para abrir o dropdown do usuário

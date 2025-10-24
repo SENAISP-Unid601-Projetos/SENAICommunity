@@ -16,10 +16,8 @@
         button:hover { background-color: #0056b3; }
         button.danger { background-color: #dc3545; }
         button.danger:hover { background-color: #c82333; }
-        button.success { background-color: #28a745; }
-        button.success:hover { background-color: #218838; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
-        #chat-window, #public-feed-window, #project-chat-window { height: 500px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin-top: 1rem; background-color: #f9f9f9; border-radius: 4px; }
+        #chat-window, #public-feed-window { height: 500px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin-top: 1rem; background-color: #f9f9f9; border-radius: 4px; }
         .message, .post-container, .comment-container { position: relative; }
         .message-actions, .post-actions, .comment-actions { position: absolute; top: 5px; right: 5px; display: none; background-color: rgba(255,255,255,0.8); padding: 3px; border-radius: 5px;}
         .message:hover .message-actions, .post-container:hover .post-actions, .comment-container:hover .comment-actions { display: block; }
@@ -50,61 +48,51 @@
         .reply-info { font-size: 0.8em; color: #6c757d; margin-bottom: 4px; }
         .reply-info strong { color: #0056b3; }
         .highlight-badge { font-size: 0.8em; color: #856404; background-color: #fff3cd; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
-
-        .actions-bar { margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; display: flex; align-items: center; gap: 15px; }
-        .like-btn { background: none; border: 1px solid #ccc; color: #555; padding: 5px 10px; border-radius: 20px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px; }
-        .like-btn.liked { background-color: #007bff; color: white; border-color: #007bff; font-weight: bold; }
-        .like-count { font-size: 14px; color: #666; font-weight: bold; }
-        .comment-actions-footer { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
-
-        .project-list-item { padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        .project-list-item:hover { background-color: #f0f0f0; }
-        .project-list-item img { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; }
-        .project-message-media img, .project-message-media video, .project-message-media audio { max-width: 100%; border-radius: 4px; margin-top: 5px; display: block; }
-        #project-chat-window { height: 300px; }
-
-        .convite-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .convite-info { font-size: 0.9em; }
-        .convite-info strong { color: #0056b3; }
-        .convite-actions button { font-size: 12px; padding: 5px 8px; }
-        #convite-modal-list { max-height: 400px; overflow-y: auto; }
-        .button-group { margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 10px; }
-
-        .message-header {
+        
+        /* <<< NOVOS ESTILOS PARA CURTIDAS >>> */
+        .actions-bar {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
             display: flex;
             align-items: center;
-            margin-bottom: 4px;
+            gap: 15px; /* Aumenta o espaçamento entre os botões */
         }
-        .message-sender-photo {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            margin-right: 8px;
-            vertical-align: middle;
-            object-fit: cover;
-            background-color: #eee;
+        .like-btn {
+            background: none;
+            border: 1px solid #ccc;
+            color: #555;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
-
-        .message p {
-            margin-top: 0;
-            padding-left: 38px;
+        .like-btn.liked {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+            font-weight: bold;
         }
-        .message.sent p {
-             padding-left: 0;
+        .like-count {
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
         }
-        .message.sent .message-header {
-            flex-direction: row-reverse;
-        }
-        .message.sent .message-sender-photo {
-            margin-right: 0;
-            margin-left: 8px;
+        .comment-actions-footer {
+             display: flex;
+             align-items: center;
+             gap: 15px;
+             margin-top: 10px;
         }
 
         /* Estilos do Modal */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
         .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; }
         .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        #edit-post-media-list label, #edit-project-message-media-list label { display: inline-block; margin-right: 15px; }
+        #edit-post-media-list label { display: inline-block; margin-right: 15px; }
     </style>
 </head>
 <body>
@@ -142,7 +130,6 @@
 </div>
 
 <div id="functionalities" style="display: none;">
-
     <div class="container">
         <h3>Etapa 3: Feed Público (Postagens)</h3>
         <div class="form-group">
@@ -160,68 +147,7 @@
     </div>
 
     <div class="container">
-        <h3>Etapa 4: Projetos</h3>
-
-        <div class="button-group">
-            <button onclick="showReceivedInvites()">Ver Convites Recebidos</button>
-            <button onclick="showSentInvites()">Ver Convites Enviados</button>
-        </div>
-
-        <h4>Criar Novo Projeto</h4>
-        <div class="form-group">
-            <label for="projeto-titulo">Título:</label>
-            <input type="text" id="projeto-titulo" placeholder="Título do Projeto">
-        </div>
-        <div class="form-group">
-            <label for="projeto-descricao">Descrição:</label>
-            <textarea id="projeto-descricao" placeholder="Descreva seu projeto..."></textarea>
-        </div>
-        <div class="form-group" style="max-width: 200px;">
-            <label for="projeto-max-membros">Max. Membros:</label>
-            <input type="number" id="projeto-max-membros" value="10">
-        </div>
-        <div class="form-group">
-            <input type="checkbox" id="projeto-privado" style="width: auto;">
-            <label for="projeto-privado" style="display: inline-block; font-weight: normal;">Grupo Privado</label>
-        </div>
-        <div class="form-group">
-            <label for="projeto-professor-ids">IDs Professores (separados por vírgula):</label>
-            <input type="text" id="projeto-professor-ids" placeholder="1,2,3">
-        </div>
-        <div class="form-group">
-            <label for="projeto-aluno-ids">IDs Alunos (separados por vírgula):</label>
-            <input type="text" id="projeto-aluno-ids" placeholder="4,5,6">
-        </div>
-        <div class="form-group">
-            <label for="projeto-foto">Foto do Projeto (Opcional):</label>
-            <input type="file" id="projeto-foto">
-        </div>
-        <button onclick="createProject()">Criar Projeto</button>
-        <hr style="margin: 2rem 0;">
-
-        <h4>Lista de Projetos (Clique para abrir o chat)</h4>
-        <div id="project-list-window" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9; border-radius: 4px;">
-            </div>
-        <input type="hidden" id="selected-project-id">
-        <h4 style="margin-top: 2rem;">Chat do Projeto: <span id="selected-project-name" style="color: #333;">Nenhum selecionado</span></h4>
-
-        <div id="project-chat-window">
-            Selecione um projeto da lista acima.
-        </div>
-        <div class="form-group" style="margin-top: 1rem;">
-            <label for="project-message-content">Sua Mensagem:</label>
-            <input type="text" id="project-message-content" placeholder="Digite sua mensagem...">
-        </div>
-        <div class="form-group">
-            <label for="project-message-files">Anexar Arquivos:</label>
-            <input type="file" id="project-message-files" multiple>
-        </div>
-        <button id="project-send-btn" onclick="sendProjectMessage()" disabled>Enviar Mensagem</button>
-    </div>
-
-
-    <div class="container">
-        <h3>Etapa 5: Chat Privado</h3>
+        <h3>Etapa 4: Chat Privado</h3>
         <div class="form-group">
             <label for="recipient-id">ID do Destinatário:</label>
             <input type="number" id="recipient-id" placeholder="Digite o ID e pressione Enter ou clique fora" onchange="fetchChatHistory()">
@@ -259,7 +185,7 @@
 <div id="editMessageModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('editMessageModal')">&times;</span>
-        <h3>Editar Mensagem Privada</h3>
+        <h3>Editar Mensagem</h3>
         <input type="hidden" id="edit-message-id">
         <div class="form-group">
             <label for="edit-message-content">Conteúdo:</label>
@@ -282,43 +208,10 @@
     </div>
 </div>
 
-<div id="editProjectMessageModal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal('editProjectMessageModal')">&times;</span>
-        <h3>Editar Mensagem do Projeto</h3>
-        <input type="hidden" id="edit-project-message-id">
-        <input type="hidden" id="edit-project-message-project-id">
-        <div class="form-group">
-            <label for="edit-project-message-content">Conteúdo:</label>
-            <textarea id="edit-project-message-content"></textarea>
-        </div>
-        <div class="form-group">
-            <label>Mídias Atuais (marque para remover):</label>
-            <div id="edit-project-message-media-list"></div>
-        </div>
-        <div class="form-group">
-            <label for="edit-project-message-files">Adicionar novos arquivos:</label>
-            <input type="file" id="edit-project-message-files" multiple>
-        </div>
-        <button onclick="submitProjectMessageEdit()">Salvar Alterações</button>
-    </div>
-</div>
-
-<div id="convitesModal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal('convitesModal')">&times;</span>
-        <h3 id="convite-modal-title">Convites</h3>
-        <div id="convite-modal-list">
-            </div>
-    </div>
-</div>
-
-
 <script>
     let stompClient = null;
     let jwtToken = null;
     const activeSubscriptions = {};
-    let currentProjectSubscription = null;
 
     // --- FUNÇÕES DE AUTENTICAÇÃO E UTILITÁRIAS ---
     function getUserIdFromToken(token) {
@@ -369,9 +262,7 @@
         stompClient.connect(headers, function(frame) {
             console.log('CONECTADO COM SUCESSO');
             updateConnectionStatus(true);
-
             fetchPublicPosts();
-            fetchProjects();
 
             stompClient.subscribe(`/user/queue/usuario`, function(message) {
                 const payload = JSON.parse(message.body);
@@ -390,12 +281,12 @@
             stompClient.subscribe('/topic/publico', function(message) {
                 const payload = JSON.parse(message.body);
                 const postElement = document.getElementById(`post-${payload.postagemId || payload.id}`);
-
+                
                 if (payload.tipo === 'remocao') {
                     postElement?.remove();
                 } else if (payload.tipo === 'edicao') {
                     fetchAndReplacePost(payload.postagem.id);
-                } else {
+                } else { 
                     if(!postElement) showPublicPost(payload, true);
                 }
             });
@@ -410,12 +301,6 @@
             activeSubscriptions[topic].unsubscribe();
             delete activeSubscriptions[topic];
         }
-
-        if (currentProjectSubscription) {
-            currentProjectSubscription.unsubscribe();
-            currentProjectSubscription = null;
-        }
-
         if (stompClient !== null) { stompClient.disconnect(); }
         updateConnectionStatus(false);
         console.log("Desconectado");
@@ -439,7 +324,7 @@
         }
     }
 
-    // --- FUNÇÕES DE POSTAGEM (Feed Público) ---
+    // --- FUNÇÕES DE POSTAGEM ---
     async function fetchPublicPosts() {
         const feedWindow = document.getElementById('public-feed-window');
         feedWindow.innerHTML = '';
@@ -479,7 +364,8 @@
             alert(error.message);
         }
     }
-
+    
+    // <<< NOVA FUNÇÃO PARA CURTIDAS >>>
     async function toggleLike(postagemId, comentarioId) {
         if (!jwtToken) {
             alert("Você precisa estar conectado para curtir.");
@@ -502,12 +388,14 @@
             if (!response.ok) {
                 throw new Error(`Erro ao processar curtida: ${await response.text()}`);
             }
+            // A UI será atualizada via WebSocket, então não precisamos fazer nada aqui.
         } catch (error) {
             console.error("Erro no toggleLike:", error);
             alert(error.message);
         }
     }
 
+    // Função para criar elemento de postagem
     function createPostElement(post) {
         const postElement = document.createElement('div');
         postElement.className = 'post-container';
@@ -517,12 +405,12 @@
         let mediaHtml = '<div class="post-media">';
         const urls = post.urlsMidia || [];
         urls.forEach(url => {
-            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) { mediaHtml += `<img src="${url}">`; }
-            else if (url.match(/\.(mp4|webm|ogg)$/i)) { mediaHtml += `<video controls src="${url}"></video>`; }
+            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) { mediaHtml += `<img src="${url}">`; } 
+            else if (url.match(/\.(mp4|webm|ogg)$/i)) { mediaHtml += `<video controls src="${url}"></video>`; } 
             else if (url.match(/\.(mp3|wav|m4a)$/i)) { mediaHtml += `<audio controls src="${url}"></audio>`; }
         });
         mediaHtml += '</div>';
-
+        
         const dataFormatada = new Date(post.dataCriacao).toLocaleString('pt-BR');
         const myUserId = document.getElementById('my-user-id').value;
         let actionsHtml = (String(post.autorId) === myUserId) ? `
@@ -530,7 +418,8 @@
                 <button class="action-btn" onclick='openEditPostModal(${post.id}, ${JSON.stringify(urls)})'>Editar</button>
                 <button class="action-btn danger" onclick="deletePost(${post.id})">Excluir</button>
             </div>` : '';
-
+        
+        // <<< NOVA BARRA DE AÇÕES PARA A POSTAGEM >>>
         const postActionsBar = `
             <div class="actions-bar">
                 <button class="like-btn ${post.curtidoPeloUsuario ? 'liked' : ''}" onclick="toggleLike(${post.id}, null)">
@@ -538,14 +427,15 @@
                 </button>
             </div>`;
 
+        // Renderizar comentários com destaque e respostas
         let commentsHtml = `
             <div class="comments-section">
                 <h4>Comentários</h4>
                 <div class="comments-list" id="comentarios-${post.id}">`;
-
+        
         if(post.comentarios && post.comentarios.length > 0) {
             const rootComments = post.comentarios.filter(c => !c.parentId);
-
+            
             const sortedComments = rootComments.sort((a, b) => {
                 if (a.destacado !== b.destacado) {
                     return b.destacado - a.destacado;
@@ -557,7 +447,7 @@
                 commentsHtml += renderCommentWithReplies(comment, post.autorId, post.comentarios);
             });
         }
-
+        
         commentsHtml += `</div>
             <div class="comment-form">
                 <input type="text" id="comment-input-${post.id}" placeholder="Adicione um comentário...">
@@ -573,7 +463,7 @@
             ${postActionsBar}
             ${commentsHtml}
         `;
-
+        
         subscribeToComments(post.id);
         return postElement;
     }
@@ -595,7 +485,7 @@
             });
             if (!response.ok) return;
             const updatedPost = await response.json();
-
+            
             const oldPostElement = document.getElementById(`post-${postId}`);
             if (oldPostElement) {
                 const newPostElement = createPostElement(updatedPost);
@@ -646,36 +536,23 @@
         const newFiles = document.getElementById('edit-post-files').files;
         const urlsParaRemover = Array.from(document.querySelectorAll('#edit-post-media-list input:checked')).map(cb => cb.value);
         const formData = new FormData();
-
-        // Agrupa dados não-arquivo em um objeto para o DTO
-        const postagemData = {
-            conteudo: content,
-            urlsParaRemover: urlsParaRemover
-        };
-        // Adiciona como JSON Blob
-        formData.append('postagem', new Blob([JSON.stringify(postagemData)], { type: 'application/json' }));
-
-        // Adiciona novos arquivos
+        formData.append('postagem', new Blob([JSON.stringify({ conteudo: content, urlsParaRemover })], { type: 'application/json' }));
         for (let i = 0; i < newFiles.length; i++) {
             formData.append('arquivos', newFiles[i]);
         }
         try {
-            // O endpoint no backend precisa ser ajustado para aceitar @RequestPart("postagem") PostagemEntradaDTO dto
-            // e @RequestPart("arquivos") List<MultipartFile> novosArquivos
             const response = await fetch(`${document.getElementById('backend-url').value}/postagem/${postId}`, {
                 method: 'PUT',
-                headers: { 'Authorization': 'Bearer ' + jwtToken }, // Content-Type é definido automaticamente pelo browser para FormData
+                headers: { 'Authorization': 'Bearer ' + jwtToken },
                 body: formData
             });
             if (!response.ok) throw new Error(`Erro ao editar postagem: ${await response.text()}`);
             closeModal('editPostModal');
             document.getElementById('edit-post-files').value = null;
-            // A atualização da UI deve vir via WebSocket ou recarregando a postagem
         } catch(error) {
             alert(error.message);
         }
     }
-
 
     // --- FUNÇÕES DE COMENTÁRIOS ---
     function subscribeToComments(postId) {
@@ -691,7 +568,7 @@
 
     function renderCommentWithReplies(comment, postAuthorId, allComments) {
         let commentHtml = renderComment(comment, postAuthorId);
-
+        
         const replies = allComments
             .filter(reply => reply.parentId === comment.id)
             .sort((a, b) => {
@@ -710,7 +587,7 @@
         }
         return commentHtml;
     }
-
+    
     function renderComment(comment, postAuthorId) {
         const myUserId = document.getElementById('my-user-id').value;
         const dataFormatada = new Date(comment.dataCriacao).toLocaleString('pt-BR');
@@ -731,17 +608,18 @@
             }
             actionsHtml += `</div>`;
         }
-
+        
         let replyInfoHtml = '';
         if (comment.replyingToName) {
             replyInfoHtml = `<div class="reply-info">Respondendo a <strong>${comment.replyingToName}</strong></div>`;
         }
-
+        
         let highlightBadge = '';
         if(comment.destacado){
             highlightBadge = `<span class="highlight-badge">Destacado pelo criador</span>`;
         }
-
+        
+        // <<< NOVA BARRA DE AÇÕES PARA O COMENTÁRIO >>>
         const commentActionsFooter = `
             <div class="comment-actions-footer">
                 <button class="like-btn ${comment.curtidoPeloUsuario ? 'liked' : ''}" onclick="toggleLike(null, ${comment.id})">
@@ -763,7 +641,7 @@
                 </div>
             </div>`;
     }
-
+    
     function sendComment(postId, parentId) {
         const inputId = parentId ? `reply-input-${parentId}` : `comment-input-${postId}`;
         const input = document.getElementById(inputId);
@@ -774,12 +652,12 @@
             if(parentId) toggleReplyForm(parentId);
         }
     }
-
+    
     function toggleReplyForm(commentId) {
         const form = document.getElementById(`reply-form-${commentId}`);
         form.style.display = form.style.display === 'none' ? 'flex' : 'none';
     }
-
+    
     async function highlightComment(commentId) {
         try {
             const response = await fetch(`${document.getElementById('backend-url').value}/comentarios/${commentId}/destacar`, {
@@ -865,18 +743,18 @@
     function showMessage(message) {
         const chatWindow = document.getElementById('chat-window');
         const existingElement = document.getElementById(`message-${message.id}`);
-        if(existingElement) {
+        if(existingElement) { 
              existingElement.querySelector('p').innerText = message.conteudo;
              return;
         }
         const messageElement = document.createElement('div');
         messageElement.className = 'message';
         messageElement.id = `message-${message.id}`;
-
+        
         const myUserId = document.getElementById('my-user-id').value;
         const senderId = message.remetenteId || (message.remetente ? message.remetente.id : null);
         const senderName = message.nomeRemetente || (message.remetente ? message.remetente.nome : 'Desconhecido');
-
+        
         let actionsHtml = '';
         if (String(senderId) === myUserId) {
             messageElement.classList.add('sent');
@@ -896,7 +774,7 @@
         chatWindow.appendChild(messageElement);
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
-
+    
     async function deletePrivateMessage(messageId) {
         if(!confirm('Tem certeza?')) return;
         try {
@@ -909,7 +787,7 @@
             alert(error.message);
         }
     }
-
+    
     function openEditMessageModal(messageId, currentContent) {
         document.getElementById('edit-message-id').value = messageId;
         document.getElementById('edit-message-content').value = currentContent;
@@ -922,7 +800,7 @@
         try {
             const response = await fetch(`${document.getElementById('backend-url').value}/api/chat/privado/${messageId}`, {
                 method: 'PUT',
-                headers: {
+                headers: { 
                     'Authorization': 'Bearer ' + jwtToken,
                     'Content-Type': 'application/json'
                  },
@@ -935,480 +813,10 @@
         }
     }
 
-
-    // ##########################################
-    // ###     FUNÇÕES DE PROJETO             ###
-    // ##########################################
-
-    async function fetchProjects() {
-        const backendUrl = document.getElementById('backend-url').value;
-        const listWindow = document.getElementById('project-list-window');
-        listWindow.innerHTML = '';
-        try {
-            const response = await fetch(`${backendUrl}/projetos`, {
-                headers: { 'Authorization': 'Bearer ' + jwtToken }
-            });
-            if (!response.ok) throw new Error(`Erro ao buscar projetos: ${response.status}`);
-            const projects = await response.json();
-            renderProjectList(projects);
-        } catch (error) {
-            console.error(error);
-            listWindow.innerHTML = "Erro ao carregar projetos.";
-        }
-    }
-
-    function renderProjectList(projects) {
-        const listWindow = document.getElementById('project-list-window');
-        const backendUrl = document.getElementById('backend-url').value;
-        listWindow.innerHTML = '';
-        if (projects.length === 0) {
-            listWindow.innerHTML = "Nenhum projeto encontrado.";
-            return;
-        }
-        projects.forEach(project => {
-            const item = document.createElement('div');
-            item.className = 'project-list-item';
-            item.setAttribute('onclick', `selectProject(${project.id}, '${project.titulo.replace(/'/g, "\\'")}')`);
-
-            let imgHtml = '';
-            if (project.imagemUrl) {
-                // Assumindo /projetos/imagens/ serve fotos de projeto
-                const imageUrl = `${backendUrl}/projetos/imagens/${project.imagemUrl}`;
-                imgHtml = `<img src="${imageUrl}" alt="Foto do Projeto">`;
-            } else {
-                imgHtml = `<div style="width:40px; height:40px; background-color:#ccc; border-radius:5px; text-align:center; line-height:40px; font-size:10px;">Sem Foto</div>`;
-            }
-
-            item.innerHTML = `${imgHtml} <div>${project.titulo}</div>`;
-            listWindow.appendChild(item);
-        });
-    }
-
-    async function createProject() {
-        const backendUrl = document.getElementById('backend-url').value;
-        const myUserId = document.getElementById('my-user-id').value;
-        const formData = new FormData();
-
-        const professorIds = document.getElementById('projeto-professor-ids').value.split(',')
-                               .filter(id => id.trim() !== '').map(id => Number(id.trim()));
-        const alunoIds = document.getElementById('projeto-aluno-ids').value.split(',')
-                             .filter(id => id.trim() !== '').map(id => Number(id.trim()));
-
-        formData.append('titulo', document.getElementById('projeto-titulo').value);
-        formData.append('descricao', document.getElementById('projeto-descricao').value);
-        formData.append('maxMembros', document.getElementById('projeto-max-membros').value);
-        formData.append('grupoPrivado', document.getElementById('projeto-privado').checked);
-        formData.append('autorId', myUserId);
-
-        professorIds.forEach(id => formData.append('professorIds', id));
-        alunoIds.forEach(id => formData.append('alunoIds', id));
-
-        const foto = document.getElementById('projeto-foto').files[0];
-        if (foto) {
-            formData.append('foto', foto);
-        }
-
-        try {
-            const response = await fetch(`${backendUrl}/projetos`, {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + jwtToken },
-                body: formData
-            });
-
-            const responseData = await response.json();
-            if (!response.ok) throw new Error(responseData.message || `Erro: ${response.status}`);
-
-            alert(responseData.message || "Projeto criado com sucesso!");
-            fetchProjects();
-
-            document.getElementById('projeto-titulo').value = '';
-            document.getElementById('projeto-descricao').value = '';
-            document.getElementById('projeto-professor-ids').value = '';
-            document.getElementById('projeto-aluno-ids').value = '';
-            document.getElementById('projeto-foto').value = null;
-
-        } catch (error) {
-            alert(`Erro ao criar projeto: ${error.message}`);
-        }
-    }
-
-    function selectProject(projectId, projectName) {
-        document.getElementById('selected-project-id').value = projectId;
-        document.getElementById('selected-project-name').textContent = projectName;
-        document.getElementById('project-send-btn').disabled = false;
-
-        document.getElementById('project-chat-window').innerHTML = '';
-
-        fetchProjectChatHistory(projectId);
-        subscribeToProjectChat(projectId);
-    }
-
-    function subscribeToProjectChat(projectId) {
-        if (!stompClient || !stompClient.connected) return;
-
-        if (currentProjectSubscription) {
-            currentProjectSubscription.unsubscribe();
-            console.log("Cancelou inscrição do projeto anterior.");
-        }
-
-        const topic = `/topic/projeto/${projectId}`;
-        console.log(`Inscrevendo-se em: ${topic}`);
-        currentProjectSubscription = stompClient.subscribe(topic, function(message) {
-            const payload = JSON.parse(message.body);
-
-            if (payload.tipo === 'remocao') {
-                const el = document.getElementById(`project-message-${payload.id}`);
-                if (el) el.remove();
-            } else if (payload.tipo === 'edicao') {
-                showProjectMessage(payload.mensagem, true);
-            } else {
-                showProjectMessage(payload, false);
-            }
-        });
-    }
-
-    async function fetchProjectChatHistory(projectId) {
-        const chatWindow = document.getElementById('project-chat-window');
-        chatWindow.innerHTML = 'Carregando histórico...';
-        try {
-            const response = await fetch(`${document.getElementById('backend-url').value}/projetos/${projectId}/chat/mensagens`, {
-                method: 'GET',
-                headers: { 'Authorization': 'Bearer ' + jwtToken }
-            });
-            if (!response.ok) throw new Error(`Erro ao buscar histórico: ${response.status}`);
-            const history = await response.json();
-            chatWindow.innerHTML = '';
-            history.forEach(message => showProjectMessage(message, false));
-        } catch (error) {
-            alert(error.message);
-            chatWindow.innerHTML = 'Erro ao carregar histórico.';
-        }
-    }
-
-    async function sendProjectMessage() {
-        const projectId = document.getElementById('selected-project-id').value;
-        const content = document.getElementById('project-message-content').value;
-        const files = document.getElementById('project-message-files').files;
-
-        if (!projectId) { alert("Nenhum projeto selecionado."); return; }
-        if (!content && files.length === 0) { alert("A mensagem precisa de conteúdo ou arquivos."); return; }
-
-        const formData = new FormData();
-        // Envia o conteúdo como parte separada (Spring lida bem com String)
-        formData.append('conteudo', content);
-        // Envia os arquivos como partes separadas
-        for (let i = 0; i < files.length; i++) {
-            formData.append('arquivos', files[i]);
-        }
-
-        try {
-            // O controller backend está esperando @RequestPart("conteudo") String e @RequestPart("arquivos") List<MultipartFile>
-            const response = await fetch(`${document.getElementById('backend-url').value}/projetos/${projectId}/chat/mensagens`, {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + jwtToken },
-                body: formData
-            });
-            if (!response.ok) throw new Error(`Erro ao enviar mensagem: ${await response.text()}`);
-
-            document.getElementById('project-message-content').value = '';
-            document.getElementById('project-message-files').value = null;
-        } catch (error) {
-            alert(error.message);
-        }
-    }
-
-
-    function showProjectMessage(message, isEdit = false) {
-        const chatWindow = document.getElementById('project-chat-window');
-        const existingElement = document.getElementById(`project-message-${message.id}`);
-
-        if (existingElement && !isEdit) return;
-
-        const messageElement = existingElement || document.createElement('div');
-        messageElement.className = 'message';
-        messageElement.id = `project-message-${message.id}`;
-
-        const myUserId = document.getElementById('my-user-id').value;
-        const backendUrl = document.getElementById('backend-url').value; // Pegar a URL base
-
-        // --- Geração de Mídia (Anexos) ---
-        let mediaHtml = '<div class="project-message-media">';
-        const urls = message.urlsMidia || []; // Usando o campo correto do DTO
-        urls.forEach(url => {
-            // Assume que as URLs de mídia já são completas ou relativas corretamente
-            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) { mediaHtml += `<img src="${url}">`; }
-            else if (url.match(/\.(mp4|webm|ogg)$/i)) { mediaHtml += `<video controls src="${url}"></video>`; }
-            else if (url.match(/\.(mp3|wav|m4a)$/i)) { mediaHtml += `<audio controls src="${url}"></audio>`; }
-            else { mediaHtml += `<p><a href="${url}" target="_blank">Ver Anexo: ${url.substring(url.lastIndexOf('/') + 1)}</a></p>`}
-        });
-        mediaHtml += '</div>';
-
-        // --- Geração de Ações (Editar/Excluir) ---
-        let actionsHtml = '';
-        if (String(message.autorId) === myUserId) { // Usando o campo correto do DTO
-            messageElement.classList.add('sent');
-            messageElement.classList.remove('received');
-
-            const contentArg = `\`${message.conteudo.replace(/`/g, '\\`')}\``;
-            const urlsArg = JSON.stringify(urls);
-            actionsHtml = `
-                <div class="message-actions">
-                    <button class="action-btn" onclick='openEditProjectMessageModal(${message.id}, ${message.projetoId}, ${contentArg}, ${urlsArg})'>E</button>
-                    <button class="action-btn danger" onclick="deleteProjectMessage(${message.id})">X</button>
-                </div>`;
-        } else {
-            messageElement.classList.add('received');
-            messageElement.classList.remove('sent');
-        }
-
-        // --- Geração de Nome e Foto ---
-        const senderName = message.nomeAutor || 'Desconhecido';
-        const relativePhotoPath = message.urlFotoAutor; // Ex: /api/arquivos/foto.jpg ou /images/default-avatar.png
-        const fullPhotoUrl = backendUrl + relativePhotoPath;
-        const defaultAvatarUrl = `${backendUrl}/images/default-avatar.png`;
-
-        const photoHtml = `<img src="${fullPhotoUrl}" alt="${senderName}" class="message-sender-photo" onerror="this.onerror=null; this.src='${defaultAvatarUrl}';">`;
-
-        // --- Monta o HTML final ---
-        messageElement.innerHTML = `
-            ${actionsHtml}
-            <div class="message-header">
-                ${photoHtml}
-                <strong>${senderName}:</strong>
-            </div>
-            <p>${message.conteudo}</p>
-            ${mediaHtml}
-        `;
-
-        if (!existingElement) {
-            chatWindow.appendChild(messageElement);
-        }
-
-        if (!isEdit) {
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
-    }
-
-
-    async function deleteProjectMessage(messageId) {
-        if(!confirm('Tem certeza que deseja excluir esta mensagem?')) return;
-        const projectId = document.getElementById('selected-project-id').value;
-        if (!projectId) return;
-
-        try {
-            const response = await fetch(`${document.getElementById('backend-url').value}/projetos/${projectId}/chat/mensagens/${messageId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + jwtToken }
-            });
-            if(!response.ok) throw new Error(`Erro ao excluir: ${response.status}`);
-            // WebSocket cuidará da remoção da UI
-        } catch(error) {
-            alert(error.message);
-        }
-    }
-
-    function openEditProjectMessageModal(messageId, projectId, currentContent, mediaUrls) {
-        document.getElementById('edit-project-message-id').value = messageId;
-        document.getElementById('edit-project-message-project-id').value = projectId;
-        document.getElementById('edit-project-message-content').value = currentContent;
-
-        const mediaListDiv = document.getElementById('edit-project-message-media-list');
-        mediaListDiv.innerHTML = '';
-        if (mediaUrls && mediaUrls.length > 0) {
-            mediaUrls.forEach(url => {
-                const filename = url.substring(url.lastIndexOf('/') + 1);
-                mediaListDiv.innerHTML += `
-                    <div>
-                        <input type="checkbox" id="remove-project-media-${filename}" name="urlsParaRemover" value="${url}">
-                        <label for="remove-project-media-${filename}">${filename}</label>
-                    </div>`;
-            });
-        } else {
-            mediaListDiv.innerHTML = 'Nenhuma mídia anexada.';
-        }
-
-        openModal('editProjectMessageModal');
-    }
-
-    // --- FUNÇÃO submitProjectMessageEdit MODIFICADA ---
-    async function submitProjectMessageEdit() {
-        const messageId = document.getElementById('edit-project-message-id').value;
-        const projectId = document.getElementById('edit-project-message-project-id').value;
-        const content = document.getElementById('edit-project-message-content').value;
-        const newFiles = document.getElementById('edit-project-message-files').files;
-        const urlsParaRemover = Array.from(document.querySelectorAll('#edit-project-message-media-list input:checked')).map(cb => cb.value);
-
-        const formData = new FormData();
-
-        // 1. Cria o objeto DTO com os dados não-arquivo
-        const dadosEdicao = {
-            conteudo: content,
-            urlsParaRemover: urlsParaRemover // Array de strings
-        };
-
-        // 2. Adiciona o DTO como um Blob JSON com a chave "dadosEdicao"
-        formData.append('dadosEdicao', new Blob([JSON.stringify(dadosEdicao)], { type: 'application/json' }));
-
-        // 3. Adiciona os novos arquivos (se houver) com a chave "novosArquivos"
-        for (let i = 0; i < newFiles.length; i++) {
-            formData.append('novosArquivos', newFiles[i]);
-        }
-
-        try {
-            const response = await fetch(`${document.getElementById('backend-url').value}/projetos/${projectId}/chat/mensagens/${messageId}`, {
-                method: 'PUT',
-                headers: { 'Authorization': 'Bearer ' + jwtToken }, // Content-Type é definido automaticamente pelo browser para FormData
-                body: formData
-            });
-
-            if (!response.ok) {
-                // Tenta ler a mensagem de erro do backend se a resposta for JSON
-                let errorMsg = `Erro ao editar mensagem: ${response.status}`;
-                try {
-                    const errorData = await response.json();
-                    errorMsg = errorData.message || JSON.stringify(errorData);
-                } catch(e) {
-                    // Se não for JSON, lê como texto
-                    errorMsg = await response.text();
-                }
-                 throw new Error(errorMsg);
-            }
-
-            closeModal('editProjectMessageModal');
-            document.getElementById('edit-project-message-files').value = null;
-            // A atualização da UI deve vir via WebSocket (o backend envia após salvar)
-        } catch(error) {
-            console.error("Erro detalhado:", error); // Loga o erro no console
-            alert(error.message); // Exibe a mensagem de erro para o usuário
-        }
-    }
-    // --- FIM DA FUNÇÃO MODIFICADA ---
-
-
-    // ##########################################
-    // ###     FUNÇÕES DE CONVITE             ###
-    // ##########################################
-
-    async function showReceivedInvites() {
-        const listDiv = document.getElementById('convite-modal-list');
-        listDiv.innerHTML = 'Carregando...';
-        document.getElementById('convite-modal-title').innerText = 'Convites Recebidos (Pendentes)';
-        openModal('convitesModal');
-
-        try {
-            const response = await fetch(`${document.getElementById('backend-url').value}/projetos/convites/recebidos`, {
-                headers: { 'Authorization': 'Bearer ' + jwtToken }
-            });
-            if (!response.ok) throw new Error(`Erro: ${response.status}`);
-
-            const convites = await response.json();
-            if (convites.length === 0) {
-                listDiv.innerHTML = 'Nenhum convite recebido pendente.';
-                return;
-            }
-
-            listDiv.innerHTML = '';
-            convites.forEach(convite => {
-                const data = new Date(convite.dataConvite).toLocaleString('pt-BR');
-                listDiv.innerHTML += `
-                    <div class="convite-item" id="convite-${convite.conviteId}">
-                        <div class="convite-info">
-                            Para o projeto: <strong>${convite.nomeProjeto}</strong><br>
-                            Enviado por: <strong>${convite.convidadoPorNome}</strong><br>
-                            Em: ${data}
-                        </div>
-                        <div class="convite-actions">
-                            <button class="success" onclick="acceptInvite(${convite.conviteId})">Aceitar</button>
-                            <button class="danger" onclick="rejectInvite(${convite.conviteId})">Recusar</button>
-                        </div>
-                    </div>
-                `;
-            });
-        } catch (error) {
-            listDiv.innerHTML = `Erro ao carregar convites: ${error.message}`;
-        }
-    }
-
-    async function showSentInvites() {
-        const listDiv = document.getElementById('convite-modal-list');
-        listDiv.innerHTML = 'Carregando...';
-        document.getElementById('convite-modal-title').innerText = 'Convites Enviados (Pendentes)';
-        openModal('convitesModal');
-
-        try {
-            const response = await fetch(`${document.getElementById('backend-url').value}/projetos/convites/enviados`, {
-                headers: { 'Authorization': 'Bearer ' + jwtToken }
-            });
-            if (!response.ok) throw new Error(`Erro: ${response.status}`);
-
-            const convites = await response.json();
-            if (convites.length === 0) {
-                listDiv.innerHTML = 'Nenhum convite enviado pendente.';
-                return;
-            }
-
-            listDiv.innerHTML = '';
-            convites.forEach(convite => {
-                const data = new Date(convite.dataConvite).toLocaleString('pt-BR');
-                listDiv.innerHTML += `
-                    <div class="convite-item">
-                        <div class="convite-info">
-                            Para: <strong>${convite.convidadoNome}</strong> (${convite.convidadoEmail})<br>
-                            Projeto: <strong>${convite.nomeProjeto}</strong><br>
-                            Em: ${data}
-                        </div>
-                    </div>
-                `;
-            });
-        } catch (error) {
-            listDiv.innerHTML = `Erro ao carregar convites: ${error.message}`;
-        }
-    }
-
-    async function acceptInvite(conviteId) {
-        const myUserId = document.getElementById('my-user-id').value;
-        const backendUrl = document.getElementById('backend-url').value;
-
-        try {
-            const response = await fetch(`${backendUrl}/projetos/convites/${conviteId}/aceitar?usuarioId=${myUserId}`, {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + jwtToken }
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Erro ao aceitar');
-
-            alert(data.message || 'Convite aceito!');
-            document.getElementById(`convite-${conviteId}`).remove();
-            fetchProjects(); // Recarrega a lista de projetos, pois agora você é membro
-        } catch (error) {
-            alert(error.message);
-        }
-    }
-
-    async function rejectInvite(conviteId) {
-        const myUserId = document.getElementById('my-user-id').value;
-        const backendUrl = document.getElementById('backend-url').value;
-
-        try {
-            const response = await fetch(`${backendUrl}/projetos/convites/${conviteId}/recusar?usuarioId=${myUserId}`, {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + jwtToken }
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Erro ao recusar');
-
-            alert(data.message || 'Convite recusado.');
-            document.getElementById(`convite-${conviteId}`).remove();
-        } catch (error) {
-            alert(error.message);
-        }
-    }
-
-
     // --- FUNÇÕES DO MODAL ---
     function openModal(modalId) { document.getElementById(modalId).style.display = 'block'; }
     function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
-
+    
     window.onclick = function(event) {
         if (event.target.classList.contains('modal')) {
             event.target.style.display = "none";

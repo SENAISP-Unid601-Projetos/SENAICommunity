@@ -1,8 +1,17 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
+import com.SenaiCommunity.BackEnd.DTO.AlunoEntradaDTO;
+import com.SenaiCommunity.BackEnd.DTO.AlunoSaidaDTO;
+import com.SenaiCommunity.BackEnd.DTO.ProfessorEntradaDTO;
+import com.SenaiCommunity.BackEnd.DTO.ProfessorSaidaDTO;
+import com.SenaiCommunity.BackEnd.Service.AlunoService;
+import com.SenaiCommunity.BackEnd.Service.ProfessorService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioLoginDTO;
 import com.SenaiCommunity.BackEnd.Security.JWTUtil;
 import com.SenaiCommunity.BackEnd.Service.UsuarioDetailsImpl;
@@ -27,6 +36,7 @@ import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 

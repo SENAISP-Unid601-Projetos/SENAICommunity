@@ -1,7 +1,9 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data

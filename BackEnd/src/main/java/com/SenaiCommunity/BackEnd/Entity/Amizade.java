@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-
 // Garante que não existam duas solicitações iguais (mesmo remetente e destinatário)
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"solicitante_id", "solicitado_id"})
