@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Service;
 
+import com.SenaiCommunity.BackEnd.DTO.ConversaResumoDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.MensagemPrivada;
@@ -67,6 +68,45 @@ public class MensagemPrivadaService {
         );
 
         return toDTO(mensagemSalva);
+    }
+
+    /**
+     * Busca um resumo de todas as conversas do usuário logado.
+     */
+    @Transactional(readOnly = true)
+    public List<ConversaResumoDTO> buscarResumoConversas(String usuarioLogadoUsername) {
+
+        Usuario usuarioLogado = usuarioRepository.findByEmail(usuarioLogadoUsername)
+                .orElseThrow(() -> new NoSuchElementException("Usuário logado não encontrado"));
+
+        List<MensagemPrivada> ultimasMensagens = mensagemPrivadaRepository.findUltimasMensagensPorConversa(usuarioLogado.getId());
+
+        return ultimasMensagens.stream()
+                .map(mensagem -> {
+                    Usuario outroUsuario;
+                    if (mensagem.getRemetente().getId().equals(usuarioLogado.getId())) {
+                        outroUsuario = mensagem.getDestinatario();
+                    } else {
+                        outroUsuario = mensagem.getRemetente();
+                    }
+
+                    String urlFoto = "/images/default-avatar.jpg"; // Padrão
+                    if (outroUsuario.getFotoPerfil() != null && !outroUsuario.getFotoPerfil().isBlank()) {
+                        urlFoto = "/api/arquivos/" + outroUsuario.getFotoPerfil();
+                    }
+
+                    return ConversaResumoDTO.builder()
+                            .outroUsuarioId(outroUsuario.getId())
+                            .nomeOutroUsuario(outroUsuario.getNome())
+                            .emailOutroUsuario(outroUsuario.getEmail())
+                            .fotoPerfilOutroUsuario(urlFoto)
+                            .ultimaMensagemId(mensagem.getId())
+                            .conteudoUltimaMensagem(mensagem.getConteudo())
+                            .dataEnvioUltimaMensagem(mensagem.getDataEnvio())
+                            .remetenteUltimaMensagemId(mensagem.getRemetente().getId())
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     public MensagemPrivadaSaidaDTO editarMensagemPrivada(Long id, String novoConteudo, String autorUsername) {
