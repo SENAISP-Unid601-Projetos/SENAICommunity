@@ -1,14 +1,14 @@
-// src/pages/Eventos/Eventos.jsx (NOVO DESIGN)
-
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Topbar from '../../components/Layout/Topbar';
 import Sidebar from '../../components/Layout/Sidebar';
-import RightSidebar from '../../pages/Principal/RightSidebar'; // Importado para consistência de layout
-import './Eventos.css'; // Carrega o NOVO CSS
+import RightSidebar from '../../pages/Principal/RightSidebar'; // ✅ REVERTIDO (Importado)
+import './Eventos.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTag, faClock, faMapMarkerAlt, faArrowRight, faUsers } from '@fortawesome/free-solid-svg-icons';
 
+// ... (código dos componentes EventoCard e Eventos) ...
+// (O conteúdo interno dos componentes permanece o mesmo)
 // --- COMPONENTE EventoCard MELHORADO ---
 const EventoCard = ({ evento }) => {
     // A data vem do backend como um array (ex: [2025, 10, 17])
@@ -125,6 +125,7 @@ const Eventos = ({ onLogout }) => {
             <div className="container">
                 <Sidebar currentUser={currentUser} />
                 <main className="main-content">
+                    {/* ... (código do header e filtros) ... */}
                     <header className="eventos-header">
                         <h1>Conecte-se, Aprenda e Inove</h1>
                         <p>Participe de workshops, palestras e competições para acelerar sua carreira.</p>
@@ -161,7 +162,7 @@ const Eventos = ({ onLogout }) => {
                         }
                     </section>
                 </main>
-                <RightSidebar /> {/* ✅ DESIGN: Adicionado para layout de 3 colunas */}
+                <RightSidebar /> {/* ✅ REVERTIDO (Renderizado) */}
             </div>
         </div>
     );
