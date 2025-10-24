@@ -3,7 +3,9 @@ package com.SenaiCommunity.BackEnd.Service;
 import com.SenaiCommunity.BackEnd.DTO.EventoEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.EventoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Evento;
+import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.EventoRepository;
+import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,11 @@ public class EventoService {
     @Autowired
     private EventoRepository eventoRepository;
 
-    // ... métodos de conversão toDTO e toEntity ...
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private NotificacaoService notificacaoService;
 
     private Evento toEntity(EventoEntradaDTO dto) {
         Evento evento = new Evento();
@@ -83,10 +89,23 @@ public class EventoService {
         }
 
         Evento eventoSalvo = eventoRepository.save(evento);
+
+        List<Usuario> todosOsUsuarios = usuarioRepository.findAll();
+        String mensagem = String.format("Novo evento publicado: '%s'! Não perca.", eventoSalvo.getNome());
+
+        for (Usuario destinatario : todosOsUsuarios) {
+            notificacaoService.criarNotificacao(
+                    destinatario,
+                    null,
+                    mensagem,
+                    "NOVO_EVENTO",
+                    eventoSalvo.getId()
+            );
+        }
+
         return toDTO(eventoSalvo);
     }
 
-    // ... outros métodos CRUD ...
     public List<EventoSaidaDTO> listarTodos() {
         return eventoRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }

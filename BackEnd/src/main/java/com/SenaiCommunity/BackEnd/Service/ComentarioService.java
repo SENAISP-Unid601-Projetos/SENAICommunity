@@ -10,16 +10,12 @@ import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 public class ComentarioService {
@@ -143,12 +139,9 @@ public class ComentarioService {
     private ComentarioSaidaDTO toDTO(Comentario comentario) {
         if (comentario == null) return null;
 
-        // --- INÍCIO DA LÓGICA DE CÁLCULO DAS CURTIDAS (CORREÇÃO) ---
-
         // 1. Obter o ID do usuário logado (se houver)
         Long usuarioLogadoId = null;
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        // Evita erro caso a requisição seja anônima (pouco provável com PreAuthorize, mas é uma boa prática)
         if (!"anonymousUser".equals(username)) {
             Usuario usuarioLogado = usuarioRepository.findByEmail(username).orElse(null);
             if (usuarioLogado != null) {
@@ -166,8 +159,6 @@ public class ComentarioService {
             curtidoPeloUsuarioComentario = comentario.getCurtidas().stream()
                     .anyMatch(curtida -> curtida.getUsuario().getId().equals(finalUsuarioLogadoId));
         }
-
-        // --- FIM DA LÓGICA DE CÁLCULO DAS CURTIDAS ---
 
         return ComentarioSaidaDTO.builder()
                 .id(comentario.getId())

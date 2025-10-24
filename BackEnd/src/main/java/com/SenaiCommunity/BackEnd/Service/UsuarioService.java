@@ -1,6 +1,5 @@
 package com.SenaiCommunity.BackEnd.Service;
 
-import com.SenaiCommunity.BackEnd.DTO.AmigoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioAtualizacaoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioBuscaDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;
@@ -42,10 +41,7 @@ public class UsuarioService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    /**
-     * método público para buscar usuário por email.
-     * necessário para o CurtidaController.
-     */
+
     public Usuario buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o email: " + email));
@@ -89,7 +85,6 @@ public class UsuarioService {
 
         Usuario usuario = getUsuarioFromAuthentication(authentication);
         String nomeArquivo = salvarFoto(foto);
-        // Assumindo que o campo é 'urlFotoPerfil'. Se for 'fotoPerfil', ajuste aqui.
         usuario.setFotoPerfil(nomeArquivo);
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
@@ -127,7 +122,6 @@ public class UsuarioService {
         foto.transferTo(caminhoDoArquivo);
 
         // Retorna APENAS o nome do arquivo.
-        // O restante da URL será montado no frontend ou no DTO.
         return nomeArquivo;
     }
 

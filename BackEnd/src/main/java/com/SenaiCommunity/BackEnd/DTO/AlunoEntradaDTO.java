@@ -14,5 +14,4 @@ public class AlunoEntradaDTO {
     private String curso;
     private String periodo;
     private LocalDate dataNascimento;
-
 }

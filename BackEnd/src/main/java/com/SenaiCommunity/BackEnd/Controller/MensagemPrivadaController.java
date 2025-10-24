@@ -2,7 +2,6 @@ package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaSaidaDTO;
-import com.SenaiCommunity.BackEnd.Entity.MensagemPrivada;
 import com.SenaiCommunity.BackEnd.Service.MensagemPrivadaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,8 +42,6 @@ public class MensagemPrivadaController {
         messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/usuario", dtoSalvo);
     }
 
-    // Os métodos abaixo são REST, então precisam estar em um controller com @RestController
-    // Considere mover para um controller separado ou manter @RestController e anotar os métodos @MessageMapping em uma classe @Controller separada.
     @RestController
     @RequestMapping("/api/chat/privado")
     public static class MensagemPrivadaRestController {
@@ -60,7 +57,6 @@ public class MensagemPrivadaController {
                                                 @RequestBody String novoConteudo,
                                                 Principal principal) {
             try {
-                // Agora recebe o DTO corretamente
                 MensagemPrivadaSaidaDTO atualizada = mensagemPrivadaService.editarMensagemPrivada(id, novoConteudo, principal.getName());
 
                 // Notifica ambos os usuários usando o email (que está no DTO)
@@ -79,7 +75,6 @@ public class MensagemPrivadaController {
         public ResponseEntity<?> excluirMensagem(@PathVariable Long id,
                                                  Principal principal) {
             try {
-                // Agora recebe o DTO corretamente
                 MensagemPrivadaSaidaDTO mensagemExcluida = mensagemPrivadaService.excluirMensagemPrivada(id, principal.getName());
 
                 Map<String, Object> payload = Map.of("tipo", "remocao", "id", id);

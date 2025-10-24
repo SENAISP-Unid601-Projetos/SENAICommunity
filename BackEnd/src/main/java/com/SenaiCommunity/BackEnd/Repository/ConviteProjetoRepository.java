@@ -19,4 +19,6 @@ public interface ConviteProjetoRepository extends JpaRepository<ConviteProjeto, 
 
     boolean existsByProjetoIdAndUsuarioConvidadoIdAndStatus(
             Long projetoId, Long usuarioId, ConviteProjeto.StatusConvite status);
+
+    List<ConviteProjeto> findByConvidadoPorIdAndStatus(Long usuarioId, ConviteProjeto.StatusConvite status);
 }
