@@ -1861,3 +1861,27 @@ body {
     flex-direction: column;
     gap: 1rem; /* Adiciona um espaçamento entre os cards */
 }
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-quaternary) var(--bg-secondary);
+
+}
+
+/* Para Chrome, Edge e Safari (Webkit) */
+html::-webkit-scrollbar {
+  width: 10px;
+}
+
+html::-webkit-scrollbar-track {
+  background: var(--bg-secondary); /* Fundo da barra */
+}
+
+html::-webkit-scrollbar-thumb {
+  background-color: var(--bg-quaternary); /* Cor do "puxador" */
+  border-radius: 5px;
+  border: 2px solid var(--bg-secondary); /* Borda da cor do fundo */
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-secondary); /* Cor ao passar o mouse */
+}
