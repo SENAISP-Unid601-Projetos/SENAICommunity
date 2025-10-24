@@ -23,7 +23,7 @@ public class Projeto {
     private String descricao;
     private Date dataInicio;
     private Date dataEntrega;
-    private String status; // PLANEJADO, EM_ANDAMENTO, CONCLUIDO
+    private String status;
 
     private String imagemUrl; // URL da imagem do grupo
     private LocalDateTime dataCriacao;
@@ -31,7 +31,7 @@ public class Projeto {
     private Boolean grupoPrivado = false; // Se true, apenas por convite
 
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL)
-    private List<MensagemGrupo> mensagens;
+    private List<MensagemProjeto> mensagens;
 
     @ManyToOne
     @JoinColumn(name = "autor_id")
@@ -43,7 +43,6 @@ public class Projeto {
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL)
     private List<ConviteProjeto> convites;
 
-    // Manter compatibilidade com código existente
     @ManyToMany
     @JoinTable(name = "projeto_professores",
             joinColumns = @JoinColumn(name = "projeto_id"),

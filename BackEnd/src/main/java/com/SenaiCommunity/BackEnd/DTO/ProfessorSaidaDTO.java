@@ -13,13 +13,10 @@ public class ProfessorSaidaDTO {
     private String nome;
     private String email;
     private String fotoPerfil;
-
     private String formacao;
     private String codigoSn;
-
     private LocalDateTime dataCadastro;
     private String bio;
     private LocalDate dataNascimento;
-
     private List<Long> projetosOrientados;
 }

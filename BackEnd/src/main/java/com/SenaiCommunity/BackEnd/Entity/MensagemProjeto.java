@@ -1,23 +1,22 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
 import jakarta.persistence.*;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class MensagemGrupo {
+public class MensagemProjeto {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -26,11 +25,11 @@ public class MensagemGrupo {
     @ManyToOne
     private Projeto projeto;
 
+    @Column(columnDefinition = "TEXT") // Bom para textos mais longos
     private String conteudo;
 
     private LocalDateTime dataEnvio = LocalDateTime.now();
 
-    @Transient // não persistido diretamente no banco
-    private String autorUsername;
+    @OneToMany(mappedBy = "mensagem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<ArquivoMensagemProjeto> arquivos;
 }
-

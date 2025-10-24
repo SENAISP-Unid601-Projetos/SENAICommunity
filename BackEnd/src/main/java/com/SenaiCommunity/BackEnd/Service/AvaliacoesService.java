@@ -1,6 +1,5 @@
 package com.SenaiCommunity.BackEnd.Service;
 
-
 import com.SenaiCommunity.BackEnd.DTO.AvaliacoesDTO;
 import com.SenaiCommunity.BackEnd.Entity.Avaliacoes;
 import com.SenaiCommunity.BackEnd.Entity.Projeto;

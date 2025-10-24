@@ -94,7 +94,7 @@ public class ProfessorService {
 
         if (foto != null && !foto.isEmpty()) {
             try {
-                String fileName = salvarFoto(foto); // Agora chama o método corrigido
+                String fileName = salvarFoto(foto);
                 professor.setFotoPerfil(fileName);
             } catch (IOException e) {
                 throw new RuntimeException("Erro ao salvar a foto do professor", e);

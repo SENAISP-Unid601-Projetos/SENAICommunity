@@ -18,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
-
 @RestController
 @RequestMapping("/cadastro")
 public class CadastroUsuarioController {
@@ -74,5 +73,4 @@ public class CadastroUsuarioController {
 
         return ResponseEntity.ok(professorService.criarProfessorComFoto(dto, foto));
     }
-
 }

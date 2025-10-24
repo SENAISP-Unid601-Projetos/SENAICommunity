@@ -54,6 +54,7 @@ public class AmizadeService {
 
         notificacaoService.criarNotificacao(
                 solicitado,
+                solicitante,
                 solicitante.getNome() + " te enviou um pedido de amizade.",
                 "PEDIDO_AMIZADE",
                 solicitacaoSalva.getId()
@@ -73,7 +74,13 @@ public class AmizadeService {
         amizade.setStatus(StatusAmizade.ACEITO);
         amizadeRepository.save(amizade);
 
-        notificacaoService.criarNotificacao(amizade.getSolicitante(), amizade.getSolicitado().getNome() + " aceitou seu pedido de amizade.");
+        notificacaoService.criarNotificacao(
+                amizade.getSolicitante(),
+                amizade.getSolicitado(),
+                amizade.getSolicitado().getNome() + " aceitou seu pedido de amizade.",
+                "AMIZADE_ACEITA",
+                amizade.getId()
+        );
     }
 
     @Transactional
