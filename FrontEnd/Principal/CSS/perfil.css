@@ -111,7 +111,6 @@
 .profile-metadata li {
     display: flex;
     align-items: center;
-    gap: 1rem;
     margin-bottom: 0.75rem;
     color: var(--text-secondary);
 }
@@ -120,4 +119,9 @@
     width: 20px;
     text-align: center;
     color: var(--text-tertiary);
+    margin-right: 1rem; 
+}
+
+.main-content {
+    grid-column: 2 / 4;
 }

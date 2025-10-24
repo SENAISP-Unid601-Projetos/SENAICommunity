@@ -3,6 +3,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const backendUrl = 'http://localhost:8080';
     const jwtToken = localStorage.getItem('token');
     const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
+    let stompClient = null; 
+    let currentUser = null;
+
+
+    // --- FUNÇÕES DE CONTROLE DE TEMA ---
+function setInitialTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+    const themeToggleIcon = document.querySelector('.theme-toggle i');
+    if (themeToggleIcon) {
+        if (theme === 'dark') {
+            themeToggleIcon.classList.remove('fa-sun');
+            themeToggleIcon.classList.add('fa-moon');
+        } else {
+            themeToggleIcon.classList.remove('fa-moon');
+            themeToggleIcon.classList.add('fa-sun');
+        }
+    }
+}
     let currentUser = null;
 
     // --- ELEMENTOS DO DOM ---
@@ -67,7 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             updateUIWithUserData(currentUser);
             populateProfileData(currentUser);
-            fetchUserConnections(); // NOVA CHAMADA DE FUNÇÃO
+            connectWebSocket();
+            fetchUserConnections(); 
             fetchNotifications()
             setupEventListeners();
         } catch (error) {
@@ -218,6 +250,19 @@ document.addEventListener('DOMContentLoaded', () => {
             notification.classList.remove('show');
             setTimeout(() => { notification.remove(); }, 300);
         }, 5000);
+    }
+
+    function connectWebSocket() {
+        const socket = new SockJS(`${backendUrl}/ws`);
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null; 
+        const headers = { Authorization: `Bearer ${jwtToken}` };
+        
+        stompClient.connect(headers, () => {
+            console.log("CONECTADO AO WEBSOCKET (Perfil)");
+        }, (error) => {
+            console.error("ERRO WEBSOCKET (Perfil):", error);
+        });
     }
 
     // --- LÓGICA DOS MODAIS E MENUS ---
