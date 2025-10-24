@@ -1,29 +1,48 @@
-// src/pages/Eventos/Eventos.jsx (NOVO DESIGN)
+// src/pages/Eventos/Eventos.jsx (NOVO DESIGN - Assumindo Subdiretório 'eventoPictures')
 
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Topbar from '../../components/Layout/Topbar';
 import Sidebar from '../../components/Layout/Sidebar';
-import RightSidebar from '../../pages/Principal/RightSidebar'; // Importado para consistência de layout
-import './Eventos.css'; // Carrega o NOVO CSS
+import RightSidebar from '../../pages/Principal/RightSidebar';
+import './Eventos.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTag, faClock, faMapMarkerAlt, faArrowRight, faUsers } from '@fortawesome/free-solid-svg-icons';
 
-// --- COMPONENTE EventoCard MELHORADO ---
+// --- COMPONENTE EventoCard CORRIGIDO (Assumindo Subdiretório) ---
 const EventoCard = ({ evento }) => {
-    // A data vem do backend como um array (ex: [2025, 10, 17])
-    const data = new Date(evento.data[0], evento.data[1] - 1, evento.data[2]);
-    const dia = data.getDate();
-    const mes = data.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+    // Lógica da data (mantida)
+    const data = new Date(evento.data + 'T00:00:00');
+    const dia = data.getUTCDate();
+    const mes = data.toLocaleString('pt-BR', { month: 'short', timeZone: 'UTC' }).replace('.', '');
 
-    // ✅ INTEGRAÇÃO: Constrói a URL da imagem corretamente
-    const imageUrl = evento.imagemCapaUrl 
-        ? `http://localhost:8080${evento.imagemCapaUrl}` 
-        : 'https://placehold.co/600x400/21262d/8b949e?text=Evento';
+    // --- CORREÇÃO URL IMAGEM v4 (Assumindo Subdiretório) ---
+    let imageUrl = 'https://placehold.co/600x400/21262d/8b949e?text=Evento'; // Placeholder padrão
+    const backendUrlPath = evento.imagemCapaUrl;
+
+    if (backendUrlPath) {
+        try {
+            // Extrai apenas o nome do ficheiro da URL/path recebido
+            const fileName = backendUrlPath
+                .substring(backendUrlPath.lastIndexOf('/') + 1); // Pega apenas a parte após a última '/'
+
+            if (fileName) {
+                // Monta a URL correta apontando para o ArquivoController,
+                // INSERINDO o subdiretório 'eventoPictures' manualmente
+                imageUrl = `http://localhost:8080/api/arquivos/eventoPictures/${fileName}`; // <<< ALTERAÇÃO AQUI
+            }
+        } catch (e) {
+            console.error("Erro ao processar URL da imagem:", backendUrlPath, e);
+            // Mantém o placeholder em caso de erro
+        }
+    }
+     console.log(`[Evento ID ${evento.id}] URL Final (com subdiretório):`, imageUrl); // Log para verificar
+    // --- FIM DA CORREÇÃO ---
+
 
     return (
         <article className="evento-card">
-            <div className="evento-imagem" style={{ backgroundImage: `url(${imageUrl})` }}>
+            <div className="evento-imagem" style={{ backgroundImage: `url('${imageUrl}')` }}>
                 <div className="evento-data">
                     <span>{dia}</span>
                     <span>{mes.toUpperCase()}</span>
@@ -53,37 +72,41 @@ const EventoCard = ({ evento }) => {
     );
 };
 
-// --- COMPONENTE PRINCIPAL DA PÁGINA ---
+// --- COMPONENTE PRINCIPAL DA PÁGINA (sem alterações) ---
+// (O restante do código do componente Eventos continua igual à versão anterior)
+// ... (código omitido para brevidade) ...
 const Eventos = ({ onLogout }) => {
     const [eventos, setEventos] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [currentUser, setCurrentUser] = useState(null); // ✅ INTEGRAÇÃO
+    const [currentUser, setCurrentUser] = useState(null);
     const [filters, setFilters] = useState({
         periodo: 'proximos',
         formato: 'todos',
         categoria: 'todos'
     });
 
-    // ✅ INTEGRAÇÃO: Busca usuário e eventos
     useEffect(() => {
         document.title = 'Senai Community | Eventos';
         const token = localStorage.getItem('authToken');
-        
+
         const fetchData = async () => {
+            if (!token) {
+                onLogout();
+                return;
+            }
             try {
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                 const [userRes, eventosRes] = await Promise.all([
-                    axios.get('http://localhost:8080/usuarios/me', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }),
-                    axios.get('http://localhost:8080/api/eventos', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    })
+                    axios.get('http://localhost:8080/usuarios/me'),
+                    axios.get('http://localhost:8080/api/eventos')
                 ]);
                 setCurrentUser(userRes.data);
                 setEventos(eventosRes.data);
             } catch (error) {
                 console.error("Erro ao buscar dados:", error);
-                if (error.response?.status === 401) onLogout();
+                if (error.response?.status === 401 || error.response?.status === 403) {
+                    onLogout();
+                }
             } finally {
                 setLoading(false);
             }
@@ -96,13 +119,19 @@ const Eventos = ({ onLogout }) => {
         setFilters(prev => ({ ...prev, [name]: value }));
     };
 
-    // Lógica de filtro (mantida do seu arquivo original)
     const filteredEventos = useMemo(() => {
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
 
+        if (!Array.isArray(eventos)) {
+            return [];
+        }
+
         let filtered = eventos.filter(evento => {
-            const eventoDate = new Date(evento.data[0], evento.data[1] - 1, evento.data[2]);
+            if (!evento.data || typeof evento.data !== 'string') {
+                 return false;
+            }
+            const eventoDate = new Date(evento.data + 'T00:00:00');
             const periodoMatch = filters.periodo === 'proximos' ? eventoDate >= hoje : eventoDate < hoje;
             const formatoMatch = filters.formato === 'todos' || evento.formato === filters.formato;
             const categoriaMatch = filters.categoria === 'todos' || evento.categoria === filters.categoria;
@@ -110,8 +139,8 @@ const Eventos = ({ onLogout }) => {
         });
 
         filtered.sort((a, b) => {
-            const dateA = new Date(a.data[0], a.data[1] - 1, a.data[2]);
-            const dateB = new Date(b.data[0], b.data[1] - 1, b.data[2]);
+             const dateA = new Date(a.data + 'T00:00:00');
+             const dateB = new Date(b.data + 'T00:00:00');
             return filters.periodo === 'proximos' ? dateA - dateB : dateB - dateA;
         });
 
@@ -149,7 +178,7 @@ const Eventos = ({ onLogout }) => {
                         </select>
                     </section>
                     <section className="eventos-grid">
-                        {loading ? <p className="loading-state">Carregando eventos...</p> : 
+                        {loading ? <p className="loading-state">Carregando eventos...</p> :
                             filteredEventos.length > 0 ? (
                                 filteredEventos.map(evento => <EventoCard key={evento.id} evento={evento} />)
                             ) : (
@@ -161,7 +190,7 @@ const Eventos = ({ onLogout }) => {
                         }
                     </section>
                 </main>
-                <RightSidebar /> {/* ✅ DESIGN: Adicionado para layout de 3 colunas */}
+                <RightSidebar />
             </div>
         </div>
     );
