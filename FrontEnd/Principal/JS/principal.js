@@ -131,9 +131,7 @@ async function initGlobal() {
         setupGlobalEventListeners();
 
         // 6. Dispara um evento para scripts de página (como mensagem.js) saberem que está pronto
-        document.dispatchEvent(new CustomEvent('globalScriptsLoaded', { 
-            detail: { stompClient: window.stompClient, currentUser } 
-        }));
+     
 
     } catch (error) {
         console.error("ERRO CRÍTICO NA INICIALIZAÇÃO:", error);
@@ -205,6 +203,10 @@ function connectWebSocket() {
             atualizarStatusDeAmigosNaUI();
         });
 
+           document.dispatchEvent(new CustomEvent('globalScriptsLoaded', { 
+            detail: { stompClient: window.stompClient, currentUser } 
+        }));
+
         stompClient.subscribe(`/user/${currentUser.email}/queue/contagem`, (message) => {
             const count = JSON.parse(message.body);
             updateMessageBadge(count);
@@ -214,7 +216,7 @@ function connectWebSocket() {
         document.dispatchEvent(new CustomEvent('webSocketConnected', { 
             detail: { stompClient } 
         }));
-        
+
         // Busca a contagem inicial ao conectar
         fetchAndUpdateUnreadCount();
     }, (error) => console.error("ERRO WEBSOCKET:", error));
