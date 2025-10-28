@@ -7,9 +7,11 @@ import com.SenaiCommunity.BackEnd.DTO.PostagemSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.MensagemGrupo;
 import com.SenaiCommunity.BackEnd.Entity.MensagemPrivada;
 import com.SenaiCommunity.BackEnd.Entity.Postagem;
+import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Service.MensagemGrupoService;
 import com.SenaiCommunity.BackEnd.Service.MensagemPrivadaService;
 import com.SenaiCommunity.BackEnd.Service.PostagemService;
+import com.SenaiCommunity.BackEnd.Service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,11 +33,17 @@ public class ChatRestController {
     @Autowired
     private PostagemService postagemService;
 
+    @Autowired
+    private UsuarioService usuarioService;
+
     //  Histórico de mensagens privadas entre dois usuários
-    @GetMapping("/privado/{userId1}/{userId2}")
-    public ResponseEntity<List<MensagemPrivadaSaidaDTO>> getMensagensPrivadas(@PathVariable Long userId1,
-                                                                              @PathVariable Long userId2) {
-        List<MensagemPrivadaSaidaDTO> historico = mensagemPrivadaService.buscarMensagensPrivadas(userId1, userId2);
+    @GetMapping("/privado/historico/{amigoId}")
+    public ResponseEntity<List<MensagemPrivadaSaidaDTO>> getMensagensPrivadasComAmigo(@PathVariable Long amigoId, Principal principal) {
+        Usuario usuarioLogado = usuarioService.buscarPorEmail(principal.getName());
+        Long usuarioLogadoId = usuarioLogado.getId();
+
+        // 2. Busca o histórico
+        List<MensagemPrivadaSaidaDTO> historico = mensagemPrivadaService.buscarMensagensPrivadas(usuarioLogadoId, amigoId);
         return ResponseEntity.ok(historico);
     }
 
