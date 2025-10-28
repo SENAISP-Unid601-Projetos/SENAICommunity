@@ -2,7 +2,6 @@ package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaSaidaDTO;
-import com.SenaiCommunity.BackEnd.Entity.MensagemPrivada;
 import com.SenaiCommunity.BackEnd.Service.MensagemPrivadaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,17 +29,21 @@ public class MensagemPrivadaController {
 
     @MessageMapping("/privado/{destinatarioId}")
     public void enviarPrivado(@DestinationVariable Long destinatarioId,
-                              @Payload MensagemPrivadaEntradaDTO dto, // <-- Recebe DTO de Entrada
+                              @Payload MensagemPrivadaEntradaDTO dto,
                               Principal principal) {
 
-        dto.setDestinatarioId(destinatarioId); // Garante que o ID do destinatário está no DTO
-
+        dto.setDestinatarioId(destinatarioId);
         MensagemPrivadaSaidaDTO dtoSalvo = mensagemPrivadaService.salvarMensagemPrivada(dto, principal.getName());
 
+        // Envia a mensagem para o destinatário
         messagingTemplate.convertAndSendToUser(dtoSalvo.getDestinatarioEmail(), "/queue/usuario", dtoSalvo);
 
-        // Notifica o próprio remetente para atualizar a UI
+        // Envia a mensagem de volta para o remetente (confirmação)
         messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/usuario", dtoSalvo);
+
+        // Envia a nova contagem para o DESTINATÁRIO ---
+        long novaContagem = mensagemPrivadaService.contarMensagensNaoLidas(dtoSalvo.getDestinatarioEmail());
+        messagingTemplate.convertAndSendToUser(dtoSalvo.getDestinatarioEmail(), "/queue/contagem", novaContagem);
     }
 
     // Os métodos abaixo são REST, então precisam estar em um controller com @RestController

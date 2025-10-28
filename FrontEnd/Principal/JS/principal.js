@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const backendUrl = "http://localhost:8080";
 const jwtToken = localStorage.getItem("token");
 const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
+const messageBadgeElement = document.getElementById('message-badge');
 
 // Variáveis globais para que outros scripts (como mensagem.js) possam acessá-las
 let stompClient = null;
@@ -49,6 +50,7 @@ let currentUser = null;
 let userFriends = [];
 let friendsLoaded = false;
 let latestOnlineEmails = [];
+
 
 // Torna as variáveis e funções essenciais acessíveis globalmente
 window.stompClient = stompClient;
@@ -202,13 +204,38 @@ function connectWebSocket() {
             latestOnlineEmails = JSON.parse(message.body); //
             atualizarStatusDeAmigosNaUI();
         });
+
+        stompClient.subscribe(`/user/${currentUser.email}/queue/contagem`, (message) => {
+            const count = JSON.parse(message.body);
+            updateMessageBadge(count);
+        });
         
         // Dispara evento para que scripts de página (feed, chat) façam suas inscrições
         document.dispatchEvent(new CustomEvent('webSocketConnected', { 
             detail: { stompClient } 
         }));
-
+        
+        // Busca a contagem inicial ao conectar
+        fetchAndUpdateUnreadCount();
     }, (error) => console.error("ERRO WEBSOCKET:", error));
+}
+
+async function fetchAndUpdateUnreadCount() {
+    if (!messageBadgeElement) return; // Só executa se o badge existir na página
+    try {
+        const response = await axios.get(`${backendUrl}/api/chat/privado/nao-lidas/contagem`);
+        const count = response.data;
+        updateMessageBadge(count);
+    } catch (error) {
+        console.error("Erro ao buscar contagem de mensagens não lidas:", error);
+    }
+}
+
+function updateMessageBadge(count) {
+    if (messageBadgeElement) {
+        messageBadgeElement.textContent = count;
+        messageBadgeElement.style.display = count > 0 ? 'flex' : 'none';
+    }
 }
 
 function showNotification(message, type = "info") {

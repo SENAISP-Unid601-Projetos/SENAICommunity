@@ -65,4 +65,11 @@ public class ChatRestController {
     public List<PostagemSaidaDTO> getPostagensPublicas() {
         return postagemService.buscarPostagensPublicas();
     }
+
+    @GetMapping("/privado/nao-lidas/contagem")
+    public ResponseEntity<Long> getContagemNaoLidas(Principal principal) {
+        long contagem = mensagemPrivadaService.contarMensagensNaoLidas(principal.getName());
+        return ResponseEntity.ok(contagem);
+    }
 }
+

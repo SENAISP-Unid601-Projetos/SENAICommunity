@@ -128,6 +128,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // 4. Busca e renderiza as mensagens
         await fetchMessages(otherUserId);
 
+        if (typeof fetchAndUpdateUnreadCount === 'function') {
+        fetchAndUpdateUnreadCount();
+        }
+
         elements.messageInput.disabled = false;
         elements.chatSendBtn.disabled = false;
         elements.messageInput.focus();
