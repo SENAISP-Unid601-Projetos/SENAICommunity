@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const jwtToken = localStorage.getItem('token');
     let currentUser = null;
     let stompClient = null;
+    const messageBadgeElement = document.getElementById('message-badge');
     const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
 
     const ProjetosPage = {
@@ -35,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
             connectionsCount: document.getElementById('connections-count'),
             projectsCount: document.getElementById('projects-count'),
         },
+
+        
         
         async init() {
             if (!jwtToken) { window.location.href = '/login.html'; return; }
@@ -97,6 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (this.elements.grid) this.elements.grid.innerHTML = `<p>Não foi possível carregar os projetos.</p>`;
             }
         },
+
+        
 
         render() {
             const grid = this.elements.grid;
@@ -203,6 +208,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     };
+
+    async function fetchAndUpdateUnreadCount() {
+        if (!messageBadgeElement) return; // Só executa se o badge existir na página
+        try {
+            const response = await axios.get(`${backendUrl}/api/chat/privado/nao-lidas/contagem`);
+            const count = response.data;
+            updateMessageBadge(count);
+        } catch (error) {
+            console.error("Erro ao buscar contagem de mensagens não lidas:", error);
+        }
+    }
+
+    function updateMessageBadge(count) {
+        if (messageBadgeElement) {
+            messageBadgeElement.textContent = count;
+            messageBadgeElement.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
 
     ProjetosPage.init();
 });

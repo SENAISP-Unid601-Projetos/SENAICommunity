@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-
+  const messageBadgeElement = document.getElementById('message-badge');
   const eventosGrid = document.querySelector('.eventos-grid');
   const meusEventosLista = document.getElementById('meus-eventos-lista');
   const hoje = new Date();

@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let userFriends = [];
   let friendsLoaded = false;
   let latestOnlineEmails = [];
+  const messageBadgeElement = document.getElementById('message-badge');
   const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
 
   // --- FUNÇÕES DE CONTROLE DE TEMA ---
@@ -105,6 +106,25 @@ function updateThemeIcon(theme) {
     }
   }
 
+   async function fetchAndUpdateUnreadCount() {
+        if (!messageBadgeElement) return; // Só executa se o badge existir na página
+        try {
+            const response = await axios.get(`${backendUrl}/api/chat/privado/nao-lidas/contagem`);
+            const count = response.data;
+            updateMessageBadge(count);
+        } catch (error) {
+            console.error("Erro ao buscar contagem de mensagens não lidas:", error);
+        }
+    }
+
+    function updateMessageBadge(count) {
+        if (messageBadgeElement) {
+            messageBadgeElement.textContent = count;
+            messageBadgeElement.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
+
+
   // --- FUNÇÕES DE UI ---
   function updateUIWithUserData(user) {
     if (!user) return;
@@ -164,6 +184,12 @@ function updateThemeIcon(theme) {
         latestOnlineEmails = JSON.parse(message.body);
         atualizarStatusDeAmigosNaUI();
       });
+
+      stompClient.subscribe(`/user/${currentUser.email}/queue/contagem`, (message) => {
+            const count = JSON.parse(message.body);
+            updateMessageBadge(count);
+            });
+        fetchAndUpdateUnreadCount();
     }, (error) => console.error("ERRO WEBSOCKET:", error));
   }
 
