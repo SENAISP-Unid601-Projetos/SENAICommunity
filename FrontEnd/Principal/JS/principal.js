@@ -44,6 +44,7 @@ const jwtToken = localStorage.getItem("token");
 const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
 const messageBadgeElement = document.getElementById('message-badge');
 
+
 // Variáveis globais para que outros scripts (como mensagem.js) possam acessá-las
 let stompClient = null;
 let currentUser = null;

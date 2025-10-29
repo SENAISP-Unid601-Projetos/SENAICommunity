@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let userFriends = [];
     let friendsLoaded = false;
     let latestOnlineEmails = [];
+    const messageBadgeElement = document.getElementById('message-badge');
     const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
 
     // --- FUNÇÕES DE CONTROLE DE TEMA ---
@@ -164,6 +165,11 @@ function updateThemeIcon(theme) {
                 atualizarStatusDeAmigosNaUI();
 
             });
+            stompClient.subscribe(`/user/${currentUser.email}/queue/contagem`, (message) => {
+            const count = JSON.parse(message.body);
+            updateMessageBadge(count);
+            });
+        fetchAndUpdateUnreadCount();
         }, (error) => console.error("ERRO WEBSOCKET:", error));
     }
 
@@ -219,7 +225,23 @@ function updateThemeIcon(theme) {
     }
   }
 
-  
+   async function fetchAndUpdateUnreadCount() {
+        if (!messageBadgeElement) return; // Só executa se o badge existir na página
+        try {
+            const response = await axios.get(`${backendUrl}/api/chat/privado/nao-lidas/contagem`);
+            const count = response.data;
+            updateMessageBadge(count);
+        } catch (error) {
+            console.error("Erro ao buscar contagem de mensagens não lidas:", error);
+        }
+    }
+
+    function updateMessageBadge(count) {
+        if (messageBadgeElement) {
+            messageBadgeElement.textContent = count;
+            messageBadgeElement.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
 
     // --- FUNÇÕES DE NOTIFICAÇÕES ---
     async function fetchNotifications() {
@@ -393,8 +415,6 @@ function updateThemeIcon(theme) {
             const nome = (type === 'received') ? req.nomeSolicitante : req.nomeSolicitado;
             const fotoPath = (type === 'received') ? req.fotoPerfilSolicitante : req.fotoPerfilSolicitado;
 
-            // --- LINHA CORRIGIDA ABAIXO ---
-            // Adicionado '/api/arquivos/' para montar o URL correto da imagem
             const fotoUrl = fotoPath ? `${backendUrl}/api/arquivos/${fotoPath}` : defaultAvatarUrl;
 
             let actionsHtml = '';

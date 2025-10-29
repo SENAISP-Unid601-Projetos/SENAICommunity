@@ -86,54 +86,129 @@ document.addEventListener("DOMContentLoaded", () => {
     /**
      * Seleciona uma conversa e carrega o histórico.
      */
+  function createConversationCardElement(convoData) {
+        const convoCard = document.createElement('div');
+        // Adiciona a classe 'selected' imediatamente se for a conversa ativa
+        convoCard.className = `convo-card ${convoData.outroUsuarioId == activeConversation.usuarioId ? 'selected' : ''}`;
+        convoCard.dataset.userId = convoData.outroUsuarioId;
+        convoCard.dataset.userName = convoData.nomeOutroUsuario;
+
+        const ultimoAutor = convoData.remetenteUltimaMensagemId === currentUser.id ? "<strong>Você:</strong> " : "";
+        const ultimaMsg = convoData.conteudoUltimaMensagem || "Inicie a conversa..."; // Mensagem padrão para novas
+
+        convoCard.innerHTML = `
+            <div class="convo-avatar-wrapper">
+                <img src="${convoData.avatarUrl}" class="avatar" alt="${convoData.nomeOutroUsuario}">
+            </div>
+            <div class="group-info">
+                <div class="group-title">${convoData.nomeOutroUsuario}</div>
+                <div class="group-last-msg">
+                    ${ultimoAutor}${ultimaMsg}
+                </div>
+            </div>
+        `;
+        convoCard.addEventListener('click', () => selectConversation(convoData.outroUsuarioId));
+        return convoCard;
+    }
+
+    /**
+     * Seleciona uma conversa (existente ou nova) e carrega o histórico.
+     */
     async function selectConversation(otherUserId) {
         if (!otherUserId) return;
         otherUserId = parseInt(otherUserId, 10);
 
-        // 1. Encontra os dados do usuário (na lista de conversas ou de amigos)
-        const convoData = conversas.find(c => c.outroUsuarioId === otherUserId) || 
-                          userFriends.find(f => f.usuarioId === otherUserId);
-        
+        let convoData = conversas.find(c => c.outroUsuarioId === otherUserId);
+        let isNewConversation = false; // Flag para rastrear se é nova
+
         if (!convoData) {
-            console.error("Usuário não encontrado:", otherUserId);
-            // Tenta buscar no DTO de Amigo (caso não tenha conversa)
-             const friendData = userFriends.find(f => f.usuarioId === otherUserId);
-             if(!friendData) {
-                 console.error("Amigo não encontrado:", otherUserId);
-                 return;
-             }
-             // Usa os dados do amigo para iniciar uma nova conversa
-             activeConversation = {
-                usuarioId: friendData.usuarioId,
-                nome: friendData.nome,
-                avatar: friendData.fotoPerfil ? `${backendUrl}/api/arquivos/${friendData.fotoPerfil}` : defaultAvatarUrl
-             };
-        } else {
-            // 2. Define a conversa ativa
-            activeConversation = {
-                usuarioId: otherUserId, 
-                nome: convoData.nomeOutroUsuario || convoData.nome,
-                avatar: convoData.avatarUrl || (convoData.fotoPerfil ? `${backendUrl}/api/arquivos/${convoData.fotoPerfil}` : defaultAvatarUrl),
+            // Não está nas conversas existentes, tenta encontrar na lista de amigos
+            // Assume que userFriends (global) contém AmigoDTO com 'usuarioId' e 'nome'
+            const friendData = userFriends.find(f => f.idUsuario === otherUserId);
+            if (!friendData) {
+                console.error("Amigo não encontrado para iniciar conversa:", otherUserId);
+                // Notifica o usuário que o contato não foi encontrado
+                window.showNotification("Não foi possível encontrar os dados deste contato.", "error");
+                return; // Impede a continuação se os dados do amigo não existem
+            }
+
+            // Usa os dados do amigo para criar um objeto temporário similar ao ConversaResumoDTO
+            convoData = {
+                outroUsuarioId: friendData.idUsuario,
+                nomeOutroUsuario: friendData.nome,
+                // Constrói a URL do avatar a partir do AmigoDTO
+                avatarUrl: friendData.fotoPerfil ? `${backendUrl}/api/arquivos/${friendData.fotoPerfil}` : defaultAvatarUrl,
+                // Valores padrão para uma nova conversa
+                conteudoUltimaMensagem: null, // Será "Inicie a conversa..." no card
+                dataEnvioUltimaMensagem: new Date().toISOString(), // Data atual
+                remetenteUltimaMensagemId: null
             };
+            isNewConversation = true;
         }
-        
-        // 3. Atualiza a UI
+
+        // Define a conversa ativa globalmente
+        activeConversation = {
+            usuarioId: otherUserId,
+            nome: convoData.nomeOutroUsuario || convoData.nome, // Garante que pegue o nome correto
+            avatar: convoData.avatarUrl || defaultAvatarUrl, // Garante que pegue o avatar correto
+        };
+
+        if (isNewConversation) {
+            // Verifica se um card para este usuário JÁ existe na lista (evita duplicatas)
+            const existingCard = document.querySelector(`.convo-card[data-user-id="${otherUserId}"]`);
+            if (!existingCard) {
+                // Cria e adiciona o card NOVO na lista da interface
+                const tempCard = createConversationCardElement(convoData);
+                elements.conversationsList.prepend(tempCard); // Adiciona no topo
+            }
+             // Adiciona a "conversa" temporária ao array 'conversas' para consistência da UI
+             // A próxima chamada a fetchConversations trará os dados reais se mensagens forem enviadas.
+            if (!conversas.some(c => c.outroUsuarioId === otherUserId)) {
+                 conversas.unshift(convoData);
+             }
+        }
+
+        // Atualiza a UI: Cabeçalho e destaque do card
         renderChatHeader();
         document.querySelectorAll('.convo-card').forEach(card => card.classList.remove('selected'));
+        // Agora o seletor DEVE encontrar o card (existente ou o recém-criado)
         const selectedCard = document.querySelector(`.convo-card[data-user-id="${otherUserId}"]`);
-        if (selectedCard) selectedCard.classList.add('selected');
+        if (selectedCard) {
+            selectedCard.classList.add('selected');
+        } else {
+             console.warn("Card da conversa não encontrado para destacar:", otherUserId);
+        }
+        try {
+            // Chama o novo endpoint POST que criamos no ChatRestController
+            await axios.post(`${backendUrl}/api/chat/privado/marcar-lida/${otherUserId}`);
+            console.log(`Mensagens de ${otherUserId} marcadas como lidas.`); // Log para depuração
 
-        elements.chatMessagesContainer.innerHTML = '<div class="empty-chat">Carregando histórico...</div>';
-        
-        // 4. Busca e renderiza as mensagens
-        await fetchMessages(otherUserId);
+            // ATUALIZA A CONTAGEM GLOBAL *APÓS* MARCAR COMO LIDA
+            // Verifica se a função existe (ela está no principal.js)
+            if (typeof fetchAndUpdateUnreadCount === 'function') {
+                fetchAndUpdateUnreadCount();
+            }
 
-        if (typeof fetchAndUpdateUnreadCount === 'function') {
-        fetchAndUpdateUnreadCount();
+        } catch (error) {
+            console.error("Erro ao marcar conversa como lida:", error);
+            // Continua mesmo se falhar em marcar como lida, para o usuário ver as mensagens
         }
 
+
+        elements.chatMessagesContainer.innerHTML = '<div class="empty-chat">Carregando histórico...</div>';
+
+        // Busca e renderiza as mensagens (buscará lista vazia para nova conversa)
+        await fetchMessages(otherUserId); //
+
+        // Atualiza a contagem de mensagens não lidas (global)
+        if (typeof fetchAndUpdateUnreadCount === 'function') {
+            fetchAndUpdateUnreadCount();
+        }
+
+        // Habilita a área de input
         elements.messageInput.disabled = false;
         elements.chatSendBtn.disabled = false;
+        elements.messageInput.placeholder = `Escreva para ${activeConversation.nome}...`; // Placeholder dinâmico
         elements.messageInput.focus();
     }
     
@@ -274,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
         elements.chatMessagesContainer.scrollTop = elements.chatMessagesContainer.scrollHeight;
     }
 
-    function renderConversationsList() {
+   function renderConversationsList() {
         if (!elements.conversationsList) return;
         elements.conversationsList.innerHTML = '';
         if (conversas.length === 0) {
@@ -283,26 +358,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         conversas.forEach(convo => {
-            const convoCard = document.createElement('div');
-            convoCard.className = `convo-card ${convo.outroUsuarioId == activeConversation.usuarioId ? 'selected' : ''}`;
-            convoCard.dataset.userId = convo.outroUsuarioId;
-            convoCard.dataset.userName = convo.nomeOutroUsuario;
-            
-            const ultimoAutor = convo.remetenteUltimaMensagemId === currentUser.id ? "<strong>Você:</strong> " : "";
-            
-            convoCard.innerHTML = `
-                <div class="convo-avatar-wrapper">
-                    <img src="${convo.avatarUrl}" class="avatar" alt="${convo.nomeOutroUsuario}">
-                </div>
-                <div class="group-info">
-                    <div class="group-title">${convo.nomeOutroUsuario}</div>
-                    <div class="group-last-msg">
-                        ${ultimoAutor}${convo.conteudoUltimaMensagem || "Nenhuma mensagem"}
-                    </div>
-                </div>
-            `;
-            convoCard.addEventListener('click', () => selectConversation(convo.outroUsuarioId));
-            elements.conversationsList.appendChild(convoCard);
+             // Usa a função auxiliar para criar o card
+             const convoCard = createConversationCardElement(convo);
+             elements.conversationsList.appendChild(convoCard);
         });
     }
 
@@ -327,7 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const avatarUrl = friend.fotoPerfil ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` : defaultAvatarUrl;
                 return `
                     <div class="user-list-item user-card" 
-                         data-usuario-id="${friend.usuarioId}" 
+                         data-usuario-id="${friend.idUsuario}" 
                          data-user-name="${friend.nome}" >
                         <img src="${avatarUrl}" alt="${friend.nome}">
                         <span>${friend.nome}</span>
