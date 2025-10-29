@@ -46,8 +46,6 @@ public class MensagemPrivadaController {
         messagingTemplate.convertAndSendToUser(dtoSalvo.getDestinatarioEmail(), "/queue/contagem", novaContagem);
     }
 
-    // Os métodos abaixo são REST, então precisam estar em um controller com @RestController
-    // Considere mover para um controller separado ou manter @RestController e anotar os métodos @MessageMapping em uma classe @Controller separada.
     @RestController
     @RequestMapping("/api/chat/privado")
     public static class MensagemPrivadaRestController {
@@ -63,10 +61,7 @@ public class MensagemPrivadaController {
                                                 @RequestBody String novoConteudo,
                                                 Principal principal) {
             try {
-                // Agora recebe o DTO corretamente
                 MensagemPrivadaSaidaDTO atualizada = mensagemPrivadaService.editarMensagemPrivada(id, novoConteudo, principal.getName());
-
-                // Notifica ambos os usuários usando o email (que está no DTO)
                 messagingTemplate.convertAndSendToUser(atualizada.getDestinatarioEmail(), "/queue/usuario", atualizada);
                 messagingTemplate.convertAndSendToUser(atualizada.getRemetenteEmail(), "/queue/usuario", atualizada);
 
@@ -82,12 +77,15 @@ public class MensagemPrivadaController {
         public ResponseEntity<?> excluirMensagem(@PathVariable Long id,
                                                  Principal principal) {
             try {
-                // Agora recebe o DTO corretamente
                 MensagemPrivadaSaidaDTO mensagemExcluida = mensagemPrivadaService.excluirMensagemPrivada(id, principal.getName());
 
-                Map<String, Object> payload = Map.of("tipo", "remocao", "id", id);
+                Map<String, Object> payload = Map.of(
+                        "tipo", "remocao",
+                        "id", id,
+                        "remetenteId", mensagemExcluida.getRemetenteId(),
+                        "destinatarioId", mensagemExcluida.getDestinatarioId()
+                );
 
-                // Notifica ambos os usuários usando o email (que está no DTO)
                 messagingTemplate.convertAndSendToUser(mensagemExcluida.getDestinatarioEmail(), "/queue/usuario", payload);
                 messagingTemplate.convertAndSendToUser(mensagemExcluida.getRemetenteEmail(), "/queue/usuario", payload);
 
@@ -98,5 +96,6 @@ public class MensagemPrivadaController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
             }
         }
+
     }
 }

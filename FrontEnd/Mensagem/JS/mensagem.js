@@ -256,23 +256,111 @@ document.addEventListener("DOMContentLoaded", () => {
         elements.messageInput.focus();
     }
 
+    // --- INÍCIO DAS NOVAS FUNÇÕES (EDITAR/EXCLUIR) ---
+    
+    /**
+     * Dispara a edição de uma mensagem.
+     */
+    async function handleEditMessage(messageId) {
+        // 1. Encontra o conteúdo atual da mensagem no DOM
+        const msgElement = document.querySelector(`.message-group[data-message-id="${messageId}"]`);
+        const contentElement = msgElement ? msgElement.querySelector('.message-content') : null;
+        
+        if (!contentElement) return;
+        const oldContent = contentElement.innerText; // Pega o texto atual
+
+        // 2. Pede o novo conteúdo ao usuário
+        const newContent = prompt("Digite o novo conteúdo da mensagem:", oldContent);
+
+        // 3. Verifica se o usuário cancelou ou não alterou o conteúdo
+        if (newContent === null || newContent.trim() === '' || newContent === oldContent) {
+            return;
+        }
+
+        // 4. Envia a requisição PUT para o backend
+        try {
+            // O backend já está esperando uma String simples no @RequestBody
+            await axios.put(`${backendUrl}/api/chat/privado/${messageId}`, newContent, {
+                 headers: { 'Content-Type': 'text/plain' } // Importante para o backend ler como String
+            });
+            // Não precisamos atualizar o DOM manualmente.
+            // O backend enviará a atualização via WebSocket, e o onMessageReceived cuidará disso.
+        } catch (error) {
+            console.error("Erro ao editar mensagem:", error);
+            window.showNotification("Não foi possível editar a mensagem.", "error");
+        }
+    }
+
+    /**
+     * Dispara a exclusão de uma mensagem.
+     */
+    async function handleDeleteMessage(messageId) {
+        // 1. Confirma com o usuário
+        if (!confirm("Tem certeza de que deseja excluir esta mensagem?")) {
+            return;
+        }
+
+        // 2. Envia a requisição DELETE para o backend
+        try {
+            await axios.delete(`${backendUrl}/api/chat/privado/${messageId}`);
+            // Novamente, não mexemos no DOM.
+            // O backend enviará a mensagem de 'remocao' via WebSocket.
+        } catch (error) {
+            console.error("Erro ao excluir mensagem:", error);
+            window.showNotification("Não foi possível excluir a mensagem.", "error");
+        }
+    }
+    
+    // --- FIM DAS NOVAS FUNÇÕES ---
+
     /**
      * Recebe uma mensagem (do WebSocket).
      */
     function onMessageReceived(payload) {
-        const msg = JSON.parse(payload.body); // MensagemPrivadaSaidaDTO
+        const msg = JSON.parse(payload.body); // MensagemPrivadaSaidaDTO ou Payload de Remoção
 
+        // --- INÍCIO DA MODIFICAÇÃO (Lógica de Remoção) ---
         if (msg.tipo === 'remocao') {
+            // 1. Remove do DOM
             const msgElement = document.querySelector(`[data-message-id="${msg.id}"]`);
-            if(msgElement) msgElement.remove();
-            return;
+            if (msgElement) msgElement.remove();
+
+            // 2. Remove do Cache (usando os IDs que adicionamos no backend)
+            // (Assumindo que você modificou o backend para enviar remetenteId e destinatarioId no payload de remoção)
+            if (msg.remetenteId && msg.destinatarioId) {
+                const otherUserId = msg.remetenteId === currentUser.id ? msg.destinatarioId : msg.remetenteId;
+                const cacheKey = getCacheKey(otherUserId);
+                
+                if (chatMessages.has(cacheKey)) {
+                    let messageList = chatMessages.get(cacheKey);
+                    // Filtra a lista, mantendo todas, exceto a que foi removida
+                    messageList = messageList.filter(m => m.id !== msg.id); 
+                    chatMessages.set(cacheKey, messageList);
+                }
+            }
+            return; // Encerra a função aqui
         }
+        // --- FIM DA MODIFICAÇÃO (Lógica de Remoção) ---
         
         const otherUserId = msg.remetenteId === currentUser.id ? msg.destinatarioId : msg.remetenteId;
         const cacheKey = getCacheKey(otherUserId);
 
         if (!chatMessages.has(cacheKey)) chatMessages.set(cacheKey, []);
-        chatMessages.get(cacheKey).push(msg);
+        
+        // --- INÍCIO DA MODIFICAÇÃO (Lógica de Edição/Nova) ---
+        const messageList = chatMessages.get(cacheKey);
+        // Procura se a mensagem já existe no cache
+        const existingMsgIndex = messageList.findIndex(m => m.id === msg.id); 
+
+        if (existingMsgIndex > -1) {
+            // É UMA EDIÇÃO: Substitui a mensagem antiga pela nova (atualizada)
+            messageList[existingMsgIndex] = msg;
+        } else {
+            // É UMA NOVA MENSAGEM: Adiciona no final
+            messageList.push(msg);
+        }
+        // --- FIM DA MODIFICAÇÃO (Lógica de Edição/Nova) ---
+
 
         // Atualiza a lista lateral (move para o topo)
         let convoIndex = conversas.findIndex(c => c.outroUsuarioId === otherUserId);
@@ -289,14 +377,13 @@ document.addEventListener("DOMContentLoaded", () => {
             convoToMove = {
                 outroUsuarioId: otherUserId,
                 nomeOutroUsuario: msg.nomeRemetente,
-                fotoPerfilOutroUsuario: null, // TODO: Precisaria buscar a foto do remetente
+                fotoPerfilOutroUsuario: null, 
                 conteudoUltimaMensagem: msg.conteudo,
                 dataEnvioUltimaMensagem: msg.dataEnvio,
                 remetenteUltimaMensagemId: msg.remetenteId,
-                avatarUrl: defaultAvatarUrl // TODO: Buscar avatar real
+                avatarUrl: defaultAvatarUrl 
             };
-            // Se for uma conversa nova, o avatar do remetente pode não estar disponível
-            // Vamos tentar pegar do DTO de amigos, se ele existir
+       
             const friendData = userFriends.find(f => f.usuarioId === otherUserId);
             if(friendData) {
                 convoToMove.avatarUrl = friendData.avatarUrl || defaultAvatarUrl;
@@ -313,7 +400,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- FUNÇÕES DE RENDERIZAÇÃO (UI do Chat) ---
-    
     function renderMessages(messages) {
         if (!elements.chatMessagesContainer) return;
         
@@ -325,24 +411,41 @@ document.addEventListener("DOMContentLoaded", () => {
             if (isMyMessage && currentUser.urlFotoPerfil) {
                 avatarUrl = `${backendUrl}${currentUser.urlFotoPerfil}`;
             } else if (!isMyMessage) {
-                // Tenta pegar o avatar da conversa ativa, senão, da mensagem (se tiver)
+        
                 avatarUrl = activeConversation.avatar || defaultAvatarUrl; 
             }
 
             const nome = isMyMessage ? "Você" : msg.nomeRemetente;
             const time = new Date(msg.dataEnvio).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
 
+          
+            const messageActions = isMyMessage ? `
+                <div class="message-actions">
+                    <button class="btn-action btn-edit-msg" data-message-id="${msg.id}" title="Editar">
+                        <i class="fas fa-pencil-alt"></i> 
+                    </button>
+                    <button class="btn-action btn-delete-msg" data-message-id="${msg.id}" title="Excluir">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            ` : '';
+            // (Nota: Você precisará ter FontAwesome carregado no seu HTML para os ícones)
+        
+
             return `
                 <div class="message-group ${messageClass}" data-message-id="${msg.id}">
                     ${!isMyMessage ? `<div class="message-avatar"><img src="${avatarUrl}" alt="${nome}"></div>` : ''}
-                    <div class="message-block">
-                        <div class="message-author-header">
-                            <strong>${nome}</strong>
-                            <span>${time}</span>
+                    
+                    <div class="message-content-wrapper">
+                        ${messageActions} <div class="message-block">
+                            <div class="message-author-header">
+                                <strong>${nome}</strong>
+                                <span>${time}</span>
+                            </div>
+                            <div class="message-content">${msg.conteudo}</div>
                         </div>
-                        <div class="message-content">${msg.conteudo}</div>
                     </div>
-                </div>
+                    </div>
             `;
         }).join('');
 
@@ -358,7 +461,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         conversas.forEach(convo => {
-             // Usa a função auxiliar para criar o card
              const convoCard = createConversationCardElement(convo);
              elements.conversationsList.appendChild(convoCard);
         });
@@ -377,11 +479,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     function renderAvailableUsers() {
-        // Usa a variável global userFriends carregada pelo principal.js
         elements.newConvoUserList.innerHTML = userFriends
-            .filter(f => !conversas.some(c => c.outroUsuarioId === f.usuarioId)) // Filtra quem já está na lista de conversas
+            .filter(f => !conversas.some(c => c.outroUsuarioId === f.usuarioId)) 
             .map(friend => {
-                // 'friend' aqui é o AmigoDTO do AmizadeService
                 const avatarUrl = friend.fotoPerfil ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` : defaultAvatarUrl;
                 return `
                     <div class="user-list-item user-card" 
@@ -439,6 +539,24 @@ document.addEventListener("DOMContentLoaded", () => {
                     const name = item.dataset.userName.toLowerCase();
                     item.style.display = name.includes(query) ? 'flex' : 'none';
                 });
+            });
+        }
+
+        if (elements.chatMessagesContainer) {
+            elements.chatMessagesContainer.addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.btn-edit-msg');
+                if (editBtn) {
+                    const messageId = editBtn.dataset.messageId;
+                    handleEditMessage(messageId);
+                    return;
+                }
+
+                const deleteBtn = e.target.closest('.btn-delete-msg');
+                if (deleteBtn) {
+                    const messageId = deleteBtn.dataset.messageId;
+                    handleDeleteMessage(messageId);
+                    return;
+                }
             });
         }
     }
