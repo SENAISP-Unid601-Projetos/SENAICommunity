@@ -42,6 +42,12 @@ public class UsuarioService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    public UsuarioSaidaDTO buscarUsuarioPorId(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o ID: " + id));
+        return new UsuarioSaidaDTO(usuario);
+    }
+
     /**
      * método público para buscar usuário por email.
      * necessário para o CurtidaController.

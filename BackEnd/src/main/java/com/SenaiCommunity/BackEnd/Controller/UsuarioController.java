@@ -30,6 +30,12 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioDTO);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioSaidaDTO> getUsuarioPorId(@PathVariable Long id) {
+        UsuarioSaidaDTO usuarioDTO = usuarioService.buscarUsuarioPorId(id);
+        return ResponseEntity.ok(usuarioDTO);
+    }
+
     @PutMapping("/me")
     public ResponseEntity<UsuarioSaidaDTO> atualizarMeuUsuario(@RequestBody UsuarioAtualizacaoDTO dto, Authentication authentication) {
         UsuarioSaidaDTO usuarioAtualizadoDTO = usuarioService.atualizarUsuarioLogado(authentication, dto);

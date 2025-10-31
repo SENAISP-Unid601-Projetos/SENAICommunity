@@ -1886,3 +1886,56 @@ html::-webkit-scrollbar-thumb:hover {
   background-color: var(--text-secondary); /* Cor ao passar o mouse */
 }
 
+/* --- ESTILOS PARA LINKS DE PERFIL --- */
+
+/* Link no cabeçalho do post */
+.post-author-details-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+}
+.post-author-details-link:hover .post-author-info strong {
+    text-decoration: underline;
+}
+
+/* Link no comentário (avatar e nome) */
+.comment-author-link {
+    text-decoration: none;
+    color: inherit;
+}
+.comment-author-link:hover .comment-author {
+    text-decoration: underline;
+    color: var(--text-primary);
+}
+
+/* Link no card de usuário (usado em 'amizades.html' e 'buscar_amigos.html') */
+a.user-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+a.user-card-link:hover h4 {
+    text-decoration: underline;
+}
+.user-card {
+    display: flex; /* Garante que o layout do card-usuário se mantenha */
+    align-items: center;
+}
+
+/* Link na lista de amigos online (sidebar) */
+.friend-item-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-grow: 1; /* Ocupa o espaço e empurra o status online para a direita */
+    text-decoration: none;
+    color: inherit;
+    min-width: 0; /* Corrige problemas de flexbox */
+}
+.friend-item-link .friend-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.friend-item-link:hover .friend-name {
+    text-decoration: underline;
+}

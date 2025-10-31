@@ -53,6 +53,7 @@ let friendsLoaded = false;
 let latestOnlineEmails = [];
 
 
+
 // Torna as variáveis e funções essenciais acessíveis globalmente
 window.stompClient = stompClient;
 window.currentUser = currentUser;
@@ -284,22 +285,32 @@ async function fetchInitialOnlineFriends() {
 
 function atualizarStatusDeAmigosNaUI() {
     if (!globalElements.onlineFriendsList) return;
-    if (!friendsLoaded) {
+    if (!friendsLoaded) { //
         globalElements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
         return;
     }
+
+    // Voltamos a filtrar a lista 'userFriends' usando 'latestOnlineEmails'
     const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email)); //
     globalElements.onlineFriendsList.innerHTML = '';
+    
     if (onlineFriends.length === 0) {
         globalElements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
     } else {
         onlineFriends.forEach(friend => {
             const friendElement = document.createElement('div');
             friendElement.className = 'friend-item';
-            const friendAvatar = friend.fotoPerfil ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` : defaultAvatarUrl;
+
+            // Lógica de avatar original deste arquivo
+            const friendAvatar = friend.fotoPerfil ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` : defaultAvatarUrl; //
+            
+            // --- CORREÇÃO AQUI ---
+            // Usamos 'friend.idUsuario' que deve estar disponível no DTO de 'userFriends'
             friendElement.innerHTML = `
-                <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}"></div>
-                <span class="friend-name">${friend.nome}</span>
+                <a href="perfil.html?id=${friend.idUsuario}" class="friend-item-link">
+                    <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${defaultAvatarUrl}';"></div>
+                    <span class="friend-name">${friend.nome}</span>
+                </a>
                 <div class="status online"></div>
             `;
             globalElements.onlineFriendsList.appendChild(friendElement);
@@ -658,12 +669,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 </div>`;
         }
+        
+        // --- ALTERAÇÃO AQUI ---
+        // Adicionamos a tag <a> envolvendo os detalhes do autor
         postElement.innerHTML = `
             <div class="post-header">
-                <div class="post-author-details">
-                    <div class="post-author-avatar"><img src="${autorAvatar}" alt="${autorNome}" onerror="this.src='${defaultAvatarUrl}';"></div>
-                    <div class="post-author-info"><strong>${autorNome}</strong><span>${dataFormatada}</span></div>
-                </div>
+                <a href="perfil.html?id=${autorIdDoPost}" class="post-author-details-link">
+                    <div class="post-author-details">
+                        <div class="post-author-avatar"><img src="${autorAvatar}" alt="${autorNome}" onerror="this.src='${defaultAvatarUrl}';"></div>
+                        <div class="post-author-info"><strong>${autorNome}</strong><span>${dataFormatada}</span></div>
+                    </div>
+                </a>
                 ${optionsMenu}
             </div>
             <div class="post-content"><p>${post.conteudo}</p></div>
@@ -701,12 +717,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         ${isPostOwner ? `<button onclick="window.highlightComment(${comment.id})"><i class="fas fa-star"></i> ${comment.destacado ? "Remover Destaque" : "Destacar"}</button>` : ""}
                     </div>`;
         }
+        
+        // --- ALTERAÇÕES AQUI ---
+        // Adicionamos tags <a> ao redor do avatar e do nome
         return `
                 <div class="comment-container">
                     <div class="comment ${comment.destacado ? "destacado" : ""}" id="comment-${comment.id}">
-                        <div class="comment-avatar"><img src="${commentAuthorAvatar}" alt="Avatar de ${commentAuthorName}"></div>
+                        <a href="perfil.html?id=${autorIdDoComentario}" class="comment-author-link">
+                            <div class="comment-avatar"><img src="${commentAuthorAvatar}" alt="Avatar de ${commentAuthorName}" onerror="this.src='${defaultAvatarUrl}';"></div>
+                        </a>
                         <div class="comment-body">
-                            <span class="comment-author">${commentAuthorName}</span>
+                            <a href="perfil.html?id=${autorIdDoComentario}" class="comment-author-link">
+                                <span class="comment-author">${commentAuthorName}</span>
+                            </a>
                             <p class="comment-content">${comment.conteudo}</p>
                         </div>
                         ${optionsMenu}

@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let friendsLoaded = false;
     let latestOnlineEmails = [];
     
+    
     // Variáveis globais para Posts (transportadas de principal.js)
     let selectedFilesForEdit = [];
     let urlsParaRemover = [];
@@ -119,31 +120,62 @@ document.addEventListener('DOMContentLoaded', () => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`;
 
         try {
-            const response = await axios.get(`${backendUrl}/usuarios/me`);
-            currentUser = response.data;
-            window.currentUser = currentUser; // Expor globalmente para funções window.*
+            // 1. Busca o USUÁRIO LOGADO (para o topbar, sidebar e saber quem "eu" sou)
+            const responseMe = await axios.get(`${backendUrl}/usuarios/me`);
+            currentUser = responseMe.data;
+            window.currentUser = currentUser; 
+            updateUIWithUserData(currentUser); // Atualiza topbar e sidebar
 
-            updateUIWithUserData(currentUser);
-            populateProfileData(currentUser);
+            // 2. Conecta ao WebSocket
+            connectWebSocket();
             
-            connectWebSocket(); // Conecta ao WebSocket
-            
-            // Funções carregadas na inicialização (transportadas de principal.js)
+            // 3. Funções globais (notificações, amigos online, etc.)
             await fetchFriends();
             await fetchInitialOnlineFriends();
             atualizarStatusDeAmigosNaUI();
             fetchNotifications();
-            fetchAndUpdateUnreadCount(); // NOVO
-            
-            // Função específica da página de perfil
-            fetchUserPosts(currentUser.id); // NOVO
+            fetchAndUpdateUnreadCount(); 
 
+            // 4. LÓGICA DE CARREGAMENTO DE PERFIL
+            const urlParams = new URLSearchParams(window.location.search);
+            const profileId = urlParams.get('id');
+
+            let profileUser;
+
+            if (profileId && profileId != currentUser.id) {
+                // Estamos vendo o perfil de OUTRA PESSOA
+                try {
+                    const responseProfile = await axios.get(`${backendUrl}/usuarios/${profileId}`);
+                    profileUser = responseProfile.data;
+                    // Esconde o botão de editar perfil da página
+                    if(elements.editProfileBtnPage) elements.editProfileBtnPage.style.display = 'none';
+                } catch (error) {
+                    console.error("Erro ao buscar perfil do usuário:", error);
+                    // Se o usuário não for encontrado, redireciona para o nosso próprio perfil
+                    profileUser = currentUser;
+                    if(elements.editProfileBtnPage) elements.editProfileBtnPage.style.display = 'inline-block';
+                }
+            } else {
+                // Estamos vendo o NOSSO PRÓPRIO perfil (seja por /perfil.html ou /perfil.html?id=meu_id)
+                profileUser = currentUser;
+                // Mostra o botão de editar perfil da página
+                if(elements.editProfileBtnPage) elements.editProfileBtnPage.style.display = 'inline-block';
+            }
+
+            // 5. Preenche a página com os dados do perfil (seja nosso ou de outro)
+            populateProfileData(profileUser);
+            fetchUserPosts(profileUser.id); // Busca posts do ID do perfil carregado
+
+            // 6. Configura todos os listeners (incluindo os modais de edição, que só funcionarão se for o nosso perfil)
             setupEventListeners();
             setInitialTheme();
+
         } catch (error) {
             console.error("ERRO CRÍTICO NA INICIALIZAÇÃO DO PERFIL:", error);
-            localStorage.removeItem('token');
-            window.location.href = 'login.html';
+            if (error.response && error.response.status === 401) {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+            }
         }
     }
 
@@ -177,41 +209,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchInitialOnlineFriends() {
-        try {
-            const response = await axios.get(`${backendUrl}/api/amizades/online`);
-            const amigosOnlineDTOs = response.data;
-            latestOnlineEmails = amigosOnlineDTOs.map(amigo => amigo.email);
-        } catch (error) {
-            console.error("Erro ao buscar status inicial de amigos online:", error);
-            latestOnlineEmails = [];
-        }
+    try {
+        const response = await axios.get(`${backendUrl}/api/amizades/online`); //
+        const amigosOnlineDTOs = response.data;
+        latestOnlineEmails = amigosOnlineDTOs.map(amigo => amigo.email); //
+    } catch (error) {
+        console.error("Erro ao buscar status inicial de amigos online:", error);
+        latestOnlineEmails = [];
     }
+}
 
     function atualizarStatusDeAmigosNaUI() {
-        if (!elements.onlineFriendsList) return;
-        if (!friendsLoaded) {
-            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
-            return;
-        }
-        const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
-        elements.onlineFriendsList.innerHTML = '';
-        if (onlineFriends.length === 0) {
-            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
-        } else {
-            onlineFriends.forEach(friend => {
-                const friendElement = document.createElement('div');
-                friendElement.className = 'friend-item';
-                // Assumindo que a foto de perfil está em 'urlFotoPerfil' como no currentUser
-                const friendAvatar = friend.urlFotoPerfil ? `${backendUrl}${friend.urlFotoPerfil}` : defaultAvatarUrl;
-                friendElement.innerHTML = `
+    if (!elements.onlineFriendsList) return; //
+    if (!friendsLoaded) {
+        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>'; //
+        return;
+    }
+
+    // Voltamos a filtrar a lista 'userFriends' usando 'latestOnlineEmails'
+    const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email)); //
+    elements.onlineFriendsList.innerHTML = '';
+
+    if (onlineFriends.length === 0) {
+        elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>'; //
+    } else {
+        onlineFriends.forEach(friend => {
+            const friendElement = document.createElement('div');
+            friendElement.className = 'friend-item'; //
+
+            // Lógica de avatar original deste arquivo
+            const friendAvatar = friend.urlFotoPerfil ? `${backendUrl}${friend.urlFotoPerfil}` : defaultAvatarUrl; //
+
+            // --- CORREÇÃO AQUI ---
+            // Usamos 'friend.idUsuario' que deve estar disponível no DTO de 'userFriends'
+            friendElement.innerHTML = `
+                <a href="perfil.html?id=${friend.idUsuario}" class="friend-item-link">
                     <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${defaultAvatarUrl}';"></div>
                     <span class="friend-name">${friend.nome}</span>
-                    <div class="status online"></div>
-                `;
-                elements.onlineFriendsList.appendChild(friendElement);
-            });
-        }
+                </a>
+                <div class="status online"></div>
+            `;
+            elements.onlineFriendsList.appendChild(friendElement); //
+        });
     }
+}
 
     // --- FUNÇÕES DE UI (Geral) ---
 
@@ -574,10 +615,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         postElement.innerHTML = `
             <div class="post-header">
-                <div class="post-author-details">
-                    <div class="post-author-avatar"><img src="${autorAvatar}" alt="${autorNome}" onerror="this.src='${defaultAvatarUrl}';"></div>
-                    <div class="post-author-info"><strong>${autorNome}</strong><span>${dataFormatada}</span></div>
-                </div>
+                <a href="perfil.html?id=${autorIdDoPost}" class="post-author-details-link">
+                    <div class="post-author-details">
+                        <div class="post-author-avatar"><img src="${autorAvatar}" alt="${autorNome}" onerror="this.src='${defaultAvatarUrl}';"></div>
+                        <div class="post-author-info"><strong>${autorNome}</strong><span>${dataFormatada}</span></div>
+                    </div>
+                </a>
                 ${optionsMenu}
             </div>
             <div class="post-content"><p>${post.conteudo}</p></div>
@@ -621,9 +664,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
                 <div class="comment-container">
                     <div class="comment ${comment.destacado ? "destacado" : ""}" id="comment-${comment.id}">
-                        <div class="comment-avatar"><img src="${commentAuthorAvatar}" alt="Avatar de ${commentAuthorName}" onerror="this.src='${defaultAvatarUrl}';"></div>
+                        <a href="perfil.html?id=${autorIdDoComentario}" class="comment-author-link">
+                            <div class="comment-avatar">
+                                <img src="${commentAuthorAvatar}" alt="Avatar de ${commentAuthorName}" onerror="this.src='${defaultAvatarUrl}';">
+                            </div>
+                        </a>
                         <div class="comment-body">
-                            <span class="comment-author">${commentAuthorName}</span>
+                            <a href="perfil.html?id=${autorIdDoComentario}" class="comment-author-link">
+                                <span class="comment-author">${commentAuthorName}</span>
+                            </a>
                             <p class="comment-content">${comment.conteudo}</p>
                         </div>
                         ${optionsMenu}
