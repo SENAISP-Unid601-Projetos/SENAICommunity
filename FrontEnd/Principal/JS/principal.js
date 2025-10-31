@@ -174,11 +174,10 @@ function connectWebSocket() {
     const headers = { Authorization: `Bearer ${jwtToken}` };
     
     stompClient.connect(headers, (frame) => {
-        console.log("CONECTADO AO WEBSOCKET");
         window.stompClient = stompClient; 
 
         // INSCRIÇÃO GLOBAL: Notificações
-        stompClient.subscribe(`/user/${currentUser.email}/queue/notifications`, (message) => {
+        stompClient.subscribe(`/user/queue/notifications`, (message) => {
             console.log("NOTIFICAÇÃO RECEBIDA!", message.body);
             const newNotification = JSON.parse(message.body);
             showNotification(`Nova notificação: ${newNotification.mensagem}`, 'info');
@@ -205,19 +204,13 @@ function connectWebSocket() {
         document.dispatchEvent(new CustomEvent('globalScriptsLoaded', { 
             detail: { stompClient: window.stompClient, currentUser } 
         }));
-
-        stompClient.subscribe(`/user/${currentUser.email}/queue/contagem`, (message) => {
-            const count = JSON.parse(message.body);
-            updateMessageBadge(count);
-        });
         
         // Dispara evento para que scripts de página (feed, chat) façam suas inscrições
         document.dispatchEvent(new CustomEvent('webSocketConnected', { 
             detail: { stompClient } 
         }));
 
-        stompClient.subscribe(`/user/${currentUser.email}/queue/amizades`, (message) => {
-            console.log("ATUALIZAÇÃO DE AMIZADE RECEBIDA!", message.body);
+        stompClient.subscribe(`/user/queue/amizades`, (message) => {
             fetchFriends().then(() => {
             atualizarStatusDeAmigosNaUI();
                 document.dispatchEvent(new CustomEvent('friendsListUpdated'));
@@ -225,10 +218,8 @@ function connectWebSocket() {
         });
 
        // INSCRIÇÃO GLOBAL: Contagem de Mensagens
-        stompClient.subscribe(`/user/${currentUser.email}/queue/contagem`, (message) => {
-            // --- LOG DE DEBUG 4 ---
+        stompClient.subscribe(`/user/queue/contagem`, (message) => {
             const count = JSON.parse(message.body);
-            console.log("CONTAGEM RECEBIDA! Novo número:", count);
             updateMessageBadge(count);
         });
         fetchAndUpdateUnreadCount();

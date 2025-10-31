@@ -58,11 +58,10 @@ public class NotificacaoService {
 
         NotificacaoSaidaDTO dto = toDTO(notificacaoSalva);
 
-        messagingTemplate.convertAndSendToUser(
-                destinatario.getEmail(),
-                "/queue/notifications",
-                dto
-        );
+        String destination = "/user/" + destinatario.getEmail() + "/queue/notifications";
+
+        // Usa convertAndSend com o destino completo
+        messagingTemplate.convertAndSend(destination, dto);
     }
 
     // Sobrecarga para notificações gerais, que não quebrarão mais.

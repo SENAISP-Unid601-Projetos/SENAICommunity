@@ -9,12 +9,15 @@ import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.AmizadeRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +34,21 @@ public class AmizadeService {
 
     @Autowired
     private UserStatusService userStatusService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    private void notificarAtualizacaoDeAmizade(Usuario usuario) {
+        if (usuario == null || usuario.getEmail() == null) return;
+
+        Map<String, String> payload = Collections.singletonMap("status", "atualizado");
+
+        // Constrói o destino manualmente para corresponder à inscrição do frontend
+        String destination = "/user/" + usuario.getEmail() + "/queue/amizades";
+
+        // Usa convertAndSend com o destino completo
+        messagingTemplate.convertAndSend(destination, payload);
+    }
 
     @Transactional
     public void enviarSolicitacao(Usuario solicitante, Long idSolicitado) {
@@ -58,6 +76,7 @@ public class AmizadeService {
                 "PEDIDO_AMIZADE",
                 solicitacaoSalva.getId()
         );
+        notificarAtualizacaoDeAmizade(solicitado);
     }
 
     @Transactional
@@ -74,6 +93,8 @@ public class AmizadeService {
         amizadeRepository.save(amizade);
 
         notificacaoService.criarNotificacao(amizade.getSolicitante(), amizade.getSolicitado().getNome() + " aceitou seu pedido de amizade.");
+        notificarAtualizacaoDeAmizade(amizade.getSolicitante());
+        notificarAtualizacaoDeAmizade(amizade.getSolicitado());
     }
 
     @Transactional
@@ -89,7 +110,13 @@ public class AmizadeService {
             throw new SecurityException("Ação não permitida.");
         }
 
+        Usuario solicitante = amizade.getSolicitante();
+        Usuario solicitado = amizade.getSolicitado();
+
         amizadeRepository.delete(amizade);
+
+        notificarAtualizacaoDeAmizade(solicitante);
+        notificarAtualizacaoDeAmizade(solicitado);
     }
 
     public List<SolicitacaoAmizadeDTO> listarSolicitacoesPendentes(Usuario usuarioLogado) {

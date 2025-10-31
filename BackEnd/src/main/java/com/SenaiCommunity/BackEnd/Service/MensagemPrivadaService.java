@@ -8,6 +8,7 @@ import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.MensagemPrivadaRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,23 @@ public class MensagemPrivadaService {
 
     @Autowired
     private NotificacaoService notificacaoService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+
+    private void notificarAtualizacaoContagemNaoLida(Usuario usuario) {
+        if (usuario == null || usuario.getEmail() == null) return;
+
+        long contagem = mensagemPrivadaRepository.countByDestinatarioAndLidaIsFalse(usuario);
+
+        // Constrói o destino manualmente para corresponder à inscrição do frontend
+        String destination = "/user/" + usuario.getEmail() + "/queue/contagem";
+
+        // Usa convertAndSend com o destino completo
+        messagingTemplate.convertAndSend(destination, contagem);
+    }
+
 
     private MensagemPrivadaSaidaDTO toDTO(MensagemPrivada mensagem) {
         return MensagemPrivadaSaidaDTO.builder()
@@ -62,11 +80,12 @@ public class MensagemPrivadaService {
         MensagemPrivada novaMensagem = toEntity(dto, remetente, destinatario);
         MensagemPrivada mensagemSalva = mensagemPrivadaRepository.save(novaMensagem);
 
-        // Adiciona a notificação
         notificacaoService.criarNotificacao(
                 destinatario,
                 "Você recebeu uma nova mensagem de " + remetente.getNome()
         );
+
+        notificarAtualizacaoContagemNaoLida(destinatario);
 
         return toDTO(mensagemSalva);
     }
@@ -123,8 +142,9 @@ public class MensagemPrivadaService {
         Usuario remetente = usuarioRepository.findById(idRemetente)
                 .orElseThrow(() -> new NoSuchElementException("Remetente não encontrado com ID: " + idRemetente));
 
-        // Marca as mensagens onde o usuário logado é o destinatário e o outro é o remetente
         mensagemPrivadaRepository.marcarComoLidas(usuarioLogado, remetente);
+
+        notificarAtualizacaoContagemNaoLida(usuarioLogado);
     }
 
     public MensagemPrivadaSaidaDTO editarMensagemPrivada(Long id, String novoConteudo, String autorUsername) {
@@ -137,7 +157,7 @@ public class MensagemPrivadaService {
 
         mensagem.setConteudo(novoConteudo);
         MensagemPrivada mensagemSalva = mensagemPrivadaRepository.save(mensagem);
-        return toDTO(mensagemSalva); // Retorna o DTO
+        return toDTO(mensagemSalva);
     }
 
     public MensagemPrivadaSaidaDTO excluirMensagemPrivada(Long id, String autorUsername) {
@@ -149,16 +169,13 @@ public class MensagemPrivadaService {
         }
 
         mensagemPrivadaRepository.delete(mensagem);
-        return toDTO(mensagem); // Retorna o DTO da mensagem excluída
+        return toDTO(mensagem);
     }
 
     public List<MensagemPrivadaSaidaDTO> buscarMensagensPrivadas(Long user1, Long user2) {
         List<MensagemPrivada> mensagens = mensagemPrivadaRepository.findMensagensEntreUsuarios(user1, user2);
-        // Converte a lista de entidades para uma lista de DTOs antes de retornar
         return mensagens.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
-
-
 }
