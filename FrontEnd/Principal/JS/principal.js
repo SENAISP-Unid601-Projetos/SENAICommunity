@@ -129,11 +129,7 @@ async function initGlobal() {
         atualizarStatusDeAmigosNaUI();
         fetchNotifications();
         
-        // 5. Configura listeners globais
-        setupGlobalEventListeners();
-
-        // 6. Dispara um evento para scripts de página (como mensagem.js) saberem que está pronto
-     
+        setupGlobalEventListeners();     
 
     } catch (error) {
         console.error("ERRO CRÍTICO NA INICIALIZAÇÃO:", error);
@@ -179,10 +175,11 @@ function connectWebSocket() {
     
     stompClient.connect(headers, (frame) => {
         console.log("CONECTADO AO WEBSOCKET");
-        window.stompClient = stompClient; // Expõe o cliente conectado globalmente
+        window.stompClient = stompClient; 
 
         // INSCRIÇÃO GLOBAL: Notificações
         stompClient.subscribe(`/user/${currentUser.email}/queue/notifications`, (message) => {
+            console.log("NOTIFICAÇÃO RECEBIDA!", message.body);
             const newNotification = JSON.parse(message.body);
             showNotification(`Nova notificação: ${newNotification.mensagem}`, 'info');
             if (globalElements.notificationsList) {
@@ -205,7 +202,7 @@ function connectWebSocket() {
             atualizarStatusDeAmigosNaUI();
         });
 
-           document.dispatchEvent(new CustomEvent('globalScriptsLoaded', { 
+        document.dispatchEvent(new CustomEvent('globalScriptsLoaded', { 
             detail: { stompClient: window.stompClient, currentUser } 
         }));
 
@@ -219,7 +216,21 @@ function connectWebSocket() {
             detail: { stompClient } 
         }));
 
-        // Busca a contagem inicial ao conectar
+        stompClient.subscribe(`/user/${currentUser.email}/queue/amizades`, (message) => {
+            console.log("ATUALIZAÇÃO DE AMIZADE RECEBIDA!", message.body);
+            fetchFriends().then(() => {
+            atualizarStatusDeAmigosNaUI();
+                document.dispatchEvent(new CustomEvent('friendsListUpdated'));
+            });
+        });
+
+       // INSCRIÇÃO GLOBAL: Contagem de Mensagens
+        stompClient.subscribe(`/user/${currentUser.email}/queue/contagem`, (message) => {
+            // --- LOG DE DEBUG 4 ---
+            const count = JSON.parse(message.body);
+            console.log("CONTAGEM RECEBIDA! Novo número:", count);
+            updateMessageBadge(count);
+        });
         fetchAndUpdateUnreadCount();
     }, (error) => console.error("ERRO WEBSOCKET:", error));
 }
