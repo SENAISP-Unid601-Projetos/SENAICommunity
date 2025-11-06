@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/usuarios")
 @CrossOrigin(origins = "*")
-@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
+@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR') or hasRole('ADMIN')")
 public class UsuarioController {
 
     @Autowired
