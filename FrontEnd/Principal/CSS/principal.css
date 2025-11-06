@@ -1225,7 +1225,8 @@ body {
 }
 
 .modal-content .form-group input,
-.modal-content .form-group textarea {
+.modal-content .form-group textarea,
+.modal-content .form-group select {
   width: 100%;
   padding: 0.75rem;
   background-color: var(--bg-tertiary);
@@ -1233,6 +1234,7 @@ body {
   border-radius: 6px;
   color: var(--text-primary);
   font-size: 1rem;
+  font-family: 'Inter', sans-serif; /* Garante a fonte correta */
 }
 
 .modal-content .form-group textarea {
@@ -1938,4 +1940,22 @@ a.user-card-link:hover h4 {
 }
 .friend-item-link:hover .friend-name {
     text-decoration: underline;
+}
+
+/* --- Estilo para Selects dentro de Modais --- */
+.modal-content .form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* Seta customizada (usada no seu login/cadastro) */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    padding-right: 2.5rem; /* Espaço extra para a seta */
+}
+
+.modal-content .form-group select:invalid {
+    color: var(--text-secondary);
 }

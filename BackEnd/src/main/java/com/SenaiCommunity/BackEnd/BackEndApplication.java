@@ -13,6 +13,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.util.Set;
+
 
 @SpringBootApplication
 public class BackEndApplication {
@@ -49,23 +52,34 @@ public class BackEndApplication {
 		}
 	}
 
-	//Metodo para criar um usuario de teste
-//	@Bean
-//	public CommandLineRunner initTestUser(
-//			UsuarioRepository usuarioRepository,
-//			PasswordEncoder passwordEncoder
-//	) {
-//		return args -> {
-//			String email = "teste@teste.com";
-//			String senha = "senha123";
-//
-//			if (usuarioRepository.findByEmail(email).isEmpty()) {
-//				Professor professorteste = new Professor();
-//				professorteste.setEmail(email);
-//				professorteste.setSenha(passwordEncoder.encode(senha));
-//				usuarioRepository.save(professorteste);
-//				System.out.println("Usuário de teste criado: " + email);
-//			}
-//		};
-//	}
+	@Bean
+	public CommandLineRunner initTestUser(
+			UsuarioRepository usuarioRepository,
+			RoleRepository roleRepository, // Precisamos injetar o RoleRepository
+			PasswordEncoder passwordEncoder
+	) {
+		return args -> {
+			String email = "prof@teste.com";
+			String senha = "senha123";
+
+			if (usuarioRepository.findByEmail(email).isEmpty()) {
+				// 1. Busca a Role "PROFESSOR" que foi criada pelo DataInitializer
+				Role roleProfessor = roleRepository.findByNome("PROFESSOR")
+						.orElseThrow(() -> new RuntimeException("Role PROFESSOR não encontrada"));
+
+				// 2. Cria uma entidade Professor
+				Professor professorteste = new Professor();
+				professorteste.setNome("Professor Admin");
+				professorteste.setEmail(email);
+				professorteste.setSenha(passwordEncoder.encode(senha)); // Codifica a senha
+				professorteste.setTipoUsuario("PROFESSOR");
+				professorteste.setDataCadastro(LocalDateTime.now());
+				professorteste.setRoles(Set.of(roleProfessor)); // Define a Role
+
+				// 3. Salva o novo professor
+				usuarioRepository.save(professorteste);
+				System.out.println("Usuário PROFESSOR de teste criado: " + email);
+			}
+		};
+	}
 }

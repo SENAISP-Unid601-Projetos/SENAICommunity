@@ -246,6 +246,64 @@
             </form>
         </div>
     </div>
+
+    <div id="create-vaga-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h3>Publicar Nova Vaga</h3>
+              <button class="close-modal-btn" id="cancel-create-vaga-btn">&times;</button>
+          </div>
+          <form id="create-vaga-form">
+              <div class="modal-body">
+                  <div class="form-group">
+                      <label for="vaga-titulo">Título da Vaga</label>
+                      <input type="text" id="vaga-titulo" required placeholder="Ex: Desenvolvedor(a) Java Jr.">
+                  </div>
+                  <div class="form-group">
+                      <label for="vaga-empresa">Empresa</label>
+                      <input type="text" id="vaga-empresa" required placeholder="Ex: Tech Solutions Inc.">
+                  </div>
+                  <div class="form-group">
+                      <label for="vaga-descricao">Descrição da Vaga</label>
+                      <textarea id="vaga-descricao" rows="5" required placeholder="Fale sobre a vaga, requisitos..."></textarea>
+                  </div>
+                  
+                  <div class="form-group-row" style="display: flex; gap: 1rem;">
+                      <div class="form-group" style="flex: 1;">
+                          <label for="vaga-nivel">Nível</label>
+                          <select id="vaga-nivel" required>
+                              <option value="JUNIOR">Júnior</option>
+                              <option value="PLENO">Pleno</option>
+                              <option value="SENIOR">Sênior</option>
+                          </select>
+                      </div>
+                      <div class="form-group" style="flex: 1;">
+                          <label for="vaga-localizacao">Localização</label>
+                          <select id="vaga-localizacao" required>
+                              <option value="PRESENCIAL">Presencial</option>
+                              <option value="REMOTO">Remoto</option>
+                              <option value="HIBRIDO">Híbrido</option>
+                          </select>
+                      </div>
+                  </div>
+
+                  <div class="form-group">
+                      <label for="vaga-tipo">Tipo de Contratação</label>
+                      <select id="vaga-tipo" required>
+                          <option value="ESTAGIO">Estágio</option>
+                          <option value="TRAINEE">Trainee</option>
+                          <option value="MEIO_PERIODO">Meio Período</option>
+                          <option value="TEMPO_INTEGRAL">Tempo Integral</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="modal-footer">
+                  <button type="submit" class="btn btn-primary">Publicar Vaga</button>
+              </div>
+          </form>
+      </div>
+  </div>
+  <div id="edit-profile-modal" class="modal-overlay" style="display: none;">
   
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
