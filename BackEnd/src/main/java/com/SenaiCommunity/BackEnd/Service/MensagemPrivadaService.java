@@ -5,6 +5,7 @@ import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.MensagemPrivada;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
+import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.MensagemPrivadaRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,16 +33,16 @@ public class MensagemPrivadaService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private FiltroProfanidadeService filtroProfanidade;
 
     private void notificarAtualizacaoContagemNaoLida(Usuario usuario) {
         if (usuario == null || usuario.getEmail() == null) return;
 
         long contagem = mensagemPrivadaRepository.countByDestinatarioAndLidaIsFalse(usuario);
 
-        // Constrói o destino manualmente para corresponder à inscrição do frontend
         String destination = "/user/" + usuario.getEmail() + "/queue/contagem";
 
-        // Usa convertAndSend com o destino completo
         messagingTemplate.convertAndSend(destination, contagem);
     }
 
@@ -72,6 +73,11 @@ public class MensagemPrivadaService {
 
     @Transactional
     public MensagemPrivadaSaidaDTO salvarMensagemPrivada(MensagemPrivadaEntradaDTO dto, String remetenteUsername) {
+
+        if (filtroProfanidade.contemProfanidade(dto.getConteudo())) {
+            throw new ConteudoImproprioException("Sua mensagem contém texto não permitido.");
+        }
+
         Usuario remetente = usuarioRepository.findByEmail(remetenteUsername)
                 .orElseThrow(() -> new NoSuchElementException("Remetente não encontrado"));
         Usuario destinatario = usuarioRepository.findById(dto.getDestinatarioId())
@@ -103,6 +109,7 @@ public class MensagemPrivadaService {
 
         return ultimasMensagens.stream()
                 .map(mensagem -> {
+
                     Usuario outroUsuario;
                     if (mensagem.getRemetente().getId().equals(usuarioLogado.getId())) {
                         outroUsuario = mensagem.getDestinatario();
@@ -148,6 +155,10 @@ public class MensagemPrivadaService {
     }
 
     public MensagemPrivadaSaidaDTO editarMensagemPrivada(Long id, String novoConteudo, String autorUsername) {
+        if (filtroProfanidade.contemProfanidade(novoConteudo)) {
+            throw new ConteudoImproprioException("Sua edição contém texto não permitido.");
+        }
+
         MensagemPrivada mensagem = mensagemPrivadaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
 

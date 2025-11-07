@@ -6,11 +6,11 @@ import com.SenaiCommunity.BackEnd.DTO.PostagemSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.ArquivoMidia;
 import com.SenaiCommunity.BackEnd.Entity.Postagem;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
+import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,10 +35,16 @@ public class PostagemService {
     @Autowired
     private ArquivoMidiaService midiaService;
 
+    @Autowired
+    private FiltroProfanidadeService filtroProfanidade;
     @Transactional
     public PostagemSaidaDTO criarPostagem(String autorUsername, PostagemEntradaDTO dto, List<MultipartFile> arquivos) {
         Usuario autor = usuarioRepository.findByEmail(autorUsername)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        if (filtroProfanidade.contemProfanidade(dto.getConteudo())) {
+            throw new ConteudoImproprioException("Sua postagem contém texto não permitido.");
+        }
 
         // Lógica de conversão DTO -> Entidade
         Postagem novaPostagem = toEntity(dto, autor);
@@ -72,6 +78,10 @@ public class PostagemService {
 
         if (!postagem.getAutor().getEmail().equals(username)) {
             throw new SecurityException("Você não pode editar esta postagem.");
+        }
+
+        if (filtroProfanidade.contemProfanidade(dto.getConteudo())) {
+            throw new ConteudoImproprioException("Sua edição contém texto não permitido.");
         }
 
         // 1. Atualiza o conteúdo do texto

@@ -95,7 +95,6 @@ public class UsuarioService {
 
         Usuario usuario = getUsuarioFromAuthentication(authentication);
         String nomeArquivo = salvarFoto(foto);
-        // Assumindo que o campo é 'urlFotoPerfil'. Se for 'fotoPerfil', ajuste aqui.
         usuario.setFotoPerfil(nomeArquivo);
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
