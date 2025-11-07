@@ -1,6 +1,5 @@
 package com.SenaiCommunity.BackEnd.Service;
 
-import com.SenaiCommunity.BackEnd.DTO.AmigoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioAtualizacaoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioBuscaDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;
@@ -8,7 +7,6 @@ import com.SenaiCommunity.BackEnd.Entity.Amizade;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Repository.AmizadeRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,9 +16,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;

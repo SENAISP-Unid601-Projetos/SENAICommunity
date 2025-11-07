@@ -8,6 +8,7 @@ import com.SenaiCommunity.BackEnd.Entity.Role;
 import com.SenaiCommunity.BackEnd.Repository.AlunoRepository;
 import com.SenaiCommunity.BackEnd.Repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -114,16 +115,36 @@ public class AlunoService {
         return toDTO(aluno);
     }
 
-    public AlunoSaidaDTO atualizarAluno(Long id, AlunoEntradaDTO dto) {
+    @Transactional
+    public AlunoSaidaDTO atualizarAluno(Long id, AlunoEntradaDTO dto, MultipartFile foto) throws IOException {
+        // 1. Encontra o aluno existente
         Aluno aluno = alunoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Aluno não encontrado"));
 
         aluno.setNome(dto.getNome());
         aluno.setEmail(dto.getEmail());
-        aluno.setSenha(passwordEncoder.encode(dto.getSenha()));
-        aluno.setFotoPerfil(dto.getFotoPerfil());
         aluno.setCurso(dto.getCurso());
         aluno.setPeriodo(dto.getPeriodo());
+        aluno.setDataNascimento(dto.getDataNascimento());
+
+        if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
+            aluno.setSenha(passwordEncoder.encode(dto.getSenha()));
+        }
+
+        if (foto != null && !foto.isEmpty()) {
+            String oldFotoUrl = aluno.getFotoPerfil();
+
+            String newFotoUrl = midiaService.upload(foto);
+            aluno.setFotoPerfil(newFotoUrl);
+
+            if (oldFotoUrl != null && !oldFotoUrl.isBlank()) {
+                try {
+                    midiaService.deletar(oldFotoUrl);
+                } catch (Exception e) {
+                    System.err.println("AVISO: Falha ao deletar foto antiga do Cloudinary: " + oldFotoUrl);
+                }
+            }
+        }
 
         Aluno atualizado = alunoRepository.save(aluno);
         return toDTO(atualizado);

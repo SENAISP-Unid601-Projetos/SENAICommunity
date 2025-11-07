@@ -8,6 +8,7 @@ import com.SenaiCommunity.BackEnd.Entity.Role;
 import com.SenaiCommunity.BackEnd.Repository.ProfessorRepository;
 import com.SenaiCommunity.BackEnd.Repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -113,17 +114,35 @@ public class ProfessorService {
         return toDTO(professor);
     }
 
-    public ProfessorSaidaDTO atualizarProfessor(Long id, ProfessorEntradaDTO dto) {
+    @Transactional
+    public ProfessorSaidaDTO atualizarProfessor(Long id, ProfessorEntradaDTO dto, MultipartFile foto) throws IOException {
         Professor professor = professorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Professor não encontrado"));
 
         professor.setNome(dto.getNome());
         professor.setEmail(dto.getEmail());
-        professor.setSenha(passwordEncoder.encode(dto.getSenha()));
-        professor.setFotoPerfil(dto.getFotoPerfil());
         professor.setFormacao(dto.getFormacao());
         professor.setCodigoSn(dto.getCodigoSn());
         professor.setDataNascimento(dto.getDataNascimento());
+
+        if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
+            professor.setSenha(passwordEncoder.encode(dto.getSenha()));
+        }
+
+        if (foto != null && !foto.isEmpty()) {
+            String oldFotoUrl = professor.getFotoPerfil();
+
+            String newFotoUrl = midiaService.upload(foto);
+            professor.setFotoPerfil(newFotoUrl);
+
+            if (oldFotoUrl != null && !oldFotoUrl.isBlank()) {
+                try {
+                    midiaService.deletar(oldFotoUrl);
+                } catch (Exception e) {
+                    System.err.println("AVISO: Falha ao deletar foto antiga do Cloudinary: " + oldFotoUrl);
+                }
+            }
+        }
 
         Professor atualizado = professorRepository.save(professor);
         return toDTO(atualizado);
