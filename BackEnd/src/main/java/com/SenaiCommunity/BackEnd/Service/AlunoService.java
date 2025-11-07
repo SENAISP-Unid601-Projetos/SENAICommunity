@@ -8,17 +8,12 @@ import com.SenaiCommunity.BackEnd.Entity.Role;
 import com.SenaiCommunity.BackEnd.Repository.AlunoRepository;
 import com.SenaiCommunity.BackEnd.Repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +32,8 @@ public class AlunoService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    @Autowired
+    private ArquivoMidiaService midiaService;
 
     // Métodos de conversão direto no service:
 
@@ -67,10 +62,8 @@ public class AlunoService {
 
         String nomeFoto = aluno.getFotoPerfil();
         if (nomeFoto != null && !nomeFoto.isBlank()) {
-            // Se o aluno TEM uma foto, montamos a URL para o ArquivoController.
-            dto.setFotoPerfil("/api/arquivos/" + nomeFoto);
+            dto.setFotoPerfil(nomeFoto);
         } else {
-            // Se o aluno NÃO TEM foto, usamos a URL do arquivo estático padrão.
             dto.setFotoPerfil("/images/default-avatar.jpg");
         }
 
@@ -94,11 +87,10 @@ public class AlunoService {
 
         if (foto != null && !foto.isEmpty()) {
             try {
-                // A chamada para salvarFoto agora usa a nova lógica
-                String fileName = salvarFoto(foto);
-                aluno.setFotoPerfil(fileName);
+                String urlCloudinary = midiaService.upload(foto);
+                aluno.setFotoPerfil(urlCloudinary);
             } catch (IOException e) {
-                throw new RuntimeException("Erro ao salvar a foto do aluno", e);
+                throw new RuntimeException("Erro ao salvar a foto do aluno: " + e.getMessage(), e);
             }
         } else {
             aluno.setFotoPerfil(null);
@@ -106,20 +98,6 @@ public class AlunoService {
 
         Aluno salvo = alunoRepository.save(aluno);
         return toDTO(salvo);
-    }
-
-    private String salvarFoto(MultipartFile foto) throws IOException {
-        String nomeArquivo = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());
-        Path diretorioDeUpload = Paths.get(uploadDir);
-
-        // Garante que o diretório de uploads exista
-        if (Files.notExists(diretorioDeUpload)) {
-            Files.createDirectories(diretorioDeUpload);
-        }
-
-        Path caminhoDoArquivo = diretorioDeUpload.resolve(nomeArquivo);
-        foto.transferTo(caminhoDoArquivo);
-        return nomeArquivo;
     }
 
 
