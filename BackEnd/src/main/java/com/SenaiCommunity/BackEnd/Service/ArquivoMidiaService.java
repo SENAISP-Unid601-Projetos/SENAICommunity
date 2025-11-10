@@ -18,12 +18,40 @@ public class ArquivoMidiaService {
     @Autowired
     private Cloudinary cloudinary;
 
+    private String getResourceType(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            return "raw"; // Tipo desconhecido/fallback
+        }
+        if (contentType.startsWith("image/")) {
+            return "image";
+        }
+        if (contentType.startsWith("video/")) {
+            return "video";
+        }
+        return "raw";
+    }
+
     public String upload(MultipartFile file) throws IOException {
 
         Map<String, Object> options = new HashMap<>();
-        options.put("resource_type", "auto");
 
-        options.put("moderation", "aws_rekognition_moderation:min_confidence:80");
+        // 1. Detecta o tipo primeiro
+        String resourceType = getResourceType(file);
+
+        // 2. Define o resource_type explicitamente (não mais "auto")
+        options.put("resource_type", resourceType);
+
+        // 3. LÓGICA CONDICIONAL PARA MODERAÇÃO
+        if ("image".equals(resourceType)) {
+
+            options.put("moderation", "webpurify");
+            //options.put("moderation", "aws_rekognition_moderation:min_confidence:80");
+
+        }else if ("video".equals(resourceType)) {
+            options.put("moderation", "google_video_moderation");
+            //options.put("moderation", "aws_rekognition_video_moderation:min_confidence:80");
+        }
 
         Map<?, ?> response;
         try {
@@ -39,24 +67,21 @@ public class ArquivoMidiaService {
             String status = (String) moderationData.get("status");
 
             if ("rejected".equals(status)) {
-
                 String publicId = (String) response.get("public_id");
-                String resourceType = (String) response.get("resource_type");
+                String respResourceType = (String) response.get("resource_type");
 
                 System.err.println("[MODERAÇÃO] Conteúdo REJEITADO detectado. Deletando: " + publicId);
 
                 try {
-                    // Tenta deletar o arquivo rejeitado
-                    cloudinary.uploader().destroy(publicId, Map.of("resource_type", resourceType));
+                    cloudinary.uploader().destroy(publicId, Map.of("resource_type", respResourceType));
                 } catch (IOException e) {
                     System.err.println("[MODERAÇÃO] Falha ao deletar arquivo rejeitado: " + publicId);
                 }
 
-                throw new ConteudoImproprioException("A mídia enviada contém conteúdo impróprio e foi bloqueada.");
+                throw new ConteudoImproprioException("A mídia enviada (imagem ou vídeo) contém conteúdo impróprio e foi bloqueada.");
             }
         }
 
-        // Se passou, retorna a URL segura
         return response.get("secure_url").toString();
     }
 
