@@ -362,6 +362,7 @@ body {
   border-radius: 6px;
   cursor: pointer;
   transition: var(--transition);
+  border-bottom: 0;
 }
 
 .friend-item:hover {
@@ -371,12 +372,23 @@ body {
 .friend-item .avatar {
   width: 32px;
   height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0; /* Impede que o avatar encolha */
+}
+
+.friend-item .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .friend-item .friend-name {
   font-size: 0.9rem;
   font-weight: 500;
   flex-grow: 1;
+    margin-bottom: 10px;
+
 }
 
 .friend-item .status.online {
@@ -385,6 +397,7 @@ body {
   width: 10px;
   height: 10px;
   border: none;
+    margin-bottom: 10px;
 
   position: static;
   flex-shrink: 0;
@@ -1931,7 +1944,8 @@ a.user-card-link:hover h4 {
     flex-grow: 1; /* Ocupa o espaço e empurra o status online para a direita */
     text-decoration: none;
     color: inherit;
-    min-width: 0; /* Corrige problemas de flexbox */
+    min-width: 0;
+     /* Corrige problemas de flexbox */
 }
 .friend-item-link .friend-name {
     white-space: nowrap;
@@ -2008,3 +2022,4 @@ a.user-card-link:hover h4 {
     /* Aplica a animação ao comentário */
     animation: flash-animation 1.5s ease-out;
 }
+

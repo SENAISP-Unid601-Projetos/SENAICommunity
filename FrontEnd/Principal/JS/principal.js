@@ -311,45 +311,38 @@ async function fetchInitialOnlineFriends() {
 }
 
 function atualizarStatusDeAmigosNaUI() {
-  if (!globalElements.onlineFriendsList) return;
-  if (!friendsLoaded) {
-    //
-    globalElements.onlineFriendsList.innerHTML =
-      '<p class="empty-state">Carregando...</p>';
-    return;
-  }
+    if (!globalElements.onlineFriendsList) return;
+    if (!friendsLoaded) {
+        globalElements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
+        return;
+    }
+    const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email)); //
+    globalElements.onlineFriendsList.innerHTML = '';
+    if (onlineFriends.length === 0) {
+        globalElements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+    } else {
+        onlineFriends.forEach(friend => {
+            const friendElement = document.createElement('div');
+            friendElement.className = 'friend-item';
+            
+            // CORREÇÃO: O seu AmigoDTO usa 'fotoPerfil'
+            // e o seu ArquivoController serve de '/api/arquivos/'
+            const friendAvatar = friend.fotoPerfil ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` : defaultAvatarUrl;
+            
+            // CORREÇÃO: Pega o ID do usuário (amigo) do DTO
+            const friendId = friend.idUsuario; 
 
-  // Voltamos a filtrar a lista 'userFriends' usando 'latestOnlineEmails'
-  const onlineFriends = userFriends.filter((friend) =>
-    latestOnlineEmails.includes(friend.email)
-  ); //
-  globalElements.onlineFriendsList.innerHTML = "";
-
-  if (onlineFriends.length === 0) {
-    globalElements.onlineFriendsList.innerHTML =
-      '<p class="empty-state">Nenhum amigo online.</p>';
-  } else {
-    onlineFriends.forEach((friend) => {
-      const friendElement = document.createElement("div");
-      friendElement.className = "friend-item";
-
-      const friendAvatar =
-        friend.fotoPerfil && friend.fotoPerfil.startsWith("http")
-          ? friend.fotoPerfil
-          : `${window.backendUrl}${
-              friend.fotoPerfil || "/images/default-avatar.jpg"
-            }`;
-
-      friendElement.innerHTML = `
-                <a href="perfil.html?id=${friend.idUsuario}" class="friend-item-link">
+            // CORREÇÃO: Adiciona a tag <a> em volta do avatar e nome
+            friendElement.innerHTML = `
+                <a href="perfil.html?id=${friendId}" class="friend-item-link">
                     <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${defaultAvatarUrl}';"></div>
                     <span class="friend-name">${friend.nome}</span>
                 </a>
                 <div class="status online"></div>
             `;
-      globalElements.onlineFriendsList.appendChild(friendElement);
-    });
-  }
+            globalElements.onlineFriendsList.appendChild(friendElement);
+        });
+    }
 }
 
 async function fetchNotifications() {
