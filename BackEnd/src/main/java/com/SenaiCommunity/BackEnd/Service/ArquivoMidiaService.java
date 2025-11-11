@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.Service;
 
+import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -15,13 +18,70 @@ public class ArquivoMidiaService {
     @Autowired
     private Cloudinary cloudinary;
 
+    private String getResourceType(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            return "raw"; // Tipo desconhecido/fallback
+        }
+        if (contentType.startsWith("image/")) {
+            return "image";
+        }
+        if (contentType.startsWith("video/")) {
+            return "video";
+        }
+        return "raw";
+    }
+
     public String upload(MultipartFile file) throws IOException {
 
-        Map<String, Object> options = Map.of(
-                "resource_type", "auto"
-        );
+        Map<String, Object> options = new HashMap<>();
 
-        Map<?, ?> response = cloudinary.uploader().upload(file.getBytes(), options);
+        // 1. Detecta o tipo primeiro
+        String resourceType = getResourceType(file);
+
+        // 2. Define o resource_type explicitamente (não mais "auto")
+        options.put("resource_type", resourceType);
+
+        // 3. LÓGICA CONDICIONAL PARA MODERAÇÃO
+        if ("image".equals(resourceType)) {
+
+            options.put("moderation", "webpurify");
+            //options.put("moderation", "aws_rekognition_moderation:min_confidence:80");
+
+        }else if ("video".equals(resourceType)) {
+            options.put("moderation", "google_video_moderation");
+            //options.put("moderation", "aws_rekognition_video_moderation:min_confidence:80");
+        }
+
+        Map<?, ?> response;
+        try {
+            response = cloudinary.uploader().upload(file.getBytes(), options);
+        } catch (IOException e) {
+            throw new IOException("Falha ao fazer upload da mídia.", e);
+        }
+
+        List<Map<String, Object>> moderationList = (List<Map<String, Object>>) response.get("moderation");
+
+        if (moderationList != null && !moderationList.isEmpty()) {
+            Map<String, Object> moderationData = moderationList.get(0);
+            String status = (String) moderationData.get("status");
+
+            if ("rejected".equals(status)) {
+                String publicId = (String) response.get("public_id");
+                String respResourceType = (String) response.get("resource_type");
+
+                System.err.println("[MODERAÇÃO] Conteúdo REJEITADO detectado. Deletando: " + publicId);
+
+                try {
+                    cloudinary.uploader().destroy(publicId, Map.of("resource_type", respResourceType));
+                } catch (IOException e) {
+                    System.err.println("[MODERAÇÃO] Falha ao deletar arquivo rejeitado: " + publicId);
+                }
+
+                throw new ConteudoImproprioException("A mídia enviada (imagem ou vídeo) contém conteúdo impróprio e foi bloqueada.");
+            }
+        }
+
         return response.get("secure_url").toString();
     }
 
@@ -34,9 +94,6 @@ public class ArquivoMidiaService {
 
         return "ok".equals(result.get("result")); // true se deletado, false se não encontrado
     }
-
-
-    //  MÉTODO AUXILIAR PARA EXTRAIR O ID PÚBLICO DA URL
     private String extrairPublicIdDaUrl(String url) {
         try {
             // Encontra a parte da URL que começa depois de "/upload/"
@@ -45,14 +102,10 @@ public class ArquivoMidiaService {
                 throw new IllegalArgumentException("URL de Cloudinary inválida: não contém '/upload/'. URL: " + url);
             }
 
-            // Encontra o início do public_id, que fica depois do componente de versão (ex: /v1234567/)
-            // O +1 é para pular a barra "/"
             int publicIdStartIndex = url.indexOf('/', uploadIndex + "/upload/".length()) + 1;
 
-            // Encontra o fim do public_id, que é no último ponto (antes da extensão do arquivo)
             int publicIdEndIndex = url.lastIndexOf('.');
 
-            // Validação para garantir que os índices são válidos
             if (publicIdStartIndex == 0 || publicIdEndIndex == -1 || publicIdEndIndex <= publicIdStartIndex) {
                 throw new IllegalArgumentException("Não foi possível extrair o Public ID da URL: " + url);
             }

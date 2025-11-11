@@ -20,8 +20,6 @@ public class UsuarioSaidaDTO {
     private LocalDate dataNascimento;
     private LocalDateTime dataCadastro;
 
-    // Código Corrigido em UsuarioSaidaDTO.java
-
     public UsuarioSaidaDTO(Usuario usuario) {
         this.id = usuario.getId();
         this.nome = usuario.getNome();
@@ -32,10 +30,11 @@ public class UsuarioSaidaDTO {
         this.dataCadastro = usuario.getDataCadastro();
 
         String nomeFoto = usuario.getFotoPerfil();
+
         if (nomeFoto != null && !nomeFoto.isBlank()) {
-            this.urlFotoPerfil = "/api/arquivos/" + nomeFoto;
+
+            this.urlFotoPerfil = nomeFoto;
         } else {
-            // CORREÇÃO: Aponte para a sua imagem padrão
             this.urlFotoPerfil = "/images/default-avatar.jpg";
         }
     }

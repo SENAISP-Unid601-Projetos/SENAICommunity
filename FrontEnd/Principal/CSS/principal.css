@@ -1959,3 +1959,15 @@ a.user-card-link:hover h4 {
 .modal-content .form-group select:invalid {
     color: var(--text-secondary);
 }
+
+/* --- Estilo para a tag @username nas respostas --- */
+.comment-content .reply-tag {
+    color: var(--accent-primary);
+    font-weight: 600;
+    text-decoration: none;
+    margin-right: 0.25rem;
+}
+
+.comment-content .reply-tag:hover {
+    text-decoration: underline;
+}

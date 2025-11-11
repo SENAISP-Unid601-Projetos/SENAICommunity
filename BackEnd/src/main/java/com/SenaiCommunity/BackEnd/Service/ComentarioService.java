@@ -5,6 +5,7 @@ import com.SenaiCommunity.BackEnd.DTO.ComentarioSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Comentario;
 import com.SenaiCommunity.BackEnd.Entity.Postagem;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
+import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.ComentarioRepository;
 import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
@@ -36,6 +37,9 @@ public class ComentarioService {
     @Autowired
     private NotificacaoService notificacaoService;
 
+    @Autowired
+    private FiltroProfanidadeService filtroProfanidade;
+
     /**
      * Cria um novo comentário, associa ao autor e à postagem, e o salva no banco.
      */
@@ -45,6 +49,10 @@ public class ComentarioService {
                 .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
         Postagem postagem = postagemRepository.findById(postagemId)
                 .orElseThrow(() -> new EntityNotFoundException("Postagem não encontrada"));
+
+        if (filtroProfanidade.contemProfanidade(dto.getConteudo())) {
+            throw new ConteudoImproprioException("Seu comentário contém texto não permitido.");
+        }
 
         Comentario novoComentario = Comentario.builder()
                 .conteudo(dto.getConteudo())
@@ -92,6 +100,10 @@ public class ComentarioService {
         // Regra de segurança: Apenas o autor do comentário pode editar.
         if (!comentario.getAutor().getEmail().equals(username)) {
             throw new SecurityException("Acesso negado: Você não é o autor deste comentário.");
+        }
+
+        if (filtroProfanidade.contemProfanidade(comentario.getConteudo())) {
+            throw new ConteudoImproprioException("Seu comentário contém texto não permitido.");
         }
 
         comentario.setConteudo(novoConteudo);

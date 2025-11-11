@@ -4,6 +4,7 @@ import com.SenaiCommunity.BackEnd.DTO.VagaEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.VagaSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Entity.Vaga;
+import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import com.SenaiCommunity.BackEnd.Repository.VagaRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,8 +25,18 @@ public class VagaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private FiltroProfanidadeService filtroProfanidade;
+
     @Transactional
     public VagaSaidaDTO criar(VagaEntradaDTO dto, String autorEmail) {
+
+        if (filtroProfanidade.contemProfanidade(dto.getTitulo()) ||
+                filtroProfanidade.contemProfanidade(dto.getDescricao()) ||
+                filtroProfanidade.contemProfanidade(dto.getEmpresa())) {
+            throw new ConteudoImproprioException("Os dados da vaga contêm texto não permitido.");
+        }
+
         Usuario autor = usuarioRepository.findByEmail(autorEmail)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário autor não encontrado."));
 
