@@ -846,8 +846,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function createCommentElement(comment, post, allComments) {
         //
         const commentAuthorName = comment.autor?.nome || comment.nomeAutor || "Usuário";
-        // CORREÇÃO: O seu DTO de amigo usa /api/arquivos/, mas o de postagem usa a URL completa.
-        // O DTO de comentário (ComentarioSaidaDTO) também usa a URL completa, então esta lógica está correta.
         const commentAuthorAvatar = comment.urlFotoAutor ? (comment.urlFotoAutor.startsWith("http") ? comment.urlFotoAutor : `${backendUrl}${comment.urlFotoAutor}`) : defaultAvatarUrl;
         const autorIdDoComentario = comment.autor?.id || comment.autorId;
         const autorIdDoPost = post.autor?.id || post.autorId;
@@ -867,21 +865,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>`;
         }
 
-        // --- ▼▼▼ NOVA LÓGICA DA TAG @USERNAME ▼▼▼ ---
+        // --- ▼▼▼ LÓGICA DA TAG @USERNAME ATUALIZADA ▼▼▼ ---
         let tagHtml = '';
         // 1. Verificamos se é uma resposta (tem parentId) e se temos a lista de comentários
         if (comment.parentId && allComments) {
             // 2. Encontramos o comentário "pai"
             const parentComment = allComments.find(c => c.id === comment.parentId);
 
-            // 3. Verificamos se o "pai" TAMBÉM é uma resposta (ou seja, se o pai tem um parentId)
-            //    Isso significa que estamos no Nível 2 ou mais profundo.
+            // 3. Verificamos se o "pai" TAMBÉM é uma resposta (Nível 2+)
+            //    Se parentComment.parentId existir, significa que não é uma resposta ao comentário principal.
             if (parentComment && parentComment.parentId) {
-                // Criamos a tag @username como um link para o comentário pai
-                tagHtml = `<a href="#comment-${comment.parentId}" class="reply-tag">@${comment.replyingToName}</a>`;
+                
+                // 4. Pegamos o ID DO AUTOR do comentário pai (do DTO do comentário pai)
+                const parentAuthorId = parentComment.autorId; 
+                
+                // 5. Criamos o link para o PERFIL desse autor
+                tagHtml = `<a href="perfil.html?id=${parentAuthorId}" class="reply-tag">@${comment.replyingToName}</a>`;
             }
         }
-        // --- ▲▲▲ FIM DA NOVA LÓGICA ▲▲▲ ---
+        // --- ▲▲▲ FIM DA LÓGICA ATUALIZADA ▲▲▲ ---
 
         return `
                 <div class="comment-container">
