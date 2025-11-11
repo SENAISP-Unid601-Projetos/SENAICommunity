@@ -181,6 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 6. Configura todos os listeners (incluindo os modais de edição, que só funcionarão se for o nosso perfil)
       setupEventListeners();
       setInitialTheme();
+      checkAndHighlightComment();
     } catch (error) {
       console.error("ERRO CRÍTICO NA INICIALIZAÇÃO DO PERFIL:", error);
       if (error.response && error.response.status === 401) {
@@ -202,6 +203,66 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.connectionsCount.textContent = "0";
     }
   }
+
+  async function checkAndHighlightComment() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get('postId');
+        const hash = window.location.hash; // Pega o #comment-123
+
+        // Só continua se tiver um postId na URL
+        if (!postId) return; 
+
+        let commentId = null;
+        if (hash && hash.startsWith('#comment-')) {
+            commentId = hash.substring(1); // "comment-123"
+        }
+
+        // 1. Encontrar o Post
+        let postElement = document.getElementById(`post-${postId}`);
+        let attempts = 0;
+
+        // Tenta encontrar o post por até 5 segundos (esperando o fetch das postagens)
+        while (!postElement && attempts < 25) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            postElement = document.getElementById(`post-${postId}`);
+            attempts++;
+        }
+
+        if (!postElement) {
+            console.warn(`Post ${postId} não encontrado para destacar.`);
+            return;
+        }
+
+        // 2. Rolar até o Post e Abrir os Comentários
+        postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        const commentsSection = postElement.querySelector('.comments-section');
+        if (commentsSection && commentsSection.style.display === 'none') {
+            // Clica no botão de comentários (usando a função global)
+            window.toggleComments(postId);
+            // Espera a UI atualizar
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        // 3. Se houver um commentId, encontrar e destacar o comentário
+        if (commentId) {
+            const commentElement = document.getElementById(commentId);
+            if (commentElement) {
+                // Rola até o comentário
+                commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Adiciona a classe de "flash"
+                commentElement.classList.add('highlight-flash');
+                
+                // Remove a classe após a animação
+                setTimeout(() => {
+                    commentElement.classList.remove('highlight-flash');
+                }, 2000); // 2 segundos
+            } else {
+                console.warn(`Comentário ${commentId} não encontrado no post ${postId}.`);
+            }
+        }
+    }
 
   async function fetchFriends() {
     try {
@@ -353,39 +414,49 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function createNotificationElement(notification) {
-    const item = document.createElement("div");
-    item.className = "notification-item";
-    item.id = `notification-item-${notification.id}`;
-    if (!notification.lida) item.classList.add("unread");
+        const item = document.createElement('div');
+        item.className = 'notification-item';
+        item.id = `notification-item-${notification.id}`;
+        if (!notification.lida) item.classList.add('unread');
+    
+        const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
+        let actionButtonsHtml = '';
+        let iconClass = 'fa-info-circle';
+        let notificationLink = '#'; // Link padrão
 
-    const data = new Date(notification.dataCriacao).toLocaleString("pt-BR");
-    let actionButtonsHtml = "";
-    let iconClass = "fa-info-circle";
-    // Adaptação: urlFotoAutor pode não vir em todas notif.
-    const authorPic = notification.urlFotoAutor
-      ? `${backendUrl}${notification.urlFotoAutor}`
-      : defaultAvatarUrl;
+        // IDs vindos do Backend
+        const postId = notification.idReferencia;
+        const commentId = notification.idReferenciaSecundaria; 
 
-    if (notification.tipo === "PEDIDO_AMIZADE" && !notification.lida) {
-      iconClass = "fa-user-plus";
-      actionButtonsHtml = `
-              <div class="notification-actions">
-                 <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
-                 <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
-              </div>`;
-    } else if (
-      notification.tipo === "NOVO_COMENTARIO" ||
-      notification.tipo === "CURTIDA_POST"
-    ) {
-      iconClass = "fa-comment";
-    } else if (notification.tipo === "CURTIDA_COMENTARIO") {
-      iconClass = "fa-heart";
-    }
+        if (notification.tipo === 'PEDIDO_AMIZADE') {
+            iconClass = 'fa-user-plus';
+            notificationLink = 'amizades.html'; // Link para amizades
+            if (!notification.lida) {
+                 actionButtonsHtml = `
+                  <div class="notification-actions">
+                     <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
+                     <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
+                  </div>`;
+            }
+        } else if (notification.tipo === 'NOVO_COMENTARIO' || notification.tipo === 'CURTIDA_POST' || notification.tipo === 'CURTIDA_COMENTARIO') {
+            
+            if (notification.tipo.startsWith('CURTIDA')) {
+                iconClass = 'fa-heart';
+            } else {
+                iconClass = 'fa-comment';
+            }
 
-    const notificationLink =
-      notification.tipo === "PEDIDO_AMIZADE" ? "amizades.html" : "#"; // Idealmente, deveria linkar para o post
+            // Constrói o link para o post
+            // (Assumindo que a página de perfil também pode mostrar o post)
+            notificationLink = `principal.html?postId=${postId}`;
 
-    item.innerHTML = `
+            // Se for sobre um comentário, adiciona o hash
+            if (commentId) {
+                notificationLink += `#comment-${commentId}`;
+            }
+        }
+    
+        item.innerHTML = `
             <a href="${notificationLink}" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
                 <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
                 <div class="notification-content">
@@ -395,42 +466,13 @@ document.addEventListener("DOMContentLoaded", () => {
             </a>
             <div class="notification-actions-wrapper">${actionButtonsHtml}</div>
         `;
-
-    const actionsWrapper = item.querySelector(".notification-actions-wrapper");
-    if (actionsWrapper) {
-      actionsWrapper.addEventListener("click", (e) => e.stopPropagation());
+    
+        const actionsWrapper = item.querySelector('.notification-actions-wrapper');
+        if (actionsWrapper) {
+            actionsWrapper.addEventListener('click', e => e.stopPropagation());
+        }
+        return item;
     }
-    return item;
-  }
-
-  // Expor globalmente para o HTML
-  window.markNotificationAsRead = async (event, notificationId) => {
-    if (event) event.preventDefault();
-    const item = document.getElementById(`notification-item-${notificationId}`);
-    const targetHref = event.currentTarget.href;
-
-    // Se já está lida ou não é um link válido, apenas navegue
-    if (
-      !item ||
-      !item.classList.contains("unread") ||
-      targetHref.endsWith("#")
-    ) {
-      if (targetHref && !targetHref.endsWith("#"))
-        window.location.href = targetHref;
-      return;
-    }
-
-    item.classList.remove("unread");
-    try {
-      await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
-      fetchNotifications(); // Re-renderiza para atualizar a contagem
-    } catch (error) {
-      item.classList.add("unread"); // Reverte se falhar
-    } finally {
-      if (targetHref && !targetHref.endsWith("#"))
-        window.location.href = targetHref;
-    }
-  };
 
   async function markAllNotificationsAsRead() {
     const unreadCount = parseInt(elements.notificationsBadge.textContent, 10);

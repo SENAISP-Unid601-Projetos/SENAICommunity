@@ -50,6 +50,7 @@ public class ComentarioService {
         Postagem postagem = postagemRepository.findById(postagemId)
                 .orElseThrow(() -> new EntityNotFoundException("Postagem não encontrada"));
 
+        // 1. Checa o conteúdo ANTES de criar o objeto
         if (filtroProfanidade.contemProfanidade(dto.getConteudo())) {
             throw new ConteudoImproprioException("Seu comentário contém texto não permitido.");
         }
@@ -61,31 +62,44 @@ public class ComentarioService {
                 .postagem(postagem)
                 .build();
 
-        // Se for uma resposta, associa ao comentário pai
+        Comentario parent = null; // Variável para guardar o comentário pai
+
+        // 2. Se for uma resposta, associa ao comentário pai
         if (dto.getParentId() != null) {
-            Comentario parent = comentarioRepository.findById(dto.getParentId())
+            parent = comentarioRepository.findById(dto.getParentId())
                     .orElseThrow(() -> new EntityNotFoundException("Comentário pai não encontrado"));
             novoComentario.setParent(parent);
+        }
 
+        // 3. ▼▼▼ CORREÇÃO: Salva o comentário ANTES de notificar ▼▼▼
+        Comentario comentarioSalvo = comentarioRepository.save(novoComentario);
+
+        // 4. Envia notificações (Agora 'comentarioSalvo.getId()' funciona)
+        if (parent != null) {
             // Notifica o autor do comentário PAI (se não for ele mesmo)
             if (!parent.getAutor().getId().equals(autor.getId())) {
                 notificacaoService.criarNotificacao(
                         parent.getAutor(),
-                        autor.getNome() + " respondeu ao seu comentário."
+                        autor.getNome() + " respondeu ao seu comentário.",
+                        "NOVO_COMENTARIO",
+                        postagem.getId(), // PostID
+                        comentarioSalvo.getId() // O ID do novo comentário
                 );
             }
-
-        }else {
+        } else {
             // Se não for uma resposta, notifica o autor da POSTAGEM (se não for ele mesmo)
             if (!postagem.getAutor().getId().equals(autor.getId())) {
                 notificacaoService.criarNotificacao(
                         postagem.getAutor(),
-                        autor.getNome() + " comentou na sua postagem."
+                        autor.getNome() + " comentou na sua postagem.",
+                        "NOVO_COMENTARIO",
+                        postagem.getId(), // PostID
+                        comentarioSalvo.getId() // O ID do novo comentário
                 );
             }
         }
+        // ▲▲▲ FIM DA CORREÇÃO ▲▲▲
 
-        Comentario comentarioSalvo = comentarioRepository.save(novoComentario);
         return toDTO(comentarioSalvo);
     }
 
@@ -102,9 +116,11 @@ public class ComentarioService {
             throw new SecurityException("Acesso negado: Você não é o autor deste comentário.");
         }
 
-        if (filtroProfanidade.contemProfanidade(comentario.getConteudo())) {
+        // ▼▼▼ CORREÇÃO: Verificar o 'novoConteudo', não o conteúdo antigo ▼▼▼
+        if (filtroProfanidade.contemProfanidade(novoConteudo)) {
             throw new ConteudoImproprioException("Seu comentário contém texto não permitido.");
         }
+        // ▲▲▲ FIM DA CORREÇÃO ▲▲▲
 
         comentario.setConteudo(novoConteudo);
         Comentario comentarioSalvo = comentarioRepository.save(comentario);

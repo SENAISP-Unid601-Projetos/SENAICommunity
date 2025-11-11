@@ -56,7 +56,10 @@ public class CurtidaService {
                 if (!comentario.getAutor().getId().equals(usuario.getId())) {
                     notificacaoService.criarNotificacao(
                             comentario.getAutor(),
-                            usuario.getNome() + " curtiu seu comentário."
+                            usuario.getNome() + " curtiu seu comentário.",
+                            "CURTIDA_COMENTARIO",
+                            comentario.getPostagem().getId(), // PostID
+                            comentario.getId() // CommentID
                     );
                 }
             }
@@ -80,7 +83,10 @@ public class CurtidaService {
                 if (!postagem.getAutor().getId().equals(usuario.getId())) {
                     notificacaoService.criarNotificacao(
                             postagem.getAutor(),
-                            usuario.getNome() + " curtiu sua postagem."
+                            usuario.getNome() + " curtiu sua postagem.",
+                            "CURTIDA_POST",
+                            postagem.getId(), // PostID
+                            null // Não é um comentário
                     );
                 }
             }

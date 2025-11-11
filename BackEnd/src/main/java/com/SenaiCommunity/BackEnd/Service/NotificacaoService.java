@@ -41,26 +41,30 @@ public class NotificacaoService {
                 // Verifica se o tipo é nulo, se for, define como "GERAL" por padrão.
                 .tipo(notificacao.getTipo() != null ? notificacao.getTipo() : "GERAL")
                 .idReferencia(notificacao.getIdReferencia()) // Long pode ser nulo, então não há problema aqui.
+                .idReferenciaSecundaria(notificacao.getIdReferenciaSecundaria())
                 .build();
     }
 
     @Transactional
     public void criarNotificacao(Usuario destinatario, String mensagem, String tipo, Long idReferencia) {
+        // Agora chama o método de 5 parâmetros com 'null'
+        criarNotificacao(destinatario, mensagem, tipo, idReferencia, null);
+    }
+
+    @Transactional
+    public void criarNotificacao(Usuario destinatario, String mensagem, String tipo, Long idReferencia, Long idReferenciaSecundaria) {
         Notificacao notificacao = Notificacao.builder()
                 .destinatario(destinatario)
                 .mensagem(mensagem)
                 .dataCriacao(LocalDateTime.now())
                 .tipo(tipo)
-                .idReferencia(idReferencia)
+                .idReferencia(idReferencia) // Ex: PostID
+                .idReferenciaSecundaria(idReferenciaSecundaria) // Ex: CommentID
                 .build();
 
         Notificacao notificacaoSalva = notificacaoRepository.save(notificacao);
-
         NotificacaoSaidaDTO dto = toDTO(notificacaoSalva);
-
         String destination = "/user/" + destinatario.getEmail() + "/queue/notifications";
-
-        // Usa convertAndSend com o destino completo
         messagingTemplate.convertAndSend(destination, dto);
     }
 

@@ -1972,3 +1972,39 @@ a.user-card-link:hover h4 {
     text-decoration: underline;
 }
 
+/* --- Animação de Flash para Comentário --- */
+
+/* Adiciona variáveis de transparência no :root */
+:root {
+    /* ... (outras variáveis) ... */
+    --accent-primary-trans-10: rgba(88, 166, 255, 0.1);
+    --accent-primary-trans-30: rgba(88, 166, 255, 0.3);
+}
+
+[data-theme="light"] {
+    /* ... (outras variáveis) ... */
+    --accent-primary-trans-10: rgba(24, 119, 242, 0.1);
+    --accent-primary-trans-30: rgba(24, 119, 242, 0.3);
+}
+
+@keyframes flash-animation {
+    0% {
+        background-color: var(--bg-secondary);
+    }
+    25% {
+        background-color: var(--accent-primary-trans-10);
+        box-shadow: 0 0 10px var(--accent-primary-trans-30);
+    }
+    75% {
+        background-color: var(--accent-primary-trans-10);
+        box-shadow: 0 0 10px var(--accent-primary-trans-30);
+    }
+    100% {
+        background-color: var(--bg-secondary);
+    }
+}
+
+.comment.highlight-flash {
+    /* Aplica a animação ao comentário */
+    animation: flash-animation 1.5s ease-out;
+}

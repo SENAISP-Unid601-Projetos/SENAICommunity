@@ -20,6 +20,7 @@ public class NotificacaoSaidaDTO {
     private boolean lida;
     private String tipo;
     private Long idReferencia;
+    private Long idReferenciaSecundaria;
 
     // Método de conversão estático para facilitar a criação a partir da entidade
     public static NotificacaoSaidaDTO fromEntity(Notificacao notificacao) {
@@ -29,7 +30,8 @@ public class NotificacaoSaidaDTO {
                 notificacao.getDataCriacao(),
                 notificacao.isLida(),
                 notificacao.getTipo(),
-                notificacao.getIdReferencia()
+                notificacao.getIdReferencia(),
+                notificacao.getIdReferenciaSecundaria()
         );
     }
 
