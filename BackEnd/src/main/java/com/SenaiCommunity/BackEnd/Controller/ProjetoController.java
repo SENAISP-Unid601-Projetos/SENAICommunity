@@ -2,8 +2,10 @@ package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.ProjetoDTO;
 import com.SenaiCommunity.BackEnd.Entity.ProjetoMembro;
+import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Service.ProjetoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -63,6 +65,11 @@ public class ProjetoController {
                     "message", "Projeto criado com sucesso! Convites enviados automaticamente para professores e alunos.",
                     "projeto", salvo
             ));
+        }catch (ConteudoImproprioException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+
         } catch (Exception e) {
             System.err.println("[ERROR] Erro ao criar projeto: " + e.getMessage());
             e.printStackTrace();

@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
 
 // =================================================================
 // BLOCO DE CONTROLE DE TEMA (Executa primeiro em todas as páginas)
@@ -206,6 +204,11 @@ function connectWebSocket() {
           globalElements.notificationsBadge.style.display = "flex";
         }
       });
+
+      stompClient.subscribe('/user/queue/errors', (message) => {
+            const errorMessage = message.body; 
+            window.showNotification(errorMessage, 'error');
+        });
 
       // INSCRIÇÃO GLOBAL: Status Online
       stompClient.subscribe("/topic/status", (message) => {
@@ -679,7 +682,11 @@ function setupGlobalEventListeners() {
           updateUIWithUserData(currentUser);
           showNotification("Foto de perfil atualizada!", "success");
         } catch (error) {
-          showNotification("Erro ao atualizar a foto.", "error");
+          let errorMessage = "Erro ao atualizar a foto.";
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
+            }
+            showNotification(errorMessage, "error");
         }
       }
       // Lógica de update de dados
@@ -1295,7 +1302,11 @@ document.addEventListener("DOMContentLoaded", () => {
           feedElements.editPostModal.style.display = "none";
           showNotification("Postagem editada.", "success");
         } catch (error) {
-          showNotification("Não foi possível salvar.", "error");
+         let errorMessage = "Erro ao editar.";
+                if (error.response && error.response.data && error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+                showNotification(errorMessage, "error");
         } finally {
           btn.disabled = false;
           btn.textContent = "Salvar";
@@ -1356,7 +1367,11 @@ document.addEventListener("DOMContentLoaded", () => {
           feedElements.postFileInput.value = "";
           updateFilePreview();
         } catch (error) {
-          showNotification("Erro ao publicar.", "error");
+          let errorMessage = "Erro ao publicar.";
+                if (error.response && error.response.data && error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+                showNotification(errorMessage, "error");
         } finally {
           feedElements.publishBtn.disabled = false;
           feedElements.publishBtn.innerHTML = "Publicar";

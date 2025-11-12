@@ -5,6 +5,7 @@ import com.SenaiCommunity.BackEnd.DTO.UsuarioBuscaDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Amizade;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
+import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.AmizadeRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ public class UsuarioService {
     @Autowired
     private ArquivoMidiaService midiaService;
 
+    @Autowired
+    private FiltroProfanidadeService filtroProfanidade;
+
 
     public UsuarioSaidaDTO buscarUsuarioPorId(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
@@ -65,6 +69,11 @@ public class UsuarioService {
      * Atualiza os dados do usuário logado.
      */
     public UsuarioSaidaDTO atualizarUsuarioLogado(Authentication authentication, UsuarioAtualizacaoDTO dto) {
+        if (filtroProfanidade.contemProfanidade(dto.getNome()) ||
+                filtroProfanidade.contemProfanidade(dto.getBio())) {
+            throw new ConteudoImproprioException("Seus dados de perfil contêm texto não permitido.");
+        }
+
         Usuario usuario = getUsuarioFromAuthentication(authentication);
 
         if (StringUtils.hasText(dto.getNome())) {

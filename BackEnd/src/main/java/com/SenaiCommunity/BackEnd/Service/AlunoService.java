@@ -5,6 +5,7 @@ import com.SenaiCommunity.BackEnd.DTO.AlunoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Aluno;
 import com.SenaiCommunity.BackEnd.Entity.Projeto;
 import com.SenaiCommunity.BackEnd.Entity.Role;
+import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.AlunoRepository;
 import com.SenaiCommunity.BackEnd.Repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -35,6 +36,9 @@ public class AlunoService {
 
     @Autowired
     private ArquivoMidiaService midiaService;
+
+    @Autowired
+    private FiltroProfanidadeService filtroProfanidade;
 
     // Métodos de conversão direto no service:
 
@@ -78,6 +82,12 @@ public class AlunoService {
     }
 
     public AlunoSaidaDTO criarAlunoComFoto(AlunoEntradaDTO dto, MultipartFile foto) {
+
+        if (filtroProfanidade.contemProfanidade(dto.getNome()) ||
+                filtroProfanidade.contemProfanidade(dto.getCurso())) {
+            throw new ConteudoImproprioException("Os dados do aluno contêm texto não permitido.");
+        }
+
         Aluno aluno = toEntity(dto);
         aluno.setDataCadastro(LocalDateTime.now());
         aluno.setTipoUsuario("ALUNO");
@@ -117,6 +127,11 @@ public class AlunoService {
 
     @Transactional
     public AlunoSaidaDTO atualizarAluno(Long id, AlunoEntradaDTO dto, MultipartFile foto) throws IOException {
+        if (filtroProfanidade.contemProfanidade(dto.getNome()) ||
+                filtroProfanidade.contemProfanidade(dto.getCurso())) {
+            throw new ConteudoImproprioException("Os dados do aluno contêm texto não permitido.");
+        }
+
         // 1. Encontra o aluno existente
         Aluno aluno = alunoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Aluno não encontrado"));

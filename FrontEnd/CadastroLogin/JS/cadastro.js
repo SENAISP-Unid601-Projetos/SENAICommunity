@@ -57,9 +57,7 @@ function setupPasswordStrengthMeter() {
 }
 
 /**
- * ✅ CORREÇÃO APLICADA AQUI ✅
  * Configura a área de upload de imagem com drag-drop e preview,
- * sem o evento de clique duplicado.
  */
 function setupImageUpload() {
     const dropZone = document.getElementById('drop-zone');
@@ -86,11 +84,7 @@ function setupImageUpload() {
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
         fotoInput.files = dataTransfer.files;
-    }
     
-    // A linha abaixo foi REMOVIDA para corrigir o bug do duplo clique.
-    // O comportamento do <label for="foto"> já é suficiente para abrir o seletor de arquivos.
-    // dropZone.addEventListener('click', () => fotoInput.click()); 
     
     fotoInput.addEventListener('change', () => {
         if (fotoInput.files.length > 0) {
@@ -156,7 +150,9 @@ function setupFormSubmission() {
         } catch (error) {
             console.error('Erro no cadastro:', error);
             let errorMessage = 'Erro ao cadastrar. Tente novamente mais tarde.';
-            if (error.response) {
+           if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.response) {
                 if (error.response.status === 409) errorMessage = 'Este e-mail já está cadastrado!';
                 else if (error.response.status === 400) errorMessage = 'Dados inválidos. Verifique todos os campos.';
             }

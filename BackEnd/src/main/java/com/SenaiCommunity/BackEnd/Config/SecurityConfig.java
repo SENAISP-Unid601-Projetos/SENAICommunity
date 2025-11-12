@@ -45,20 +45,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/autenticacao/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/autenticacao/login/google").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/cadastro/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/projetos/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/projetos/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/vagas/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/vagas/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/projetos/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/projetos/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/professores/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/alunos/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/professores/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/autenticacao/login**").permitAll()
                         .requestMatchers("/auth/**", "/cadastro/**", "/ws/**", "/login**", "/oauth2/**").permitAll()
-                        .requestMatchers("/images/**", "/api/arquivos/**").permitAll()
+                        .requestMatchers("/images/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
