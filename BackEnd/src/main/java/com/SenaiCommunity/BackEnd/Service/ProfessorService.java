@@ -5,6 +5,7 @@ import com.SenaiCommunity.BackEnd.DTO.ProfessorSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Professor;
 import com.SenaiCommunity.BackEnd.Entity.Projeto;
 import com.SenaiCommunity.BackEnd.Entity.Role;
+import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.ProfessorRepository;
 import com.SenaiCommunity.BackEnd.Repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -35,6 +36,9 @@ public class ProfessorService {
 
     @Autowired
     private ArquivoMidiaService midiaService;
+
+    @Autowired
+    private FiltroProfanidadeService filtroProfanidade;
 
     // Conversões
 
@@ -78,6 +82,11 @@ public class ProfessorService {
     }
 
     public ProfessorSaidaDTO criarProfessorComFoto(ProfessorEntradaDTO dto, MultipartFile foto) {
+        if (filtroProfanidade.contemProfanidade(dto.getNome()) ||
+                filtroProfanidade.contemProfanidade(dto.getFormacao())) {
+            throw new ConteudoImproprioException("Os dados do professor contêm texto não permitido.");
+        }
+
         Professor professor = toEntity(dto);
         professor.setDataCadastro(LocalDateTime.now());
         professor.setTipoUsuario("PROFESSOR");
@@ -116,6 +125,11 @@ public class ProfessorService {
 
     @Transactional
     public ProfessorSaidaDTO atualizarProfessor(Long id, ProfessorEntradaDTO dto, MultipartFile foto) throws IOException {
+        if (filtroProfanidade.contemProfanidade(dto.getNome()) ||
+                filtroProfanidade.contemProfanidade(dto.getFormacao())) {
+            throw new ConteudoImproprioException("Os dados do professor contêm texto não permitido.");
+        }
+
         Professor professor = professorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Professor não encontrado"));
 

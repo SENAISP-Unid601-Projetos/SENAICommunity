@@ -157,9 +157,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 fetchVagas(); // Atualiza a lista
 
             } catch (error) {
-                console.error("Erro ao criar vaga:", error);
                 let msg = "Não foi possível publicar a vaga.";
-                if (error.response && error.response.status === 403) {
+                if (error.response && error.response.data && error.response.data.message) {
+                    msg = error.response.data.message;
+                } else if (error.response && error.response.status === 403) {
                     msg = "Acesso negado. Apenas professores ou admins podem postar vagas.";
                 }
                 showNotification(msg, "error");

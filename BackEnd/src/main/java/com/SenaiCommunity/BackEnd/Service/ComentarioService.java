@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
-public class ComentarioService {
+public class  ComentarioService {
 
     @Autowired
     private ComentarioRepository comentarioRepository;

@@ -117,16 +117,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Preenche os dados da página de perfil
   function populateProfileData(user) {
     if (!user) return;
-    
-    // ▼▼▼ CORREÇÃO APLICADA AQUI ▼▼▼
-    // Esta lógica robusta lida com URLs externas (http) e internas (/api/arquivos)
+
     const userImage =
       user.urlFotoPerfil && user.urlFotoPerfil.startsWith("http")
         ? user.urlFotoPerfil
         : `${backendUrl}${
             user.urlFotoPerfil || defaultAvatarUrl
           }`;
-    // ▲▲▲ FIM DA CORREÇÃO ▲▲▲
 
     const userDob = user.dataNascimento
       ? new Date(user.dataNascimento).toLocaleDateString("pt-BR", {
@@ -148,15 +145,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateUIWithUserData(user) {
     if (!user) return;
     
-    // ▼▼▼ CORREÇÃO APLICADA AQUI ▼▼▼
     const userImage =
       user.urlFotoPerfil && user.urlFotoPerfil.startsWith("http")
         ? user.urlFotoPerfil
         : `${backendUrl}${
             user.urlFotoPerfil || defaultAvatarUrl
           }`;
-    // ▲▲▲ FIM DA CORREÇÃO ▲▲▲
-    
+
     if (elements.topbarUserName)
       elements.topbarUserName.textContent = user.nome;
     if (elements.sidebarUserName)
@@ -649,30 +644,33 @@ document.addEventListener("DOMContentLoaded", () => {
         window.stompClient = stompClient; // Expor globalmente
 
         // Inscrição em Notificações
-        stompClient.subscribe(
-          `/user/${currentUser.email}/queue/notifications`,
-          (message) => {
-            const newNotification = JSON.parse(message.body);
-            showNotification(
-              `Nova notificação: ${newNotification.mensagem}`,
-              "info"
-            );
-            if (elements.notificationsList) {
-              const emptyState =
-                elements.notificationsList.querySelector(".empty-state");
-              if (emptyState) emptyState.remove();
-              const newItem = createNotificationElement(newNotification);
-              elements.notificationsList.prepend(newItem);
-            }
-            if (elements.notificationsBadge) {
-              const currentCount =
-                parseInt(elements.notificationsBadge.textContent) || 0;
-              const newCount = currentCount + 1;
-              elements.notificationsBadge.textContent = newCount;
-              elements.notificationsBadge.style.display = "flex";
-            }
-          }
+      stompClient.subscribe(`/user/queue/notifications`, (message) => {
+        console.log("NOTIFICAÇÃO RECEBIDA!", message.body);
+        const newNotification = JSON.parse(message.body);
+        showNotification(
+          `Nova notificação: ${newNotification.mensagem}`,
+          "info"
         );
+        if (globalElements.notificationsList) {
+          const emptyState =
+            globalElements.notificationsList.querySelector(".empty-state");
+          if (emptyState) emptyState.remove();
+          const newItem = createNotificationElement(newNotification); //
+          globalElements.notificationsList.prepend(newItem);
+        }
+        if (globalElements.notificationsBadge) {
+          const currentCount =
+            parseInt(globalElements.notificationsBadge.textContent) || 0;
+          const newCount = currentCount + 1;
+          globalElements.notificationsBadge.textContent = newCount;
+          globalElements.notificationsBadge.style.display = "flex";
+        }
+      });
+
+      stompClient.subscribe('/user/queue/errors', (message) => {
+            const errorMessage = message.body; 
+            window.showNotification(errorMessage, 'error');
+        });
 
         // Inscrição em Status Online
         stompClient.subscribe("/topic/status", (message) => {
@@ -681,13 +679,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Inscrição em Contagem de Mensagens
-        stompClient.subscribe(
-          `/user/${currentUser.email}/queue/contagem`,
-          (message) => {
-            const count = JSON.parse(message.body);
-            updateMessageBadge(count);
-          }
-        );
+         stompClient.subscribe(`/user/queue/contagem`, (message) => {
+        const count = JSON.parse(message.body);
+        updateMessageBadge(count);
+      });
 
         // Inscrição em Posts Públicos (para atualização em tempo real)
         stompClient.subscribe("/topic/publico", (message) => {
@@ -1518,7 +1513,11 @@ window.toggleReplies = (buttonElement, commentId) => {
                 currentUser = response.data;
             }
           } catch (error) {
-            showNotification("Erro ao atualizar a foto.", "error");
+            let errorMessage = "Erro ao atualizar a foto.";
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
+            }
+            showNotification(errorMessage, "error");
           }
         }
         // 2. Atualiza os dados de texto
@@ -1628,7 +1627,11 @@ window.toggleReplies = (buttonElement, commentId) => {
           showNotification("Postagem editada com sucesso.", "success");
           // A atualização via WS cuidará de recarregar o post
         } catch (error) {
-          showNotification("Não foi possível salvar a edição.", "error");
+          let errorMessage = "Erro ao editar.";
+                if (error.response && error.response.data && error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+                showNotification(errorMessage, "error");
         } finally {
           btn.disabled = false;
           btn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';

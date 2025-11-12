@@ -2,6 +2,7 @@ package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaSaidaDTO;
+import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Service.MensagemPrivadaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,19 +32,21 @@ public class MensagemPrivadaController {
     public void enviarPrivado(@DestinationVariable Long destinatarioId,
                               @Payload MensagemPrivadaEntradaDTO dto,
                               Principal principal) {
+        try {
+            dto.setDestinatarioId(destinatarioId);
+            MensagemPrivadaSaidaDTO dtoSalvo = mensagemPrivadaService.salvarMensagemPrivada(dto, principal.getName());
 
-        dto.setDestinatarioId(destinatarioId);
-        MensagemPrivadaSaidaDTO dtoSalvo = mensagemPrivadaService.salvarMensagemPrivada(dto, principal.getName());
+            messagingTemplate.convertAndSendToUser(dtoSalvo.getDestinatarioEmail(), "/queue/usuario", dtoSalvo);
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/usuario", dtoSalvo);
 
-        // Envia a mensagem para o destinatário
-        messagingTemplate.convertAndSendToUser(dtoSalvo.getDestinatarioEmail(), "/queue/usuario", dtoSalvo);
+            long novaContagem = mensagemPrivadaService.contarMensagensNaoLidas(dtoSalvo.getDestinatarioEmail());
+            messagingTemplate.convertAndSendToUser(dtoSalvo.getDestinatarioEmail(), "/queue/contagem", novaContagem);
 
-        // Envia a mensagem de volta para o remetente (confirmação)
-        messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/usuario", dtoSalvo);
-
-        // Envia a nova contagem para o DESTINATÁRIO ---
-        long novaContagem = mensagemPrivadaService.contarMensagensNaoLidas(dtoSalvo.getDestinatarioEmail());
-        messagingTemplate.convertAndSendToUser(dtoSalvo.getDestinatarioEmail(), "/queue/contagem", novaContagem);
+        } catch (ConteudoImproprioException e) {
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/errors", e.getMessage());
+        } catch (Exception e) {
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/errors", "Não foi possível enviar a mensagem.");
+        }
     }
 
     @RestController

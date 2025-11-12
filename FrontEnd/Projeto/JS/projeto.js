@@ -182,7 +182,12 @@ document.addEventListener("DOMContentLoaded", () => {
             this.handlers.closeModal.call(this);
             await this.fetchProjetos();
           } catch (error) {
-            window.showNotification("Falha ao criar o projeto.", "error");
+           let errorMessage = "Falha ao criar o projeto.";
+            if (error.response && error.response.data && error.response.data.message) {
+                // Pega a mensagem de "Conteúdo impróprio..."
+                errorMessage = error.response.data.message;
+              }
+              window.showNotification(errorMessage, "error");
           } finally {
             btn.disabled = false;
             btn.textContent = "Publicar Projeto";
