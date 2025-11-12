@@ -780,8 +780,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const fotoAutorPath = post.urlFotoAutor;
 
     // Correção no path do avatar
-    const autorAvatar = fotoAutorPath
-      ? `${backendUrl}${fotoAutorPath}`
+    const autorAvatar = post.urlFotoAutor
+      ? post.urlFotoAutor.startsWith("http")
+        ? post.urlFotoAutor
+        : `${backendUrl}${post.urlFotoAutor}`
       : defaultAvatarUrl;
 
     // --- LÓGICA DE DATA (Estilo X.com) ---
