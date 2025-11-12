@@ -865,11 +865,8 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="post-content"><p>${post.conteudo}</p></div>
             ${mediaHtml}
+            
             <div class="post-actions x-style">
-                <button class="action-btn action-comment" onclick="window.toggleComments(${post.id})">
-                    <i class="far fa-comment"></i>
-                    <span>${post.comentarios?.length || 0}</span>
-                </button>
                 <button class="action-btn action-like ${
                   post.curtidoPeloUsuario ? "liked" : ""
                 }" onclick="window.toggleLike(event, ${post.id}, null)">
@@ -880,14 +877,20 @@ document.addEventListener("DOMContentLoaded", () => {
       post.totalCurtidas || 0
     }</span>
                 </button>
-                <button class="action-btn action-bookmark">
-                    <i class="far fa-bookmark"></i>
+                <button class="action-btn action-comment" onclick="window.toggleComments(${post.id})">
+                    <i class="far fa-comment"></i> <span>${post.comentarios?.length || 0}</span>
                 </button>
             </div>
-            <div class="comments-section" id="comments-section-${post.id}" style="display: none;">
+            <div class="comments-section" id="comments-section-${
+              post.id
+            }" style="display: none;">
                 <div class="comments-list">${commentsHtml}</div>
                 <div class="comment-form">
-                    <input type="text" id="comment-input-${post.id}" placeholder="Adicione um comentário..."><button onclick="window.sendComment(${post.id}, null)"><i class="fas fa-paper-plane"></i></button>
+                    <input type="text" id="comment-input-${
+                      post.id
+                    }" placeholder="Adicione um comentário..."><button onclick="window.sendComment(${
+      post.id
+    }, null)"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>`;
     return postElement;

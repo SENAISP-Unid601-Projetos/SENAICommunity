@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Controller
-@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
+@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR') or hasRole('ADMIN')")
 public class MensagemPrivadaController {
 
     @Autowired
