@@ -3,6 +3,7 @@ package com.SenaiCommunity.BackEnd.Controller;
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaSaidaDTO;
 import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
+import com.SenaiCommunity.BackEnd.Service.ArquivoMidiaService;
 import com.SenaiCommunity.BackEnd.Service.MensagemPrivadaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.security.Principal;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -58,6 +62,29 @@ public class MensagemPrivadaController {
 
         @Autowired
         private SimpMessagingTemplate messagingTemplate;
+
+        @Autowired
+        private ArquivoMidiaService arquivoMidiaService;
+
+        @PostMapping("/upload")
+        public ResponseEntity<?> uploadArquivo(@RequestParam("file") MultipartFile file) {
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Arquivo não pode estar vazio."));
+            }
+
+            try {
+                String url = arquivoMidiaService.upload(file);
+
+                return ResponseEntity.ok(Map.of("url", url));
+
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "Falha no upload: " + e.getMessage()));
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", e.getMessage()));
+            }
+        }
 
         @PutMapping("/{id}")
         public ResponseEntity<?> editarMensagem(@PathVariable Long id,
