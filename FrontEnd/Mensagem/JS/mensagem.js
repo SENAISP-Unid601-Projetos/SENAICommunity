@@ -5,11 +5,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- ELEMENTOS DO DOM (Específicos do Chat) ---
   const elements = {
     conversationsList: document.getElementById("conversations-list"),
-    chatHeader: document.getElementById("chat-header-area"), // ID do HTML
-    chatMessagesContainer: document.getElementById("chat-messages-area"), // ID do HTML
-    messageInput: document.getElementById("chat-input"), // ID do HTML
-    chatForm: document.getElementById("chat-form"), // ID do HTML
-    chatSendBtn: document.getElementById("chat-send-btn"), // ID do HTML
+    chatHeader: document.getElementById("chat-header-area"),
+    chatMessagesContainer: document.getElementById("chat-messages-area"),
+    messageInput: document.getElementById("chat-input"),
+    chatForm: document.getElementById("chat-form"),
+    chatSendBtn: document.getElementById("chat-send-btn"),
+    recordAudioBtn: document.getElementById("record-audio-btn"), // Botão de gravar
     conversationSearch: document.getElementById("convo-search"),
     addGroupBtn: document.querySelector(".add-convo-btn"),
     addConvoModal: document.getElementById("add-convo-modal"),
@@ -23,6 +24,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let userFriends = []; // Será preenchido pela variável global
   let activeConversation = { usuarioId: null, nome: null, avatar: null };
   let chatMessages = new Map();
+
+  // --- Variáveis de Estado de Gravação ---
+  let mediaRecorder;
+  let audioChunks = [];
+  let isRecording = false;
 
   // --- VARIÁVEIS GLOBAIS (Definidas pelo principal.js) ---
   let currentUser;
@@ -233,6 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Habilita a área de input
     elements.messageInput.disabled = false;
     elements.chatSendBtn.disabled = false;
+    elements.recordAudioBtn.disabled = false; // Habilita o botão de gravar
     elements.messageInput.placeholder = `Escreva para ${activeConversation.nome}...`; // Placeholder dinâmico
     elements.messageInput.focus();
   }
@@ -266,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * Envia uma mensagem.
+   * Envia uma mensagem DE TEXTO.
    */
   function handleSendMessage(e) {
     e.preventDefault();
@@ -279,22 +286,34 @@ document.addEventListener("DOMContentLoaded", () => {
       destinatarioId: activeConversation.usuarioId,
     };
 
-    stompClient.send(
-      `/app/privado/${activeConversation.usuarioId}`,
-      {},
-      JSON.stringify(messageData)
-    );
+    sendPrivateMessage(messageData); // Usa a função centralizada
+    
     elements.messageInput.value = "";
     elements.messageInput.focus();
   }
 
-  // --- INÍCIO DAS NOVAS FUNÇÕES (EDITAR/EXCLUIR) ---
+  /**
+   * Função centralizada para enviar ao WebSocket
+   */
+  function sendPrivateMessage(messageData) {
+     if (!messageData.conteudo || !messageData.destinatarioId || !stompClient?.connected) {
+         console.error("Dados da mensagem inválidos ou WebSocket desconectado.");
+         return;
+     }
+     
+     stompClient.send(
+      `/app/privado/${messageData.destinatarioId}`,
+      {},
+      JSON.stringify(messageData)
+    );
+  }
+
+  // --- FUNÇÕES DE EDITAR/EXCLUIR ---
 
   /**
    * Dispara a edição de uma mensagem.
    */
   async function handleEditMessage(messageId) {
-    // 1. Encontra o conteúdo atual da mensagem no DOM
     const msgElement = document.querySelector(
       `.message-group[data-message-id="${messageId}"]`
     );
@@ -303,15 +322,20 @@ document.addEventListener("DOMContentLoaded", () => {
       : null;
 
     if (!contentElement) return;
-    const oldContent = contentElement.innerText; // Pega o texto atual
+    
+    // Não permite editar áudio
+    if (contentElement.querySelector('audio')) {
+        window.showNotification("Não é possível editar mensagens de áudio.", "error");
+        return;
+    }
+    
+    const oldContent = contentElement.innerText; 
 
-    // 2. Pede o novo conteúdo ao usuário
     const newContent = prompt(
       "Digite o novo conteúdo da mensagem:",
       oldContent
     );
 
-    // 3. Verifica se o usuário cancelou ou não alterou o conteúdo
     if (
       newContent === null ||
       newContent.trim() === "" ||
@@ -320,18 +344,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 4. Envia a requisição PUT para o backend
     try {
-      // O backend já está esperando uma String simples no @RequestBody
       await axios.put(
         `${backendUrl}/api/chat/privado/${messageId}`,
         newContent,
         {
-          headers: { "Content-Type": "text/plain" }, // Importante para o backend ler como String
+          headers: { "Content-Type": "text/plain" },
         }
       );
-      // Não precisamos atualizar o DOM manualmente.
-      // O backend enviará a atualização via WebSocket, e o onMessageReceived cuidará disso.
     } catch (error) {
       console.error("Erro ao editar mensagem:", error);
       window.showNotification("Não foi possível editar a mensagem.", "error");
@@ -353,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- FIM DAS NOVAS FUNÇÕES ---
+  // --- FIM DAS FUNÇÕES DE EDITAR/EXCLUIR ---
 
   /**
    * Recebe uma mensagem (do WebSocket).
@@ -361,7 +381,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function onMessageReceived(payload) {
     const msg = JSON.parse(payload.body);
 
-    // --- INÍCIO DA MODIFICAÇÃO (Lógica de Remoção) ---
     if (msg.tipo === "remocao") {
       const msgElement = document.querySelector(
         `[data-message-id="${msg.id}"]`
@@ -377,14 +396,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (chatMessages.has(cacheKey)) {
           let messageList = chatMessages.get(cacheKey);
-          // Filtra a lista, mantendo todas, exceto a que foi removida
           messageList = messageList.filter((m) => m.id !== msg.id);
           chatMessages.set(cacheKey, messageList);
         }
       }
       return;
     }
-    // --- FIM DA MODIFICAÇÃO (Lógica de Remoção) ---
 
     const otherUserId =
       msg.remetenteId === currentUser.id ? msg.destinatarioId : msg.remetenteId;
@@ -392,7 +409,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!chatMessages.has(cacheKey)) chatMessages.set(cacheKey, []);
 
-    // --- INÍCIO DA MODIFICAÇÃO (Lógica de Edição/Nova) ---
     const messageList = chatMessages.get(cacheKey);
     const existingMsgIndex = messageList.findIndex((m) => m.id === msg.id);
 
@@ -441,6 +457,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- FUNÇÕES DE RENDERIZAÇÃO (UI do Chat) ---
+
+  /**
+   * Helper para checar se é URL de áudio
+   */
+  function isAudioUrl(url) {
+      if (typeof url !== 'string') return false;
+      // Checa se é uma URL (simplificado) e se termina com extensão de áudio
+      return (url.startsWith('http://') || url.startsWith('https://')) &&
+             /\.(mp3|wav|ogg|aac|flac|m4a|webm|opus)$/i.test(url);
+  }
+
   function renderMessages(messages) {
     if (!elements.chatMessagesContainer) return;
 
@@ -480,6 +507,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             `
           : "";
+          
+        let messageContentHtml = '';
+        if (isAudioUrl(msg.conteudo)) {
+            // É uma URL de áudio
+            messageContentHtml = `<audio controls src="${msg.conteudo}"></audio>`;
+        } else {
+            // É texto, vamos escapar para evitar XSS
+            const textNode = document.createTextNode(msg.conteudo);
+            const p = document.createElement('p');
+            p.appendChild(textNode);
+            messageContentHtml = p.innerHTML;
+        }
 
         return `
                 <div class="message-group ${messageClass}" data-message-id="${
@@ -497,7 +536,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <strong>${nome}</strong>
                                 <span>${time}</span>
                             </div>
-                            <div class="message-content">${msg.conteudo}</div>
+                            <div class="message-content">${messageContentHtml}</div>
                         </div>
                     </div>
                     </div>
@@ -563,10 +602,122 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.addConvoModal.style.display = "flex";
   }
 
+  // --- Funções de Gravação de Áudio ---
+  
+  /**
+   * Inicia a gravação do áudio
+   */
+  async function startRecording() {
+      try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = []; // Limpa chunks antigos
+          
+          mediaRecorder.ondataavailable = event => {
+              audioChunks.push(event.data);
+          };
+          
+          mediaRecorder.onstop = stopAndUploadAudio; // Define o handler de parada
+          
+          mediaRecorder.start();
+          isRecording = true;
+          
+          // Atualiza UI
+          elements.recordAudioBtn.classList.add('recording');
+          elements.messageInput.disabled = true;
+          elements.messageInput.placeholder = "Gravando áudio...";
+          
+      } catch (error) {
+          console.error("Erro ao acessar o microfone:", error);
+          window.showNotification("Não foi possível acessar seu microfone.", "error");
+      }
+  }
+
+  /**
+   * Para a gravação, processa o blob, e faz o upload.
+   */
+  async function stopAndUploadAudio() {
+      isRecording = false;
+      
+      // Para o stream e o recorder
+      if (mediaRecorder) {
+          mediaRecorder.stream.getTracks().forEach(track => track.stop()); 
+      }
+      
+      // Atualiza UI
+      elements.recordAudioBtn.classList.remove('recording');
+      elements.messageInput.disabled = false;
+      elements.messageInput.placeholder = `Escreva para ${activeConversation.nome}...`;
+      
+      // Cria o Blob final
+      const audioBlob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
+      
+      if (audioBlob.size < 1000) {
+          console.log("Gravação muito curta, descartada.");
+          return;
+      }
+      
+      window.showNotification("Enviando áudio...", "info");
+
+      const formData = new FormData();
+      
+      // --- CORREÇÃO APLICADA AQUI ---
+      // Usar o construtor 'new URL()' resolve o problema de barras duplas.
+      // Ele junta 'http://localhost:8080/' e '/api/...' de forma inteligente.
+      const uploadUrl = new URL('/api/chat/privado/upload', backendUrl).href;
+      // --- FIM DA CORREÇÃO ---
+      
+      formData.append('file', audioBlob, `audio-message-${Date.now()}.webm`); 
+      
+      try {
+          // A chamada axios (sem headers) está correta
+          const response = await axios.post(uploadUrl, formData);
+          
+          const audioUrl = response.data.url;
+          
+          if (!audioUrl) {
+              throw new Error("URL do áudio não recebida do servidor.");
+          }
+
+          // Sucesso! Agora envia a URL via WebSocket
+          const messageData = {
+              conteudo: audioUrl, // Envia a URL como conteúdo
+              destinatarioId: activeConversation.usuarioId,
+          };
+          
+          sendPrivateMessage(messageData); // Usa nossa função centralizada
+
+      } catch (error) {
+          console.error("Erro ao fazer upload do áudio:", error);
+          let errorMsg = "Falha ao enviar o áudio.";
+          if (error.response && error.response.data && error.response.data.error) {
+              errorMsg = error.response.data.error; // Pega erro do back-end (ex: Conteúdo Impróprio)
+          }
+          window.showNotification(errorMsg, "error");
+      }
+  }
+
+
   // --- SETUP DE EVENT LISTENERS (Específicos do Chat) ---
   function setupChatEventListeners() {
     if (elements.chatForm) {
       elements.chatForm.addEventListener("submit", handleSendMessage);
+    }
+
+    // Listener do Botão de Gravação
+    if (elements.recordAudioBtn) {
+        elements.recordAudioBtn.addEventListener('click', () => {
+            if (!activeConversation.usuarioId) {
+                window.showNotification("Selecione uma conversa primeiro.", "error");
+                return;
+            }
+
+            if (isRecording) {
+                mediaRecorder.stop(); // Isso vai triggar o 'onstop' (stopAndUploadAudio)
+            } else {
+                startRecording();
+            }
+        });
     }
 
     if (elements.conversationSearch) {
@@ -609,6 +760,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // Listeners para Editar/Excluir
     if (elements.chatMessagesContainer) {
       elements.chatMessagesContainer.addEventListener("click", (e) => {
         const editBtn = e.target.closest(".btn-edit-msg");

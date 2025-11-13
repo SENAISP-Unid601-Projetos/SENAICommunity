@@ -26,11 +26,8 @@ public class ArquivoMidiaService {
         if (contentType.startsWith("image/")) {
             return "image";
         }
-        if (contentType.startsWith("video/")) {
+        if (contentType.startsWith("video/") || contentType.startsWith("audio/")) {
             return "video";
-        }
-        if (contentType.startsWith("audio/")) {
-            return "audio";
         }
         return "auto";
     }
@@ -43,13 +40,12 @@ public class ArquivoMidiaService {
 
         options.put("resource_type", resourceType);
 
+        String contentType = file.getContentType();
+
         if ("image".equals(resourceType)) {
 
             options.put("moderation", "webpurify:adult");
 
-        } else if ("video".equals(resourceType)) {
-
-            options.put("moderation", "google_video_moderation:min_confidence:80");
         }
 
         Map<?, ?> response;
