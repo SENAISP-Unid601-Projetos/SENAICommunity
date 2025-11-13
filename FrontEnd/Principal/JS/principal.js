@@ -328,14 +328,14 @@ function atualizarStatusDeAmigosNaUI() {
             const friendElement = document.createElement('div');
             friendElement.className = 'friend-item';
             
-            // CORREÇÃO: O seu AmigoDTO usa 'fotoPerfil'
-            // e o seu ArquivoController serve de '/api/arquivos/'
-            const friendAvatar = friend.fotoPerfil ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` : defaultAvatarUrl;
+            const friendAvatar = friend.fotoPerfil 
+                ? (friend.fotoPerfil.startsWith('http') 
+                    ? friend.fotoPerfil 
+                    : `${backendUrl}/api/arquivos/${friend.fotoPerfil}`) 
+                : defaultAvatarUrl;
             
-            // CORREÇÃO: Pega o ID do usuário (amigo) do DTO
             const friendId = friend.idUsuario; 
 
-            // CORREÇÃO: Adiciona a tag <a> em volta do avatar e nome
             friendElement.innerHTML = `
                 <a href="perfil.html?id=${friendId}" class="friend-item-link">
                     <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${defaultAvatarUrl}';"></div>

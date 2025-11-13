@@ -452,3 +452,62 @@
 .btn-delete-msg:hover {
     color: var(--danger-color); 
 }
+
+:root, [data-theme="dark"] {
+    --danger-color: #ff4545; /* Vermelho para gravação */
+    --danger-color-rgb: 255, 69, 69;
+}
+.btn-delete-msg:hover {
+    color: var(--danger-color);
+}
+
+/* Animação de Pulsar */
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0px rgba(var(--danger-color-rgb), 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(var(--danger-color-rgb), 0); }
+    100% { box-shadow: 0 0 0 0px rgba(var(--danger-color-rgb), 0); }
+}
+
+/* Estilo do botão de gravação quando ativo */
+.chat-input-area #record-audio-btn {
+    position: relative; 
+    overflow: hidden;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+/* Estado de Gravação: Pulsar, cor vermelha e formato */
+.chat-input-area #record-audio-btn.recording {
+    background-color: var(--danger-color);
+    width: 85px; 
+    border-radius: 8px; 
+    animation: pulse 1.5s infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px; 
+}
+
+.chat-input-area #record-audio-btn .fa-microphone,
+.chat-input-area #record-audio-btn .fa-stop {
+    font-size: 1.1rem;
+    transition: opacity 0.2s;
+}
+
+.chat-input-area #record-audio-btn.recording .fa-microphone {
+    display: none;
+}
+.chat-input-area #record-audio-btn .fa-stop,
+.chat-input-area #record-audio-btn .audio-timer {
+    display: none;
+    color: white; 
+}
+
+.chat-input-area #record-audio-btn.recording .fa-stop,
+.chat-input-area #record-audio-btn.recording .audio-timer {
+    display: block;
+}
+.chat-input-area #record-audio-btn .audio-timer {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
