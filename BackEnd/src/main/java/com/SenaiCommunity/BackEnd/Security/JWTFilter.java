@@ -30,32 +30,13 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        String path = request.getServletPath();
-
-        // Ignorar completamente o endpoint de login
-        if ("/professores/**".equals(path)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        // Ignorar completamente o endpoint de login
-        if ("/alunos/**".equals(path)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        // Ignorar completamente o endpoint de login
-        if ("/autenticacao/login".equals(path)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7); // Remove "Bearer "
+            String token = authHeader.substring(7);
             String email = jwtUtil.getEmailDoToken(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-                if (jwtUtil.validarToken(token) != null) {
+                if (jwtUtil.validarToken(token)) {
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails, null, userDetails.getAuthorities()
@@ -63,13 +44,10 @@ public class JWTFilter extends OncePerRequestFilter {
                     authentication.setDetails(
                             new WebAuthenticationDetailsSource().buildDetails(request)
                     );
-
-                    // Define o usuário como autenticado no contexto do Spring
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
         }
-
         filterChain.doFilter(request, response);
     }
 }

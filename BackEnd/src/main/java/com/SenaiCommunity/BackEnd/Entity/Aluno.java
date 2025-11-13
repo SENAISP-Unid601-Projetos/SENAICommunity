@@ -21,5 +21,4 @@ public class Aluno extends Usuario {
     @ManyToMany(mappedBy = "alunos")
     private List<Projeto> projetos;
 
-
 }

@@ -1,473 +1,1492 @@
-document.addEventListener('DOMContentLoaded', () => {
 
-    // ==================== VARIÁVEIS GLOBAIS ====================
-    const currentUser = {
-        id: 1,
-        name: "Vinicius Gallo Santos",
-        username: "Vinicius G.",
-        avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-        title: "Estudante de ADS",
-        connections: 156,
-        projects: 24
-    };
-
-    // ==================== GERENCIAMENTO DE TEMA ====================
-    const themeToggle = document.querySelector('.theme-toggle');
-    const body = document.body;
-
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    body.setAttribute('data-theme', savedTheme);
+// =================================================================
+// BLOCO DE CONTROLE DE TEMA (Executa primeiro em todas as páginas)
+// =================================================================
+document.addEventListener("DOMContentLoaded", () => {
+  function setInitialTheme() {
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
     updateThemeIcon(savedTheme);
-
-    themeToggle.addEventListener('click', () => {
-        const currentTheme = body.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        body.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateThemeIcon(newTheme);
-        showNotification(`Tema alterado para ${newTheme === 'dark' ? 'escuro' : 'claro'}`);
-    });
-
-    function updateThemeIcon(theme) {
-        themeToggle.innerHTML = theme === 'dark' ?
-            '<i class="fas fa-moon"></i>' :
-            '<i class="fas fa-sun"></i>';
+  }
+  function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+    updateThemeIcon(newTheme);
+  }
+  function updateThemeIcon(theme) {
+    const themeToggleIcon = document.querySelector(".theme-toggle i");
+    if (themeToggleIcon) {
+      if (theme === "dark") {
+        themeToggleIcon.classList.remove("fa-sun");
+        themeToggleIcon.classList.add("fa-moon");
+      } else {
+        themeToggleIcon.classList.remove("fa-moon");
+        themeToggleIcon.classList.add("fa-sun");
+      }
     }
+  }
+  setInitialTheme();
+  const themeToggle = document.querySelector(".theme-toggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", toggleTheme);
+  }
+});
 
-    // ==================== MENU MOBILE ====================
-    const menuToggle = document.querySelector('.menu-toggle');
-    const sidebar = document.querySelector('.sidebar');
 
-    if (window.innerWidth <= 768) {
-        menuToggle.style.display = 'block';
-        sidebar.classList.add('mobile-hidden');
+
+// =================================================================
+// LÓGICA GLOBAL (Executa em TODAS as páginas)
+// =================================================================
+const backendUrl = "http://localhost:8080";
+const jwtToken = localStorage.getItem("token");
+const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
+const messageBadgeElement = document.getElementById("message-badge");
+
+// Variáveis globais para que outros scripts (como mensagem.js) possam acessá-las
+let stompClient = null;
+let currentUser = null;
+let userFriends = [];
+let friendsLoaded = false;
+let latestOnlineEmails = [];
+
+// Torna as variáveis e funções essenciais acessíveis globalmente
+window.stompClient = stompClient;
+window.currentUser = currentUser;
+window.jwtToken = jwtToken;
+window.backendUrl = backendUrl;
+window.defaultAvatarUrl = defaultAvatarUrl;
+window.showNotification = showNotification;
+window.axios = axios; // Assume que Axios está carregado globalmente
+
+// --- SELEÇÃO DE ELEMENTOS GLOBAIS ---
+// (Presentes em principal.html e mensagem.html)
+const globalElements = {
+  userDropdownTrigger: document.querySelector(".user-dropdown .user"),
+  logoutBtn: document.getElementById("logout-btn"),
+  notificationCenter: document.querySelector(".notification-center"),
+  notificationsIcon: document.getElementById("notifications-icon"),
+  notificationsPanel: document.getElementById("notifications-panel"),
+  notificationsList: document.getElementById("notifications-list"),
+  notificationsBadge: document.getElementById("notifications-badge"),
+  onlineFriendsList: document.getElementById("online-friends-list"),
+  connectionsCount: document.getElementById("connections-count"),
+  topbarUserName: document.getElementById("topbar-user-name"),
+  sidebarUserName: document.getElementById("sidebar-user-name"),
+  sidebarUserTitle: document.getElementById("sidebar-user-title"),
+  topbarUserImg: document.getElementById("topbar-user-img"),
+  sidebarUserImg: document.getElementById("sidebar-user-img"),
+
+  // Modais de Perfil
+  editProfileBtn: document.getElementById("edit-profile-btn"),
+  deleteAccountBtn: document.getElementById("delete-account-btn"),
+  editProfileModal: document.getElementById("edit-profile-modal"),
+  // Adicionando os elementos do modal de perfil que faltavam (baseado no principal.js original)
+  editProfileForm: document.getElementById("edit-profile-form"),
+  cancelEditProfileBtn: document.getElementById("cancel-edit-profile-btn"),
+  editProfilePicInput: document.getElementById("edit-profile-pic-input"),
+  editProfilePicPreview: document.getElementById("edit-profile-pic-preview"),
+  editProfileName: document.getElementById("edit-profile-name"),
+  editProfileBio: document.getElementById("edit-profile-bio"),
+  editProfileDob: document.getElementById("edit-profile-dob"),
+  editProfilePassword: document.getElementById("edit-profile-password"),
+  editProfilePasswordConfirm: document.getElementById(
+    "edit-profile-password-confirm"
+  ),
+  deleteAccountModal: document.getElementById("delete-account-modal"),
+  deleteAccountForm: document.getElementById("delete-account-form"),
+  cancelDeleteAccountBtn: document.getElementById("cancel-delete-account-btn"),
+  deleteConfirmPassword: document.getElementById("delete-confirm-password"),
+};
+
+/**
+ * Função de inicialização global. Carrega usuário, conecta WS, busca amigos e notificações.
+ */
+async function initGlobal() {
+  if (!jwtToken) {
+    window.location.href = "login.html";
+    return;
+  }
+  axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
+
+  try {
+    // 1. Carrega o usuário
+    const response = await axios.get(`${backendUrl}/usuarios/me`);
+    currentUser = response.data;
+    window.currentUser = currentUser; // Atualiza a global
+
+    // 2. Atualiza a UI (sidebar/topbar)
+    updateUIWithUserData(currentUser);
+
+    // 3. Conecta ao WebSocket
+    connectWebSocket(); // Define window.stompClient
+
+    // 4. Busca dados da sidebar (Amigos/Notificações)
+    await fetchFriends();
+    await fetchInitialOnlineFriends();
+    atualizarStatusDeAmigosNaUI();
+    fetchNotifications();
+
+    setupGlobalEventListeners();
+  } catch (error) {
+    console.error("ERRO CRÍTICO NA INICIALIZAÇÃO:", error);
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
     }
+  }
+}
 
-    menuToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('mobile-hidden');
-        menuToggle.innerHTML = sidebar.classList.contains('mobile-hidden') ?
-            '<i class="fas fa-bars"></i>' :
-            '<i class="fas fa-times"></i>';
-    });
+// --- FUNÇÕES GLOBAIS (Auth, UI, WebSocket, Notificações) ---
 
-    // ==================== DROPDOWN DO USUÁRIO ====================
-    const userDropdown = document.querySelector('.user-dropdown');
-    const dropdownMenu = document.querySelector('.dropdown-menu');
+function updateUIWithUserData(user) {
+  if (!user) return;
+  const userImage =
+    user.urlFotoPerfil && user.urlFotoPerfil.startsWith("http")
+      ? user.urlFotoPerfil
+      : `${window.backendUrl}${
+          user.urlFotoPerfil || "/images/default-avatar.jpg"
+        }`;
 
-    userDropdown.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-    });
+  const topbarUser = document.querySelector(".user-dropdown .user");
+  if (topbarUser) {
+    topbarUser.innerHTML = `
+            <div class="profile-pic"><img src="${userImage}" alt="Perfil"></div>
+            <span>${user.nome}</span>
+            <i class="fas fa-chevron-down"></i>
+        `;
+  }
 
-    document.addEventListener('click', () => {
-        dropdownMenu.style.display = 'none';
-    });
+  // Atualiza a Sidebar (se existir na página)
+  if (globalElements.sidebarUserName)
+    globalElements.sidebarUserName.textContent = user.nome;
+  if (globalElements.sidebarUserTitle)
+    globalElements.sidebarUserTitle.textContent =
+      user.tipoUsuario || "Membro da Comunidade";
+  if (globalElements.sidebarUserImg)
+    globalElements.sidebarUserImg.src = userImage;
 
-    // ==================== BARRA DE PESQUISA ====================
-    const searchInput = document.querySelector('.search input');
-    const searchResults = document.querySelector('.search-results');
+  // Atualiza a imagem do criador de post (se existir na página)
+  const postCreatorImg = document.getElementById("post-creator-img");
+  if (postCreatorImg) postCreatorImg.src = userImage;
+}
 
-    if(searchInput) {
-        searchInput.addEventListener('focus', () => {
-            searchResults.style.display = 'block';
-            loadSearchResults();
-        });
+function connectWebSocket() {
+  const socket = new SockJS(`${backendUrl}/ws`);
+  stompClient = Stomp.over(socket);
+  stompClient.debug = null;
+  const headers = { Authorization: `Bearer ${jwtToken}` };
 
-        searchInput.addEventListener('blur', () => {
-            setTimeout(() => {
-                searchResults.style.display = 'none';
-            }, 200);
-        });
+  stompClient.connect(
+    headers,
+    (frame) => {
+      window.stompClient = stompClient;
 
-        searchInput.addEventListener('input', (e) => {
-            loadSearchResults(e.target.value);
-        });
-    }
-
-    function loadSearchResults(query = '') {
-        const mockResults = [{
-                id: 1,
-                name: "Curso de Desenvolvimento Web",
-                type: "course"
-            },
-            {
-                id: 2,
-                name: "Grupo de Projetos IoT",
-                type: "group"
-            },
-            {
-                id: 3,
-                name: "Miguel Piscki",
-                type: "user"
-            },
-            {
-                id: 4,
-                name: "Workshop de React",
-                type: "event"
-            }
-        ];
-
-        const filteredResults = mockResults.filter(item =>
-            item.name.toLowerCase().includes(query.toLowerCase())
+      // INSCRIÇÃO GLOBAL: Notificações
+      stompClient.subscribe(`/user/queue/notifications`, (message) => {
+        console.log("NOTIFICAÇÃO RECEBIDA!", message.body);
+        const newNotification = JSON.parse(message.body);
+        showNotification(
+          `Nova notificação: ${newNotification.mensagem}`,
+          "info"
         );
+        if (globalElements.notificationsList) {
+          const emptyState =
+            globalElements.notificationsList.querySelector(".empty-state");
+          if (emptyState) emptyState.remove();
+          const newItem = createNotificationElement(newNotification); //
+          globalElements.notificationsList.prepend(newItem);
+        }
+        if (globalElements.notificationsBadge) {
+          const currentCount =
+            parseInt(globalElements.notificationsBadge.textContent) || 0;
+          const newCount = currentCount + 1;
+          globalElements.notificationsBadge.textContent = newCount;
+          globalElements.notificationsBadge.style.display = "flex";
+        }
+      });
 
-        searchResults.innerHTML = filteredResults.map(result => `
-            <div class="search-result" data-type="${result.type}" data-id="${result.id}">
-                <i class="fas fa-${getIconByType(result.type)}"></i>
-                <span>${result.name}</span>
-            </div>
-        `).join('');
+      stompClient.subscribe('/user/queue/errors', (message) => {
+            const errorMessage = message.body; 
+            window.showNotification(errorMessage, 'error');
+        });
 
-        document.querySelectorAll('.search-result').forEach(result => {
-            result.addEventListener('click', () => {
-                showNotification(`Redirecionando para: ${result.querySelector('span').textContent}`);
-                searchInput.value = '';
-                searchResults.style.display = 'none';
-            });
+      // INSCRIÇÃO GLOBAL: Status Online
+      stompClient.subscribe("/topic/status", (message) => {
+        latestOnlineEmails = JSON.parse(message.body); //
+        atualizarStatusDeAmigosNaUI();
+      });
+
+      document.dispatchEvent(
+        new CustomEvent("globalScriptsLoaded", {
+          detail: { stompClient: window.stompClient, currentUser },
+        })
+      );
+
+      // Dispara evento para que scripts de página (feed, chat) façam suas inscrições
+      document.dispatchEvent(
+        new CustomEvent("webSocketConnected", {
+          detail: { stompClient },
+        })
+      );
+
+      stompClient.subscribe(`/user/queue/amizades`, (message) => {
+        fetchFriends().then(() => {
+          atualizarStatusDeAmigosNaUI();
+          document.dispatchEvent(new CustomEvent("friendsListUpdated"));
+        });
+      });
+
+      // INSCRIÇÃO GLOBAL: Contagem de Mensagens
+      stompClient.subscribe(`/user/queue/contagem`, (message) => {
+        const count = JSON.parse(message.body);
+        updateMessageBadge(count);
+      });
+      fetchAndUpdateUnreadCount();
+    },
+    (error) => console.error("ERRO WEBSOCKET:", error)
+  );
+}
+
+async function fetchAndUpdateUnreadCount() {
+  if (!messageBadgeElement) return; // Só executa se o badge existir na página
+  try {
+    const response = await axios.get(
+      `${backendUrl}/api/chat/privado/nao-lidas/contagem`
+    );
+    const count = response.data;
+    updateMessageBadge(count);
+  } catch (error) {
+    console.error("Erro ao buscar contagem de mensagens não lidas:", error);
+  }
+}
+
+function updateMessageBadge(count) {
+  if (messageBadgeElement) {
+    messageBadgeElement.textContent = count;
+    messageBadgeElement.style.display = count > 0 ? "flex" : "none";
+  }
+}
+
+function showNotification(message, type = "info") {
+  const notification = document.createElement("div");
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+  if (globalElements.notificationCenter)
+    globalElements.notificationCenter.appendChild(notification);
+  setTimeout(() => {
+    notification.classList.add("show");
+  }, 10);
+  setTimeout(() => {
+    notification.classList.remove("show");
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }, 5000);
+}
+
+// --- Funções Globais: Amigos e Notificações ---
+
+async function fetchFriends() {
+  try {
+    const response = await axios.get(`${backendUrl}/api/amizades/`); //
+    userFriends = response.data;
+    window.userFriends = userFriends; // Torna global
+    if (globalElements.connectionsCount) {
+      globalElements.connectionsCount.textContent = userFriends.length; //
+    }
+  } catch (error) {
+    console.error("Erro ao buscar lista de amigos:", error);
+    userFriends = [];
+  } finally {
+    friendsLoaded = true;
+  }
+}
+
+async function fetchInitialOnlineFriends() {
+  try {
+    const response = await axios.get(`${backendUrl}/api/amizades/online`); //
+    const amigosOnlineDTOs = response.data;
+    latestOnlineEmails = amigosOnlineDTOs.map((amigo) => amigo.email); //
+  } catch (error) {
+    console.error("Erro ao buscar status inicial de amigos online:", error);
+    latestOnlineEmails = [];
+  }
+}
+
+function atualizarStatusDeAmigosNaUI() {
+    if (!globalElements.onlineFriendsList) return;
+    if (!friendsLoaded) {
+        globalElements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
+        return;
+    }
+    const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email)); //
+    globalElements.onlineFriendsList.innerHTML = '';
+    if (onlineFriends.length === 0) {
+        globalElements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+    } else {
+        onlineFriends.forEach(friend => {
+            const friendElement = document.createElement('div');
+            friendElement.className = 'friend-item';
+            
+            // CORREÇÃO: O seu AmigoDTO usa 'fotoPerfil'
+            // e o seu ArquivoController serve de '/api/arquivos/'
+            const friendAvatar = friend.fotoPerfil ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` : defaultAvatarUrl;
+            
+            // CORREÇÃO: Pega o ID do usuário (amigo) do DTO
+            const friendId = friend.idUsuario; 
+
+            // CORREÇÃO: Adiciona a tag <a> em volta do avatar e nome
+            friendElement.innerHTML = `
+                <a href="perfil.html?id=${friendId}" class="friend-item-link">
+                    <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${defaultAvatarUrl}';"></div>
+                    <span class="friend-name">${friend.nome}</span>
+                </a>
+                <div class="status online"></div>
+            `;
+            globalElements.onlineFriendsList.appendChild(friendElement);
         });
     }
+}
 
-    function getIconByType(type) {
-        const icons = {
-            course: 'book',
-            group: 'users',
-            user: 'user',
-            event: 'calendar'
-        };
-        return icons[type] || 'search';
-    }
+async function fetchNotifications() {
+  try {
+    const response = await axios.get(`${backendUrl}/api/notificacoes`);
+    renderNotifications(response.data); //
+  } catch (error) {
+    console.error("Erro ao buscar notificações:", error);
+  }
+}
 
-    // ==================== CRIAÇÃO DE POSTS ====================
-    const postCreatorInput = document.querySelector('.post-creator input');
-    const postOptions = document.querySelectorAll('.post-options .option-btn');
-    const postsContainer = document.querySelector('.posts-container');
+function renderNotifications(notifications) {
+  if (!globalElements.notificationsList) return;
+  globalElements.notificationsList.innerHTML = "";
+  const unreadCount = notifications.filter((n) => !n.lida).length; //
+  if (globalElements.notificationsBadge) {
+    globalElements.notificationsBadge.style.display =
+      unreadCount > 0 ? "flex" : "none"; //
+    globalElements.notificationsBadge.textContent = unreadCount;
+  }
+  if (notifications.length === 0) {
+    globalElements.notificationsList.innerHTML =
+      '<p class="empty-state">Nenhuma notificação.</p>';
+    return;
+  }
+  notifications.forEach((notification) => {
+    const item = createNotificationElement(notification); //
+    globalElements.notificationsList.appendChild(item);
+  });
+}
 
-    if (postCreatorInput) {
-        postCreatorInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && postCreatorInput.value.trim()) {
-                createPost(postCreatorInput.value.trim());
-                postCreatorInput.value = '';
-            }
-        });
-    }
+function createNotificationElement(notification) {
+        const item = document.createElement('div');
+        item.className = 'notification-item';
+        item.id = `notification-item-${notification.id}`;
+        if (!notification.lida) item.classList.add('unread');
     
-    if (postOptions) {
-        postOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                const type = option.dataset.type;
-                showNotification(`Adicionar ${type === 'photo' ? 'imagem' : type === 'video' ? 'vídeo' : 'código'}`);
-            });
-        });
-    }
+        const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
+        let actionButtonsHtml = '';
+        let iconClass = 'fa-info-circle';
+        let notificationLink = '#'; // Link padrão
 
-    function createPost(content, images = []) {
-        const postElement = document.createElement('div');
-        postElement.className = 'post';
-        postElement.dataset.id = Date.now();
-        postElement.innerHTML = `
-            <div class="post-header">
-                <div class="post-author">
-                    <div class="post-icon"><img src="${currentUser.avatar}" alt="${currentUser.name}"></div>
-                    <div class="post-info">
-                        <h2>${currentUser.name}</h2>
-                        <span>agora • <i class="fas fa-globe-americas"></i></span>
-                    </div>
-                </div>
-                <div class="post-options-btn"><i class="fas fa-ellipsis-h"></i></div>
-            </div>
-            <div class="post-text">${content}</div>
-            <div class="post-actions">
-                <button class="like-btn"><i class="far fa-thumbs-up"></i> <span>Curtir</span> <span class="count">0</span></button>
-                <button class="comment-btn"><i class="far fa-comment"></i> <span>Comentar</span> <span class="count">0</span></button>
-                <button class="share-btn"><i class="far fa-share-square"></i> <span>Compartilhar</span></button>
-            </div>
-            <div class="post-comments"></div>
-            <div class="add-comment">
-                <div class="avatar-small"><img src="${currentUser.avatar}" alt="${currentUser.name}"></div>
-                <input type="text" placeholder="Adicione um comentário...">
-            </div>`;
-        addPostEvents(postElement);
-        postsContainer.prepend(postElement);
-    }
+        // IDs vindos do Backend
+        const postId = notification.idReferencia;
+        const commentId = notification.idReferenciaSecundaria; 
 
-    // ==================== INTERAÇÕES COM POSTS ====================
-    function addPostEvents(postElement) {
-        const optionsBtn = postElement.querySelector('.post-options-btn');
-        optionsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showPostOptionsMenu(postElement, e.currentTarget);
-        });
-
-        const likeBtn = postElement.querySelector('.like-btn');
-        likeBtn.addEventListener('click', () => {
-            likeBtn.classList.toggle('liked');
-            const icon = likeBtn.querySelector('i');
-            const count = likeBtn.querySelector('.count');
-            const isLiked = likeBtn.classList.contains('liked');
-            icon.className = isLiked ? 'fas fa-thumbs-up' : 'far fa-thumbs-up';
-            count.textContent = parseInt(count.textContent) + (isLiked ? 1 : -1);
-        });
-
-        const commentInput = postElement.querySelector('.add-comment input');
-        commentInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && commentInput.value.trim()) {
-                addComment(postElement, commentInput.value.trim());
-                commentInput.value = '';
+        if (notification.tipo === 'PEDIDO_AMIZADE') {
+            iconClass = 'fa-user-plus';
+            notificationLink = 'amizades.html'; // Link para amizades
+            if (!notification.lida) {
+                 actionButtonsHtml = `
+                  <div class="notification-actions">
+                     <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
+                     <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
+                  </div>`;
             }
-        });
-
-        const shareBtn = postElement.querySelector('.share-btn');
-        shareBtn.addEventListener('click', () => showNotification('Post compartilhado com sucesso!'));
-    }
-
-    function showPostOptionsMenu(postElement, target) {
-        document.querySelectorAll('.post-options-menu').forEach(menu => menu.remove());
-        const menu = document.createElement('div');
-        menu.className = 'post-options-menu';
-        menu.innerHTML = `
-            <button data-action="save"><i class="far fa-bookmark"></i> Salvar</button>
-            <button data-action="edit"><i class="far fa-edit"></i> Editar</button>
-            <button data-action="delete"><i class="far fa-trash-alt"></i> Excluir</button>`;
-        document.body.appendChild(menu);
-
-        const rect = target.getBoundingClientRect();
-        menu.style.top = `${rect.bottom + window.scrollY}px`;
-        menu.style.left = `${rect.left + window.scrollX - 150}px`;
-
-        menu.addEventListener('click', (e) => {
-            const action = e.target.closest('button').dataset.action;
-            if (action === 'delete') {
-                postElement.remove();
-                showNotification('Post excluído com sucesso!');
+        } else if (notification.tipo === 'NOVO_COMENTARIO' || notification.tipo === 'CURTIDA_POST' || notification.tipo === 'CURTIDA_COMENTARIO') {
+            
+            if (notification.tipo.startsWith('CURTIDA')) {
+                iconClass = 'fa-heart';
             } else {
-                showNotification('Funcionalidade ainda não implementada.');
+                iconClass = 'fa-comment';
             }
-            menu.remove();
-        });
-        setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 10);
-    }
 
-    function addComment(postElement, content) {
-        const commentsContainer = postElement.querySelector('.post-comments');
-        const commentCount = postElement.querySelector('.comment-btn .count');
-        const comment = document.createElement('div');
-        comment.className = 'comment';
-        comment.innerHTML = `
-            <div class="avatar-small"><img src="${currentUser.avatar}" alt="${currentUser.name}"></div>
-            <div class="comment-content">
-                <div class="comment-header">
-                    <span class="comment-author">${currentUser.name}</span>
-                    <span class="comment-time">agora</span>
-                </div>
-                <p>${content}</p>
-            </div>`;
-        commentsContainer.appendChild(comment);
-        commentCount.textContent = parseInt(commentCount.textContent) + 1;
-    }
+            // Constrói o link para o post
+            // (Assumindo que a página de perfil também pode mostrar o post)
+            notificationLink = `principal.html?postId=${postId}`;
 
-    // ==================== AMIGOS ONLINE ====================
-    function loadOnlineFriends() {
-        const onlineFriendsContainer = document.querySelector('.online-friends');
-        if (!onlineFriendsContainer) return;
-
-        const mockFriends = [
-            { id: 2, name: "Miguel Piscki", avatar: "https://randomuser.me/api/portraits/men/22.jpg", status: "online" },
-            { id: 3, name: "Ana Silva", avatar: "https://randomuser.me/api/portraits/women/33.jpg", status: "online" },
-            { id: 4, name: "Matheus B.", avatar: "https://randomuser.me/api/portraits/men/45.jpg", status: "away" },
-            { id: 5, name: "Julia Melo", avatar: "https://randomuser.me/api/portraits/women/48.jpg", status: "online" },
-            { id: 6, name: "Carlos Lima", avatar: "https://randomuser.me/api/portraits/men/51.jpg", status: "away" },
-            { id: 7, name: "Laura Costa", avatar: "https://randomuser.me/api/portraits/women/55.jpg", status: "online" },
-        ];
-        const friendsHTML = mockFriends.map(friend => `
-            <div class="friend" data-id="${friend.id}" title="${friend.name}">
-                <div class="friend-avatar ${friend.status}"><img src="${friend.avatar}" alt="${friend.name}"></div>
-                <span>${friend.name.split(' ')[0]}</span>
-            </div>`).join('');
-        onlineFriendsContainer.innerHTML = `
-            <div class="section-header">
-                <h3><i class="fas fa-satellite-dish"></i> Amigos Online</h3>
-                <a href="#" class="see-all">Ver todos</a>
-            </div>
-            <div class="friends-grid">${friendsHTML}</div>`;
-        onlineFriendsContainer.querySelectorAll('.friend').forEach(friend => {
-            friend.addEventListener('click', () => {
-                showNotification(`Iniciando chat com ${friend.getAttribute('title')}`, 'info');
-            });
-        });
-    }
-
-    // ==================== DADOS PARA WIDGETS ====================
-    const mockEventos = [
-        { id: 5, titulo: "Semana da Cibersegurança", data: new Date(2025, 5, 9), formato: "Híbrido"},
-        { id: 2, titulo: "Workshop de Design de APIs com Node.js", data: new Date(2025, 6, 15), formato: "Online"},
-        { id: 6, titulo: "Construindo seu Portfólio de Dev", data: new Date(2025, 6, 12), formato: "Online"},
-        { id: 7, titulo: "Introdução à Cloud com AWS e Azure", data: new Date(2025, 5, 28), formato: "Online"},
-        { id: 3, titulo: "Feira de Carreiras Tech 2025", data: new Date(2025, 7, 5), formato: "Presencial"},
-        { id: 8, titulo: "SENAI Games: Torneio de E-Sports", data: new Date(2025, 7, 22), formato: "Presencial"},
-        { id: 1, titulo: "Hackathon de Inteligência Artificial", data: new Date(2025, 5, 20), formato: "Presencial"},
-        { id: 4, titulo: "Palestra: O Futuro da Computação Quântica", data: new Date(2025, 5, 1), formato: "Online"},
-        { id: 9, titulo: "Painel: Indústria 4.0 e o Papel do Técnico", data: new Date(2025, 4, 29), formato: "Híbrido"},
-        { id: 10, titulo: "Workshop: Como Brilhar no LinkedIn", data: new Date(2025, 4, 20), formato: "Online"},
-        { id: 11, titulo: "Bootcamp: Python para Análise de Dados", data: new Date(2025, 4, 15), formato: "Presencial"}
-    ];
+            // Se for sobre um comentário, adiciona o hash
+            if (commentId) {
+                notificationLink += `#comment-${commentId}`;
+            }
+        }
     
-    const mockProjetos = [
-        { id: 101, titulo: "Sistema de Irrigação Automatizado com IoT", autor: "Ana Silva", avatarAutor: "https://randomuser.me/api/portraits/women/33.jpg", imagem: "https://images.unsplash.com/photo-1615143105096-74c04390cf33?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" },
-        { id: 102, titulo: "Dashboard de Análise de Vendas em Power BI", autor: "Carlos Lima", avatarAutor: "https://randomuser.me/api/portraits/men/51.jpg", imagem: "https://images.unsplash.com/photo-1634733591032-15ac4c3411d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" },
-        { id: 103, titulo: "App de Gerenciamento de Tarefas em React", autor: "Julia Melo", avatarAutor: "https://randomuser.me/api/portraits/women/48.jpg", imagem: "https://images.unsplash.com/photo-1589652717521-10c0d0c2dea9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" }
-    ];
+        item.innerHTML = `
+            <a href="${notificationLink}" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
+                <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
+                <div class="notification-content">
+                    <p>${notification.mensagem}</p>
+                    <span class="timestamp">${data}</span>
+                </div>
+            </a>
+            <div class="notification-actions-wrapper">${actionButtonsHtml}</div>
+        `;
+    
+        const actionsWrapper = item.querySelector('.notification-actions-wrapper');
+        if (actionsWrapper) {
+            actionsWrapper.addEventListener('click', e => e.stopPropagation());
+        }
+        return item;
+    }
+    async function checkAndHighlightComment() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get('postId');
+        const hash = window.location.hash; // Pega o #comment-123
 
-    // ==================== WIDGET DE EVENTOS ====================
-    function loadUpcomingEventsWidget() {
-        const widgetContainer = document.getElementById('upcoming-events-widget');
-        if (!widgetContainer) return;
+        // Só continua se tiver um postId na URL
+        if (!postId) return; 
 
-        const proximosEventos = mockEventos
-            .filter(evento => evento.data >= new Date())
-            .sort((a, b) => a.data - b.data)
-            .slice(0, 3);
+        let commentId = null;
+        if (hash && hash.startsWith('#comment-')) {
+            commentId = hash.substring(1); // "comment-123"
+        }
+
+        // 1. Encontrar o Post
+        let postElement = document.getElementById(`post-${postId}`);
+        let attempts = 0;
+
+        // Tenta encontrar o post por até 5 segundos (esperando o fetch das postagens)
+        while (!postElement && attempts < 25) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            postElement = document.getElementById(`post-${postId}`);
+            attempts++;
+        }
+
+        if (!postElement) {
+            console.warn(`Post ${postId} não encontrado para destacar.`);
+            return;
+        }
+
+        // 2. Rolar até o Post e Abrir os Comentários
+        postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        let widgetContent = `
-            <div class="widget-header">
-                <h3><i class="fas fa-calendar-star"></i> Próximos Eventos</h3>
-                <a href="evento.html" class="see-all">Ver todos</a>
-            </div>
-            <div class="events-preview-list">`;
-        if (proximosEventos.length > 0) {
-            proximosEventos.forEach(evento => {
-                const dia = evento.data.getDate();
-                const mes = evento.data.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
-                widgetContent += `
-                    <div class="event-preview-item">
-                        <div class="event-preview-date">
-                            <span>${dia}</span><span>${mes}</span>
-                        </div>
-                        <div class="event-preview-info">
-                            <h4>${evento.titulo}</h4>
-                            <p><i class="fas fa-map-marker-alt"></i> ${evento.formato}</p>
-                        </div>
-                    </div>`;
-            });
-        } else {
-            widgetContent += '<p class="empty-message">Nenhum evento programado.</p>';
+        const commentsSection = postElement.querySelector('.comments-section');
+        if (commentsSection && commentsSection.style.display === 'none') {
+            // Clica no botão de comentários (usando a função global)
+            window.toggleComments(postId);
+            // Espera a UI atualizar
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
-        widgetContent += '</div>';
-        widgetContainer.innerHTML = widgetContent;
-    }
-    
-    // ==================== WIDGET DE PROJETOS EM DESTAQUE ====================
-    function loadFeaturedProjectsWidget() {
-        const widgetContainer = document.getElementById('featured-projects-widget');
-        if (!widgetContainer) return;
-    
-        const projetosEmDestaque = mockProjetos.slice(0, 2); 
-    
-        let widgetContent = `
-            <div class="widget-header">
-                <h3><i class="fas fa-lightbulb"></i> Projetos em Destaque</h3>
-                <a href="projeto.html" class="see-all">Ver todos</a>
-            </div>
-            <div class="project-preview-list">`;
-    
-        if (projetosEmDestaque.length > 0) {
-            projetosEmDestaque.forEach(projeto => {
-                widgetContent += `
-                    <a href="#" class="project-preview-item" title="${projeto.titulo}">
-                        <div class="project-preview-image">
-                            <img src="${projeto.imagem}" alt="${projeto.titulo}">
-                        </div>
-                        <div class="project-preview-info">
-                            <h4>${projeto.titulo}</h4>
-                            <p>
-                                <img src="${projeto.avatarAutor}" class="author-avatar" alt="${projeto.autor}">
-                                <span>Por ${projeto.autor}</span>
-                            </p>
-                        </div>
-                    </a>`;
-            });
-        } else {
-            widgetContent += '<p class="empty-message">Nenhum projeto em destaque.</p>';
+
+        // 3. Se houver um commentId, encontrar e destacar o comentário
+        if (commentId) {
+            const commentElement = document.getElementById(commentId);
+            if (commentElement) {
+                // Rola até o comentário
+                commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Adiciona a classe de "flash"
+                commentElement.classList.add('highlight-flash');
+                
+                // Remove a classe após a animação
+                setTimeout(() => {
+                    commentElement.classList.remove('highlight-flash');
+                }, 2000); // 2 segundos
+            } else {
+                console.warn(`Comentário ${commentId} não encontrado no post ${postId}.`);
+            }
         }
-        widgetContent += '</div>';
-        widgetContainer.innerHTML = widgetContent;
     }
+    // Função para mostrar/ocultar respostas aninhadas
+window.toggleReplies = (buttonElement, commentId) => {
+    const repliesContainer = document.getElementById(`replies-for-${commentId}`);
+    if (!repliesContainer) return;
 
-    // ==================== NOTIFICAÇÕES ====================
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        document.querySelector('.notification-center').appendChild(notification);
-        setTimeout(() => notification.classList.add('show'), 10);
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
+    if (repliesContainer.style.display === 'none') {
+        // Mostrar respostas
+        repliesContainer.style.display = 'flex'; // Usamos 'flex' pois .comment-replies é flex
+        buttonElement.innerHTML = `<i class="fas fa-minus-circle"></i> Ocultar respostas`;
+    } else {
+        // Ocultar respostas
+        repliesContainer.style.display = 'none';
+        // Re-calcula o número de respostas para o texto do botão
+        const replyCount = repliesContainer.children.length;
+        const plural = replyCount > 1 ? 'respostas' : 'resposta';
+        buttonElement.innerHTML = `<i class="fas fa-comment-dots"></i> Ver ${replyCount} ${plural}`;
     }
+};
 
-    // ==================== CARREGAR POSTS INICIAIS ====================
-    function loadInitialPosts() {
-        if (!postsContainer) return;
-        const mockPosts = [
-            { id: 1, author: { name: "Miguel Piscki", avatar: "https://randomuser.me/api/portraits/men/22.jpg" }, content: "Finalizamos hoje o projeto de automação industrial usando Arduino e sensores IoT. O sistema monitora temperatura, umidade e controla atuadores remotamente!", images: ["https://images.unsplash.com/photo-1558522195-e1201b090344?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"], time: "13h", likes: 24, comments: [{ author: "Ana Silva", avatar: "https://randomuser.me/api/portraits/women/33.jpg", content: "Incrível, Miguel! Poderia compartilhar o código fonte?", time: "2h atrás" }] },
-            { id: 2, author: { name: "Matheus Biancolini", avatar: "https://randomuser.me/api/portraits/men/45.jpg" }, content: "Alguém interessado em formar um grupo de estudos para a maratona de programação? Estou pensando em reunir 3-5 pessoas para treinar 2x por semana.", images: [], time: "Ontem", likes: 12, comments: [] }
-        ];
-        postsContainer.innerHTML = '';
-        mockPosts.forEach(postData => {
-            const postElement = document.createElement('div');
-            postElement.className = 'post';
-            postElement.innerHTML = `
-                <div class="post-header">
-                    <div class="post-author">
-                        <div class="post-icon"><img src="${postData.author.avatar}" alt="${postData.author.name}"></div>
-                        <div class="post-info">
-                            <h2>${postData.author.name}</h2>
-                            <span>${postData.time} • <i class="fas fa-globe-americas"></i></span>
-                        </div>
+async function markAllNotificationsAsRead() {
+  //
+  const unreadCount = parseInt(
+    globalElements.notificationsBadge.textContent,
+    10
+  );
+  if (isNaN(unreadCount) || unreadCount === 0) return;
+  try {
+    await axios.post(`${backendUrl}/api/notificacoes/ler-todas`);
+    if (globalElements.notificationsBadge) {
+      globalElements.notificationsBadge.style.display = "none";
+      globalElements.notificationsBadge.textContent = "0";
+    }
+    if (globalElements.notificationsList) {
+      globalElements.notificationsList
+        .querySelectorAll(".notification-item.unread")
+        .forEach((item) => item.classList.remove("unread"));
+    }
+  } catch (error) {
+    console.error("Erro ao marcar todas como lidas:", error);
+  }
+}
+
+window.aceitarSolicitacao = async (amizadeId, notificationId) => {
+  //
+  try {
+    await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`); //
+    handleFriendRequestFeedback(notificationId, "Pedido aceito!", "success");
+    fetchFriends();
+  } catch (error) {
+    handleFriendRequestFeedback(notificationId, "Erro ao aceitar.", "error");
+  }
+};
+
+window.recusarSolicitacao = async (amizadeId, notificationId) => {
+  //
+  try {
+    await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`); //
+    handleFriendRequestFeedback(notificationId, "Pedido recusado.", "info");
+  } catch (error) {
+    handleFriendRequestFeedback(notificationId, "Erro ao recusar.", "error");
+  }
+};
+
+function handleFriendRequestFeedback(notificationId, message, type = "info") {
+  //
+  const item = document.getElementById(`notification-item-${notificationId}`);
+  if (item) {
+    const actionsDiv = item.querySelector(".notification-actions-wrapper");
+    if (actionsDiv)
+      actionsDiv.innerHTML = `<p class="feedback-text ${
+        type === "success" ? "success" : ""
+      }">${message}</p>`;
+    setTimeout(() => {
+      item.classList.add("removing");
+      setTimeout(() => {
+        item.remove();
+        if (
+          globalElements.notificationsList &&
+          globalElements.notificationsList.children.length === 0
+        ) {
+          globalElements.notificationsList.innerHTML =
+            '<p class="empty-state">Nenhuma notificação.</p>';
+        }
+      }, 500);
+    }, 2500);
+  }
+  fetchNotifications();
+}
+
+const closeAllMenus = () => {
+  document
+    .querySelectorAll(".options-menu, .dropdown-menu")
+    .forEach((m) => (m.style.display = "none"));
+};
+
+function openEditProfileModal() {
+  //
+  const elements = globalElements; // usa os elementos globais
+  if (!currentUser || !elements.editProfileModal) return;
+  elements.editProfilePicPreview.src =
+    currentUser.urlFotoPerfil && currentUser.urlFotoPerfil.startsWith("http")
+      ? currentUser.urlFotoPerfil
+      : `${window.backendUrl}${
+          currentUser.urlFotoPerfil || "/images/default-avatar.jpg"
+        }`;
+  elements.editProfileName.value = currentUser.nome;
+  elements.editProfileBio.value = currentUser.bio || "";
+  if (currentUser.dataNascimento) {
+    elements.editProfileDob.value = currentUser.dataNascimento.split("T")[0];
+  }
+  elements.editProfilePassword.value = "";
+  elements.editProfilePasswordConfirm.value = "";
+  elements.editProfileModal.style.display = "flex";
+}
+
+function openDeleteAccountModal() {
+  //
+  const elements = globalElements; // usa os elementos globais
+  if (elements.deleteConfirmPassword) elements.deleteConfirmPassword.value = "";
+  if (elements.deleteAccountModal)
+    elements.deleteAccountModal.style.display = "flex";
+}
+
+// --- SETUP DE EVENT LISTENERS GLOBAIS ---
+function setupGlobalEventListeners() {
+  document.body.addEventListener("click", (e) => {
+    if (
+      globalElements.notificationsPanel &&
+      !globalElements.notificationsPanel.contains(e.target) &&
+      !globalElements.notificationsIcon.contains(e.target)
+    ) {
+      globalElements.notificationsPanel.style.display = "none";
+    }
+    closeAllMenus();
+  });
+
+  if (globalElements.notificationsIcon) {
+    globalElements.notificationsIcon.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const panel = globalElements.notificationsPanel;
+      const isVisible = panel.style.display === "block";
+      panel.style.display = isVisible ? "none" : "block";
+      if (!isVisible) markAllNotificationsAsRead(); //
+    });
+  }
+
+  if (globalElements.userDropdownTrigger) {
+    globalElements.userDropdownTrigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const menu = globalElements.userDropdownTrigger.nextElementSibling;
+      if (menu && menu.classList.contains("dropdown-menu")) {
+        const isVisible = menu.style.display === "block";
+        closeAllMenus();
+        if (!isVisible) menu.style.display = "block";
+      }
+    });
+  }
+
+  if (globalElements.logoutBtn) {
+    globalElements.logoutBtn.addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "login.html";
+    });
+  }
+
+  // --- Listeners de Modais de Perfil ---
+  //
+  if (globalElements.editProfileBtn)
+    globalElements.editProfileBtn.addEventListener(
+      "click",
+      openEditProfileModal
+    );
+  if (globalElements.deleteAccountBtn)
+    globalElements.deleteAccountBtn.addEventListener(
+      "click",
+      openDeleteAccountModal
+    );
+  if (globalElements.cancelEditProfileBtn)
+    globalElements.cancelEditProfileBtn.addEventListener(
+      "click",
+      () => (globalElements.editProfileModal.style.display = "none")
+    );
+  if (globalElements.editProfilePicInput)
+    globalElements.editProfilePicInput.addEventListener("change", () => {
+      const file = globalElements.editProfilePicInput.files[0];
+      if (file)
+        globalElements.editProfilePicPreview.src = URL.createObjectURL(file);
+    });
+  if (globalElements.editProfileForm)
+    globalElements.editProfileForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      // Lógica de update de foto
+      if (globalElements.editProfilePicInput.files[0]) {
+        const formData = new FormData();
+        formData.append("foto", globalElements.editProfilePicInput.files[0]);
+        try {
+          const response = await axios.put(
+            `${backendUrl}/usuarios/me/foto`,
+            formData
+          );
+          currentUser = response.data;
+          updateUIWithUserData(currentUser);
+          showNotification("Foto de perfil atualizada!", "success");
+        } catch (error) {
+          let errorMessage = "Erro ao atualizar a foto.";
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
+            }
+            showNotification(errorMessage, "error");
+        }
+      }
+      // Lógica de update de dados
+      const password = globalElements.editProfilePassword.value;
+      if (
+        password &&
+        password !== globalElements.editProfilePasswordConfirm.value
+      ) {
+        showNotification("As novas senhas não coincidem.", "error");
+        return;
+      }
+      const updateData = {
+        nome: globalElements.editProfileName.value,
+        bio: globalElements.editProfileBio.value,
+        dataNascimento: globalElements.editProfileDob.value
+          ? new Date(globalElements.editProfileDob.value).toISOString()
+          : null,
+        senha: password || null,
+      };
+      try {
+        const response = await axios.put(
+          `${backendUrl}/usuarios/me`,
+          updateData
+        );
+        currentUser = response.data;
+        updateUIWithUserData(currentUser);
+        showNotification("Perfil atualizado com sucesso!", "success");
+        globalElements.editProfileModal.style.display = "none";
+      } catch (error) {
+        showNotification("Erro ao atualizar o perfil.", "error");
+      }
+    });
+
+  // Deletar conta
+  if (globalElements.cancelDeleteAccountBtn)
+    globalElements.cancelDeleteAccountBtn.addEventListener(
+      "click",
+      () => (globalElements.deleteAccountModal.style.display = "none")
+    );
+  if (globalElements.deleteAccountForm)
+    globalElements.deleteAccountForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const password = globalElements.deleteConfirmPassword.value;
+      if (!password) {
+        showNotification(
+          "Por favor, digite sua senha para confirmar.",
+          "error"
+        );
+        return;
+      }
+      try {
+        await axios.post(`${backendUrl}/autenticacao/login`, {
+          email: currentUser.email,
+          senha: password,
+        });
+        if (
+          confirm("Você tem ABSOLUTA CERTEZA? Esta ação não pode ser desfeita.")
+        ) {
+          await axios.delete(`${backendUrl}/usuarios/me`);
+          alert("Sua conta foi excluída com sucesso.");
+          localStorage.clear();
+          window.location.href = "login.html";
+        }
+      } catch (error) {
+        showNotification("Senha incorreta. A conta não foi excluída.", "error");
+      }
+    });
+}
+
+// =================================================================
+// INICIALIZAÇÃO GLOBAL
+// =================================================================
+// Inicia a lógica global em TODAS as páginas
+document.addEventListener("DOMContentLoaded", initGlobal);
+
+// =================================================================
+// LÓGICA ESPECIALIZADA (Só executa se estiver na página principal)
+// =================================================================
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. Verifica se estamos na página principal para carregar o feed
+  const postsContainer = document.querySelector(".posts-container");
+  if (!postsContainer) {
+    return; // Sai se não for a página de feed (ex: está em mensagem.html)
+  }
+
+  // --- SELEÇÃO DE ELEMENTOS (Específicos do Feed) ---
+  //
+  const feedElements = {
+    postsContainer: postsContainer,
+    postTextarea: document.getElementById("post-creator-textarea"),
+    postFileInput: document.getElementById("post-file-input"),
+    filePreviewContainer: document.getElementById("file-preview-container"),
+    publishBtn: document.getElementById("publish-post-btn"),
+    editPostModal: document.getElementById("edit-post-modal"),
+    editPostForm: document.getElementById("edit-post-form"),
+    editPostIdInput: document.getElementById("edit-post-id"),
+    editPostTextarea: document.getElementById("edit-post-textarea"),
+    cancelEditPostBtn: document.getElementById("cancel-edit-post-btn"),
+    editPostFileInput: document.getElementById("edit-post-files"),
+    editFilePreviewContainer: document.getElementById(
+      "edit-file-preview-container"
+    ),
+    editCommentModal: document.getElementById("edit-comment-modal"),
+    editCommentForm: document.getElementById("edit-comment-form"),
+    editCommentIdInput: document.getElementById("edit-comment-id"),
+    editCommentTextarea: document.getElementById("edit-comment-textarea"),
+    cancelEditCommentBtn: document.getElementById("cancel-edit-comment-btn"),
+  };
+
+  let selectedFilesForPost = [];
+  let selectedFilesForEdit = [];
+  let urlsParaRemover = [];
+  const searchInput = document.getElementById("search-input");
+
+  // --- FUNÇÕES (Específicas do Feed) ---
+
+  async function fetchPublicPosts() {
+    //
+    try {
+      const response = await axios.get(`${backendUrl}/api/chat/publico`);
+      feedElements.postsContainer.innerHTML = "";
+      const sortedPosts = response.data.sort(
+        (a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao)
+      );
+      sortedPosts.forEach((post) => showPublicPost(post));
+    } catch (error) {
+      console.error("Erro ao buscar postagens:", error);
+      feedElements.postsContainer.innerHTML =
+        "<p>Não foi possível carregar o feed.</p>";
+    }
+  }
+
+  function createPostElement(post) {
+    //
+    const postElement = document.createElement("div");
+    postElement.className = "post";
+    postElement.id = `post-${post.id}`;
+    const autorNome = post.nomeAutor || "Usuário Desconhecido";
+    const autorIdDoPost = post.autorId;
+    const fotoAutorPath = post.urlFotoAutor;
+    const autorAvatar =
+      fotoAutorPath && fotoAutorPath.startsWith("http")
+        ? fotoAutorPath
+        : `${window.backendUrl}${
+            fotoAutorPath || "/images/default-avatar.jpg"
+          }`;
+    const dataFormatada = new Date(post.dataCriacao).toLocaleString("pt-BR");
+    const isAuthor = currentUser && autorIdDoPost === currentUser.id;
+    let mediaHtml = "";
+ if (post.urlsMidia && post.urlsMidia.length > 0) {
+      mediaHtml = `<div class="post-media">${post.urlsMidia
+        .map((url) => {
+          const fullMediaUrl = url.startsWith("http")
+            ? url
+            : `${backendUrl}${url}`;
+
+          // 1. Checa IMAGENS (lista expandida, incluindo .avif)
+          if (url.match(/\.(jpeg|jpg|gif|png|webp|bmp|tiff|ico|svg|heic|heif|avif|jxr|wdp|jp2)$/i)) {
+            return `<img src="${fullMediaUrl}" alt="Mídia da postagem">`;
+          }
+
+          // 2. Checa VÍDEOS (lista expandida)
+          if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
+            return `<video controls src="${fullMediaUrl}"></video>`;
+          }
+
+          const fileName = url.substring(url.lastIndexOf('/') + 1);
+          return `<div class="raw-file-link"><i class="fas fa-paperclip"></i> <a href="${fullMediaUrl}" target="_blank" rel="noopener noreferrer">${fileName}</a></div>`;
+        })
+        .join("")}</div>`;
+    }
+    const rootComments = (post.comentarios || []).filter((c) => !c.parentId);
+    let commentsHtml = rootComments
+      .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao))
+      .map((comment) =>
+        renderCommentWithReplies(comment, post.comentarios, post)
+      )
+      .join("");
+    let optionsMenu = "";
+    if (isAuthor) {
+      optionsMenu = `
+                <div class="post-options">
+                    <button class="post-options-btn" onclick="event.stopPropagation(); window.openPostMenu(${post.id})"><i class="fas fa-ellipsis-h"></i></button>
+                    <div class="options-menu" id="post-menu-${post.id}" onclick="event.stopPropagation();">
+                        <button onclick="window.openEditPostModal(${post.id})"><i class="fas fa-pen"></i> Editar</button>
+                        <button class="danger" onclick="window.deletePost(${post.id})"><i class="fas fa-trash"></i> Excluir</button>
                     </div>
-                    <div class="post-options-btn"><i class="fas fa-ellipsis-h"></i></div>
-                </div>
-                <div class="post-text">${postData.content}</div>
-                ${postData.images.length ? `<div class="post-images"><img src="${postData.images[0]}" alt="Post image"></div>` : ''}
-                <div class="post-actions">
-                    <button class="like-btn"><i class="far fa-thumbs-up"></i> <span>Curtir</span> <span class="count">${postData.likes}</span></button>
-                    <button class="comment-btn"><i class="far fa-comment"></i> <span>Comentar</span> <span class="count">${postData.comments.length}</span></button>
-                    <button class="share-btn"><i class="far fa-share-square"></i> <span>Compartilhar</span></button>
-                </div>
-                <div class="post-comments">${postData.comments.map(c => `<div class="comment"><div class="avatar-small"><img src="${c.avatar}" alt="${c.author}"></div><div class="comment-content"><div class="comment-header"><span class="comment-author">${c.author}</span><span class="comment-time">${c.time}</span></div><p>${c.content}</p></div></div>`).join('')}</div>
-                <div class="add-comment">
-                    <div class="avatar-small"><img src="${currentUser.avatar}" alt="${currentUser.name}"></div>
-                    <input type="text" placeholder="Adicione um comentário...">
                 </div>`;
-            postsContainer.appendChild(postElement);
-            addPostEvents(postElement);
+    }
+
+    postElement.innerHTML = `
+            <div class="post-header">
+                <a href="perfil.html?id=${autorIdDoPost}" class="post-author-details-link">
+                    <div class="post-author-details">
+                        <div class="post-author-avatar"><img src="${autorAvatar}" alt="${autorNome}" onerror="this.src='${defaultAvatarUrl}';"></div>
+                        <div class="post-author-info"><strong>${autorNome}</strong><span>${dataFormatada}</span></div>
+                    </div>
+                </a>
+                ${optionsMenu}
+            </div>
+            <div class="post-content"><p>${post.conteudo}</p></div>
+            ${mediaHtml}
+            <div class="post-actions">
+                <button class="action-btn ${
+                  post.curtidoPeloUsuario ? "liked" : ""
+                }" onclick="window.toggleLike(event, ${
+      post.id
+    }, null)"><i class="fas fa-heart"></i> <span id="like-count-post-${
+      post.id
+    }">${post.totalCurtidas || 0}</span></button>
+                <button class="action-btn" onclick="window.toggleComments(${
+                  post.id
+                })"><i class="fas fa-comment"></i> <span>${
+      post.comentarios?.length || 0
+    }</span></button>
+            </div>
+            <div class="comments-section" id="comments-section-${
+              post.id
+            }" style="display: none;">
+                <div class="comments-list">${commentsHtml}</div>
+                <div class="comment-form">
+                    <input type="text" id="comment-input-${
+                      post.id
+                    }" placeholder="Adicione um comentário..."><button onclick="window.sendComment(${
+      post.id
+    }, null)"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>`;
+    return postElement;
+  }
+
+  function createCommentElement(comment, post, allComments) {
+        //
+        const commentAuthorName = comment.autor?.nome || comment.nomeAutor || "Usuário";
+        const commentAuthorAvatar = comment.urlFotoAutor ? (comment.urlFotoAutor.startsWith("http") ? comment.urlFotoAutor : `${backendUrl}${comment.urlFotoAutor}`) : defaultAvatarUrl;
+        const autorIdDoComentario = comment.autor?.id || comment.autorId;
+        const autorIdDoPost = post.autor?.id || post.autorId;
+        const isAuthor = currentUser && autorIdDoComentario == currentUser.id;
+        const isPostOwner = currentUser && autorIdDoPost == currentUser.id;
+        let optionsMenu = "";
+        
+        if (isAuthor || isPostOwner) {
+          optionsMenu = `
+                    <button class="comment-options-btn" onclick="event.stopPropagation(); window.openCommentMenu(${comment.id})">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                    <div class="options-menu" id="comment-menu-${comment.id}" onclick="event.stopPropagation();">
+                        ${isAuthor ? `<button onclick="window.openEditCommentModal(${comment.id}, '${comment.conteudo.replace(/'/g, "\\'")}')"><i class="fas fa-pen"></i> Editar</button>` : ""}
+                        ${isAuthor || isPostOwner ? `<button class="danger" onclick="window.deleteComment(${comment.id})"><i class="fas fa-trash"></i> Excluir</button>` : ""}
+                        ${isPostOwner ? `<button onclick="window.highlightComment(${comment.id})"><i class="fas fa-star"></i> ${comment.destacado ? "Remover Destaque" : "Destacar"}</button>` : ""}
+                    </div>`;
+        }
+
+        // --- ▼▼▼ LÓGICA DA TAG @USERNAME ATUALIZADA ▼▼▼ ---
+        let tagHtml = '';
+        // 1. Verificamos se é uma resposta (tem parentId) e se temos a lista de comentários
+        if (comment.parentId && allComments) {
+            // 2. Encontramos o comentário "pai"
+            const parentComment = allComments.find(c => c.id === comment.parentId);
+
+            // 3. Verificamos se o "pai" TAMBÉM é uma resposta (Nível 2+)
+            //    Se parentComment.parentId existir, significa que não é uma resposta ao comentário principal.
+            if (parentComment && parentComment.parentId) {
+                
+                // 4. Pegamos o ID DO AUTOR do comentário pai (do DTO do comentário pai)
+                const parentAuthorId = parentComment.autorId; 
+                
+                // 5. Criamos o link para o PERFIL desse autor
+                tagHtml = `<a href="perfil.html?id=${parentAuthorId}" class="reply-tag">@${comment.replyingToName}</a>`;
+            }
+        }
+        // --- ▲▲▲ FIM DA LÓGICA ATUALIZADA ▲▲▲ ---
+
+        return `
+                <div class="comment-container">
+                    <div class="comment ${comment.destacado ? "destacado" : ""}" id="comment-${comment.id}">
+                        <div class="comment-avatar"><img src="${commentAuthorAvatar}" alt="Avatar de ${commentAuthorName}"></div>
+                        <div class="comment-body">
+                            <span class="comment-author">${commentAuthorName}</span>
+                            <p class="comment-content">${tagHtml} ${comment.conteudo}</p>
+                        </div>
+                        ${optionsMenu}
+                    </div>
+                    <div class="comment-actions-footer">
+                        <button class="action-btn-like ${comment.curtidoPeloUsuario ? "liked" : ""}" onclick="window.toggleLike(event, ${post.id}, ${comment.id})">Curtir</button>
+                        <button class="action-btn-reply" onclick="window.toggleReplyForm(${comment.id})">Responder</button>
+                        <span class="like-count" id="like-count-comment-${comment.id}"><i class="fas fa-heart"></i> ${comment.totalCurtidas || 0}</span>
+                    </div>
+                    <div class="reply-form" id="reply-form-${comment.id}">
+                        <input type="text" id="reply-input-${comment.id}" placeholder="Escreva sua resposta..."><button onclick="window.sendComment(${post.id}, ${comment.id})"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>`;
+    }
+
+// SUBSTITUA a função 'renderCommentWithReplies' inteira por esta:
+function renderCommentWithReplies(comment, allComments, post, isAlreadyInReplyThread = false) {
+    // 1. Cria o HTML para o comentário atual
+    let commentHtml = createCommentElement(comment, post, allComments); 
+
+    // 2. Encontra todas as respostas diretas a este comentário
+    const replies = allComments
+        .filter((reply) => reply.parentId === comment.id)
+        .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao));
+
+    // 3. Se este comentário tem respostas E é um comentário "principal" (não uma resposta de nível 2+)
+    if (replies.length > 0 && !isAlreadyInReplyThread) {
+        
+        // A. Adicionar o botão "Ver Respostas"
+        const plural = replies.length > 1 ? 'respostas' : 'resposta';
+        commentHtml += `
+            <div class="view-replies-container">
+                <button class="btn-view-replies" onclick="window.toggleReplies(this, ${comment.id})">
+                    <i class="fas fa-comment-dots"></i>
+                    Ver ${replies.length} ${plural}
+                </button>
+            </div>
+        `;
+
+        // B. Ocultar o contêiner de respostas por padrão
+        //    O 'display: flex' será adicionado pelo JS ao clicar
+        commentHtml += `<div class="comment-replies" id="replies-for-${comment.id}" style="display: none;">`;
+        
+        // C. Renderizar as respostas (lógica existente que achata a árvore)
+        replies.forEach((reply) => {
+            // Passa 'true' para que as sub-respostas sejam aninhadas
+            commentHtml += renderCommentWithReplies(reply, allComments, post, true); 
+        });
+        
+        commentHtml += `</div>`; // Fecha o container
+    
+    } else if (replies.length > 0 && isAlreadyInReplyThread) {
+        // 4. Se for uma resposta (Nível 2+) que TAMBÉM tem respostas (Nível 3+),
+        //    apenas continue a recursão. A lógica original já achatava isso.
+        replies.forEach((reply) => {
+            commentHtml += renderCommentWithReplies(reply, allComments, post, true);
         });
     }
 
-    // ==================== INICIALIZAÇÃO ====================
-    function init() {
-        if (document.body.contains(document.querySelector('.posts-container'))) {
-            loadInitialPosts();
-            loadOnlineFriends();
-            loadUpcomingEventsWidget();
-            loadFeaturedProjectsWidget();
-        }
-    
-        setTimeout(() => {
-            showNotification(`Bem-vindo de volta, ${currentUser.name.split(' ')[0]}!`, 'success');
-        }, 1000);
-    }
-    
-    init();
+    // 5. Se não houver respostas (replies.length === 0), só retorna o commentHtml
+    return commentHtml;
+}
 
-    // ==================== RESPONSIVIDADE ====================
-    window.addEventListener('resize', () => {
-        if (window.innerWidth <= 768) {
-            menuToggle.style.display = 'block';
-        } else {
-            menuToggle.style.display = 'none';
-            sidebar.classList.remove('mobile-hidden');
-            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+  function showPublicPost(post, prepend = false) {
+    //
+    const postElement = createPostElement(post);
+    prepend
+      ? feedElements.postsContainer.prepend(postElement)
+      : feedElements.postsContainer.appendChild(postElement);
+  }
+
+ /* SUBSTITUA a função 'fetchAndReplacePost' inteira por esta 
+   em CADA arquivo JS que a possua (principal.js, perfil.js)
+*/
+async function fetchAndReplacePost(postId) {
+    const oldPostElement = document.getElementById(`post-${postId}`);
+    
+    // --- 1. Salvar Estado da UI (Antes do Fetch) ---
+    let wasCommentsVisible = false;
+    const openReplyContainerIds = new Set(); // Guarda IDs dos containers de resposta abertos
+
+    if (oldPostElement) {
+        // Salva se os comentários principais (nível 0) estavam abertos
+        const oldCommentsSection = oldPostElement.querySelector(".comments-section");
+        if (oldCommentsSection) {
+            wasCommentsVisible = oldCommentsSection.style.display === 'block';
         }
+        
+        // Salva o ID de todos os containers de RESPOSTA (nível 1+) que estavam abertos
+        const oldReplyContainers = oldPostElement.querySelectorAll('.comment-replies');
+        oldReplyContainers.forEach(container => {
+            // Usamos 'flex' porque foi o que definimos no toggleReplies
+            if (container.style.display === 'flex') { 
+                openReplyContainerIds.add(container.id);
+            }
+        });
+    }
+
+    try {
+        // --- 2. Buscar Novos Dados ---
+        const response = await axios.get(`${backendUrl}/postagem/${postId}`);
+        const newPostElement = createPostElement(response.data); // Cria o novo HTML
+
+        // --- 3. Restaurar Estado da UI (no Novo Elemento) ---
+        
+        // Restaura o container principal de comentários
+        if (wasCommentsVisible) {
+            const newCommentsSection = newPostElement.querySelector(".comments-section");
+            if (newCommentsSection) newCommentsSection.style.display = 'block';
+        }
+        
+        // Restaura todos os containers de resposta que estavam abertos
+        if (openReplyContainerIds.size > 0) {
+            openReplyContainerIds.forEach(containerId => {
+                const newReplyContainer = newPostElement.querySelector(`#${containerId}`);
+                if (newReplyContainer) {
+                    // Encontra o botão que controla este container
+                    const commentId = containerId.replace('replies-for-', '');
+                    const button = newPostElement.querySelector(`button[onclick*="window.toggleReplies(this, ${commentId})"]`);
+                    
+                    // Aplica o estado "aberto"
+                    newReplyContainer.style.display = 'flex';
+                    if (button) {
+                        button.innerHTML = `<i class="fas fa-minus-circle"></i> Ocultar respostas`;
+                    }
+                }
+            });
+        }
+        
+        // --- 4. Substituir o Elemento na DOM ---
+        if (oldPostElement) {
+            oldPostElement.replaceWith(newPostElement);
+        } else {
+            // Lógica de fallback caso o post antigo não exista
+            // Garante que o nome da função é o correto para o script
+            if (typeof showPublicPost === 'function') {
+                showPublicPost(response.data, true); // Para principal.js
+            } else if (typeof showPost === 'function') {
+                showPost(response.data, true); // Para perfil.js
+            }
+        }
+
+    } catch (error) {
+        console.error(`Falha ao recarregar post ${postId}:`, error);
+        // Se o post foi excluído (ex: 404), remove o elemento antigo
+        if (error.response && error.response.status === 404) {
+             if (oldPostElement) oldPostElement.remove();
+        }
+    }
+}
+
+  function handlePublicFeedUpdate(payload) {
+    // NÃO vamos mais ignorar. Precisamos da atualização para atualizar os contadores.
+    /*
+    if (payload.autorAcaoId && currentUser && payload.autorAcaoId == currentUser.id)
+      return; 
+    */
+    const postId = payload.postagem?.id || payload.id || payload.postagemId;
+    if (payload.tipo === "remocao" && payload.postagemId) {
+      const postElement = document.getElementById(`post-${payload.postagemId}`);
+      if (postElement) postElement.remove();
+    } else if (postId) {
+      fetchAndReplacePost(postId);
+    }
+  }
+
+  // Funções de Ação (Janelas)
+  window.openPostMenu = (postId) => {
+    closeAllMenus();
+    document.getElementById(`post-menu-${postId}`).style.display = "block";
+  };
+  window.openCommentMenu = (commentId) => {
+    closeAllMenus();
+    document.getElementById(`comment-menu-${commentId}`).style.display =
+      "block";
+  };
+  window.toggleComments = (postId) => {
+    const cs = document.getElementById(`comments-section-${postId}`);
+    cs.style.display = cs.style.display === "block" ? "none" : "block";
+  };
+  window.toggleReplyForm = (commentId) => {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    form.style.display = form.style.display === "flex" ? "none" : "flex";
+  };
+  window.sendComment = (postId, parentId = null) => {
+    const inputId = parentId
+      ? `reply-input-${parentId}`
+      : `comment-input-${postId}`;
+    const input = document.getElementById(inputId);
+    const content = input.value.trim();
+    if (stompClient?.connected && content) {
+      stompClient.send(
+        `/app/postagem/${postId}/comentar`,
+        {},
+        JSON.stringify({ conteudo: content, parentId: parentId })
+      );
+      input.value = "";
+      if (parentId)
+        document.getElementById(`reply-form-${parentId}`).style.display =
+          "none";
+    }
+  };
+  window.toggleLike = async (event, postagemId, comentarioId = null) => {
+    const btn = event.currentTarget;
+    const isPost = comentarioId === null;
+    const countId = isPost
+      ? `like-count-post-${postagemId}`
+      : `like-count-comment-${comentarioId}`;
+    const countSpan = document.getElementById(countId);
+    let count = parseInt(
+      countSpan.innerText.trim().replace(/<[^>]*>/g, ""),
+      10
+    );
+    if (isNaN(count)) count = 0;
+
+    btn.classList.toggle("liked");
+    const isLiked = btn.classList.contains("liked");
+    const newCount = isLiked ? count + 1 : count - 1;
+
+    if (isPost) countSpan.textContent = newCount;
+    else countSpan.innerHTML = `<i class="fas fa-heart"></i> ${newCount}`;
+
+    try {
+      await axios.post(`${backendUrl}/curtidas/toggle`, {
+        postagemId,
+        comentarioId,
+      });
+    } catch (error) {
+      showNotification("Erro ao processar curtida.", "error");
+      btn.classList.toggle("liked");
+      if (isPost) countSpan.textContent = count;
+      else countSpan.innerHTML = `<i class="fas fa-heart"></i> ${count}`;
+    }
+  };
+  window.deletePost = async (postId) => {
+    if (confirm("Tem certeza?")) {
+      try {
+        await axios.delete(`${backendUrl}/postagem/${postId}`);
+        showNotification("Postagem excluída.", "success");
+      } catch (error) {
+        showNotification("Erro ao excluir postagem.", "error");
+      }
+    }
+  };
+  window.deleteComment = async (commentId) => {
+    if (confirm("Tem certeza?")) {
+      try {
+        await axios.delete(`${backendUrl}/comentarios/${commentId}`);
+        showNotification("Comentário excluído.", "success");
+      } catch (error) {
+        showNotification("Erro ao excluir comentário.", "error");
+      }
+    }
+  };
+  window.highlightComment = async (commentId) => {
+    try {
+      await axios.put(`${backendUrl}/comentarios/${commentId}/destacar`);
+    } catch (error) {
+      showNotification("Erro ao destacar.", "error");
+    }
+  };
+
+  // Funções de Modal (Edição)
+  window.openEditPostModal = async (postId) => {
+    //
+    const existingMediaContainer = document.getElementById(
+      "edit-existing-media-container"
+    );
+    if (!feedElements.editPostModal || !existingMediaContainer) return;
+    selectedFilesForEdit = [];
+    urlsParaRemover = [];
+    updateEditFilePreview();
+    existingMediaContainer.innerHTML = "";
+    try {
+      const response = await axios.get(`${backendUrl}/postagem/${postId}`);
+      const post = response.data;
+      feedElements.editPostIdInput.value = post.id;
+      feedElements.editPostTextarea.value = post.conteudo;
+      post.urlsMidia.forEach((url) => {
+        const item = document.createElement("div");
+        item.className = "existing-media-item";
+        const preview = document.createElement("img");
+        preview.src = url;
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.onchange = (e) => {
+          if (e.target.checked) {
+            urlsParaRemover.push(url);
+            item.style.opacity = "0.5";
+          } else {
+            urlsParaRemover = urlsParaRemover.filter((u) => u !== url);
+            item.style.opacity = "1";
+          }
+        };
+        item.appendChild(preview);
+        item.appendChild(checkbox);
+        existingMediaContainer.appendChild(item);
+      });
+      feedElements.editPostModal.style.display = "flex";
+    } catch (error) {
+      showNotification("Erro ao carregar postagem.", "error");
+    }
+  };
+  window.openEditCommentModal = (commentId, content) => {
+    //
+    feedElements.editCommentIdInput.value = commentId;
+    feedElements.editCommentTextarea.value = content;
+    feedElements.editCommentModal.style.display = "flex";
+  };
+  function closeAndResetEditCommentModal() {
+    //
+    feedElements.editCommentModal.style.display = "none";
+    feedElements.editCommentIdInput.value = "";
+    feedElements.editCommentTextarea.value = "";
+  }
+  function updateFilePreview() {
+    //
+    feedElements.filePreviewContainer.innerHTML = "";
+    selectedFilesForPost.forEach((file, index) => {
+      const item = document.createElement("div");
+      item.className = "file-preview-item";
+      let previewElement = file.type.startsWith("image/")
+        ? document.createElement("img")
+        : document.createElement("video");
+      previewElement.src = URL.createObjectURL(file);
+      item.appendChild(previewElement);
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "remove-file-btn";
+      removeBtn.innerHTML = "&times;";
+      removeBtn.onclick = () => {
+        selectedFilesForPost.splice(index, 1);
+        feedElements.postFileInput.value = "";
+        updateFilePreview();
+      };
+      item.appendChild(removeBtn);
+      feedElements.filePreviewContainer.appendChild(item);
     });
+  }
+  function updateEditFilePreview() {
+    //
+    feedElements.editFilePreviewContainer.innerHTML = "";
+    selectedFilesForEdit.forEach((file, index) => {
+      const item = document.createElement("div");
+      item.className = "file-preview-item";
+      const previewElement = document.createElement("img");
+      previewElement.src = URL.createObjectURL(file);
+      item.appendChild(previewElement);
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "remove-file-btn";
+      removeBtn.innerHTML = "&times;";
+      removeBtn.onclick = () => {
+        selectedFilesForEdit.splice(index, 1);
+        updateEditFilePreview();
+      };
+      item.appendChild(removeBtn);
+      feedElements.editFilePreviewContainer.appendChild(item);
+    });
+  }
+  function filterPosts() {
+    //
+    const searchTerm = searchInput.value.toLowerCase();
+    document.querySelectorAll(".post").forEach((post) => {
+      const author = post
+        .querySelector(".post-author-info strong")
+        .textContent.toLowerCase();
+      const content = post
+        .querySelector(".post-content p")
+        .textContent.toLowerCase();
+      post.style.display =
+        author.includes(searchTerm) || content.includes(searchTerm)
+          ? "block"
+          : "none";
+    });
+  }
+
+  // --- SETUP DE EVENT LISTENERS (Específicos do Feed) ---
+  function setupFeedEventListeners() {
+    if (searchInput) searchInput.addEventListener("input", filterPosts);
+
+    //
+    if (feedElements.editPostFileInput)
+      feedElements.editPostFileInput.addEventListener("change", (event) => {
+        Array.from(event.target.files).forEach((file) =>
+          selectedFilesForEdit.push(file)
+        );
+        updateEditFilePreview();
+      });
+    if (feedElements.editPostForm)
+      feedElements.editPostForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = e.submitter;
+        btn.disabled = true;
+        btn.textContent = "Salvando...";
+        try {
+          const postId = feedElements.editPostIdInput.value;
+          const postagemDTO = {
+            conteudo: feedElements.editPostTextarea.value,
+            urlsParaRemover: urlsParaRemover,
+          };
+          const formData = new FormData();
+          formData.append(
+            "postagem",
+            new Blob([JSON.stringify(postagemDTO)], {
+              type: "application/json",
+            })
+          );
+          selectedFilesForEdit.forEach((file) =>
+            formData.append("arquivos", file)
+          );
+          await axios.put(`${backendUrl}/postagem/${postId}`, formData);
+          feedElements.editPostModal.style.display = "none";
+          showNotification("Postagem editada.", "success");
+        } catch (error) {
+         let errorMessage = "Erro ao editar.";
+                if (error.response && error.response.data && error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+                showNotification(errorMessage, "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Salvar";
+        }
+      });
+    if (feedElements.cancelEditPostBtn)
+      feedElements.cancelEditPostBtn.addEventListener(
+        "click",
+        () => (feedElements.editPostModal.style.display = "none")
+      );
+    if (feedElements.editCommentForm)
+      feedElements.editCommentForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const commentId = feedElements.editCommentIdInput.value;
+        const content = feedElements.editCommentTextarea.value;
+        try {
+          await axios.put(
+            `${backendUrl}/comentarios/${commentId}`,
+            { conteudo: content },
+            { headers: { "Content-Type": "application/json" } }
+          );
+          showNotification("Comentário editado.", "success");
+          closeAndResetEditCommentModal();
+        } catch (error) {
+          showNotification("Não foi possível salvar.", "error");
+        }
+      });
+    if (feedElements.cancelEditCommentBtn)
+      feedElements.cancelEditCommentBtn.addEventListener(
+        "click",
+        closeAndResetEditCommentModal
+      );
+    if (feedElements.postFileInput)
+      feedElements.postFileInput.addEventListener("change", (event) => {
+        selectedFilesForPost = Array.from(event.target.files);
+        updateFilePreview();
+      });
+    if (feedElements.publishBtn)
+      feedElements.publishBtn.addEventListener("click", async () => {
+        const content = feedElements.postTextarea.value.trim();
+        if (!content && selectedFilesForPost.length === 0) return;
+        feedElements.publishBtn.disabled = true;
+        feedElements.publishBtn.innerHTML = `<i class="fas fa-spinner"></i> Publicando...`;
+        const formData = new FormData();
+        formData.append(
+          "postagem",
+          new Blob([JSON.stringify({ conteudo: content })], {
+            type: "application/json",
+          })
+        );
+        selectedFilesForPost.forEach((file) =>
+          formData.append("arquivos", file)
+        );
+        try {
+          await axios.post(`${backendUrl}/postagem/upload-mensagem`, formData);
+          feedElements.postTextarea.value = "";
+          selectedFilesForPost = [];
+          feedElements.postFileInput.value = "";
+          updateFilePreview();
+        } catch (error) {
+          let errorMessage = "Erro ao publicar.";
+                if (error.response && error.response.data && error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+                showNotification(errorMessage, "error");
+        } finally {
+          feedElements.publishBtn.disabled = false;
+          feedElements.publishBtn.innerHTML = "Publicar";
+        }
+      });
+
+    // Espera o WebSocket conectar para carregar o feed e se inscrever
+    document.addEventListener("webSocketConnected", (e) => {
+      const stompClient = e.detail.stompClient;
+      fetchPublicPosts();
+      checkAndHighlightComment();
+      stompClient.subscribe("/topic/publico", (message) => {
+        handlePublicFeedUpdate(JSON.parse(message.body));
+      });
+    });
+  }
+
+  // --- INICIA A LÓGICA DO FEED ---
+  setupFeedEventListeners();
 });

@@ -19,9 +19,9 @@ public class Role {
 
     public enum Values {
 
-        ALUNO(1L),
+        ADMIN(1L),
         PROFESSOR(2L),
-        ADMIN( 3L);
+        ALUNO( 3L);
 
         long roleId;
 
@@ -30,6 +30,4 @@ public class Role {
         }
 
     }
-
-
 }
