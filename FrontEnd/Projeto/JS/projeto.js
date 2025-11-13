@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         grid: document.getElementById("projetos-grid"),
         searchInput: document.getElementById("project-search-input"),
 
+        // Modal
         modalOverlay: document.getElementById("novo-projeto-modal"),
         openModalBtn: document.getElementById("btn-new-project"),
         closeModalBtn: document.querySelector(
@@ -28,8 +29,16 @@ document.addEventListener("DOMContentLoaded", () => {
         projImagemInput: document.getElementById("proj-imagem"),
         modalUserAvatar: document.getElementById("modal-user-avatar"),
         modalUserName: document.getElementById("modal-user-name"),
+        
+        // Contadores
         connectionsCount: document.getElementById("connections-count"),
         projectsCount: document.getElementById("projects-count"),
+
+        // NOVO: Elementos da lista de amigos
+        friendsSidebar: document.getElementById("friends-sidebar"),
+        onlineFriendsList: document.getElementById("online-friends-list"),
+        allFriendsList: document.getElementById("all-friends-list"),
+        friendsToggleBtn: document.getElementById("friends-toggle-btn"),
       },
 
       // -----------------------------------------------------------------
@@ -45,14 +54,127 @@ document.addEventListener("DOMContentLoaded", () => {
           this.elements.connectionsCount.textContent =
             window.userFriends?.length || "0";
         }
+
         await this.fetchProjetos();
         this.setupEventListeners();
+        this.setupFriendsSection(); // NOVO: Configurar seção de amigos
+        
         document.addEventListener("friendsListUpdated", () => {
           if (this.elements.connectionsCount) {
             this.elements.connectionsCount.textContent =
               window.userFriends?.length || "0";
           }
+          this.renderFriendsLists(); // NOVO: Atualizar lista de amigos quando houver mudanças
         });
+      },
+
+      // -----------------------------------------------------------------
+      // NOVO: CONFIGURAÇÃO DA SEÇÃO DE AMIGOS
+      // -----------------------------------------------------------------
+      setupFriendsSection() {
+        if (!this.elements.friendsToggleBtn || !this.elements.friendsSidebar) return;
+
+        // Toggle da sidebar de amigos
+        this.elements.friendsToggleBtn.addEventListener("click", () => {
+          this.elements.friendsSidebar.classList.toggle("collapsed");
+          const icon = this.elements.friendsToggleBtn.querySelector("i");
+          if (icon) {
+            icon.classList.toggle("fa-chevron-left");
+            icon.classList.toggle("fa-chevron-right");
+          }
+        });
+
+        // Renderizar listas de amigos
+        this.renderFriendsLists();
+      },
+
+      // NOVO: Renderizar lista de amigos online e todos os amigos
+      renderFriendsLists() {
+        this.renderOnlineFriends();
+        this.renderAllFriends();
+      },
+
+      // NOVO: Renderizar amigos online
+      renderOnlineFriends() {
+        if (!this.elements.onlineFriendsList) return;
+        
+        const onlineFriends = window.userFriends.filter(friend => 
+          window.latestOnlineEmails.includes(friend.email)
+        );
+
+        this.elements.onlineFriendsList.innerHTML = "";
+        
+        if (onlineFriends.length === 0) {
+          this.elements.onlineFriendsList.innerHTML = 
+            '<p class="empty-state">Nenhum amigo online</p>';
+          return;
+        }
+
+        onlineFriends.forEach(friend => {
+          const friendElement = this.createFriendElement(friend, true);
+          this.elements.onlineFriendsList.appendChild(friendElement);
+        });
+      },
+
+      // NOVO: Renderizar todos os amigos
+      renderAllFriends() {
+        if (!this.elements.allFriendsList) return;
+        
+        const friends = window.userFriends || [];
+
+        this.elements.allFriendsList.innerHTML = "";
+        
+        if (friends.length === 0) {
+          this.elements.allFriendsList.innerHTML = 
+            '<p class="empty-state">Você ainda não tem amigos</p>';
+          return;
+        }
+
+        friends.forEach(friend => {
+          const friendElement = this.createFriendElement(friend, false);
+          this.elements.allFriendsList.appendChild(friendElement);
+        });
+      },
+
+      // NOVO: Criar elemento de amigo
+      createFriendElement(friend, isOnline) {
+        const friendElement = document.createElement("div");
+        friendElement.className = "friend-item";
+        
+        const friendId = friend.idUsuario;
+        const friendAvatar = friend.fotoPerfil 
+          ? (friend.fotoPerfil.startsWith('http') 
+              ? friend.fotoPerfil 
+              : `${window.backendUrl}/api/arquivos/${friend.fotoPerfil}`) 
+          : window.defaultAvatarUrl;
+
+        friendElement.innerHTML = `
+          <a href="perfil.html?id=${friendId}" class="friend-item-link">
+            <div class="avatar">
+              <img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${window.defaultAvatarUrl}';">
+              ${isOnline ? '<div class="status online"></div>' : ''}
+            </div>
+            <span class="friend-name">${friend.nome}</span>
+          </a>
+          <div class="friend-actions">
+            <button class="btn-icon" onclick="ProjetosPage.inviteToProject('${friendId}', '${friend.nome}')" title="Convidar para projeto">
+              <i class="fas fa-user-plus"></i>
+            </button>
+          </div>
+        `;
+
+        return friendElement;
+      },
+
+      // NOVO: Função para convidar amigo para projeto
+      inviteToProject(friendId, friendName) {
+        // Aqui você pode implementar a lógica para convidar o amigo para um projeto
+        // Por enquanto, vamos apenas mostrar uma notificação
+        window.showNotification(`Convite enviado para ${friendName}`, "success");
+        
+        // Em uma implementação real, você enviaria uma notificação ou abriria um modal
+        // para selecionar para qual projeto convidar
+        console.log(`Convidar amigo ${friendId} (${friendName}) para projeto`);
       },
 
       // -----------------------------------------------------------------
@@ -117,15 +239,15 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("");
 
           card.innerHTML = `
-                        <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
-                        <div class="projeto-conteudo">
-                            <h3>${proj.titulo}</h3>
-                            <p>${
-                              proj.descricao ||
-                              "Este projeto não possui uma descrição."
-                            }</p>
-                            <div class="projeto-membros">${membrosHtml}</div>
-                        </div>`;
+            <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
+            <div class="projeto-conteudo">
+              <h3>${proj.titulo}</h3>
+              <p>${
+                proj.descricao ||
+                "Este projeto não possui uma descrição."
+              }</p>
+              <div class="projeto-membros">${membrosHtml}</div>
+            </div>`;
           grid.appendChild(card);
         });
       },
@@ -182,12 +304,11 @@ document.addEventListener("DOMContentLoaded", () => {
             this.handlers.closeModal.call(this);
             await this.fetchProjetos();
           } catch (error) {
-           let errorMessage = "Falha ao criar o projeto.";
+            let errorMessage = "Falha ao criar o projeto.";
             if (error.response && error.response.data && error.response.data.message) {
-                // Pega a mensagem de "Conteúdo impróprio..."
-                errorMessage = error.response.data.message;
-              }
-              window.showNotification(errorMessage, "error");
+              errorMessage = error.response.data.message;
+            }
+            window.showNotification(errorMessage, "error");
           } finally {
             btn.disabled = false;
             btn.textContent = "Publicar Projeto";
@@ -249,5 +370,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- INICIALIZAÇÃO DA PÁGINA ---
     ProjetosPage.init();
+    window.ProjetosPage = ProjetosPage; // Torna global para acesso pelos event listeners
   });
 });

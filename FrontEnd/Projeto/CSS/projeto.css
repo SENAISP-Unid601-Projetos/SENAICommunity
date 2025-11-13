@@ -163,3 +163,168 @@
 .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); text-align: right; }
 .btn-publish { background-color: var(--accent-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
 .btn-publish:hover { background-color: var(--accent-secondary); }
+
+/* Sidebar de Amigos */
+.friends-sidebar {
+  width: 300px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-left: 1rem;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.friends-sidebar.collapsed {
+  width: 60px;
+}
+
+.friends-sidebar.collapsed .friends-content,
+.friends-sidebar.collapsed .friends-header h3 {
+  display: none;
+}
+
+.friends-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.friends-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.friends-section {
+  margin-bottom: 1.5rem;
+}
+
+.friends-section h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.friend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.friend-item:hover {
+  background-color: var(--hover-color);
+}
+
+.friend-item-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+}
+
+.friend-item .avatar {
+  position: relative;
+  margin-right: 0.75rem;
+}
+
+.friend-item .avatar img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.friend-item .status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--card-bg);
+}
+
+.friend-item .status.online {
+  background-color: #22c55e;
+}
+
+.friend-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.friend-actions {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.friend-item:hover .friend-actions {
+  opacity: 1;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  color: var(--text-primary);
+  background-color: var(--hover-color);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  padding: 1rem;
+}
+
+/* Layout principal com sidebar */
+.main-layout {
+  display: flex;
+  gap: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.projects-main {
+  flex: 1;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .friends-sidebar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .friends-sidebar:not(.collapsed) {
+    transform: translateX(0);
+  }
+}
