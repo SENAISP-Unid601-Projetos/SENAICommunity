@@ -118,8 +118,14 @@ public class MensagemPrivadaService {
                     }
 
                     String urlFoto = "/images/default-avatar.jpg"; // Padrão
-                    if (outroUsuario.getFotoPerfil() != null && !outroUsuario.getFotoPerfil().isBlank()) {
-                        urlFoto = "/api/arquivos/" + outroUsuario.getFotoPerfil();
+                    String fotoPerfilDB = outroUsuario.getFotoPerfil();
+
+                    if (fotoPerfilDB != null && !fotoPerfilDB.isBlank()) {
+                        if (fotoPerfilDB.startsWith("http://") || fotoPerfilDB.startsWith("https://")) {
+                            urlFoto = fotoPerfilDB; // Usa a URL completa diretamente
+                        } else {
+                            urlFoto = "/api/arquivos/" + fotoPerfilDB;
+                        }
                     }
 
                     return ConversaResumoDTO.builder()
