@@ -84,7 +84,7 @@ function setupImageUpload() {
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
         fotoInput.files = dataTransfer.files;
-    
+    }
     
     fotoInput.addEventListener('change', () => {
         if (fotoInput.files.length > 0) {
@@ -121,15 +121,24 @@ function setupFormSubmission() {
 
         const formData = new FormData(this);
         const dataNascimentoValor = formData.get('dataNascimento');
-        if (dataNascimentoValor) {
-            const [dia, mes, ano] = dataNascimentoValor.split('/');
-            if (dia && mes && ano && dia.length === 2 && mes.length === 2 && ano.length === 4) {
-                 const dataFormatada = `${ano}-${mes}-${dia}`;
-                 formData.set('dataNascimento', dataFormatada);
-            } else {
-                 Swal.fire({ icon: 'error', title: 'Data Inválida', text: 'Por favor, insira uma data de nascimento válida (DD/MM/AAAA).' });
-                 return;
-            }
+
+        if (!dataNascimentoValor) {
+            Swal.fire({ icon: 'error', title: 'Campo Obrigatório', text: 'Por favor, insira sua data de nascimento.' });
+            return; // Impede o envio
+        }
+
+        if (dataNascimentoValor.includes('_')) {
+             Swal.fire({ icon: 'error', title: 'Data Incompleta', text: 'Por favor, preencha a data de nascimento (DD/MM/AAAA).' });
+             return; // Impede o envio
+        }
+        
+        const [dia, mes, ano] = dataNascimentoValor.split('/');
+        if (dia && mes && ano && dia.length === 2 && mes.length === 2 && ano.length === 4) {
+             const dataFormatada = `${ano}-${mes}-${dia}`;
+             formData.set('dataNascimento', dataFormatada);
+        } else {
+             Swal.fire({ icon: 'error', title: 'Data Inválida', text: 'Por favor, insira uma data de nascimento válida (DD/MM/AAAA).' });
+             return; 
         }
         
         const btn = this.querySelector('button[type="submit"]');
@@ -173,8 +182,8 @@ document.addEventListener('DOMContentLoaded', function() {
     setupImageUpload();
     setupFormSubmission();
     
-    // Chama a função de alternância de senha definida em utils.js
-    setupPasswordToggles(); 
+    if (typeof setupPasswordToggles === 'function') {
+        setupPasswordToggles(); 
+    }
     
-    // A configuração do tema é totalmente gerenciada por background.js
 });
