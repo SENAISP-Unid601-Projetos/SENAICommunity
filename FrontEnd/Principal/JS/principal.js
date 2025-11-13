@@ -836,17 +836,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const dataFormatada = new Date(post.dataCriacao).toLocaleString("pt-BR");
     const isAuthor = currentUser && autorIdDoPost === currentUser.id;
     let mediaHtml = "";
-    if (post.urlsMidia && post.urlsMidia.length > 0) {
+ if (post.urlsMidia && post.urlsMidia.length > 0) {
       mediaHtml = `<div class="post-media">${post.urlsMidia
         .map((url) => {
           const fullMediaUrl = url.startsWith("http")
             ? url
             : `${backendUrl}${url}`;
-          if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i))
+
+          // 1. Checa IMAGENS (lista expandida, incluindo .avif)
+          if (url.match(/\.(jpeg|jpg|gif|png|webp|bmp|tiff|ico|svg|heic|heif|avif|jxr|wdp|jp2)$/i)) {
             return `<img src="${fullMediaUrl}" alt="Mídia da postagem">`;
-          if (url.match(/\.(mp4|webm|ogg)$/i))
+          }
+
+          // 2. Checa VÍDEOS (lista expandida)
+          if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
             return `<video controls src="${fullMediaUrl}"></video>`;
-          return "";
+          }
+
+          const fileName = url.substring(url.lastIndexOf('/') + 1);
+          return `<div class="raw-file-link"><i class="fas fa-paperclip"></i> <a href="${fullMediaUrl}" target="_blank" rel="noopener noreferrer">${fileName}</a></div>`;
         })
         .join("")}</div>`;
     }
