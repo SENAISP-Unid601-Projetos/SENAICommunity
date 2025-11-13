@@ -1,538 +1,212 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- CONFIGURAÇÕES E VARIÁVEIS GLOBAIS ---
-    const backendUrl = "http://localhost:8080";
-    const jwtToken = localStorage.getItem("token");
-    let stompClient = null;
-    let currentUser = null;
-    let userFriends = [];
-    let friendsLoaded = false;
-    let latestOnlineEmails = [];
-    const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
+document.addEventListener("DOMContentLoaded", () => {
 
-    // --- ELEMENTOS DO DOM (Seleção Centralizada e Completa) ---
-    const elements = {
-        // UI Geral e Comum
-        userDropdownTrigger: document.querySelector(".user-dropdown .user"),
-        logoutBtn: document.getElementById("logout-btn"),
-        notificationCenter: document.querySelector(".notification-center"),
-        topbarUserName: document.getElementById("topbar-user-name"),
-        sidebarUserName: document.getElementById("sidebar-user-name"),
-        sidebarUserTitle: document.getElementById("sidebar-user-title"),
-        topbarUserImg: document.getElementById("topbar-user-img"),
-        sidebarUserImg: document.getElementById("sidebar-user-img"),
-        connectionsCount: document.getElementById('connections-count'),
+    // -----------------------------------------------------------------
+    // AGUARDA O SCRIPT PRINCIPAL (principal.js)
+    // -----------------------------------------------------------------
+    // Usamos 'globalScriptsLoaded' que é disparado pelo principal.js
+    document.addEventListener('globalScriptsLoaded', (e) => {
+        
+        // Variáveis globais vindas do principal.js
+        const currentUser = window.currentUser;
+        const backendUrl = window.backendUrl;
+        const showNotification = window.showNotification; // Pega a função global de notificação
 
-        // Notificações e Amigos Online
-        notificationsIcon: document.getElementById('notifications-icon'),
-        notificationsPanel: document.getElementById('notifications-panel'),
-        notificationsList: document.getElementById('notifications-list'),
-        notificationsBadge: document.getElementById('notifications-badge'),
-        onlineFriendsList: document.getElementById('online-friends-list'),
+        // --- SELEÇÃO DE ELEMENTOS (Específicos da Página) ---
+        const elements = {
+            vagasListContainer: document.querySelector('.vagas-list'),
+            createAlertBtn: document.querySelector('.create-alert-btn'),
+            searchInput: document.getElementById("search-input"), // ID do input de busca da página de vagas
+            filterTipo: document.getElementById("filter-tipo"),
+            filterLocal: document.getElementById("filter-local"),
+            filterNivel: document.getElementById("filter-nivel"),
+        };
+        
+        // --- SELEÇÃO DE ELEMENTOS (Do Novo Modal) ---
+        const createVagaModal = document.getElementById('create-vaga-modal');
+        const createVagaForm = document.getElementById('create-vaga-form');
+        const cancelCreateVagaBtn = document.getElementById('cancel-create-vaga-btn');
 
-        // Elementos Específicos da Página de Vagas
-        vagasListContainer: document.querySelector('.vagas-list'),
-        createAlertBtn: document.querySelector('.create-alert-btn'),
-        searchInput: document.getElementById("search-input"),
-        filterTipo: document.getElementById("filter-tipo"),
-        filterLocal: document.getElementById("filter-local"),
-        filterNivel: document.getElementById("filter-nivel"),
+        // Cache local para todas as vagas
+        let allVagas = [];
 
-        // Modais de Conta de Usuário
-        editProfileBtn: document.getElementById("edit-profile-btn"),
-        deleteAccountBtn: document.getElementById("delete-account-btn"),
-        editProfileModal: document.getElementById("edit-profile-modal"),
-        editProfileForm: document.getElementById("edit-profile-form"),
-        cancelEditProfileBtn: document.getElementById("cancel-edit-profile-btn"),
-        editProfilePicInput: document.getElementById("edit-profile-pic-input"),
-        editProfilePicPreview: document.getElementById("edit-profile-pic-preview"),
-        editProfileName: document.getElementById("edit-profile-name"),
-        editProfileBio: document.getElementById("edit-profile-bio"),
-        editProfileDob: document.getElementById("edit-profile-dob"),
-        editProfilePassword: document.getElementById("edit-profile-password"),
-        editProfilePasswordConfirm: document.getElementById("edit-profile-password-confirm"),
-        deleteAccountModal: document.getElementById("delete-account-modal"),
-        deleteAccountForm: document.getElementById("delete-account-form"),
-        cancelDeleteAccountBtn: document.getElementById("cancel-delete-account-btn"),
-        deleteConfirmPassword: document.getElementById("delete-confirm-password"),
-    };
+        // Mapeamentos para filtros
+        const tipoContratacaoMap = { 'TODOS': '', 'TEMPO_INTEGRAL': 'Tempo Integral', 'MEIO_PERIODO': 'Meio Período', 'ESTAGIO': 'Estágio', 'TRAINEE': 'Trainee' };
+        const localizacaoMap = { 'TODOS': '', 'REMOTO': 'Remoto', 'HIBRIDO': 'Híbrido', 'PRESENCIAL': 'Presencial' };
+        const nivelMap = { 'TODOS': '', 'JUNIOR': 'Júnior', 'PLENO': 'Pleno', 'SENIOR': 'Sênior' };
 
-    // --- INICIALIZAÇÃO ---
-    async function init() {
-        if (!jwtToken) {
-            window.location.href = "login.html";
-            return;
+        // -----------------------------------------------------------------
+        // FUNÇÕES DE BUSCA E RENDERIZAÇÃO (Específicas da Página)
+        // -----------------------------------------------------------------
+        
+        async function fetchVagas() {
+            if (!elements.vagasListContainer) return;
+            elements.vagasListContainer.innerHTML = '<p class="sem-vagas" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Carregando vagas...</p>';
+            try {
+                const response = await axios.get(`${backendUrl}/api/vagas`);
+                allVagas = response.data; // Armazena no cache
+                renderVagas(allVagas); // Renderiza todas as vagas
+            } catch (error) {
+                console.error("Erro ao buscar vagas:", error);
+                elements.vagasListContainer.innerHTML = '<p class="sem-vagas" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Não foi possível carregar as vagas no momento.</p>';
+            }
         }
-        axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
 
-        try {
-            const response = await axios.get(`${backendUrl}/usuarios/me`);
-            currentUser = response.data;
+        function renderVagas(vagas) {
+            if (!elements.vagasListContainer) return;
+            elements.vagasListContainer.innerHTML = '';
+
+            if (!vagas || vagas.length === 0) {
+                elements.vagasListContainer.innerHTML = '<p class="sem-vagas" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Nenhuma vaga encontrada para os filtros selecionados.</p>';
+                return;
+            }
+
+            vagas.forEach(vaga => {
+                const vagaCard = document.createElement('div');
+                vagaCard.className = 'vaga-card';
+
+                // Mapeia os dados do DTO
+                const tipoContratacao = tipoContratacaoMap[vaga.tipoContratacao] || vaga.tipoContratacao;
+                const localizacao = localizacaoMap[vaga.localizacao] || vaga.localizacao;
+                const nivel = nivelMap[vaga.nivel] || vaga.nivel;
+
+                vagaCard.innerHTML = `
+                    <div class="vaga-card-header">
+                        <div class="vaga-empresa-logo">
+                            <img src="https://placehold.co/100x100/58a6ff/ffffff?text=${vaga.empresa.substring(0, 2).toUpperCase()}" alt="Logo da ${vaga.empresa}">
+                        </div>
+                        <div class="vaga-info-principal">
+                            <h2 class="vaga-titulo">${vaga.titulo}</h2>
+                            <p class="vaga-empresa">${vaga.empresa}</p>
+                            <div class="vaga-localidade"><i class="fas fa-map-marker-alt"></i> ${localizacao}</div>
+                        </div>
+                        <button class="save-vaga-btn"><i class="far fa-bookmark"></i></button>
+                    </div>
+                    <div class="vaga-tags">
+                        <span class="tag tag-nivel">${nivel}</span>
+                        <span class="tag tag-tipo">${tipoContratacao}</span>
+                    </div>
+                    <div class="vaga-descricao">${vaga.descricao}</div>
+                    <div class="vaga-card-footer">
+                        <span class="vaga-publicado">Publicado por ${vaga.autorNome} em ${new Date(vaga.dataPublicacao).toLocaleDateString()}</span>
+                        <button class="vaga-candidatar-btn">Ver Detalhes</button>
+                    </div>
+                `;
+                elements.vagasListContainer.appendChild(vagaCard);
+            });
+        }
+
+        function filterVagas() {
+            const searchTerm = elements.searchInput.value.toLowerCase();
+            const tipo = elements.filterTipo.value;
+            const local = elements.filterLocal.value;
+            const nivel = elements.filterNivel.value;
+
+            const filteredVagas = allVagas.filter(vaga => {
+                const titulo = vaga.titulo.toLowerCase();
+                const empresa = vaga.empresa.toLowerCase();
+                const descricao = vaga.descricao.toLowerCase();
+
+                const tipoTexto = tipoContratacaoMap[vaga.tipoContratacao] || vaga.tipoContratacao;
+                const localTexto = localizacaoMap[vaga.localizacao] || vaga.localizacao;
+                const nivelTexto = nivelMap[vaga.nivel] || vaga.nivel;
+
+                const matchSearch = titulo.includes(searchTerm) || empresa.includes(searchTerm) || descricao.includes(searchTerm);
+                const matchTipo = tipo === 'todos' || tipoTexto === tipo;
+                const matchLocal = local === 'todos' || localTexto === local;
+                const matchNivel = nivel === 'todos' || nivelTexto === nivel;
+
+                return matchSearch && matchTipo && matchLocal && matchNivel;
+            });
+            renderVagas(filteredVagas);
+        }
+
+        // -----------------------------------------------------------------
+        // FUNÇÕES DO MODAL (NOVO)
+        // -----------------------------------------------------------------
+
+        function openCreateVagaModal() {
+            if (createVagaModal) createVagaModal.style.display = 'flex';
+        }
+
+        function closeCreateVagaModal() {
+            if (createVagaModal) createVagaModal.style.display = 'none';
+            if (createVagaForm) createVagaForm.reset();
+        }
+
+        async function handleCreateVagaSubmit(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = "Publicando...";
+
+            try {
+                const vagaData = {
+                    titulo: document.getElementById('vaga-titulo').value,
+                    empresa: document.getElementById('vaga-empresa').value,
+                    descricao: document.getElementById('vaga-descricao').value,
+                    nivel: document.getElementById('vaga-nivel').value,
+                    localizacao: document.getElementById('vaga-localizacao').value,
+                    tipoContratacao: document.getElementById('vaga-tipo').value
+                };
+
+                // Envia para o backend (o token já está no axios graças ao principal.js)
+                await axios.post(`${backendUrl}/api/vagas`, vagaData);
+
+                closeCreateVagaModal();
+                showNotification("Vaga publicada com sucesso!", "success");
+                fetchVagas(); // Atualiza a lista
+
+            } catch (error) {
+                let msg = "Não foi possível publicar a vaga.";
+                if (error.response && error.response.data && error.response.data.message) {
+                    msg = error.response.data.message;
+                } else if (error.response && error.response.status === 403) {
+                    msg = "Acesso negado. Apenas professores ou admins podem postar vagas.";
+                }
+                showNotification(msg, "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Publicar Vaga";
+            }
+        }
+
+        // -----------------------------------------------------------------
+        // EVENT LISTENERS (Específicos da Página)
+        // -----------------------------------------------------------------
+        function setupVagasEventListeners() {
+            // Listeners dos filtros
+            if (elements.searchInput) elements.searchInput.addEventListener('input', filterVagas);
+            if (elements.filterTipo) elements.filterTipo.addEventListener('change', filterVagas);
+            if (elements.filterLocal) elements.filterLocal.addEventListener('change', filterVagas);
+            if (elements.filterNivel) elements.filterNivel.addEventListener('change', filterVagas);
             
-            updateUIWithUserData(currentUser);
-            setupEventListeners();
-            connectWebSocket();
-            await fetchFriends();
-            await fetchInitialOnlineFriends();
-            fetchNotifications();
+            // Listeners do Modal (NOVOS)
+            if (elements.createAlertBtn) {
+                elements.createAlertBtn.addEventListener('click', openCreateVagaModal);
+            }
+            if (cancelCreateVagaBtn) {
+                cancelCreateVagaBtn.addEventListener('click', closeCreateVagaModal);
+            }
+            if (createVagaForm) {
+                createVagaForm.addEventListener('submit', handleCreateVagaSubmit);
+            }
+        }
 
+        // -----------------------------------------------------------------
+        // INICIALIZAÇÃO DA PÁGINA
+        // -----------------------------------------------------------------
+        
+        // Verifica permissão para mostrar o botão
+        if (currentUser) { 
             const userRoles = currentUser.tipoUsuario ? [currentUser.tipoUsuario] : [];
+            // O tipoUsuario vem do UsuarioSaidaDTO
             if ((userRoles.includes('ADMIN') || userRoles.includes('PROFESSOR')) && elements.createAlertBtn) {
                 elements.createAlertBtn.style.display = 'block';
-            }
-            await fetchVagas();
-
-        } catch (error) {
-            console.error("ERRO CRÍTICO NA INICIALIZAÇÃO:", error);
-            localStorage.removeItem("token");
-            window.location.href = "login.html";
-        }
-    }
-
-    // --- LÓGICA ESPECÍFICA DA PÁGINA DE VAGAS ---
-    async function fetchVagas() {
-        try {
-            const response = await axios.get(`${backendUrl}/api/vagas`);
-            renderVagas(response.data);
-        } catch (error) {
-            console.error("Erro ao buscar vagas:", error);
-            if (elements.vagasListContainer) {
-                 elements.vagasListContainer.innerHTML = '<p class="sem-vagas">Não foi possível carregar as vagas no momento.</p>';
+                elements.createAlertBtn.textContent = "Publicar Vaga"; // Muda o texto
             }
         }
-    }
-
-    function renderVagas(vagas) {
-        if (!elements.vagasListContainer) return;
-        elements.vagasListContainer.innerHTML = '';
-
-        if (!vagas || vagas.length === 0) {
-            elements.vagasListContainer.innerHTML = '<p class="sem-vagas">Nenhuma vaga encontrada no momento.</p>';
-            return;
-        }
-
-        vagas.forEach(vaga => {
-            const vagaCard = document.createElement('div');
-            vagaCard.className = 'vaga-card';
-
-            const tipoContratacaoMap = { 'TEMPO_INTEGRAL': 'Tempo Integral', 'MEIO_PERIODO': 'Meio Período', 'ESTAGIO': 'Estágio', 'TRAINEE': 'Trainee' };
-            const localizacaoMap = { 'REMOTO': 'Remoto', 'HIBRIDO': 'Híbrido', 'PRESENCIAL': 'Presencial' };
-            const nivelMap = { 'JUNIOR': 'Júnior', 'PLENO': 'Pleno', 'SENIOR': 'Sênior' };
-
-            vagaCard.innerHTML = `
-                <div class="vaga-card-header">
-                    <div class="vaga-empresa-logo">
-                        <img src="https://placehold.co/100x100/58a6ff/ffffff?text=${vaga.empresa.substring(0, 2).toUpperCase()}" alt="Logo da ${vaga.empresa}">
-                    </div>
-                    <div class="vaga-info-principal">
-                        <h2 class="vaga-titulo">${vaga.titulo}</h2>
-                        <p class="vaga-empresa">${vaga.empresa}</p>
-                        <div class="vaga-localidade"><i class="fas fa-map-marker-alt"></i> ${localizacaoMap[vaga.localizacao] || vaga.localizacao}</div>
-                    </div>
-                    <button class="save-vaga-btn"><i class="far fa-bookmark"></i></button>
-                </div>
-                <div class="vaga-tags">
-                    <span class="tag">${nivelMap[vaga.nivel] || vaga.nivel}</span>
-                    <span class="tag">${tipoContratacaoMap[vaga.tipoContratacao] || vaga.tipoContratacao}</span>
-                </div>
-                <div class="vaga-descricao">${vaga.descricao}</div>
-                <div class="vaga-card-footer">
-                    <span class="vaga-publicado">Publicado por ${vaga.autorNome} em ${new Date(vaga.dataPublicacao).toLocaleDateString()}</span>
-                    <button class="vaga-candidatar-btn">Ver Detalhes</button>
-                </div>
-            `;
-            elements.vagasListContainer.appendChild(vagaCard);
-        });
-    }
-    
-    function filterVagas() {
-        const searchTerm = elements.searchInput.value.toLowerCase();
-        const tipo = elements.filterTipo.value;
-        const local = elements.filterLocal.value;
-        const nivel = elements.filterNivel.value;
-        const cards = document.querySelectorAll('.vaga-card');
-
-        cards.forEach(card => {
-            const titulo = card.querySelector('.vaga-titulo').textContent.toLowerCase();
-            const empresa = card.querySelector('.vaga-empresa').textContent.toLowerCase();
-            const descricao = card.querySelector('.vaga-descricao').textContent.toLowerCase();
-            const tags = Array.from(card.querySelectorAll('.tag')).map(tag => tag.textContent).join(' ');
-
-            const matchSearch = titulo.includes(searchTerm) || empresa.includes(searchTerm) || descricao.includes(searchTerm);
-            const matchTipo = tipo === 'todos' || tags.includes(tipo);
-            const matchLocal = local === 'todos' || card.querySelector('.vaga-localidade').textContent.includes(local);
-            const matchNivel = nivel === 'todos' || tags.includes(nivel);
-
-            if (matchSearch && matchTipo && matchLocal && matchNivel) {
-                card.style.display = 'flex';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
-
-    // --- FUNÇÕES COMUNS (Idênticas às outras páginas) ---
-
-    function updateUIWithUserData(user) {
-        if (!user) return;
-        const userImage = user.urlFotoPerfil ? `${backendUrl}${user.urlFotoPerfil}` : defaultAvatarUrl;
-        if (elements.topbarUserName) elements.topbarUserName.textContent = user.nome;
-        if (elements.sidebarUserName) elements.sidebarUserName.textContent = user.nome;
-        if (elements.sidebarUserTitle) elements.sidebarUserTitle.textContent = user.tipoUsuario === 'ALUNO' ? 'Aluno(a)' : 'Professor(a)';
-        if (elements.topbarUserImg) elements.topbarUserImg.src = userImage;
-        if (elements.sidebarUserImg) elements.sidebarUserImg.src = userImage;
-    }
-
-    function showNotification(message, type = "info") {
-        const notification = document.createElement("div");
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        if (elements.notificationCenter) elements.notificationCenter.appendChild(notification);
-        setTimeout(() => { notification.classList.add("show"); }, 10);
-        setTimeout(() => {
-            notification.classList.remove("show");
-            setTimeout(() => { notification.remove(); }, 300);
-        }, 5000);
-    }
-
-    function connectWebSocket() {
-        if (!currentUser || !currentUser.email) return;
-        const socket = new SockJS(`${backendUrl}/ws`);
-        stompClient = Stomp.over(socket);
-        stompClient.debug = null;
-        const headers = { Authorization: `Bearer ${jwtToken}` };
-        stompClient.connect(headers, () => {
-            stompClient.subscribe(`/user/${currentUser.email}/queue/notifications`, (message) => {
-                const newNotification = JSON.parse(message.body);
-                showNotification(`Nova notificação: ${newNotification.mensagem}`, 'info');
-                if (elements.notificationsList) {
-                    const emptyState = elements.notificationsList.querySelector('.empty-state');
-                    if (emptyState) emptyState.remove();
-                    const newItem = createNotificationElement(newNotification);
-                    elements.notificationsList.prepend(newItem);
-                }
-                if (elements.notificationsBadge) {
-                    const currentCount = parseInt(elements.notificationsBadge.textContent) || 0;
-                    elements.notificationsBadge.textContent = currentCount + 1;
-                    elements.notificationsBadge.style.display = 'flex';
-                }
-            });
-            stompClient.subscribe("/topic/status", (message) => {
-                latestOnlineEmails = JSON.parse(message.body);
-                atualizarStatusDeAmigosNaUI();
-            });
-        }, (error) => console.error("ERRO WEBSOCKET:", error));
-    }
-    
-    async function fetchNotifications() {
-        try {
-            const response = await axios.get(`${backendUrl}/api/notificacoes`);
-            renderNotifications(response.data);
-        } catch (error) {
-            console.error("Erro ao buscar notificações:", error);
-        }
-    }
-
-    function renderNotifications(notifications) {
-        if (!elements.notificationsList) return;
-        elements.notificationsList.innerHTML = '';
-        const unreadCount = notifications.filter(n => !n.lida).length;
-        if (elements.notificationsBadge) {
-            elements.notificationsBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
-            elements.notificationsBadge.textContent = unreadCount;
-        }
-        if (notifications.length === 0) {
-            elements.notificationsList.innerHTML = '<p class="empty-state">Nenhuma notificação.</p>';
-            return;
-        }
-        notifications.forEach(notification => {
-            const item = createNotificationElement(notification);
-            elements.notificationsList.appendChild(item);
-        });
-    }
-
-    function createNotificationElement(notification) {
-        const item = document.createElement('div');
-        item.className = 'notification-item';
-        item.id = `notification-item-${notification.id}`;
-        if (!notification.lida) item.classList.add('unread');
-        const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
-        let actionButtonsHtml = '';
-        let iconClass = 'fa-info-circle';
-
-        if (notification.tipo === 'PEDIDO_AMIZADE' && !notification.lida) {
-            iconClass = 'fa-user-plus';
-            actionButtonsHtml = `
-              <div class="notification-actions">
-                 <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
-                 <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
-              </div>`;
-        }
-        item.innerHTML = `
-            <a href="amizades.html" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
-                <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
-                <div class="notification-content">
-                    <p>${notification.mensagem}</p>
-                    <span class="timestamp">${data}</span>
-                </div>
-            </a>
-            <div class="notification-actions-wrapper">${actionButtonsHtml}</div>`;
-        const actionsWrapper = item.querySelector('.notification-actions-wrapper');
-        if (actionsWrapper) {
-            actionsWrapper.addEventListener('click', e => e.stopPropagation());
-        }
-        return item;
-    }
-
-    window.markNotificationAsRead = async (event, notificationId) => {
-        if (event) event.preventDefault();
-        const notificationItem = document.getElementById(`notification-item-${notificationId}`);
-        if (notificationItem && notificationItem.classList.contains('unread')) {
-            notificationItem.classList.remove('unread');
-            try {
-                await axios.post(`${backendUrl}/api/notificacoes/${notificationId}/ler`);
-                fetchNotifications();
-            } catch (error) {
-                notificationItem.classList.add('unread');
-                showNotification('Erro ao atualizar notificação.', 'error');
-            } finally {
-                if (event && event.currentTarget) window.location.href = event.currentTarget.href;
-            }
-        } else if (event && event.currentTarget) {
-            window.location.href = event.currentTarget.href;
-        }
-    };
-
-    async function markAllNotificationsAsRead() {
-        const unreadCount = parseInt(elements.notificationsBadge.textContent, 10);
-        if (isNaN(unreadCount) || unreadCount === 0) return;
-        try {
-            await axios.post(`${backendUrl}/api/notificacoes/ler-todas`);
-            if (elements.notificationsBadge) {
-                elements.notificationsBadge.style.display = 'none';
-                elements.notificationsBadge.textContent = '0';
-            }
-            if (elements.notificationsList) {
-                elements.notificationsList.querySelectorAll('.notification-item.unread').forEach(item => item.classList.remove('unread'));
-            }
-        } catch (error) {
-            console.error("Erro ao marcar todas as notificações como lidas:", error);
-            showNotification('Não foi possível atualizar as notificações.', 'error');
-        }
-    }
-
-    window.aceitarSolicitacao = async (amizadeId, notificationId) => {
-        try {
-            await axios.post(`${backendUrl}/api/amizades/aceitar/${amizadeId}`);
-            handleFriendRequestFeedback(notificationId, 'Pedido aceito!', 'success');
-            fetchFriends();
-        } catch (error) {
-            handleFriendRequestFeedback(notificationId, 'Erro ao aceitar.', 'error');
-        }
-    };
-
-    window.recusarSolicitacao = async (amizadeId, notificationId) => {
-        try {
-            await axios.delete(`${backendUrl}/api/amizades/recusar/${amizadeId}`);
-            handleFriendRequestFeedback(notificationId, 'Pedido recusado.', 'info');
-        } catch (error) {
-            handleFriendRequestFeedback(notificationId, 'Erro ao recusar.', 'error');
-        }
-    };
-
-    function handleFriendRequestFeedback(notificationId, message, type = 'info') {
-        const item = document.getElementById(`notification-item-${notificationId}`);
-        if (item) {
-            const actions = item.querySelector('.notification-actions-wrapper');
-            if (actions) actions.innerHTML = `<p class="feedback-text ${type}">${message}</p>`;
-            setTimeout(() => {
-                item.classList.add('removing');
-                setTimeout(() => item.remove(), 500);
-            }, 2500);
-        }
-        fetchNotifications();
-    }
-
-    async function fetchFriends() {
-        try {
-            const response = await axios.get(`${backendUrl}/api/amizades/`);
-            userFriends = response.data;
-            friendsLoaded = true;
-            if (elements.connectionsCount) {
-                elements.connectionsCount.textContent = userFriends.length;
-            }
-            atualizarStatusDeAmigosNaUI();
-        } catch (error) {
-            friendsLoaded = true;
-            atualizarStatusDeAmigosNaUI();
-        }
-    }
-
-    async function fetchInitialOnlineFriends() {
-        try {
-            const response = await axios.get(`${backendUrl}/api/amizades/online`);
-            latestOnlineEmails = response.data.map(amigo => amigo.email);
-            atualizarStatusDeAmigosNaUI();
-        } catch (error) {
-            console.error("Erro ao buscar amigos online:", error);
-        }
-    }
-
-    function atualizarStatusDeAmigosNaUI() {
-        if (!elements.onlineFriendsList) return;
-        if (!friendsLoaded) {
-            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
-            return;
-        }
-        const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
-        elements.onlineFriendsList.innerHTML = '';
-        if (onlineFriends.length === 0) {
-            elements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
-        } else {
-            onlineFriends.forEach(friend => {
-                const item = document.createElement('div');
-                item.className = 'friend-item';
-                const avatar = friend.fotoPerfil ? `${backendUrl}${friend.fotoPerfil}` : defaultAvatarUrl;
-                item.innerHTML = `<div class="avatar"><img src="${avatar}" alt="Avatar"></div><span class="friend-name">${friend.nome}</span><div class="status online"></div>`;
-                elements.onlineFriendsList.appendChild(item);
-            });
-        }
-    }
-
-    function openEditProfileModal() {
-        if (!currentUser || !elements.editProfileModal) return;
-        elements.editProfilePicPreview.src = currentUser.urlFotoPerfil ? `${backendUrl}${currentUser.urlFotoPerfil}` : defaultAvatarUrl;
-        elements.editProfileName.value = currentUser.nome;
-        elements.editProfileBio.value = currentUser.bio || "";
-        if (currentUser.dataNascimento) {
-            elements.editProfileDob.value = currentUser.dataNascimento.split("T")[0];
-        }
-        elements.editProfilePassword.value = "";
-        elements.editProfilePasswordConfirm.value = "";
-        elements.editProfileModal.style.display = "flex";
-    }
-
-    function openDeleteAccountModal() {
-        if (elements.deleteConfirmPassword) elements.deleteConfirmPassword.value = "";
-        if (elements.deleteAccountModal) elements.deleteAccountModal.style.display = "flex";
-    }
-    
-    const closeAllMenus = () => { document.querySelectorAll('.options-menu, .dropdown-menu').forEach(m => m.style.display = 'none'); };
-
-    function setupEventListeners() {
-        document.body.addEventListener("click", (e) => {
-            if (elements.notificationsPanel && !elements.notificationsPanel.contains(e.target) && !elements.notificationsIcon.contains(e.target)) {
-                elements.notificationsPanel.style.display = 'none';
-            }
-            closeAllMenus();
-        });
-
-        if (elements.notificationsIcon) {
-            elements.notificationsIcon.addEventListener('click', (event) => {
-                event.stopPropagation();
-                const panel = elements.notificationsPanel;
-                panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-                if (panel.style.display === 'block') {
-                    markAllNotificationsAsRead();
-                }
-            });
-        }
-
-        if (elements.userDropdownTrigger) {
-            elements.userDropdownTrigger.addEventListener("click", (event) => {
-                event.stopPropagation();
-                const menu = elements.userDropdownTrigger.nextElementSibling;
-                if (menu) menu.style.display = menu.style.display === "block" ? "none" : "block";
-            });
-        }
-
-        if (elements.logoutBtn) elements.logoutBtn.addEventListener("click", () => {
-            localStorage.clear();
-            window.location.href = "login.html";
-        });
-
-        if (elements.editProfileBtn) elements.editProfileBtn.addEventListener("click", openEditProfileModal);
-        if (elements.deleteAccountBtn) elements.deleteAccountBtn.addEventListener("click", openDeleteAccountModal);
-        if (elements.cancelEditProfileBtn) elements.cancelEditProfileBtn.addEventListener("click", () => elements.editProfileModal.style.display = "none");
-        if (elements.cancelDeleteAccountBtn) elements.cancelDeleteAccountBtn.addEventListener("click", () => elements.deleteAccountModal.style.display = "none");
         
-        if (elements.editProfilePicInput) elements.editProfilePicInput.addEventListener("change", () => {
-            const file = elements.editProfilePicInput.files[0];
-            if (file) elements.editProfilePicPreview.src = URL.createObjectURL(file);
-        });
-
-        if (elements.editProfileForm) elements.editProfileForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            
-            if (elements.editProfilePicInput.files[0]) {
-                const formData = new FormData();
-                formData.append('foto', elements.editProfilePicInput.files[0]);
-                try {
-                    const response = await axios.put(`${backendUrl}/usuarios/me/foto`, formData);
-                    currentUser = response.data;
-                    updateUIWithUserData(currentUser);
-                    showNotification('Foto de perfil atualizada!', 'success');
-                } catch (error) {
-                    showNotification('Erro ao atualizar a foto.', 'error');
-                    console.error("Erro na foto:", error);
-                }
-            }
-
-            const password = elements.editProfilePassword.value;
-            const passwordConfirm = elements.editProfilePasswordConfirm.value;
-            if (password && password !== passwordConfirm) {
-                showNotification("As novas senhas não coincidem.", "error");
-                return;
-            }
-
-            const updateData = {
-                nome: elements.editProfileName.value,
-                bio: elements.editProfileBio.value,
-                dataNascimento: elements.editProfileDob.value ? new Date(elements.editProfileDob.value).toISOString() : null,
-                senha: password || null
-            };
-
-            try {
-                const response = await axios.put(`${backendUrl}/usuarios/me`, updateData);
-                currentUser = response.data;
-                updateUIWithUserData(currentUser);
-                showNotification('Perfil atualizado com sucesso!', 'success');
-                elements.editProfileModal.style.display = 'none';
-            } catch (error) {
-                showNotification('Erro ao atualizar o perfil.', 'error');
-                console.error("Erro no perfil:", error);
-            }
-        });
-
-        if (elements.deleteAccountForm) elements.deleteAccountForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const password = elements.deleteConfirmPassword.value;
-            if (!password) {
-                showNotification('Por favor, digite sua senha para confirmar.', 'error');
-                return;
-            }
-
-            try {
-                await axios.post(`${backendUrl}/autenticacao/login`, { email: currentUser.email, senha: password });
-                
-                if (confirm('Você tem ABSOLUTA CERTEZA? Esta ação não pode ser desfeita.')) {
-                    await axios.delete(`${backendUrl}/usuarios/me`);
-                    alert("Sua conta foi excluída com sucesso.");
-                    localStorage.clear();
-                    window.location.href = "login.html";
-                }
-            } catch (error) {
-                showNotification('Senha incorreta. A conta não foi excluída.', 'error');
-                console.error("Erro na confirmação de senha:", error);
-            }
-        });
-        
-        // Listeners para os filtros de vagas
-        if (elements.searchInput) elements.searchInput.addEventListener('input', filterVagas);
-        if (elements.filterTipo) elements.filterTipo.addEventListener('change', filterVagas);
-        if (elements.filterLocal) elements.filterLocal.addEventListener('change', filterVagas);
-        if (elements.filterNivel) elements.filterNivel.addEventListener('change', filterVagas);
-    }
-
-    // --- INICIA A APLICAÇÃO ---
-    init();
+        fetchVagas(); // Busca as vagas
+        setupVagasEventListeners(); // Configura os listeners
+    });
 });

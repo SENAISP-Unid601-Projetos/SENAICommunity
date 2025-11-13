@@ -28,5 +28,6 @@ public class Notificacao {
     private boolean lida = false;
     private String tipo; // Ex: "PEDIDO_AMIZADE", "GERAL"
     private Long idReferencia; // Ex: o ID da Amizade
+    private Long idReferenciaSecundaria;
 
 }

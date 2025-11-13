@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -65,4 +66,25 @@ public class ChatRestController {
     public List<PostagemSaidaDTO> getPostagensPublicas() {
         return postagemService.buscarPostagensPublicas();
     }
+
+    @GetMapping("/privado/nao-lidas/contagem")
+    public ResponseEntity<Long> getContagemNaoLidas(Principal principal) {
+        long contagem = mensagemPrivadaService.contarMensagensNaoLidas(principal.getName());
+        return ResponseEntity.ok(contagem);
+    }
+
+    @PostMapping("/privado/marcar-lida/{remetenteId}")
+    public ResponseEntity<Void> marcarComoLida(@PathVariable Long remetenteId, Principal principal) {
+        try {
+            mensagemPrivadaService.marcarConversaComoLida(principal.getName(), remetenteId);
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException e) {
+            // Logar o erro se necessário
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            // Logar o erro
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }
+

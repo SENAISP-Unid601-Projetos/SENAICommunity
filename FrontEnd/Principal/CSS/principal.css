@@ -362,6 +362,7 @@ body {
   border-radius: 6px;
   cursor: pointer;
   transition: var(--transition);
+  border-bottom: 0;
 }
 
 .friend-item:hover {
@@ -371,12 +372,23 @@ body {
 .friend-item .avatar {
   width: 32px;
   height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0; /* Impede que o avatar encolha */
+}
+
+.friend-item .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .friend-item .friend-name {
   font-size: 0.9rem;
   font-weight: 500;
   flex-grow: 1;
+    margin-bottom: 10px;
+
 }
 
 .friend-item .status.online {
@@ -385,6 +397,7 @@ body {
   width: 10px;
   height: 10px;
   border: none;
+    margin-bottom: 10px;
 
   position: static;
   flex-shrink: 0;
@@ -1225,7 +1238,8 @@ body {
 }
 
 .modal-content .form-group input,
-.modal-content .form-group textarea {
+.modal-content .form-group textarea,
+.modal-content .form-group select {
   width: 100%;
   padding: 0.75rem;
   background-color: var(--bg-tertiary);
@@ -1233,6 +1247,7 @@ body {
   border-radius: 6px;
   color: var(--text-primary);
   font-size: 1rem;
+  font-family: 'Inter', sans-serif; /* Garante a fonte correta */
 }
 
 .modal-content .form-group textarea {
@@ -1885,3 +1900,152 @@ html::-webkit-scrollbar-thumb {
 html::-webkit-scrollbar-thumb:hover {
   background-color: var(--text-secondary); /* Cor ao passar o mouse */
 }
+
+/* --- ESTILOS PARA LINKS DE PERFIL --- */
+
+/* Link no cabeçalho do post */
+.post-author-details-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+}
+.post-author-details-link:hover .post-author-info strong {
+    text-decoration: underline;
+}
+
+/* Link no comentário (avatar e nome) */
+.comment-author-link {
+    text-decoration: none;
+    color: inherit;
+}
+.comment-author-link:hover .comment-author {
+    text-decoration: underline;
+    color: var(--text-primary);
+}
+
+/* Link no card de usuário (usado em 'amizades.html' e 'buscar_amigos.html') */
+a.user-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+a.user-card-link:hover h4 {
+    text-decoration: underline;
+}
+.user-card {
+    display: flex; /* Garante que o layout do card-usuário se mantenha */
+    align-items: center;
+}
+
+/* Link na lista de amigos online (sidebar) */
+.friend-item-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-grow: 1; /* Ocupa o espaço e empurra o status online para a direita */
+    text-decoration: none;
+    color: inherit;
+    min-width: 0;
+     /* Corrige problemas de flexbox */
+}
+.friend-item-link .friend-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.friend-item-link:hover .friend-name {
+    text-decoration: underline;
+}
+
+/* --- Estilo para Selects dentro de Modais --- */
+.modal-content .form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* Seta customizada (usada no seu login/cadastro) */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    padding-right: 2.5rem; /* Espaço extra para a seta */
+}
+
+.modal-content .form-group select:invalid {
+    color: var(--text-secondary);
+}
+
+/* --- Estilo para a tag @username nas respostas --- */
+.comment-content .reply-tag {
+    color: var(--accent-primary);
+    font-weight: 600;
+    text-decoration: none;
+    margin-right: 0.25rem;
+}
+
+.comment-content .reply-tag:hover {
+    text-decoration: underline;
+}
+
+/* --- Animação de Flash para Comentário --- */
+
+/* Adiciona variáveis de transparência no :root */
+:root {
+    /* ... (outras variáveis) ... */
+    --accent-primary-trans-10: rgba(88, 166, 255, 0.1);
+    --accent-primary-trans-30: rgba(88, 166, 255, 0.3);
+}
+
+[data-theme="light"] {
+    /* ... (outras variáveis) ... */
+    --accent-primary-trans-10: rgba(24, 119, 242, 0.1);
+    --accent-primary-trans-30: rgba(24, 119, 242, 0.3);
+}
+
+@keyframes flash-animation {
+    0% {
+        background-color: var(--bg-secondary);
+    }
+    25% {
+        background-color: var(--accent-primary-trans-10);
+        box-shadow: 0 0 10px var(--accent-primary-trans-30);
+    }
+    75% {
+        background-color: var(--accent-primary-trans-10);
+        box-shadow: 0 0 10px var(--accent-primary-trans-30);
+    }
+    100% {
+        background-color: var(--bg-secondary);
+    }
+}
+
+.comment.highlight-flash {
+    /* Aplica a animação ao comentário */
+    animation: flash-animation 1.5s ease-out;
+}
+/* Adicionar ao final de principal.css */
+
+/* --- Estilo para Botão "Ver Respostas" --- */
+.view-replies-container {
+    padding-left: 47px; 
+    margin-top: 0.25rem;  /* REDUZIDO */
+    margin-bottom: 0.25rem; /* REDUZIDO */
+}
+
+.btn-view-replies {
+    background: none;
+    border: none;
+    color: var(--text-secondary); /* Cor sutil */
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+
+.btn-view-replies:hover {
+    color: var(--accent-primary); /* Destaca ao passar o mouse */
+}
+

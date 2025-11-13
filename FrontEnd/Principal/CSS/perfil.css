@@ -125,3 +125,11 @@
 .main-content {
     grid-column: 2 / 4;
 }
+
+.sidebar {
+    position: sticky;
+    top: 80px;
+    height: calc(100vh - 100px); /* Define uma altura fixa */
+    overflow-y: auto; /* Adiciona a barra de rolagem interna */
+}
+

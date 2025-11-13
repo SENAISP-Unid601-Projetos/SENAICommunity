@@ -5,20 +5,17 @@ import com.SenaiCommunity.BackEnd.DTO.AlunoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Aluno;
 import com.SenaiCommunity.BackEnd.Entity.Projeto;
 import com.SenaiCommunity.BackEnd.Entity.Role;
+import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.AlunoRepository;
 import com.SenaiCommunity.BackEnd.Repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +34,11 @@ public class AlunoService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    @Autowired
+    private ArquivoMidiaService midiaService;
+
+    @Autowired
+    private FiltroProfanidadeService filtroProfanidade;
 
     // Métodos de conversão direto no service:
 
@@ -67,10 +67,8 @@ public class AlunoService {
 
         String nomeFoto = aluno.getFotoPerfil();
         if (nomeFoto != null && !nomeFoto.isBlank()) {
-            // Se o aluno TEM uma foto, montamos a URL para o ArquivoController.
-            dto.setFotoPerfil("/api/arquivos/" + nomeFoto);
+            dto.setFotoPerfil(nomeFoto);
         } else {
-            // Se o aluno NÃO TEM foto, usamos a URL do arquivo estático padrão.
             dto.setFotoPerfil("/images/default-avatar.jpg");
         }
 
@@ -84,6 +82,12 @@ public class AlunoService {
     }
 
     public AlunoSaidaDTO criarAlunoComFoto(AlunoEntradaDTO dto, MultipartFile foto) {
+
+        if (filtroProfanidade.contemProfanidade(dto.getNome()) ||
+                filtroProfanidade.contemProfanidade(dto.getCurso())) {
+            throw new ConteudoImproprioException("Os dados do aluno contêm texto não permitido.");
+        }
+
         Aluno aluno = toEntity(dto);
         aluno.setDataCadastro(LocalDateTime.now());
         aluno.setTipoUsuario("ALUNO");
@@ -94,11 +98,10 @@ public class AlunoService {
 
         if (foto != null && !foto.isEmpty()) {
             try {
-                // A chamada para salvarFoto agora usa a nova lógica
-                String fileName = salvarFoto(foto);
-                aluno.setFotoPerfil(fileName);
+                String urlCloudinary = midiaService.upload(foto);
+                aluno.setFotoPerfil(urlCloudinary);
             } catch (IOException e) {
-                throw new RuntimeException("Erro ao salvar a foto do aluno", e);
+                throw new RuntimeException("Erro ao salvar a foto do aluno: " + e.getMessage(), e);
             }
         } else {
             aluno.setFotoPerfil(null);
@@ -106,20 +109,6 @@ public class AlunoService {
 
         Aluno salvo = alunoRepository.save(aluno);
         return toDTO(salvo);
-    }
-
-    private String salvarFoto(MultipartFile foto) throws IOException {
-        String nomeArquivo = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());
-        Path diretorioDeUpload = Paths.get(uploadDir);
-
-        // Garante que o diretório de uploads exista
-        if (Files.notExists(diretorioDeUpload)) {
-            Files.createDirectories(diretorioDeUpload);
-        }
-
-        Path caminhoDoArquivo = diretorioDeUpload.resolve(nomeArquivo);
-        foto.transferTo(caminhoDoArquivo);
-        return nomeArquivo;
     }
 
 
@@ -136,16 +125,41 @@ public class AlunoService {
         return toDTO(aluno);
     }
 
-    public AlunoSaidaDTO atualizarAluno(Long id, AlunoEntradaDTO dto) {
+    @Transactional
+    public AlunoSaidaDTO atualizarAluno(Long id, AlunoEntradaDTO dto, MultipartFile foto) throws IOException {
+        if (filtroProfanidade.contemProfanidade(dto.getNome()) ||
+                filtroProfanidade.contemProfanidade(dto.getCurso())) {
+            throw new ConteudoImproprioException("Os dados do aluno contêm texto não permitido.");
+        }
+
+        // 1. Encontra o aluno existente
         Aluno aluno = alunoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Aluno não encontrado"));
 
         aluno.setNome(dto.getNome());
         aluno.setEmail(dto.getEmail());
-        aluno.setSenha(passwordEncoder.encode(dto.getSenha()));
-        aluno.setFotoPerfil(dto.getFotoPerfil());
         aluno.setCurso(dto.getCurso());
         aluno.setPeriodo(dto.getPeriodo());
+        aluno.setDataNascimento(dto.getDataNascimento());
+
+        if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
+            aluno.setSenha(passwordEncoder.encode(dto.getSenha()));
+        }
+
+        if (foto != null && !foto.isEmpty()) {
+            String oldFotoUrl = aluno.getFotoPerfil();
+
+            String newFotoUrl = midiaService.upload(foto);
+            aluno.setFotoPerfil(newFotoUrl);
+
+            if (oldFotoUrl != null && !oldFotoUrl.isBlank()) {
+                try {
+                    midiaService.deletar(oldFotoUrl);
+                } catch (Exception e) {
+                    System.err.println("AVISO: Falha ao deletar foto antiga do Cloudinary: " + oldFotoUrl);
+                }
+            }
+        }
 
         Aluno atualizado = alunoRepository.save(aluno);
         return toDTO(atualizado);

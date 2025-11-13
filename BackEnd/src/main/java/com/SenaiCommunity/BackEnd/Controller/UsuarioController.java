@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/usuarios")
 @CrossOrigin(origins = "*")
-@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
+@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR') or hasRole('ADMIN')")
 public class UsuarioController {
 
     @Autowired
@@ -27,6 +27,12 @@ public class UsuarioController {
     @GetMapping("/me")
     public ResponseEntity<UsuarioSaidaDTO> getMeuUsuario(Authentication authentication) {
         UsuarioSaidaDTO usuarioDTO = usuarioService.buscarUsuarioLogado(authentication);
+        return ResponseEntity.ok(usuarioDTO);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioSaidaDTO> getUsuarioPorId(@PathVariable Long id) {
+        UsuarioSaidaDTO usuarioDTO = usuarioService.buscarUsuarioPorId(id);
         return ResponseEntity.ok(usuarioDTO);
     }
 

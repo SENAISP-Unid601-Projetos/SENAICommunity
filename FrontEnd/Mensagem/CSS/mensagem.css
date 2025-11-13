@@ -407,3 +407,48 @@
     font-weight: 600;
     color: var(--text-primary);
 }
+
+/* Wrapper para alinhar botões e bloco de mensagem */
+.message-content-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Alinha os botões à esquerda para as "minhas" mensagens */
+.message-group.me .message-content-wrapper {
+    flex-direction: row-reverse; 
+}
+
+/* Estilo dos botões de ação */
+.message-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Mostra os botões ao passar o mouse sobre a MENSAGEM */
+.message-group:hover .message-actions {
+    opacity: 1;
+}
+
+.btn-action {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary); 
+    font-size: 0.8rem;
+    padding: 4px;
+}
+
+.btn-action:hover {
+    color: var(--text-primary); 
+}
+
+.btn-edit-msg:hover {
+    color: var(--primary-color); 
+}
+.btn-delete-msg:hover {
+    color: var(--danger-color); 
+}

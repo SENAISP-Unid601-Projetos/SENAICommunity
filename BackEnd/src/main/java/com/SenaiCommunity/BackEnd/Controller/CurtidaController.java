@@ -20,7 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/curtidas")
-@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
+@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR') or hasRole('ADMIN')")
 public class CurtidaController {
 
     @Autowired
