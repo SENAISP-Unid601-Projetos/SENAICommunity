@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SENAI Community | Projetos</title>
+
+    <link rel="icon" href="img/LogoFavicon-removebg-preview.png2.png" type="image/png">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Principal/CSS/principal.css">
@@ -67,33 +70,13 @@
                 <a href="buscar_amigos.html"><i class="fas fa-user-plus"></i> Encontrar Pessoas</a>
                 <a href="amizades.html"><i class="fas fa-user-friends"></i> Minhas Conexões</a> 
             </nav>
-            <!-- Sidebar de Amigos -->
-<div class="friends-sidebar" id="friends-sidebar">
-  <div class="friends-header">
-    <h3>Amigos</h3>
-    <button class="btn-icon" id="friends-toggle-btn">
-      <i class="fas fa-chevron-left"></i>
-    </button>
-  </div>
-  
-  <div class="friends-content">
-    <!-- Amigos Online -->
-    <div class="friends-section">
-      <h4>Amigos Online</h4>
-      <div class="friends-list" id="online-friends-list">
-        <!-- Lista de amigos online será preenchida via JavaScript -->
-      </div>
-    </div>
+            <div class="widget-card online-friends" id="online-friends-widget">
+                <h3 class="widget-title">Amigos Online</h3>
+                <div class="friend-list" id="online-friends-list">
+                    <p class="empty-state">Carregando...</p>
+                </div>
+            </div>
 
-    <!-- Todos os Amigos -->
-    <div class="friends-section">
-      <h4>Todos os Amigos</h4>
-      <div class="friends-list" id="all-friends-list">
-        <!-- Lista completa de amigos será preenchida via JavaScript -->
-      </div>
-    </div>
-  </div>
-</div>
         </aside>
 
         <main class="main-content">

@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // -----------------------------------------------------------------
   document.addEventListener("globalScriptsLoaded", (e) => {
     const currentUser = window.currentUser;
+
     const ProjetosPage = {
       // --- ESTADO (Específico da Página) ---
       state: {
@@ -34,17 +35,14 @@ document.addEventListener("DOMContentLoaded", () => {
         connectionsCount: document.getElementById("connections-count"),
         projectsCount: document.getElementById("projects-count"),
 
-        // NOVO: Elementos da lista de amigos
-        friendsSidebar: document.getElementById("friends-sidebar"),
+        // Lista de amigos (agora usando a classe do principal.html)
         onlineFriendsList: document.getElementById("online-friends-list"),
-        allFriendsList: document.getElementById("all-friends-list"),
-        friendsToggleBtn: document.getElementById("friends-toggle-btn"),
       },
 
       // -----------------------------------------------------------------
       // INICIALIZAÇÃO (Específica da Página)
       // -----------------------------------------------------------------
-      async init() {
+     async init() {
         if (!currentUser) {
           console.error("Página de Projetos: Usuário não carregado.");
           return;
@@ -55,16 +53,17 @@ document.addEventListener("DOMContentLoaded", () => {
             window.userFriends?.length || "0";
         }
 
+        this.renderOnlineFriends();
+        
         await this.fetchProjetos();
         this.setupEventListeners();
-        this.setupFriendsSection(); // NOVO: Configurar seção de amigos
         
         document.addEventListener("friendsListUpdated", () => {
           if (this.elements.connectionsCount) {
             this.elements.connectionsCount.textContent =
               window.userFriends?.length || "0";
           }
-          this.renderFriendsLists(); // NOVO: Atualizar lista de amigos quando houver mudanças
+          this.renderOnlineFriends();        
         });
       },
 
@@ -84,8 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
 
-        // Renderizar listas de amigos
-        this.renderFriendsLists();
       },
 
       // NOVO: Renderizar lista de amigos online e todos os amigos
@@ -94,12 +91,12 @@ document.addEventListener("DOMContentLoaded", () => {
         this.renderAllFriends();
       },
 
-      // NOVO: Renderizar amigos online
       renderOnlineFriends() {
         if (!this.elements.onlineFriendsList) return;
         
-        const onlineFriends = window.userFriends.filter(friend => 
-          window.latestOnlineEmails.includes(friend.email)
+        // Usa as variáveis globais do principal.js
+        const onlineFriends = (window.userFriends || []).filter(friend => 
+          (window.latestOnlineEmails || []).includes(friend.email)
         );
 
         this.elements.onlineFriendsList.innerHTML = "";
@@ -111,12 +108,34 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         onlineFriends.forEach(friend => {
-          const friendElement = this.createFriendElement(friend, true);
+          const friendElement = this.createFriendElement(friend);
           this.elements.onlineFriendsList.appendChild(friendElement);
         });
       },
 
-      // NOVO: Renderizar todos os amigos
+      // Função para criar o HTML do amigo (idêntica ao principal.js)
+      createFriendElement(friend) {
+        const friendElement = document.createElement("div");
+        friendElement.className = "friend-item";
+
+        const friendId = friend.idUsuario;
+        const friendAvatar = friend.fotoPerfil 
+          ? (friend.fotoPerfil.startsWith('http') 
+              ? friend.fotoPerfil 
+              : `${window.backendUrl}/api/arquivos/${friend.fotoPerfil}`) 
+          : window.defaultAvatarUrl;
+
+        friendElement.innerHTML = `
+          <a href="perfil.html?id=${friendId}" class="friend-item-link">
+            <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${window.defaultAvatarUrl}';"></div>
+            <span class="friend-name">${friend.nome}</span>
+          </a>
+          <div class="status online"></div>
+        `;
+
+        return friendElement;
+      },
+
       renderAllFriends() {
         if (!this.elements.allFriendsList) return;
         
@@ -136,45 +155,32 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       },
 
-      // NOVO: Criar elemento de amigo
-      createFriendElement(friend, isOnline) {
-        const friendElement = document.createElement("div");
-        friendElement.className = "friend-item";
-        
-        const friendId = friend.idUsuario;
-        const friendAvatar = friend.fotoPerfil 
-          ? (friend.fotoPerfil.startsWith('http') 
-              ? friend.fotoPerfil 
-              : `${window.backendUrl}/api/arquivos/${friend.fotoPerfil}`) 
-          : window.defaultAvatarUrl;
+    createFriendElement(friend) {
+    const friendElement = document.createElement("div");
+    friendElement.className = "friend-item";
 
-        friendElement.innerHTML = `
-          <a href="perfil.html?id=${friendId}" class="friend-item-link">
-            <div class="avatar">
-              <img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${window.defaultAvatarUrl}';">
-              ${isOnline ? '<div class="status online"></div>' : ''}
-            </div>
-            <span class="friend-name">${friend.nome}</span>
-          </a>
-          <div class="friend-actions">
-            <button class="btn-icon" onclick="ProjetosPage.inviteToProject('${friendId}', '${friend.nome}')" title="Convidar para projeto">
-              <i class="fas fa-user-plus"></i>
-            </button>
-          </div>
-        `;
+    const friendId = friend.idUsuario;
+    const friendAvatar = friend.fotoPerfil 
+      ? (friend.fotoPerfil.startsWith('http') 
+          ? friend.fotoPerfil 
+          : `${window.backendUrl}/api/arquivos/${friend.fotoPerfil}`) 
+      : window.defaultAvatarUrl;
 
-        return friendElement;
-      },
+    // Esta é a estrutura exata do 'principal.js'
+    friendElement.innerHTML = `
+      <a href="perfil.html?id=${friendId}" class="friend-item-link">
+        <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${window.defaultAvatarUrl}';"></div>
+        <span class="friend-name">${friend.nome}</span>
+      </a>
+      <div class="status online"></div>
+    `;
 
-      // NOVO: Função para convidar amigo para projeto
+    return friendElement;
+  },
+
       inviteToProject(friendId, friendName) {
-        // Aqui você pode implementar a lógica para convidar o amigo para um projeto
-        // Por enquanto, vamos apenas mostrar uma notificação
         window.showNotification(`Convite enviado para ${friendName}`, "success");
-        
-        // Em uma implementação real, você enviaria uma notificação ou abriria um modal
-        // para selecionar para qual projeto convidar
-        console.log(`Convidar amigo ${friendId} (${friendName}) para projeto`);
+                console.log(`Convidar amigo ${friendId} (${friendName}) para projeto`);
       },
 
       // -----------------------------------------------------------------
