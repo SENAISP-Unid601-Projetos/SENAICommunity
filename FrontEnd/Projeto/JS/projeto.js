@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Elementos da página
         grid: document.getElementById("projetos-grid"),
         searchInput: document.getElementById("project-search-input"),
+        categoryFilter: document.getElementById("filter-category"),
 
         // Modal
         modalOverlay: document.getElementById("novo-projeto-modal"),
@@ -28,6 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
         projTituloInput: document.getElementById("proj-titulo"),
         projDescricaoInput: document.getElementById("proj-descricao"),
         projImagemInput: document.getElementById("proj-imagem"),
+        projCategoriaInput: document.getElementById("proj-categoria"),
+        projTecnologiasInput: document.getElementById("proj-tecnologias"),
         modalUserAvatar: document.getElementById("modal-user-avatar"),
         modalUserName: document.getElementById("modal-user-name"),
         
@@ -35,14 +38,14 @@ document.addEventListener("DOMContentLoaded", () => {
         connectionsCount: document.getElementById("connections-count"),
         projectsCount: document.getElementById("projects-count"),
 
-        // Lista de amigos (agora usando a classe do principal.html)
+        // Lista de amigos
         onlineFriendsList: document.getElementById("online-friends-list"),
       },
 
       // -----------------------------------------------------------------
       // INICIALIZAÇÃO (Específica da Página)
       // -----------------------------------------------------------------
-     async init() {
+      async init() {
         if (!currentUser) {
           console.error("Página de Projetos: Usuário não carregado.");
           return;
@@ -56,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
         this.renderOnlineFriends();
         
         await this.fetchProjetos();
+        
         this.setupEventListeners();
         
         document.addEventListener("friendsListUpdated", () => {
@@ -68,33 +72,11 @@ document.addEventListener("DOMContentLoaded", () => {
       },
 
       // -----------------------------------------------------------------
-      // NOVO: CONFIGURAÇÃO DA SEÇÃO DE AMIGOS
+      // SEÇÃO DE AMIGOS
       // -----------------------------------------------------------------
-      setupFriendsSection() {
-        if (!this.elements.friendsToggleBtn || !this.elements.friendsSidebar) return;
-
-        // Toggle da sidebar de amigos
-        this.elements.friendsToggleBtn.addEventListener("click", () => {
-          this.elements.friendsSidebar.classList.toggle("collapsed");
-          const icon = this.elements.friendsToggleBtn.querySelector("i");
-          if (icon) {
-            icon.classList.toggle("fa-chevron-left");
-            icon.classList.toggle("fa-chevron-right");
-          }
-        });
-
-      },
-
-      // NOVO: Renderizar lista de amigos online e todos os amigos
-      renderFriendsLists() {
-        this.renderOnlineFriends();
-        this.renderAllFriends();
-      },
-
       renderOnlineFriends() {
         if (!this.elements.onlineFriendsList) return;
         
-        // Usa as variáveis globais do principal.js
         const onlineFriends = (window.userFriends || []).filter(friend => 
           (window.latestOnlineEmails || []).includes(friend.email)
         );
@@ -113,7 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       },
 
-      // Função para criar o HTML do amigo (idêntica ao principal.js)
       createFriendElement(friend) {
         const friendElement = document.createElement("div");
         friendElement.className = "friend-item";
@@ -132,55 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </a>
           <div class="status online"></div>
         `;
-
         return friendElement;
-      },
-
-      renderAllFriends() {
-        if (!this.elements.allFriendsList) return;
-        
-        const friends = window.userFriends || [];
-
-        this.elements.allFriendsList.innerHTML = "";
-        
-        if (friends.length === 0) {
-          this.elements.allFriendsList.innerHTML = 
-            '<p class="empty-state">Você ainda não tem amigos</p>';
-          return;
-        }
-
-        friends.forEach(friend => {
-          const friendElement = this.createFriendElement(friend, false);
-          this.elements.allFriendsList.appendChild(friendElement);
-        });
-      },
-
-    createFriendElement(friend) {
-    const friendElement = document.createElement("div");
-    friendElement.className = "friend-item";
-
-    const friendId = friend.idUsuario;
-    const friendAvatar = friend.fotoPerfil 
-      ? (friend.fotoPerfil.startsWith('http') 
-          ? friend.fotoPerfil 
-          : `${window.backendUrl}/api/arquivos/${friend.fotoPerfil}`) 
-      : window.defaultAvatarUrl;
-
-    // Esta é a estrutura exata do 'principal.js'
-    friendElement.innerHTML = `
-      <a href="perfil.html?id=${friendId}" class="friend-item-link">
-        <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${window.defaultAvatarUrl}';"></div>
-        <span class="friend-name">${friend.nome}</span>
-      </a>
-      <div class="status online"></div>
-    `;
-
-    return friendElement;
-  },
-
-      inviteToProject(friendId, friendName) {
-        window.showNotification(`Convite enviado para ${friendName}`, "success");
-                console.log(`Convidar amigo ${friendId} (${friendName}) para projeto`);
       },
 
       // -----------------------------------------------------------------
@@ -193,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `${window.backendUrl}/projetos`
           );
           this.state.allProjects = response.data;
-          this.handlers.applyFilters.call(this);
+          this.applyFilters(); // Mudança aqui - chamar applyFilters diretamente
         } catch (error) {
           console.error("Erro ao buscar projetos:", error);
           this.elements.grid.innerHTML = `<p>Não foi possível carregar os projetos.</p>`;
@@ -216,13 +149,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (projetosParaRenderizar.length === 0) {
-          grid.innerHTML = `<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Você ainda não participa de nenhum projeto.</p>`;
+          grid.innerHTML = `<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Nenhum projeto encontrado com esses filtros.</p>`;
           return;
         }
 
         projetosParaRenderizar.forEach((proj) => {
-          const card = document.createElement("div");
+          const card = document.createElement("a");
           card.className = "projeto-card";
+          card.href = `projeto-detalhe.html?id=${proj.id}`;
 
           const imageUrl =
             proj.imagemUrl && proj.imagemUrl.startsWith("http")
@@ -243,17 +177,23 @@ document.addEventListener("DOMContentLoaded", () => {
               return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}">`;
             })
             .join("");
+            
+          const tagsHtml = (proj.tecnologias || [])
+            .map(tag => `<span class="tech-tag">${tag}</span>`)
+            .join("");
 
           card.innerHTML = `
             <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
             <div class="projeto-conteudo">
               <h3>${proj.titulo}</h3>
-              <p>${
-                proj.descricao ||
-                "Este projeto não possui uma descrição."
-              }</p>
+              <p>${proj.descricao || "Este projeto não possui uma descrição."}</p>
               <div class="projeto-membros">${membrosHtml}</div>
+              
+              <div class="projeto-footer">
+                  ${tagsHtml.length > 0 ? tagsHtml : '<span class="tech-tag" style="opacity: 0.5;">Sem tags</span>'}
+              </div>
             </div>`;
+            
           grid.appendChild(card);
         });
       },
@@ -295,20 +235,37 @@ document.addEventListener("DOMContentLoaded", () => {
           formData.append("titulo", this.elements.projTituloInput.value);
           formData.append("descricao", this.elements.projDescricaoInput.value);
           formData.append("autorId", currentUser.id);
-          formData.append("maxMembros", 50);
-          formData.append("grupoPrivado", false);
+          formData.append("maxMembros", 50); 
+          formData.append("grupoPrivado", false); 
+          
+          const categoria = this.elements.projCategoriaInput.value;
+          if (categoria) {
+              formData.append("categoria", categoria);
+          }
 
+          const techsString = this.elements.projTecnologiasInput.value;
+          if (techsString) {
+              const tecnologias = techsString.split(',')
+                                          .map(tech => tech.trim())
+                                          .filter(tech => tech.length > 0); 
+              
+              tecnologias.forEach(tech => {
+                  formData.append("tecnologias", tech); 
+              });
+          }
+          
           if (this.elements.projImagemInput.files[0]) {
             formData.append("foto", this.elements.projImagemInput.files[0]);
           }
-
+          
           try {
             await window.axios.post(`${window.backendUrl}/projetos`, formData, {
               headers: { "Content-Type": "multipart/form-data" },
             });
             form.reset();
             this.handlers.closeModal.call(this);
-            await this.fetchProjetos();
+            await this.fetchProjetos(); 
+            window.showNotification("Projeto criado com sucesso!", "success");
           } catch (error) {
             let errorMessage = "Falha ao criar o projeto.";
             if (error.response && error.response.data && error.response.data.message) {
@@ -319,34 +276,42 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.disabled = false;
             btn.textContent = "Publicar Projeto";
           }
-        },
+        }
+      },
 
-        /**
-         * Filtra os projetos visíveis com base na busca e se o usuário é membro.
-         */
-        applyFilters() {
-          const search = this.elements.searchInput.value.toLowerCase();
-          if (!currentUser) return;
-          this.state.myProjects = this.state.allProjects.filter((proj) => {
-            const isMember = proj.membros.some(
-              (membro) => membro.usuarioId === currentUser.id
-            );
-            const searchMatch = (proj.titulo || "")
-              .toLowerCase()
-              .includes(search);
-            return isMember && searchMatch;
-          });
+      // -----------------------------------------------------------------
+      // FUNÇÃO DE FILTROS (Movida para fora de handlers)
+      // -----------------------------------------------------------------
+      applyFilters() {
+        const search = this.elements.searchInput.value.toLowerCase();
+        const category = this.elements.categoryFilter.value;
+        
+        if (!currentUser) return;
+        
+        this.state.myProjects = this.state.allProjects.filter((proj) => {
+          const isMember = proj.membros.some(
+            (membro) => membro.usuarioId === currentUser.id
+          );
+          
+          const searchMatch = (proj.titulo || "")
+            .toLowerCase()
+            .includes(search);
+            
+          const categoryMatch = (category === "todos") || (proj.categoria && proj.categoria.toLowerCase() === category);
+          
+          return isMember && searchMatch && categoryMatch;
+        });
 
-          this.render();
-        },
+        this.render();
       },
 
       // -----------------------------------------------------------------
       // EVENT LISTENERS (Específicos da Página)
       // -----------------------------------------------------------------
       setupEventListeners() {
-        const { openModalBtn, closeModalBtn, modalOverlay, form, searchInput } =
+        const { openModalBtn, closeModalBtn, modalOverlay, form, searchInput, categoryFilter } =
           this.elements;
+          
         if (openModalBtn)
           openModalBtn.addEventListener(
             "click",
@@ -364,8 +329,16 @@ document.addEventListener("DOMContentLoaded", () => {
         if (searchInput)
           searchInput.addEventListener(
             "input",
-            this.handlers.applyFilters.bind(this)
+            this.applyFilters.bind(this) // Mudança aqui
           );
+            
+        if (categoryFilter) {
+            categoryFilter.addEventListener(
+                "change",
+                this.applyFilters.bind(this) // Mudança aqui
+            );
+        }
+            
         if (modalOverlay) {
           modalOverlay.addEventListener("click", (e) => {
             if (e.target === modalOverlay) this.handlers.closeModal.call(this);
@@ -376,6 +349,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- INICIALIZAÇÃO DA PÁGINA ---
     ProjetosPage.init();
-    window.ProjetosPage = ProjetosPage; // Torna global para acesso pelos event listeners
+    window.ProjetosPage = ProjetosPage;
   });
 });

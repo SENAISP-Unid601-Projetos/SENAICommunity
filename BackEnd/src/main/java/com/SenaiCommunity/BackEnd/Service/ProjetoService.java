@@ -75,6 +75,8 @@ public class ProjetoService {
 
         projeto.setTitulo(dto.getTitulo());
         projeto.setDescricao(dto.getDescricao());
+        projeto.setCategoria(dto.getCategoria());
+        projeto.setTecnologias(dto.getTecnologias());
 
         if (isNovoGrupo) {
             projeto.setDataInicio(new Date());
@@ -394,6 +396,8 @@ public class ProjetoService {
         dto.setDataInicio(projeto.getDataInicio());
         dto.setDataEntrega(projeto.getDataEntrega());
         dto.setStatus(projeto.getStatus());
+        dto.setCategoria(projeto.getCategoria());
+        dto.setTecnologias(projeto.getTecnologias());
 
         String nomeFoto = projeto.getImagemUrl();
         if (nomeFoto != null && !nomeFoto.isBlank()) {

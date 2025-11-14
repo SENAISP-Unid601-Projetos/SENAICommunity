@@ -29,6 +29,10 @@ public class Projeto {
     private LocalDateTime dataCriacao;
     private Integer maxMembros = 50; // Limite de membros no grupo
     private Boolean grupoPrivado = false; // Se true, apenas por convite
+    private String categoria;
+
+    @ElementCollection
+    private List<String> tecnologias;
 
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL)
     private List<MensagemGrupo> mensagens;

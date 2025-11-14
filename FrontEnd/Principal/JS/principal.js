@@ -54,6 +54,15 @@ window.stompClient = stompClient;
 window.currentUser = currentUser;
 window.jwtToken = jwtToken;
 window.backendUrl = backendUrl;
+window.getAvatarUrl = function(fotoPerfil) {
+    if (!fotoPerfil) {
+        return window.defaultAvatarUrl || 'https://via.placeholder.com/150'; 
+    }
+    if (fotoPerfil.startsWith('http')) {
+        return fotoPerfil;
+    }
+    return `${window.backendUrl}/api/arquivos/${fotoPerfil}`;
+}
 window.defaultAvatarUrl = defaultAvatarUrl;
 window.showNotification = showNotification;
 window.axios = axios; // Assume que Axios está carregado globalmente

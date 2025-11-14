@@ -144,6 +144,20 @@
                         <label for="proj-imagem">Imagem de Capa (Opcional)</label>
                         <input type="file" id="proj-imagem" accept="image/*">
                     </div>
+                    <div class="form-group">
+                    <label for="proj-categoria">Categoria</label>
+                    <select id="proj-categoria" required>
+                        <option value="">Selecione uma categoria</option>
+                        <option value="web">Desenvolvimento Web</option>
+                        <option value="mobile">Mobile</option>
+                        <option value="iot">IoT & Robótica</option>
+                        <option value="ia">Inteligência Artificial</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="proj-tecnologias">Tecnologias (separadas por vírgula)</label>
+                    <input type="text" id="proj-tecnologias" placeholder="Ex: React, Node.js, MongoDB">
+                </div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn-publish">Publicar Projeto</button>

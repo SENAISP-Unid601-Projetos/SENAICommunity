@@ -43,37 +43,37 @@ public class ProjetoController {
             @RequestParam Long autorId,
             @RequestParam(required = false) List<Long> professorIds,
             @RequestParam(required = false) List<Long> alunoIds,
-            @RequestPart(required = false) MultipartFile foto) {
+            @RequestPart(required = false) MultipartFile foto,
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) List<String> tecnologias) {
+
         try {
-            if (foto != null && !foto.isEmpty()) {
-                System.out.println("[DEBUG] Recebendo upload de imagem: " + foto.getOriginalFilename());
+            // Validações básicas
+            if (titulo == null || titulo.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Título é obrigatório");
             }
 
             ProjetoDTO dto = new ProjetoDTO();
-            dto.setTitulo(titulo);
-            dto.setDescricao(descricao);
-            dto.setMaxMembros(maxMembros);
-            dto.setGrupoPrivado(grupoPrivado);
+            dto.setTitulo(titulo.trim());
+            dto.setDescricao(descricao != null ? descricao.trim() : "");
+            dto.setMaxMembros(maxMembros != null ? maxMembros : 10);
+            dto.setGrupoPrivado(grupoPrivado != null ? grupoPrivado : false);
             dto.setAutorId(autorId);
             dto.setProfessorIds(professorIds);
             dto.setAlunoIds(alunoIds);
-
+            dto.setCategoria(categoria);
+            dto.setTecnologias(tecnologias);
 
             ProjetoDTO salvo = projetoService.salvar(dto, foto);
 
             return ResponseEntity.ok(Map.of(
-                    "message", "Projeto criado com sucesso! Convites enviados automaticamente para professores e alunos.",
+                    "message", "Projeto criado com sucesso!",
                     "projeto", salvo
             ));
-        }catch (ConteudoImproprioException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", e.getMessage()));
 
         } catch (Exception e) {
-            System.err.println("[ERROR] Erro ao criar projeto: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Erro ao criar projeto: " + e.getMessage());
+            return ResponseEntity.internalServerError()
+                    .body("Erro ao criar projeto: " + e.getMessage());
         }
     }
 

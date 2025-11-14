@@ -16,7 +16,7 @@ public class ArquivoMidiaService {
 
     @Autowired
     private Cloudinary cloudinary;
-    
+
     private String getResourceType(MultipartFile file) {
         String contentType = file.getContentType();
         if (contentType == null) {

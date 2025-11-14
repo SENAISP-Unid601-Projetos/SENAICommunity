@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAI Community | Projeto</title>
+    <link rel="icon" href="img/LogoFavicon-removebg-preview.png2.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="Principal/CSS/principal.css">
+    <link rel="stylesheet" href="Projeto/CSS/projeto.css">
+    
+    <link rel="stylesheet" href="Projeto/CSS/projeto-detalhe.css"> 
+</head>
+<body>
+    <div class="notification-center"></div>
+
+    <header class="topbar">
+        </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            </aside>
+
+        <main class="main-content">
+            
+            <a href="projeto.html" class="btn-voltar"><i class="fas fa-chevron-left"></i> Voltar para Projetos</a>
+
+            <div class="main-content-detalhe">
+                
+                <div class="projeto-info-coluna">
+                    <div class="card-destaque">
+                        <h2 id="projeto-titulo">Carregando Título...</h2>
+                        <p id="projeto-descricao">Carregando descrição...</p>
+                    </div>
+
+                    <div class="card-destaque">
+                        <h3><i class="fas fa-info-circle"></i> Sobre o Projeto</h3>
+                        <ul class="lista-info-detalhe">
+                            <li><strong>Categoria:</strong> <span id="info-categoria">...</span></li>
+                            <li><strong>Tecnologias:</strong> <span id="info-tecnologias">...</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="card-destaque">
+                        <h3><i class="fas fa-users"></i> Integrantes</h3>
+                        <ul class="lista-integrantes" id="integrantes-lista">
+                            <li class="empty-state">Carregando...</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="projeto-chat-coluna">
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <h2>Chat do Grupo</h2>
+                            <div class="chat-membros" id="projeto-membros-icones">
+                                </div>
+                        </div>
+        
+                        <div class="chat-messages" id="chat-messages">
+                            <p class="empty-state">Carregando histórico...</p>
+                        </div>
+        
+                        <form class="chat-input-form" id="chat-form">
+                            <div class="avatar-small">
+                                <img src="https://via.placeholder.com/40" id="chat-user-avatar" alt="Seu Perfil">
+                            </div>
+                            <input type="text" id="chat-message-input" placeholder="Digite sua mensagem..." autocomplete="off">
+                            <button type="submit" class="btn-send"><i class="fas fa-paper-plane"></i></button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    
+    <script src="Principal/JS/principal.js"></script> 
+    <script src="Projeto/JS/projeto-detalhe.js"></script> 
+</body>
+</html>
