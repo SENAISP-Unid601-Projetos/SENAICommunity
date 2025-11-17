@@ -88,6 +88,11 @@
                 <button class="btn-new-project" id="btn-new-project"><i class="fas fa-plus"></i> Publicar Projeto</button>
             </div>
 
+            <div class="projetos-tabs">
+                <button class="tab-btn active" data-tab="meus-projetos">Meus Projetos</button>
+                <button class="tab-btn" data-tab="projetos-publicos">Projetos Públicos</button>
+            </div>
+
             <div class="projetos-filters">
                 <div class="search-projetos">
                     <i class="fas fa-search"></i>
@@ -103,19 +108,13 @@
             </div>
 
             <div class="projetos-grid" id="projetos-grid">
-                </div>
-        </main>
-
-        <aside class="right-sidebar">
-            <div class="card-destaque">
-                <h3><i class="fas fa-bullhorn"></i> Buscando Colaboradores</h3>
-                <ul class="lista-colaboracao">
-                    <li><a href="#"><strong>App de Gestão Financeira</strong><span>UX/UI Designer</span></a></li>
-                    <li><a href="#"><strong>Sistema de Irrigação Automatizado</strong><span>Eng. de Software (C++)</span></a></li>
-                    <li><a href="#"><strong>Plataforma E-learning com IA</strong><span>Backend (Python/Django)</span></a></li>
-                </ul>
+                <!-- Meus projetos serão carregados aqui -->
             </div>
-        </aside>
+
+            <div class="projetos-grid" id="projetos-publicos-grid" style="display: none;">
+                <!-- Projetos públicos serão carregados aqui -->
+            </div>
+        </main>
     </div>
 
     <div class="modal-overlay" id="novo-projeto-modal">
@@ -157,6 +156,13 @@
                 <div class="form-group">
                     <label for="proj-tecnologias">Tecnologias (separadas por vírgula)</label>
                     <input type="text" id="proj-tecnologias" placeholder="Ex: React, Node.js, MongoDB">
+                </div>
+                <div class="form-group">
+                    <label for="proj-privacidade">Privacidade</label>
+                    <select id="proj-privacidade" required>
+                        <option value="false">Público</option>
+                        <option value="true">Privado</option>
+                    </select>
                 </div>
                 </div>
                 <div class="modal-footer">

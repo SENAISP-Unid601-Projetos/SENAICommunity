@@ -202,6 +202,31 @@
         </div>
     </div>
 
+    <!-- Modal para visualização de mídias em carrossel -->
+    <div id="media-viewer-modal" class="modal-overlay" style="display: none;">
+        <div class="media-viewer-content">
+            <div class="media-viewer-header">
+                <button class="media-viewer-close" id="media-viewer-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="media-carousel">
+                <button class="carousel-btn carousel-prev" id="carousel-prev">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="carousel-container" id="carousel-container">
+                    <!-- As mídias serão inseridas aqui via JavaScript -->
+                </div>
+                <button class="carousel-btn carousel-next" id="carousel-next">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="carousel-indicators" id="carousel-indicators">
+                <!-- Os indicadores serão inseridos aqui via JavaScript -->
+            </div>
+        </div>
+    </div>
+
     <div id="edit-profile-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">

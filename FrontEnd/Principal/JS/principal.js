@@ -1,4 +1,3 @@
-
 // =================================================================
 // BLOCO DE CONTROLE DE TEMA (Executa primeiro em todas as páginas)
 // =================================================================
@@ -48,6 +47,10 @@ let currentUser = null;
 let userFriends = [];
 let friendsLoaded = false;
 let latestOnlineEmails = [];
+
+// Variáveis globais para o carrossel
+let currentMediaIndex = 0;
+let currentMediaItems = [];
 
 // Torna as variáveis e funções essenciais acessíveis globalmente
 window.stompClient = stompClient;
@@ -810,6 +813,148 @@ document.addEventListener("DOMContentLoaded", () => {
   let urlsParaRemover = [];
   const searchInput = document.getElementById("search-input");
 
+  // --- FUNÇÕES DE CARROSSEL ---
+
+  // Função para abrir o visualizador de mídias
+  window.openMediaViewer = (mediaUrls, startIndex = 0) => {
+      const modal = document.getElementById('media-viewer-modal');
+      const container = document.getElementById('carousel-container');
+      const indicators = document.getElementById('carousel-indicators');
+      
+      if (!modal || !container) return;
+      
+      currentMediaItems = mediaUrls;
+      currentMediaIndex = startIndex;
+      
+      // Limpar conteúdo anterior
+      container.innerHTML = '';
+      indicators.innerHTML = '';
+      
+      // Adicionar mídias ao carrossel
+      mediaUrls.forEach((url, index) => {
+          const slide = document.createElement('div');
+          slide.className = `carousel-slide ${index === startIndex ? 'active' : ''}`;
+          
+          const fullMediaUrl = url.startsWith('http') ? url : `${backendUrl}${url}`;
+          
+          if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
+              slide.innerHTML = `<video controls autoplay src="${fullMediaUrl}" style="max-width: 100%; max-height: 100%;"></video>`;
+          } else {
+              slide.innerHTML = `<img src="${fullMediaUrl}" alt="Mídia da postagem" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          }
+          
+          container.appendChild(slide);
+          
+          // Adicionar indicador
+          const indicator = document.createElement('span');
+          indicator.className = `carousel-indicator ${index === startIndex ? 'active' : ''}`;
+          indicator.onclick = () => goToMedia(index);
+          indicators.appendChild(indicator);
+      });
+      
+      modal.style.display = 'flex';
+      updateCarouselControls();
+  };
+
+  // Função para navegar para uma mídia específica
+  function goToMedia(index) {
+      const slides = document.querySelectorAll('.carousel-slide');
+      const indicators = document.querySelectorAll('.carousel-indicator');
+      
+      if (index < 0 || index >= slides.length) return;
+      
+      // Remover classe active de todos
+      slides.forEach(slide => slide.classList.remove('active'));
+      indicators.forEach(indicator => indicator.classList.remove('active'));
+      
+      // Adicionar classe active ao slide e indicador atual
+      slides[index].classList.add('active');
+      indicators[index].classList.add('active');
+      
+      currentMediaIndex = index;
+      updateCarouselControls();
+  }
+
+  // Função para ir para a próxima mídia
+  function nextMedia() {
+      goToMedia(currentMediaIndex + 1);
+  }
+
+  // Função para ir para a mídia anterior
+  function prevMedia() {
+      goToMedia(currentMediaIndex - 1);
+  }
+
+  // Função para atualizar controles do carrossel
+  function updateCarouselControls() {
+      const prevBtn = document.getElementById('carousel-prev');
+      const nextBtn = document.getElementById('carousel-next');
+      
+      if (prevBtn) prevBtn.disabled = currentMediaIndex === 0;
+      if (nextBtn) nextBtn.disabled = currentMediaIndex === currentMediaItems.length - 1;
+  }
+
+  // Fechar visualizador de mídias
+  function closeMediaViewer() {
+      const modal = document.getElementById('media-viewer-modal');
+      if (modal) modal.style.display = 'none';
+      
+      // Parar vídeos
+      document.querySelectorAll('.carousel-slide video').forEach(video => {
+          video.pause();
+          video.currentTime = 0;
+      });
+      
+      currentMediaItems = [];
+      currentMediaIndex = 0;
+  }
+
+  // Função para renderizar mídias em grid
+  function renderMediaGrid(mediaUrls) {
+      if (!mediaUrls || mediaUrls.length === 0) return '';
+      
+      const count = mediaUrls.length;
+      let gridClass = 'single';
+      let displayItems = mediaUrls;
+      
+      if (count === 2) {
+          gridClass = 'double';
+      } else if (count === 3) {
+          gridClass = 'triple';
+      } else if (count >= 4) {
+          gridClass = 'multiple';
+          displayItems = mediaUrls.slice(0, 4);
+      }
+      
+      let mediaHtml = `<div class="post-media-grid ${gridClass}">`;
+      
+      displayItems.forEach((url, index) => {
+          const fullMediaUrl = url.startsWith('http') ? url : `${backendUrl}${url}`;
+          const isMoreItem = count > 4 && index === 3;
+          const moreClass = isMoreItem ? ' more' : '';
+          
+          mediaHtml += `
+              <div class="post-media-item${moreClass}" 
+                   onclick="window.openMediaViewer(${JSON.stringify(mediaUrls)}, ${index})">
+          `;
+          
+          if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
+              mediaHtml += `<video src="${fullMediaUrl}" style="width: 100%; height: 100%; object-fit: cover;"></video>`;
+          } else {
+              mediaHtml += `<img src="${fullMediaUrl}" alt="Mídia da postagem" style="width: 100%; height: 100%; object-fit: cover;">`;
+          }
+          
+          if (isMoreItem) {
+              mediaHtml += `<div class="more-overlay">+${count - 4}</div>`;
+          }
+          
+          mediaHtml += `</div>`;
+      });
+      
+      mediaHtml += `</div>`;
+      return mediaHtml;
+  }
+
   // --- FUNÇÕES (Específicas do Feed) ---
 
   async function fetchPublicPosts() {
@@ -845,28 +990,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const dataFormatada = new Date(post.dataCriacao).toLocaleString("pt-BR");
     const isAuthor = currentUser && autorIdDoPost === currentUser.id;
     let mediaHtml = "";
- if (post.urlsMidia && post.urlsMidia.length > 0) {
-      mediaHtml = `<div class="post-media">${post.urlsMidia
-        .map((url) => {
-          const fullMediaUrl = url.startsWith("http")
-            ? url
-            : `${backendUrl}${url}`;
-
-          // 1. Checa IMAGENS (lista expandida, incluindo .avif)
-          if (url.match(/\.(jpeg|jpg|gif|png|webp|bmp|tiff|ico|svg|heic|heif|avif|jxr|wdp|jp2)$/i)) {
-            return `<img src="${fullMediaUrl}" alt="Mídia da postagem">`;
-          }
-
-          // 2. Checa VÍDEOS (lista expandida)
-          if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
-            return `<video controls src="${fullMediaUrl}"></video>`;
-          }
-
-          const fileName = url.substring(url.lastIndexOf('/') + 1);
-          return `<div class="raw-file-link"><i class="fas fa-paperclip"></i> <a href="${fullMediaUrl}" target="_blank" rel="noopener noreferrer">${fileName}</a></div>`;
-        })
-        .join("")}</div>`;
+    
+    // NOVO: Sistema de carrossel para múltiplas mídias
+    if (post.urlsMidia && post.urlsMidia.length > 0) {
+        if (post.urlsMidia.length === 1) {
+            // Apenas uma mídia - exibir normalmente
+            const url = post.urlsMidia[0];
+            const fullMediaUrl = url.startsWith("http") ? url : `${backendUrl}${url}`;
+            
+            if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
+                mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${JSON.stringify(post.urlsMidia)}, 0)"><video controls src="${fullMediaUrl}" style="max-width: 100%; border-radius: 8px;"></video></div>`;
+            } else {
+                mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${JSON.stringify(post.urlsMidia)}, 0)"><img src="${fullMediaUrl}" alt="Mídia da postagem" style="max-width: 100%; border-radius: 8px; cursor: pointer;"></div>`;
+            }
+        } else {
+            // Múltiplas mídias - usar grid
+            mediaHtml = renderMediaGrid(post.urlsMidia);
+        }
     }
+
     const rootComments = (post.comentarios || []).filter((c) => !c.parentId);
     let commentsHtml = rootComments
       .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao))
@@ -1284,6 +1426,47 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- SETUP DE EVENT LISTENERS (Específicos do Feed) ---
   function setupFeedEventListeners() {
     if (searchInput) searchInput.addEventListener("input", filterPosts);
+
+    // Event listeners para o carrossel de mídias
+    const mediaViewerModal = document.getElementById('media-viewer-modal');
+    const mediaViewerClose = document.getElementById('media-viewer-close');
+    const carouselPrev = document.getElementById('carousel-prev');
+    const carouselNext = document.getElementById('carousel-next');
+    
+    if (mediaViewerClose) {
+        mediaViewerClose.addEventListener('click', closeMediaViewer);
+    }
+    
+    if (carouselPrev) {
+        carouselPrev.addEventListener('click', prevMedia);
+    }
+    
+    if (carouselNext) {
+        carouselNext.addEventListener('click', nextMedia);
+    }
+    
+    // Fechar modal ao clicar fora do conteúdo
+    if (mediaViewerModal) {
+        mediaViewerModal.addEventListener('click', (e) => {
+            if (e.target === mediaViewerModal) {
+                closeMediaViewer();
+            }
+        });
+    }
+    
+    // Navegação por teclado
+    document.addEventListener('keydown', (e) => {
+        const mediaViewer = document.getElementById('media-viewer-modal');
+        if (mediaViewer && mediaViewer.style.display === 'flex') {
+            if (e.key === 'Escape') {
+                closeMediaViewer();
+            } else if (e.key === 'ArrowLeft') {
+                prevMedia();
+            } else if (e.key === 'ArrowRight') {
+                nextMedia();
+            }
+        }
+    });
 
     //
     if (feedElements.editPostFileInput)

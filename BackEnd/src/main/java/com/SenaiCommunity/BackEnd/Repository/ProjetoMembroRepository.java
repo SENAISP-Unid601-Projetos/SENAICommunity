@@ -25,4 +25,5 @@ public interface ProjetoMembroRepository extends JpaRepository<ProjetoMembro, Lo
     List<ProjetoMembro> findByProjetoIdAndRole(@Param("projetoId") Long projetoId, @Param("role") ProjetoMembro.RoleMembro role);
 
     boolean existsByProjetoIdAndUsuarioId(Long projetoId, Long usuarioId);
+
 }

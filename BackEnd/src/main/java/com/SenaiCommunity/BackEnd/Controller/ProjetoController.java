@@ -4,6 +4,7 @@ import com.SenaiCommunity.BackEnd.DTO.ProjetoDTO;
 import com.SenaiCommunity.BackEnd.Entity.ProjetoMembro;
 import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Service.ProjetoService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,6 +32,26 @@ public class ProjetoController {
     public ResponseEntity<ProjetoDTO> buscarPorId(@PathVariable Long id) {
         ProjetoDTO dto = projetoService.buscarPorId(id);
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/publicos")
+    public ResponseEntity<List<ProjetoDTO>> listarProjetosPublicos() {
+        List<ProjetoDTO> lista = projetoService.listarProjetosPublicos();
+        return ResponseEntity.ok(lista);
+    }
+
+    @PostMapping("/{projetoId}/entrar")
+    public ResponseEntity<?> entrarEmProjetoPublico(
+            @PathVariable Long projetoId,
+            @RequestParam Long usuarioId) {
+        try {
+            projetoService.entrarEmProjetoPublico(projetoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Você entrou no projeto com sucesso!"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
     }
 
 
@@ -103,6 +124,18 @@ public class ProjetoController {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{projetoId}/membros")
+    public ResponseEntity<List<ProjetoDTO.MembroDTO>> getMembrosProjeto(@PathVariable Long projetoId) {
+        try {
+            ProjetoDTO projetoDTO = projetoService.buscarPorId(projetoId);
+            return ResponseEntity.ok(projetoDTO.getMembros());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
