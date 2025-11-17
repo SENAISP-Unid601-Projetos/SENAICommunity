@@ -2389,14 +2389,20 @@ a.user-card-link:hover h4 {
 .feed-carousel-wrapper {
     position: relative;
     width: 100%;
-    margin-top: 10px;
-    border-radius: 8px;
+    margin-top: 12px;
+    border-radius: 12px;
     overflow: hidden;
-    background-color: black; /* Fundo preto para destacar as mídias */
+    background-color: #000; /* Fundo preto para contraste */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    /* Garante proporção consistente (opcional, remove se quiser altura automática) */
+    aspect-ratio: 16 / 9; 
+    max-height: 500px;
 }
 
 .feed-carousel-track {
     display: flex;
+    width: 100%;
+    height: 100%;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
@@ -2409,14 +2415,31 @@ a.user-card-link:hover h4 {
 }
 
 .feed-carousel-slide {
-    flex: 0 0 100%; /* Cada slide ocupa 100% da largura */
+    flex: 0 0 100%;
     width: 100%;
-    height: 400px; /* Altura fixa para uniformidade no feed */
+    height: 100%;
     scroll-snap-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    position: relative;
+    background: #000;
+}
+
+/* Efeito de fundo desfocado para preencher espaços vazios (opcional, mas fica bonito) */
+.feed-carousel-slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    filter: blur(20px);
+    opacity: 0.3;
+    z-index: 0;
 }
 
 .feed-carousel-slide img,
@@ -2425,50 +2448,76 @@ a.user-card-link:hover h4 {
     max-height: 100%;
     width: auto;
     height: auto;
-    object-fit: contain; /* Garante que a imagem inteira apareça sem cortes */
+    object-fit: contain; /* Garante que a imagem inteira apareça */
+    z-index: 1; /* Fica acima do fundo desfocado */
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
-/* Botões de Navegação (Setas) */
+/* Botões de Navegação (Estilo Glassmorphism) */
 .feed-carousel-btn {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     color: white;
-    border: none;
-    width: 32px;
-    height: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 5;
-    transition: background-color 0.2s;
+    z-index: 10;
+    transition: all 0.2s ease;
+    opacity: 0; /* Esconde por padrão */
+}
+
+/* Mostra os botões apenas quando passa o mouse no carrossel */
+.feed-carousel-wrapper:hover .feed-carousel-btn {
+    opacity: 1;
 }
 
 .feed-carousel-btn:hover {
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.feed-carousel-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.feed-carousel-btn i {
+    font-size: 1.1rem;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
 }
 
 .feed-carousel-btn.prev {
-    left: 10px;
+    left: 15px;
 }
 
 .feed-carousel-btn.next {
-    right: 10px;
+    right: 15px;
 }
 
-/* Contador de Slides (Ex: 1 / 5) */
+/* Contador de Slides (Pílula) */
 .feed-carousel-counter {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 15px;
+    right: 15px;
     background-color: rgba(0, 0, 0, 0.6);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 12px;
+    backdrop-filter: blur(4px);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 600;
+    letter-spacing: 0.5px;
     pointer-events: none;
+    z-index: 10;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }

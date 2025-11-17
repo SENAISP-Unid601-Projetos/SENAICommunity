@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Projeto/CSS/projeto-detalhe.css">
 </head>
+
 <body>
     <div class="notification-center"></div>
 
@@ -24,9 +26,9 @@
         </div>
 
         <div class="project-info">
-            
+
             <h2 id="project-name">Carregando...</h2>
-            
+
             <span class="project-status" id="project-status">Online</span>
         </div>
 
@@ -50,16 +52,16 @@
                 <h3>Membros do Projeto</h3>
                 <span class="members-count" id="members-count">0</span>
             </div>
-            
+
             <div class="search-box">
                 <i class="fas fa-search"></i>
                 <input type="text" id="search-members" placeholder="Buscar membros...">
             </div>
-            
+
             <div class="members-list" id="members-list">
                 <p class="empty-state">Carregando membros...</p>
             </div>
-            
+
             <div class="project-details">
                 <h4>Detalhes do Projeto</h4>
                 <div class="project-description">
@@ -115,7 +117,8 @@
                         <i class="fas fa-smile"></i>
                     </button>
                     <input type="text" id="message-input" placeholder="Digite sua mensagem...">
-                    <input type="file" id="file-input" style="display: none;" accept="image/*,video/*,audio/*,.pdf,.doc,.docx">
+                    <input type="file" id="file-input" style="display: none;"
+                        accept="image/*,video/*,audio/*,.pdf,.doc,.docx">
                     <button class="send-btn" id="send-btn">
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -140,7 +143,7 @@
                         <img id="project-image" src="" alt="Imagem do projeto" style="display: none;">
                     </div>
                     <div class="project-details-text">
-                        
+
                         <h4 id="modal-project-name">Nome do Projeto</h4>
                         <p id="modal-project-description">Descrição do projeto</p>
                         <div class="project-meta">
@@ -180,6 +183,22 @@
             </div>
             <div class="modal-body">
                 <form id="project-settings-form">
+                    <div class="form-group-file">
+                        <label>Foto do Projeto</label>
+                        <div class="file-input-wrapper">
+                            <div class="current-photo-preview">
+                                <img id="current-project-photo" src="" alt="Foto atual do projeto"
+                                    onerror="this.style.display='none'">
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="edit-project-photo" class="file-input-label">
+                                    <i class="fas fa-camera"></i> Alterar Foto
+                                </label>
+                                <input type="file" id="edit-project-photo" class="file-input" accept="image/*">
+                                <div class="file-name" id="file-name">Nenhum arquivo selecionado</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label for="edit-project-name">Nome do Projeto</label>
                         <input type="text" id="edit-project-name" required>
@@ -216,7 +235,8 @@
                         <input type="text" id="edit-project-technologies" placeholder="Java, Spring Boot, React...">
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="cancel-project-settings-btn">Cancelar</button>
+                        <button type="button" class="btn btn-secondary"
+                            id="cancel-project-settings-btn">Cancelar</button>
                         <button type="submit" class="btn btn-primary">Salvar Alterações</button>
                     </div>
                 </form>
@@ -250,4 +270,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="Projeto/JS/projeto-detalhe.js"></script>
 </body>
+
 </html>

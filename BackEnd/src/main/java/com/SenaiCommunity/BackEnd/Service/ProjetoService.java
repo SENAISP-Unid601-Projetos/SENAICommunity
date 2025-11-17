@@ -363,9 +363,11 @@ public class ProjetoService {
 
     }
 
+    // CORREÇÃO: Atualizar método para aceitar categoria e tecnologias
     @Transactional
     public void atualizarInfoGrupo(Long projetoId, String novoTitulo, String novaDescricao, String novaImagemUrl,
-                                   String novoStatus, Integer novoMaxMembros, Boolean novoGrupoPrivado, Long adminId) {
+                                   String novoStatus, Integer novoMaxMembros, Boolean novoGrupoPrivado,
+                                   String novaCategoria, List<String> novasTecnologias, Long adminId) {
         if (!isAdmin(projetoId, adminId)) {
             throw new IllegalArgumentException("Apenas administradores podem alterar informações do grupo");
         }
@@ -377,13 +379,20 @@ public class ProjetoService {
         if (novaDescricao != null) projeto.setDescricao(novaDescricao);
         if (novaImagemUrl != null) projeto.setImagemUrl(novaImagemUrl);
         if (novoStatus != null) {
-            if (!novoStatus.equals("Em planejamento") && !novoStatus.equals("Em progresso") && !novoStatus.equals("Concluído")) {
+            // CORREÇÃO: Aceitar diferentes formatos de status
+            String statusNormalizado = novoStatus.toUpperCase();
+            if (statusNormalizado.equals("PLANEJAMENTO") || statusNormalizado.equals("EM_ANDAMENTO") ||
+                    statusNormalizado.equals("CONCLUIDO") || novoStatus.equals("Em planejamento") ||
+                    novoStatus.equals("Em progresso") || novoStatus.equals("Concluído")) {
+                projeto.setStatus(novoStatus);
+            } else {
                 throw new IllegalArgumentException("Status deve ser: Em planejamento, Em progresso ou Concluído");
             }
-            projeto.setStatus(novoStatus);
         }
         if (novoMaxMembros != null) projeto.setMaxMembros(novoMaxMembros);
         if (novoGrupoPrivado != null) projeto.setGrupoPrivado(novoGrupoPrivado);
+        if (novaCategoria != null) projeto.setCategoria(novaCategoria);
+        if (novasTecnologias != null) projeto.setTecnologias(novasTecnologias);
 
         projetoRepository.save(projeto);
     }

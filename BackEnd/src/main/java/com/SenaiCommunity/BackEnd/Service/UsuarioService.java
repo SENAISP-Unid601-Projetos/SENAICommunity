@@ -148,7 +148,7 @@ public class UsuarioService {
 
         String urlFoto = usuario.getFotoPerfil() != null && !usuario.getFotoPerfil().isBlank()
                 ? usuario.getFotoPerfil()
-                : "/images/default-avatar.png";
+                : "/images/default-avatar.jpg";
 
         return new UsuarioBuscaDTO(
                 usuario.getId(),

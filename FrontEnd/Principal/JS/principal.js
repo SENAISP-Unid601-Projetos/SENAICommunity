@@ -978,19 +978,16 @@ function renderFeedCarousel(mediaUrls, postId) {
 
     mediaUrls.forEach((url, index) => {
         const fullMediaUrl = url.startsWith('http') ? url : `${backendUrl}${url}`;
-        // Escapa as aspas para passar o array no onclick sem quebrar o HTML
+        // Escapa as aspas
         const safeMediaArray = JSON.stringify(mediaUrls).replace(/"/g, '&quot;');
         
         let contentHtml = '';
         if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
-            // Vídeo no carrossel
             contentHtml = `<video src="${fullMediaUrl}" preload="metadata"></video>`;
         } else {
-            // Imagem no carrossel
-            contentHtml = `<img src="${fullMediaUrl}" alt="Mídia do post">`;
+            contentHtml = `<img src="${fullMediaUrl}" alt="Mídia do post" loading="lazy">`;
         }
 
-        // O clique ainda abre o modal de visualização em tela cheia (lightbox)
         slidesHtml += `
             <div class="feed-carousel-slide" onclick="window.openMediaViewer(${safeMediaArray}, ${index})">
                 ${contentHtml}
@@ -998,7 +995,7 @@ function renderFeedCarousel(mediaUrls, postId) {
         `;
     });
 
-    // Retorna a estrutura completa com botões de navegação
+    // Adicionei IDs específicos para o contador e atributos de dados
     return `
         <div class="feed-carousel-wrapper">
             <button class="feed-carousel-btn prev" onclick="event.stopPropagation(); window.scrollFeedCarousel(${postId}, -1)">
@@ -1013,22 +1010,32 @@ function renderFeedCarousel(mediaUrls, postId) {
                 <i class="fas fa-chevron-right"></i>
             </button>
             
-            <div class="feed-carousel-counter">1 / ${mediaUrls.length}</div>
+            <div class="feed-carousel-counter" id="feed-counter-${postId}">1 / ${mediaUrls.length}</div>
         </div>
-        
-        <script>
-            (function(){
-                const track = document.getElementById('feed-track-${postId}');
-                const counter = track.parentElement.querySelector('.feed-carousel-counter');
-                if(track && counter) {
-                    track.addEventListener('scroll', () => {
-                        const index = Math.round(track.scrollLeft / track.clientWidth) + 1;
-                        counter.textContent = index + ' / ${mediaUrls.length}';
-                    });
-                }
-            })();
-        </script>
     `;
+}
+
+// Nova função para ativar o listener de scroll do carrossel
+function setupCarouselEventListeners(postElement, postId) {
+    const track = postElement.querySelector(`#feed-track-${postId}`);
+    const counter = postElement.querySelector(`#feed-counter-${postId}`);
+
+    if (track && counter) {
+        // Usamos um pequeno debounce para performance, ou chamamos direto no scroll
+        track.addEventListener('scroll', () => {
+            const trackWidth = track.clientWidth;
+            if (trackWidth === 0) return;
+            
+            // Calcula o índice atual baseado na rolagem horizontal
+            const index = Math.round(track.scrollLeft / trackWidth) + 1;
+            
+            // Pega o total de slides contando os filhos
+            const total = track.children.length;
+            
+            // Atualiza o texto
+            counter.textContent = `${index} / ${total}`;
+        });
+    }
 }
 
   // --- FUNÇÕES (Específicas do Feed) ---
@@ -1149,6 +1156,10 @@ function renderFeedCarousel(mediaUrls, postId) {
     }, null)"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>`;
+
+    if (post.urlsMidia && post.urlsMidia.length > 2) {
+        setupCarouselEventListeners(postElement, post.id);
+    }
     return postElement;
   }
 

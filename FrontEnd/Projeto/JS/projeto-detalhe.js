@@ -43,6 +43,22 @@ function normalizeMessageData(message) {
     };
 }
 
+// CORREÇÃO: Função para normalizar status do projeto
+function normalizeProjectStatus(status) {
+    if (!status) return 'PLANEJAMENTO';
+    
+    const statusMap = {
+        'PLANEJAMENTO': 'PLANEJAMENTO',
+        'EM_ANDAMENTO': 'EM_ANDAMENTO',
+        'CONCLUIDO': 'CONCLUIDO',
+        'Em planejamento': 'PLANEJAMENTO',
+        'Em progresso': 'EM_ANDAMENTO', 
+        'Concluído': 'CONCLUIDO'
+    };
+    
+    return statusMap[status] || 'PLANEJAMENTO';
+}
+
 // CORREÇÃO: Atualizar a função loadProjectMembers
 async function loadProjectMembers() {
     try {
@@ -227,47 +243,60 @@ function getMessageAvatarUrl(message) {
     return `${backendUrl}/api/arquivos/${fotoUrl}`;
 }
 
-// CORREÇÃO: Atualizar contadores de membros com lógica correta
-function updateMembersCount() {
-    const totalMembers = projectMembers.length;
-    
-    document.getElementById('members-count').textContent = totalMembers;
-    document.getElementById('modal-members-count').textContent = `${totalMembers} membros`;
-    
-    // CORREÇÃO: Lógica melhorada para contar membros online
-    const onlineMembers = projectMembers.filter(member => {
-        const userEmail = member.email || member.usuarioEmail;
-        // Usar o UserStatusService para verificar status online
-        return userEmail && window.latestOnlineEmails && 
-               window.latestOnlineEmails.includes(userEmail);
-    }).length;
-    
-    document.getElementById('online-count').textContent = `${onlineMembers} membros online`;
-    
-    // Atualizar também no header do chat se existir
-    const chatOnlineIndicator = document.querySelector('.online-indicator');
-    if (chatOnlineIndicator) {
-        chatOnlineIndicator.innerHTML = `
-            <div class="status-dot"></div>
-            ${onlineMembers} membros online
-        `;
-    }
-}
-
-// CORREÇÃO: Função para obter status online dos membros
+// CORREÇÃO: Função melhorada para obter status online
 async function fetchOnlineStatus() {
     try {
         const response = await axios.get(`${backendUrl}/usuarios/online`);
         window.latestOnlineEmails = response.data;
         updateMembersCount();
         renderMembersList();
+        
+        // Atualizar também os membros no modal se estiver aberto
+        const membersListModal = document.getElementById('members-list-modal');
+        if (membersListModal && membersListModal.innerHTML !== '') {
+            renderMembersList();
+        }
     } catch (error) {
         console.error("Erro ao buscar status online:", error);
         // Fallback: marcar alguns como online para teste
-        window.latestOnlineEmails = projectMembers.slice(0, 2).map(m => m.email || m.usuarioEmail).filter(Boolean);
-        updateMembersCount();
-        renderMembersList();
+        if (projectMembers && projectMembers.length > 0) {
+            window.latestOnlineEmails = projectMembers
+                .slice(0, Math.min(2, projectMembers.length))
+                .map(m => m.email || m.usuarioEmail)
+                .filter(Boolean);
+            updateMembersCount();
+            renderMembersList();
+        }
     }
+}
+
+function isMemberOnline(member) {
+    // Se a lista global ainda não existe, ninguém está online
+    if (!window.latestOnlineEmails || !Array.isArray(window.latestOnlineEmails)) return false;
+    
+    // Pega o email do membro (tenta várias propriedades possíveis)
+    const memberEmail = (member.email || member.usuarioEmail || "").toLowerCase();
+    
+    if (!memberEmail) return false;
+
+    // Verifica se o email está na lista (normalizando a lista também para garantir)
+    return window.latestOnlineEmails.some(email => email.toLowerCase() === memberEmail);
+}
+
+function updateMembersCount() {
+    if (!projectMembers || projectMembers.length === 0) {
+        document.getElementById('members-count').textContent = '0';
+        document.getElementById('modal-members-count').textContent = '0 membros';
+        document.getElementById('online-count').textContent = '0 membros online';
+        return;
+    }
+
+    const totalMembers = projectMembers.length;
+    const onlineMembers = projectMembers.filter(isMemberOnline).length;
+
+    document.getElementById('members-count').textContent = totalMembers;
+    document.getElementById('modal-members-count').textContent = `${totalMembers} membros`;
+    document.getElementById('online-count').textContent = `${onlineMembers} membros online`;
 }
 
 // Inicializar a página
@@ -350,7 +379,7 @@ async function loadProjectData() {
     }
 }
 
-// Atualizar informações do projeto na interface
+// CORREÇÃO: Atualizar informações do projeto na interface
 function updateProjectInfo() {
     if (!currentProject) return;
     
@@ -361,6 +390,10 @@ function updateProjectInfo() {
     document.getElementById('project-max-members').textContent = `Máx: ${currentProject.maxMembros || 10} membros`;
     document.getElementById('project-privacy').textContent = currentProject.grupoPrivado ? "Privado" : "Público";
     document.getElementById('project-category').textContent = currentProject.categoria || "Sem categoria";
+    
+    // CORREÇÃO: Atualizar nome do líder no modal
+    const leaderName = currentProject.autorNome || 'Líder não encontrado';
+    document.getElementById('modal-project-leader').textContent = `Líder: ${leaderName}`;
     
     // Atualizar tecnologias
     const technologiesContainer = document.getElementById('project-technologies');
@@ -379,7 +412,7 @@ function updateProjectInfo() {
     document.getElementById('modal-project-description').textContent = currentProject.descricao || "Sem descrição";
     document.getElementById('modal-project-privacy').textContent = currentProject.grupoPrivado ? "Privado" : "Público";
     
-    // NOVO: Atualizar indicador de status
+    // Atualizar indicador de status
     updateProjectStatusIndicator();
     
     // Verificar se o usuário atual é o administrador
@@ -392,22 +425,33 @@ function renderMembersList() {
     const membersListModal = document.getElementById('members-list-modal');
     
     // Limpar listas
-    membersList.innerHTML = '';
-    membersListModal.innerHTML = '';
+    if(membersList) membersList.innerHTML = '';
+    if(membersListModal) membersListModal.innerHTML = '';
     
-    if (projectMembers.length === 0) {
-        membersList.innerHTML = '<p class="empty-state">Nenhum membro no projeto</p>';
-        membersListModal.innerHTML = '<p class="empty-state">Nenhum membro no projeto</p>';
+    if (!projectMembers || projectMembers.length === 0) {
+        if(membersList) membersList.innerHTML = '<p class="empty-state">Nenhum membro</p>';
         return;
     }
     
-    // Renderizar cada membro
-    projectMembers.forEach(member => {
-        const memberElement = createMemberElement(member);
-        const memberModalElement = createMemberModalElement(member);
+    // Ordenar: Online primeiro, depois alfabético
+    const sortedMembers = [...projectMembers].sort((a, b) => {
+        const aOnline = isMemberOnline(a);
+        const bOnline = isMemberOnline(b);
         
-        membersList.appendChild(memberElement);
-        membersListModal.appendChild(memberModalElement);
+        if (aOnline && !bOnline) return -1;
+        if (!aOnline && bOnline) return 1;
+        return (a.nome || "").localeCompare(b.nome || "");
+    });
+    
+    // Renderizar
+    sortedMembers.forEach(member => {
+        const memberElement = createMemberElement(member);
+        if(membersList) membersList.appendChild(memberElement);
+        
+        if(membersListModal) {
+            const memberModalElement = createMemberModalElement(member);
+            membersListModal.appendChild(memberModalElement);
+        }
     });
 }
 
@@ -417,8 +461,7 @@ function createMemberElement(member) {
     memberItem.className = 'member-item';
     
     const memberAvatar = getMemberAvatarUrl(member);
-    const userEmail = member.email || member.usuarioEmail;
-    const isOnline = window.latestOnlineEmails && window.latestOnlineEmails.includes(userEmail);
+    const isOnline = isMemberOnline(member);
     
     memberItem.innerHTML = `
         <div class="member-avatar">
@@ -440,8 +483,7 @@ function createMemberModalElement(member) {
     memberItem.className = 'member-item-modal';
     
     const memberAvatar = getMemberAvatarUrl(member);
-    const userEmail = member.email || member.usuarioEmail;
-    const isOnline = window.latestOnlineEmails && window.latestOnlineEmails.includes(userEmail);
+    const isOnline = isMemberOnline(member);
     
     memberItem.innerHTML = `
         <div class="member-avatar-modal">
@@ -569,7 +611,6 @@ function createMessageElement(message) {
     messageDiv.id = `message-${message.id}`;
     
     const messageAvatar = getMessageAvatarUrl(message);
-    
     const messageTime = new Date(message.dataEnvio || message.dataCriacao).toLocaleTimeString('pt-BR', {
         hour: '2-digit',
         minute: '2-digit'
@@ -577,11 +618,25 @@ function createMessageElement(message) {
     
     const messageContent = processMessageContent(message.conteudo);
     
+    // CORREÇÃO: Ações da mensagem (editar/excluir) apenas para o autor
+    let messageActions = '';
+    if (message.autorId === currentUser.id) {
+        messageActions = `
+            <div class="message-actions">
+                <button class="message-action-btn" onclick="editMessage(${message.id}, '${message.conteudo.replace(/'/g, "\\'")}')" title="Editar mensagem">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="message-action-btn" onclick="deleteMessage(${message.id})" title="Excluir mensagem">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+    }
+    
     // CORREÇÃO: Melhor tratamento de anexos
     let anexosHTML = '';
     if (message.anexos && message.anexos.length > 0) {
         anexosHTML = message.anexos.map(anexo => {
-            // CORREÇÃO: Garantir URL absoluta
             let mediaUrl = anexo.url;
             if (mediaUrl && !mediaUrl.startsWith('http') && !mediaUrl.startsWith('blob:')) {
                 if (mediaUrl.startsWith('/')) {
@@ -598,7 +653,7 @@ function createMessageElement(message) {
                 <div class="message-file">
                     <img src="${mediaUrl}" alt="Imagem" 
                          onload="this.style.opacity='1'" 
-                         onerror="this.style.display='none'; console.error('Erro ao carregar imagem: ${mediaUrl}')"
+                         onerror="this.style.display='none'"
                          style="opacity:0; transition: opacity 0.3s; cursor: pointer; max-width: 300px; max-height: 300px;"
                          onclick="openMediaModal('${mediaUrl}', 'image')">
                 </div>`;
@@ -638,6 +693,7 @@ function createMessageElement(message) {
             </div>
             ${messageContent ? `<div class="message-bubble">${messageContent}</div>` : ''}
             ${anexosHTML}
+            ${messageActions}
         </div>
     `;
     
@@ -757,37 +813,56 @@ function openMediaModal(url, type) {
 function connectToWebSocket() {
     const socket = new SockJS(`${backendUrl}/ws`);
     stompClient = Stomp.over(socket);
-    stompClient.debug = null;
+    stompClient.debug = null; // Desativar logs de debug do stomp se quiser limpar o console
     
     const headers = {
         Authorization: `Bearer ${localStorage.getItem("token")}`
     };
     
     stompClient.connect(headers, (frame) => {
-        console.log("Conectado ao WebSocket do projeto");
+        console.log("Conectado ao WebSocket!");
         
-        // Inscrever-se para receber mensagens do grupo
+        // 1. Inscrever-se para mensagens do chat
         stompClient.subscribe(`/topic/grupo/${projectId}`, (message) => {
             const newMessage = JSON.parse(message.body);
-            handleNewMessage(newMessage);
+            // Se não for atualização de status (chat normal)
+            if (!newMessage.tipo || newMessage.tipo !== 'status') {
+                handleNewMessage(newMessage);
+            }
         });
         
-        // NOVA INSCRIÇÃO: Status Online em Tempo Real
+        // 2. CRÍTICO: Inscrever-se para Status Online GLOBAL
         stompClient.subscribe("/topic/status", (message) => {
-            console.log("Atualização de status online recebida:", message.body);
-            window.latestOnlineEmails = JSON.parse(message.body);
+            // O corpo da mensagem é um Array de emails strings ["a@a.com", "b@b.com"]
+            const onlineEmails = JSON.parse(message.body);
+            
+            console.log("Lista de usuários online atualizada:", onlineEmails);
+            
+            // Atualiza a variável global
+            window.latestOnlineEmails = onlineEmails;
+            
+            // Força a re-renderização da interface
             updateMembersCount();
             renderMembersList();
+            
+            // Se o modal de membros estiver aberto, atualiza ele também
+            const membersListModal = document.getElementById('members-list-modal');
+            if (membersListModal && membersListModal.innerHTML !== '') {
+                // Uma renderização forçada específica para o modal poderia ser feita aqui
+                // Mas renderMembersList já trata ambos se chamarem as funções certas
+                renderMembersList(); 
+            }
         });
         
-        // Inscrever-se para receber erros
+        // Inscrever-se para erros
         stompClient.subscribe('/user/queue/errors', (message) => {
             showNotification(message.body, 'error');
         });
         
     }, (error) => {
         console.error("Erro na conexão WebSocket:", error);
-        showNotification("Conexão em tempo real não disponível", "info");
+        // Tenta reconectar após 5 segundos se cair
+        setTimeout(connectToWebSocket, 5000);
     });
 }
 
@@ -808,6 +883,55 @@ function handleNewMessage(message) {
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages-container');
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// NOVO: Função para editar mensagem
+async function editMessage(messageId, currentContent) {
+    const newContent = prompt('Editar mensagem:', currentContent);
+    
+    if (newContent === null || newContent.trim() === currentContent.trim()) {
+        return; // Usuário cancelou ou conteúdo não mudou
+    }
+
+    try {
+        const response = await axios.put(`${backendUrl}/api/mensagens/grupo/${messageId}`, {
+            conteudo: newContent.trim()
+        });
+
+        if (response.status === 200) {
+            showNotification("Mensagem editada com sucesso", "success");
+            // Recarregar mensagens para refletir a edição
+            await loadProjectMessages();
+        }
+    } catch (error) {
+        console.error("Erro ao editar mensagem:", error);
+        showNotification("Erro ao editar mensagem", "error");
+    }
+}
+
+// NOVO: Função para excluir mensagem
+async function deleteMessage(messageId) {
+    if (!confirm("Tem certeza que deseja excluir esta mensagem?")) {
+        return;
+    }
+
+    try {
+        const response = await axios.delete(`${backendUrl}/api/mensagens/grupo/${messageId}`);
+        
+        if (response.status === 200) {
+            showNotification("Mensagem excluída com sucesso", "success");
+            // Remover a mensagem da interface
+            const messageElement = document.getElementById(`message-${messageId}`);
+            if (messageElement) {
+                messageElement.remove();
+            }
+            // Também remover da lista de mensagens
+            projectMessages = projectMessages.filter(msg => msg.id !== messageId);
+        }
+    } catch (error) {
+        console.error("Erro ao excluir mensagem:", error);
+        showNotification("Erro ao excluir mensagem", "error");
+    }
 }
 
 // CORREÇÃO: Enviar mensagem com suporte a arquivos
@@ -1004,6 +1128,113 @@ function insertEmoji(emoji) {
         // Fechar o seletor de emoji
         toggleEmojiPicker();
     }
+}
+
+// CORREÇÃO: Função melhorada para alterar função com modal
+async function changeMemberRole(memberId) {
+    const currentMember = projectMembers.find(m => m.usuarioId === memberId || m.id === memberId);
+    if (!currentMember) return;
+    
+    const currentRole = currentMember.role || currentMember.funcao || 'MEMBRO';
+    
+    // Criar modal para seleção de função
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    `;
+    
+    modalOverlay.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Alterar Função do Membro</h3>
+                <button class="close-modal" id="close-role-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Alterar função para <strong>${currentMember.nome}</strong>:</p>
+                <div class="form-group">
+                    <label for="role-select">Nova Função:</label>
+                    <select id="role-select" class="role-select">
+                        <option value="MEMBRO" ${currentRole === 'MEMBRO' ? 'selected' : ''}>Membro</option>
+                        <option value="MODERADOR" ${currentRole === 'MODERADOR' ? 'selected' : ''}>Moderador</option>
+                        <option value="ADMIN" ${currentRole === 'ADMIN' ? 'selected' : ''}>Administrador</option>
+                    </select>
+                </div>
+                <div class="role-descriptions">
+                    <div class="role-info">
+                        <strong>Membro:</strong> Pode enviar mensagens e visualizar conteúdo
+                    </div>
+                    <div class="role-info">
+                        <strong>Moderador:</strong> Pode gerenciar membros (exceto administradores)
+                    </div>
+                    <div class="role-info">
+                        <strong>Administrador:</strong> Todas as permissões incluindo configurações do projeto
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-role-change">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirm-role-change">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modalOverlay);
+    
+    // Configurar eventos
+    const closeBtn = document.getElementById('close-role-modal');
+    const cancelBtn = document.getElementById('cancel-role-change');
+    const confirmBtn = document.getElementById('confirm-role-change');
+    
+    const closeModal = () => modalOverlay.remove();
+    
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    
+    confirmBtn.addEventListener('click', async () => {
+        const newRole = document.getElementById('role-select').value;
+        
+        try {
+            await axios.put(`${backendUrl}/projetos/${projectId}/membros/${memberId}/permissao`, null, {
+                params: {
+                    role: newRole,
+                    adminId: currentUser.id
+                }
+            });
+            
+            showNotification("Função do membro alterada com sucesso", "success");
+            closeModal();
+            
+            // Recarregar dados do projeto
+            await loadProjectData();
+            
+        } catch (error) {
+            console.error("Erro ao alterar função do membro:", error);
+            let errorMessage = "Erro ao alterar função do membro";
+            if (error.response?.data) {
+                errorMessage = error.response.data;
+            }
+            showNotification(errorMessage, "error");
+        }
+    });
+    
+    // Fechar modal ao clicar fora
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
 }
 
 // Configurar ouvintes de eventos
@@ -1282,7 +1513,7 @@ async function inviteUserToProject(userId) {
     }
 }
 
-// NOVA FUNÇÃO: Abrir modal de configurações do projeto com status
+// CORREÇÃO: Abrir modal de configurações com campos preenchidos corretamente
 function openProjectSettingsModal() {
     if (!currentProject) return;
     
@@ -1296,7 +1527,7 @@ function openProjectSettingsModal() {
     document.getElementById('edit-project-privacy').value = currentProject.grupoPrivado ? 'true' : 'false';
     document.getElementById('edit-project-category').value = currentProject.categoria || '';
     
-    // NOVO: Preencher status do projeto
+    // CORREÇÃO: Preencher status do projeto corretamente
     const statusSelect = document.getElementById('edit-project-status');
     if (statusSelect) {
         // Mapear status do backend para as opções do frontend
@@ -1321,10 +1552,19 @@ function openProjectSettingsModal() {
         technologiesInput.value = '';
     }
     
+    // CORREÇÃO: Limpar input de foto ao abrir o modal
+    const photoInput = document.getElementById('edit-project-photo');
+    if (photoInput) {
+        photoInput.value = '';
+    }
+    
+    // CORREÇÃO: Configurar input de foto
+    setupPhotoInput();
+    
     modal.style.display = 'flex';
 }
 
-// NOVA FUNÇÃO: Atualizar configurações do projeto incluindo status
+// CORREÇÃO: Atualizar configurações do projeto incluindo status e foto
 async function updateProjectSettings() {
     if (!currentProject) return;
     
@@ -1342,6 +1582,12 @@ async function updateProjectSettings() {
             formData.append('status', statusSelect.value);
         }
         
+        // NOVO: Adicionar foto se houver uma nova
+        const photoInput = document.getElementById('edit-project-photo');
+        if (photoInput && photoInput.files[0]) {
+            formData.append('foto', photoInput.files[0]);
+        }
+        
         // Processar tecnologias
         const technologiesInput = document.getElementById('edit-project-technologies').value;
         const technologies = technologiesInput.split(',').map(tech => tech.trim()).filter(tech => tech !== '');
@@ -1350,8 +1596,12 @@ async function updateProjectSettings() {
         // Adicionar ID do administrador
         formData.append('adminId', currentUser.id);
         
-        // Enviar atualização
-        await axios.put(`${backendUrl}/projetos/${projectId}/info`, formData);
+        // Enviar atualização - CORREÇÃO: Usar FormData e multipart
+        await axios.put(`${backendUrl}/projetos/${projectId}/info`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         
         // Fechar modal
         document.getElementById('project-settings-modal').style.display = 'none';
@@ -1373,18 +1623,59 @@ async function updateProjectSettings() {
     }
 }
 
-// NOVA FUNÇÃO: Atualizar indicador de status no header
+// CORREÇÃO: Configurar input de foto no modal de configurações
+function setupPhotoInput() {
+    const photoInput = document.getElementById('edit-project-photo');
+    const fileNameDisplay = document.getElementById('file-name');
+    const currentPhotoPreview = document.getElementById('current-project-photo');
+    
+    if (photoInput && fileNameDisplay && currentPhotoPreview) {
+        // Mostrar foto atual
+        if (currentProject && currentProject.imagemUrl) {
+            currentPhotoPreview.src = getProjectImageUrl(currentProject.imagemUrl);
+            currentPhotoPreview.style.display = 'block';
+        } else {
+            currentPhotoPreview.style.display = 'none';
+        }
+        
+        // Configurar evento de mudança no input de arquivo
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                fileNameDisplay.textContent = file.name;
+                
+                // Mostrar preview da nova imagem
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentPhotoPreview.src = e.target.result;
+                    currentPhotoPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
+                // Restaurar foto original se cancelar
+                if (currentProject && currentProject.imagemUrl) {
+                    currentPhotoPreview.src = getProjectImageUrl(currentProject.imagemUrl);
+                } else {
+                    currentPhotoPreview.style.display = 'none';
+                }
+            }
+        });
+    }
+}
+
+// CORREÇÃO: Atualizar indicador de status no header
 function updateProjectStatusIndicator() {
     if (!currentProject) return;
     
     const statusElement = document.getElementById('project-status');
     if (!statusElement) return;
     
-    const status = currentProject.status || 'PLANEJAMENTO';
+    const status = normalizeProjectStatus(currentProject.status);
     let statusText = '';
     let statusClass = '';
     
-    switch(status.toUpperCase()) {
+    switch(status) {
         case 'PLANEJAMENTO':
             statusText = 'Em Planejamento';
             statusClass = 'status-planning';
@@ -1522,7 +1813,7 @@ function updateFilePreview() {
                 </button>
             `;
             
-            filePreview.querySelector('.remove-file-btn').addEventListener('click', function() {
+            filePreview.querySelector('.removeFileBtn').addEventListener('click', function() {
                 removeFileFromInput(index);
             });
         }
@@ -1552,42 +1843,6 @@ async function expelMember(memberId) {
     } catch (error) {
         console.error("Erro ao expulsar membro:", error);
         let errorMessage = "Erro ao expulsar membro do projeto";
-        if (error.response?.data) {
-            errorMessage = error.response.data;
-        }
-        showNotification(errorMessage, "error");
-    }
-}
-
-// CORREÇÃO: Função para alterar função (melhorada)
-async function changeMemberRole(memberId) {
-    const currentMember = projectMembers.find(m => m.usuarioId === memberId || m.id === memberId);
-    if (!currentMember) return;
-    
-    const currentRole = currentMember.role || currentMember.funcao || 'MEMBRO';
-    const newRole = prompt(`Alterar função para ${currentMember.nome}:\n\nDigite ADMIN, MODERADOR ou MEMBRO:`, currentRole);
-    
-    if (!newRole || !['ADMIN', 'MODERADOR', 'MEMBRO'].includes(newRole.toUpperCase())) {
-        showNotification("Função inválida. Use: ADMIN, MODERADOR ou MEMBRO", "error");
-        return;
-    }
-    
-    try {
-        await axios.put(`${backendUrl}/projetos/${projectId}/membros/${memberId}/permissao`, null, {
-            params: {
-                role: newRole.toUpperCase(),
-                adminId: currentUser.id
-            }
-        });
-        
-        showNotification("Função do membro alterada com sucesso", "success");
-        
-        // Recarregar dados do projeto
-        await loadProjectData();
-        
-    } catch (error) {
-        console.error("Erro ao alterar função do membro:", error);
-        let errorMessage = "Erro ao alterar função do membro";
         if (error.response?.data) {
             errorMessage = error.response.data;
         }
@@ -1628,3 +1883,6 @@ window.expelMember = expelMember;
 window.changeMemberRole = changeMemberRole;
 window.inviteUserToProject = inviteUserToProject;
 window.openMediaModal = openMediaModal;
+window.editMessage = editMessage;
+window.deleteMessage = deleteMessage;
+window.isMemberOnline = isMemberOnline;

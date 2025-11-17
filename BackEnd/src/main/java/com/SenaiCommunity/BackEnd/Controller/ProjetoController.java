@@ -3,7 +3,10 @@ package com.SenaiCommunity.BackEnd.Controller;
 import com.SenaiCommunity.BackEnd.DTO.ProjetoDTO;
 import com.SenaiCommunity.BackEnd.Entity.ProjetoMembro;
 import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
+import com.SenaiCommunity.BackEnd.Service.ArquivoMidiaService;
 import com.SenaiCommunity.BackEnd.Service.ProjetoService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,8 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/projetos")
@@ -21,6 +27,10 @@ public class ProjetoController {
 
     @Autowired
     private ProjetoService projetoService;
+
+    @Autowired
+    private ArquivoMidiaService midiaService;
+
 
     @GetMapping
     public ResponseEntity<List<ProjetoDTO>> listarTodos() {
@@ -205,18 +215,47 @@ public class ProjetoController {
         }
     }
 
-    @PutMapping("/{projetoId}/info")
+    @PutMapping(value = "/{projetoId}/info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> atualizarInfoGrupo(
             @PathVariable Long projetoId,
             @RequestParam(required = false) String titulo,
             @RequestParam(required = false) String descricao,
-            @RequestParam(required = false) String imagemUrl,
+            @RequestParam(required = false) MultipartFile foto, // CORREÇÃO: Aceitar arquivo
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Integer maxMembros,
             @RequestParam(required = false) Boolean grupoPrivado,
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) String tecnologias, // CORREÇÃO: Aceitar tecnologias como JSON string
             @RequestParam Long adminId) {
+
         try {
-            projetoService.atualizarInfoGrupo(projetoId, titulo, descricao, imagemUrl, status, maxMembros, grupoPrivado, adminId);
+            // CORREÇÃO: Processar tecnologias se fornecidas
+            List<String> tecnologiasList = null;
+            if (tecnologias != null && !tecnologias.trim().isEmpty()) {
+                try {
+                    tecnologiasList = new ObjectMapper().readValue(tecnologias, new TypeReference<List<String>>() {});
+                } catch (Exception e) {
+                    // Fallback: tentar como lista separada por vírgulas
+                    tecnologiasList = Arrays.stream(tecnologias.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .collect(Collectors.toList());
+                }
+            }
+
+            // CORREÇÃO: Se uma foto foi enviada, fazer upload e obter URL
+            String novaImagemUrl = null;
+            if (foto != null && !foto.isEmpty()) {
+                try {
+                    novaImagemUrl = midiaService.upload(foto);
+                } catch (IOException e) {
+                    return ResponseEntity.badRequest().body("Erro ao fazer upload da foto: " + e.getMessage());
+                }
+            }
+
+            projetoService.atualizarInfoGrupo(projetoId, titulo, descricao, novaImagemUrl,
+                    status, maxMembros, grupoPrivado, categoria,
+                    tecnologiasList, adminId);
             return ResponseEntity.ok(Map.of("message", "Informações do grupo atualizadas com sucesso!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
