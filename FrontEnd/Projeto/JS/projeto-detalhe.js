@@ -122,7 +122,7 @@ let projectId = null;
 let userRole = null;
 let selectedFiles = [];
 const backendUrl = "http://localhost:8080";
-const defaultAvatarUrl = "https://via.placeholder.com/150";
+const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
 
 // Inicialização quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', function() {
