@@ -955,6 +955,82 @@ document.addEventListener("DOMContentLoaded", () => {
       return mediaHtml;
   }
 
+  // =================================================================
+// NOVAS FUNÇÕES DO CARROSSEL DO FEED
+// =================================================================
+
+// Função para rolar o carrossel do feed
+window.scrollFeedCarousel = (postId, direction) => {
+    const track = document.getElementById(`feed-track-${postId}`);
+    if (track) {
+        // Rola a largura do container (um slide completo)
+        const scrollAmount = track.clientWidth; 
+        track.scrollBy({
+            left: scrollAmount * direction,
+            behavior: 'smooth'
+        });
+    }
+};
+
+// Função que gera o HTML do carrossel para o Feed
+function renderFeedCarousel(mediaUrls, postId) {
+    let slidesHtml = '';
+
+    mediaUrls.forEach((url, index) => {
+        const fullMediaUrl = url.startsWith('http') ? url : `${backendUrl}${url}`;
+        // Escapa as aspas para passar o array no onclick sem quebrar o HTML
+        const safeMediaArray = JSON.stringify(mediaUrls).replace(/"/g, '&quot;');
+        
+        let contentHtml = '';
+        if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
+            // Vídeo no carrossel
+            contentHtml = `<video src="${fullMediaUrl}" preload="metadata"></video>`;
+        } else {
+            // Imagem no carrossel
+            contentHtml = `<img src="${fullMediaUrl}" alt="Mídia do post">`;
+        }
+
+        // O clique ainda abre o modal de visualização em tela cheia (lightbox)
+        slidesHtml += `
+            <div class="feed-carousel-slide" onclick="window.openMediaViewer(${safeMediaArray}, ${index})">
+                ${contentHtml}
+            </div>
+        `;
+    });
+
+    // Retorna a estrutura completa com botões de navegação
+    return `
+        <div class="feed-carousel-wrapper">
+            <button class="feed-carousel-btn prev" onclick="event.stopPropagation(); window.scrollFeedCarousel(${postId}, -1)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            
+            <div class="feed-carousel-track" id="feed-track-${postId}">
+                ${slidesHtml}
+            </div>
+            
+            <button class="feed-carousel-btn next" onclick="event.stopPropagation(); window.scrollFeedCarousel(${postId}, 1)">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            
+            <div class="feed-carousel-counter">1 / ${mediaUrls.length}</div>
+        </div>
+        
+        <script>
+            (function(){
+                const track = document.getElementById('feed-track-${postId}');
+                const counter = track.parentElement.querySelector('.feed-carousel-counter');
+                if(track && counter) {
+                    track.addEventListener('scroll', () => {
+                        const index = Math.round(track.scrollLeft / track.clientWidth) + 1;
+                        counter.textContent = index + ' / ${mediaUrls.length}';
+                    });
+                }
+            })();
+        </script>
+    `;
+}
+
   // --- FUNÇÕES (Específicas do Feed) ---
 
   async function fetchPublicPosts() {
@@ -973,38 +1049,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function createPostElement(post) {
-    //
+ function createPostElement(post) {
     const postElement = document.createElement("div");
     postElement.className = "post";
     postElement.id = `post-${post.id}`;
+    
     const autorNome = post.nomeAutor || "Usuário Desconhecido";
     const autorIdDoPost = post.autorId;
     const fotoAutorPath = post.urlFotoAutor;
-    const autorAvatar =
-      fotoAutorPath && fotoAutorPath.startsWith("http")
+    const autorAvatar = fotoAutorPath && fotoAutorPath.startsWith("http")
         ? fotoAutorPath
-        : `${window.backendUrl}${
-            fotoAutorPath || "/images/default-avatar.jpg"
-          }`;
+        : `${window.backendUrl}${fotoAutorPath || "/images/default-avatar.jpg"}`;
+        
     const dataFormatada = new Date(post.dataCriacao).toLocaleString("pt-BR");
     const isAuthor = currentUser && autorIdDoPost === currentUser.id;
-    let mediaHtml = "";
     
-    // NOVO: Sistema de carrossel para múltiplas mídias
+    let mediaHtml = "";
+
+    // --- LÓGICA MODIFICADA DE MÍDIA ---
     if (post.urlsMidia && post.urlsMidia.length > 0) {
-        if (post.urlsMidia.length === 1) {
-            // Apenas uma mídia - exibir normalmente
+        if (post.urlsMidia.length > 2) {
+            // SE MAIS DE 2 MÍDIAS: Usa o Carrossel Horizontal
+            mediaHtml = renderFeedCarousel(post.urlsMidia, post.id);
+        } else if (post.urlsMidia.length === 1) {
+            // Apenas uma mídia (comportamento original)
             const url = post.urlsMidia[0];
-            const fullMediaUrl = url.startsWith("http") ? url : `${backendUrl}${url}`;
-            
+            const fullMediaUrl = url.startsWith("http") ? url : `${window.backendUrl}${url}`;
+            const safeMediaArray = JSON.stringify(post.urlsMidia).replace(/"/g, '&quot;');
+
             if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
-                mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${JSON.stringify(post.urlsMidia)}, 0)"><video controls src="${fullMediaUrl}" style="max-width: 100%; border-radius: 8px;"></video></div>`;
+                mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${safeMediaArray}, 0)">
+                                <video controls src="${fullMediaUrl}" style="max-width: 100%; border-radius: 8px;"></video>
+                             </div>`;
             } else {
-                mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${JSON.stringify(post.urlsMidia)}, 0)"><img src="${fullMediaUrl}" alt="Mídia da postagem" style="max-width: 100%; border-radius: 8px; cursor: pointer;"></div>`;
+                mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${safeMediaArray}, 0)">
+                                <img src="${fullMediaUrl}" alt="Mídia da postagem" style="max-width: 100%; border-radius: 8px; cursor: pointer;">
+                             </div>`;
             }
         } else {
-            // Múltiplas mídias - usar grid
+            // Exatamente 2 mídias: Mantém o Grid (renderMediaGrid existente no seu código)
             mediaHtml = renderMediaGrid(post.urlsMidia);
         }
     }

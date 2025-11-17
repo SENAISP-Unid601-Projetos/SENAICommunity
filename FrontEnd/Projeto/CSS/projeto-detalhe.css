@@ -1508,3 +1508,86 @@ html::-webkit-scrollbar-thumb:hover,
     border-radius: 8px;
     display: block;
 }
+
+/* NOVOS ESTILOS: Status do projeto */
+.project-status {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-planning {
+    background-color: var(--away);
+    color: white;
+}
+
+.status-progress {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+.status-completed {
+    background-color: var(--success);
+    color: white;
+}
+
+/* Melhorar visualização do status online */
+.member-status {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+    box-shadow: 0 0 3px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.member-status.online {
+    background-color: var(--online);
+    animation: pulse 2s infinite;
+}
+
+.member-status.offline {
+    background-color: var(--text-tertiary);
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(63, 185, 80, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(63, 185, 80, 0);
+    }
+}
+
+/* Estilo para o seletor de status */
+#edit-project-status {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    width: 100%;
+    cursor: pointer;
+}
+
+#edit-project-status:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+}
+
+#edit-project-status option {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 0.5rem;
+}

@@ -243,6 +243,15 @@ function updateMembersCount() {
     }).length;
     
     document.getElementById('online-count').textContent = `${onlineMembers} membros online`;
+    
+    // Atualizar também no header do chat se existir
+    const chatOnlineIndicator = document.querySelector('.online-indicator');
+    if (chatOnlineIndicator) {
+        chatOnlineIndicator.innerHTML = `
+            <div class="status-dot"></div>
+            ${onlineMembers} membros online
+        `;
+    }
 }
 
 // CORREÇÃO: Função para obter status online dos membros
@@ -370,6 +379,9 @@ function updateProjectInfo() {
     document.getElementById('modal-project-description').textContent = currentProject.descricao || "Sem descrição";
     document.getElementById('modal-project-privacy').textContent = currentProject.grupoPrivado ? "Privado" : "Público";
     
+    // NOVO: Atualizar indicador de status
+    updateProjectStatusIndicator();
+    
     // Verificar se o usuário atual é o administrador
     checkUserRole();
 }
@@ -437,13 +449,11 @@ function createMemberModalElement(member) {
         </div>
         <div class="member-info-modal">
             <div class="member-name-modal">${member.nome}</div>
-    `;
-    
-    // CORREÇÃO: Adicionar status online/offline
-    memberItem.innerHTML += `
-            <div class="member-role-modal">${member.role || member.funcao || 'Membro'} 
+            <div class="member-role-modal">
+                ${member.role || member.funcao || 'Membro'} 
                 <span class="member-status ${isOnline ? 'online' : 'offline'}" 
                       style="margin-left: 8px; display: inline-block; width: 8px; height: 8px; border-radius: 50%;"></span>
+                ${isOnline ? '<span style="color: var(--online); font-size: 0.7rem; margin-left: 4px;">Online</span>' : ''}
             </div>
         </div>
     `;
@@ -743,7 +753,7 @@ function openMediaModal(url, type) {
     document.addEventListener('keydown', closeOnEsc);
 }
 
-// Conectar ao WebSocket para mensagens em tempo real
+// CORREÇÃO: Conectar ao WebSocket para mensagens em tempo real
 function connectToWebSocket() {
     const socket = new SockJS(`${backendUrl}/ws`);
     stompClient = Stomp.over(socket);
@@ -760,6 +770,14 @@ function connectToWebSocket() {
         stompClient.subscribe(`/topic/grupo/${projectId}`, (message) => {
             const newMessage = JSON.parse(message.body);
             handleNewMessage(newMessage);
+        });
+        
+        // NOVA INSCRIÇÃO: Status Online em Tempo Real
+        stompClient.subscribe("/topic/status", (message) => {
+            console.log("Atualização de status online recebida:", message.body);
+            window.latestOnlineEmails = JSON.parse(message.body);
+            updateMembersCount();
+            renderMembersList();
         });
         
         // Inscrever-se para receber erros
@@ -1264,7 +1282,7 @@ async function inviteUserToProject(userId) {
     }
 }
 
-// Abrir modal de configurações do projeto
+// NOVA FUNÇÃO: Abrir modal de configurações do projeto com status
 function openProjectSettingsModal() {
     if (!currentProject) return;
     
@@ -1278,6 +1296,23 @@ function openProjectSettingsModal() {
     document.getElementById('edit-project-privacy').value = currentProject.grupoPrivado ? 'true' : 'false';
     document.getElementById('edit-project-category').value = currentProject.categoria || '';
     
+    // NOVO: Preencher status do projeto
+    const statusSelect = document.getElementById('edit-project-status');
+    if (statusSelect) {
+        // Mapear status do backend para as opções do frontend
+        const statusMapping = {
+            'PLANEJAMENTO': 'PLANEJAMENTO',
+            'EM_ANDAMENTO': 'EM_ANDAMENTO', 
+            'CONCLUIDO': 'CONCLUIDO',
+            'Em planejamento': 'PLANEJAMENTO',
+            'Em progresso': 'EM_ANDAMENTO',
+            'Concluído': 'CONCLUIDO'
+        };
+        
+        const currentStatus = currentProject.status || 'PLANEJAMENTO';
+        statusSelect.value = statusMapping[currentStatus] || 'PLANEJAMENTO';
+    }
+    
     // Preencher tecnologias
     const technologiesInput = document.getElementById('edit-project-technologies');
     if (currentProject.tecnologias && currentProject.tecnologias.length > 0) {
@@ -1289,7 +1324,7 @@ function openProjectSettingsModal() {
     modal.style.display = 'flex';
 }
 
-// Atualizar configurações do projeto
+// NOVA FUNÇÃO: Atualizar configurações do projeto incluindo status
 async function updateProjectSettings() {
     if (!currentProject) return;
     
@@ -1300,6 +1335,12 @@ async function updateProjectSettings() {
         formData.append('maxMembros', document.getElementById('edit-project-max-members').value);
         formData.append('grupoPrivado', document.getElementById('edit-project-privacy').value);
         formData.append('categoria', document.getElementById('edit-project-category').value);
+        
+        // NOVO: Adicionar status ao formulário
+        const statusSelect = document.getElementById('edit-project-status');
+        if (statusSelect) {
+            formData.append('status', statusSelect.value);
+        }
         
         // Processar tecnologias
         const technologiesInput = document.getElementById('edit-project-technologies').value;
@@ -1322,8 +1363,47 @@ async function updateProjectSettings() {
         
     } catch (error) {
         console.error("Erro ao atualizar configurações do projeto:", error);
-        showNotification("Erro ao atualizar configurações do projeto", "error");
+        
+        let errorMessage = "Erro ao atualizar configurações do projeto";
+        if (error.response && error.response.data) {
+            errorMessage = error.response.data;
+        }
+        
+        showNotification(errorMessage, "error");
     }
+}
+
+// NOVA FUNÇÃO: Atualizar indicador de status no header
+function updateProjectStatusIndicator() {
+    if (!currentProject) return;
+    
+    const statusElement = document.getElementById('project-status');
+    if (!statusElement) return;
+    
+    const status = currentProject.status || 'PLANEJAMENTO';
+    let statusText = '';
+    let statusClass = '';
+    
+    switch(status.toUpperCase()) {
+        case 'PLANEJAMENTO':
+            statusText = 'Em Planejamento';
+            statusClass = 'status-planning';
+            break;
+        case 'EM_ANDAMENTO':
+            statusText = 'Em Andamento';
+            statusClass = 'status-progress';
+            break;
+        case 'CONCLUIDO':
+            statusText = 'Concluído';
+            statusClass = 'status-completed';
+            break;
+        default:
+            statusText = status;
+            statusClass = 'status-planning';
+    }
+    
+    statusElement.textContent = statusText;
+    statusElement.className = `project-status ${statusClass}`;
 }
 
 // Filtrar membros na lista
