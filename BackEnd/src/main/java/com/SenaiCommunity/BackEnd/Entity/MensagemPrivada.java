@@ -26,6 +26,7 @@ public class MensagemPrivada {
     @ManyToOne
     private Usuario destinatario;
 
+    @Lob
     private String conteudo;
 
     private LocalDateTime dataEnvio = LocalDateTime.now();

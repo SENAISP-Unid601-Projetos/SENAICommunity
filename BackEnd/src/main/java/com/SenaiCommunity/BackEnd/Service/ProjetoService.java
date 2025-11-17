@@ -57,6 +57,53 @@ public class ProjetoService {
         return converterParaDTO(projeto);
     }
 
+    public List<ProjetoDTO> listarProjetosPublicos() {
+        List<Projeto> projetos = projetoRepository.findByGrupoPrivadoFalse();
+        return projetos.stream().map(this::converterParaDTO).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void entrarEmProjetoPublico(Long projetoId, Long usuarioId) {
+        Projeto projeto = projetoRepository.findById(projetoId)
+                .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado"));
+
+        if (projeto.getGrupoPrivado()) {
+            throw new IllegalArgumentException("Este projeto é privado. É necessário um convite.");
+        }
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+        // Verificar se já é membro
+        if (projetoMembroRepository.existsByProjetoIdAndUsuarioId(projetoId, usuarioId)) {
+            throw new IllegalArgumentException("Usuário já é membro do projeto");
+        }
+
+        // Verificar limite de membros
+        Integer totalMembros = projetoMembroRepository.countMembrosByProjetoId(projetoId);
+        if (totalMembros == null) totalMembros = 0;
+
+        Integer maxMembros = projeto.getMaxMembros();
+        if (maxMembros == null) maxMembros = 50;
+
+        if (totalMembros >= maxMembros) {
+            throw new IllegalArgumentException("Projeto atingiu o limite máximo de membros");
+        }
+
+        // Adicionar como membro
+        ProjetoMembro membro = new ProjetoMembro();
+        membro.setProjeto(projeto);
+        membro.setUsuario(usuario);
+        membro.setRole(ProjetoMembro.RoleMembro.MEMBRO);
+        membro.setDataEntrada(LocalDateTime.now());
+        membro.setConvidadoPor(projeto.getAutor()); // O criador do projeto é quem "convida"
+
+        projetoMembroRepository.save(membro);
+
+        String mensagem = String.format("%s entrou no projeto '%s'.", usuario.getNome(), projeto.getTitulo());
+        notificacaoService.criarNotificacao(projeto.getAutor(), mensagem, "MEMBRO_ADICIONADO", projeto.getId());
+    }
+
     @Transactional
     public ProjetoDTO salvar(ProjetoDTO dto, MultipartFile foto) {
 
@@ -75,6 +122,8 @@ public class ProjetoService {
 
         projeto.setTitulo(dto.getTitulo());
         projeto.setDescricao(dto.getDescricao());
+        projeto.setCategoria(dto.getCategoria());
+        projeto.setTecnologias(dto.getTecnologias());
 
         if (isNovoGrupo) {
             projeto.setDataInicio(new Date());
@@ -88,21 +137,27 @@ public class ProjetoService {
             projeto.setStatus(dto.getStatus());
         }
 
+        // --- LÓGICA DE IMAGEM CORRIGIDA ---
         if (foto != null && !foto.isEmpty()) {
             try {
                 String urlCloudinary = midiaService.upload(foto);
-                projeto.setImagemUrl(urlCloudinary); // Salva a URL completa
+                projeto.setImagemUrl(urlCloudinary); // Salva a URL do Cloudinary
 
             } catch (IOException e) {
                 System.err.println("[ERROR] Erro ao salvar a foto do projeto: " + e.getMessage());
                 e.printStackTrace();
                 throw new RuntimeException("Erro ao salvar a foto do projeto", e);
             }
-        } else if (dto.getImagemUrl() != null) {
-            projeto.setImagemUrl(dto.getImagemUrl());
         } else {
-            projeto.setImagemUrl(null);
+            // Se nenhuma foto foi enviada:
+            if (isNovoGrupo) {
+                // Se é um projeto novo, define a imagem padrão (Igual ao Aluno)
+                projeto.setImagemUrl("/images/default-project.jpg");
+            }
+            // Se for edição (update), não fazemos nada aqui,
+            // mantendo a imagem que já estava salva no banco (projeto.getImagemUrl antigo).
         }
+        // ----------------------------------
 
         projeto.setMaxMembros(dto.getMaxMembros() != null ? dto.getMaxMembros() : 50);
         projeto.setGrupoPrivado(dto.getGrupoPrivado() != null ? dto.getGrupoPrivado() : false);
@@ -394,6 +449,8 @@ public class ProjetoService {
         dto.setDataInicio(projeto.getDataInicio());
         dto.setDataEntrega(projeto.getDataEntrega());
         dto.setStatus(projeto.getStatus());
+        dto.setCategoria(projeto.getCategoria());
+        dto.setTecnologias(projeto.getTecnologias());
 
         String nomeFoto = projeto.getImagemUrl();
         if (nomeFoto != null && !nomeFoto.isBlank()) {
@@ -402,7 +459,6 @@ public class ProjetoService {
             dto.setImagemUrl("/images/default-project.jpg");
         }
 
-        dto.setDataCriacao(projeto.getDataCriacao());
         dto.setDataCriacao(projeto.getDataCriacao());
         dto.setMaxMembros(projeto.getMaxMembros());
         dto.setGrupoPrivado(projeto.getGrupoPrivado());

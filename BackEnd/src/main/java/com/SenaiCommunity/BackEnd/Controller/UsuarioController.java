@@ -3,6 +3,7 @@ package com.SenaiCommunity.BackEnd.Controller;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioAtualizacaoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioBuscaDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;
+import com.SenaiCommunity.BackEnd.Service.UserStatusService;
 import com.SenaiCommunity.BackEnd.Service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -23,6 +25,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private UserStatusService userStatusService;
 
     @GetMapping("/me")
     public ResponseEntity<UsuarioSaidaDTO> getMeuUsuario(Authentication authentication) {
@@ -59,5 +64,10 @@ public class UsuarioController {
     public ResponseEntity<List<UsuarioBuscaDTO>> buscarUsuarios(@RequestParam("nome") String nome, Principal principal) {
         List<UsuarioBuscaDTO> usuarios = usuarioService.buscarUsuariosPorNome(nome, principal.getName());
         return ResponseEntity.ok(usuarios);
+    }
+
+    @GetMapping("/online")
+    public ResponseEntity<Set<String>> getOnlineUsers() {
+        return ResponseEntity.ok(userStatusService.getOnlineUsers());
     }
 }

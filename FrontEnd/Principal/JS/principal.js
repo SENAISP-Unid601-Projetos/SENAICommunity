@@ -1,4 +1,3 @@
-
 // =================================================================
 // BLOCO DE CONTROLE DE TEMA (Executa primeiro em todas as páginas)
 // =================================================================
@@ -51,11 +50,24 @@ let userFriends = [];
 let friendsLoaded = false;
 let latestOnlineEmails = [];
 
+// Variáveis globais para o carrossel
+let currentMediaIndex = 0;
+let currentMediaItems = [];
+
 // Torna as variáveis e funções essenciais acessíveis globalmente
 window.stompClient = stompClient;
 window.currentUser = currentUser;
 window.jwtToken = jwtToken;
 window.backendUrl = backendUrl;
+window.getAvatarUrl = function(fotoPerfil) {
+    if (!fotoPerfil) {
+        return window.defaultAvatarUrl || 'https://via.placeholder.com/150'; 
+    }
+    if (fotoPerfil.startsWith('http')) {
+        return fotoPerfil;
+    }
+    return `${window.backendUrl}/api/arquivos/${fotoPerfil}`;
+}
 window.defaultAvatarUrl = defaultAvatarUrl;
 window.showNotification = showNotification;
 window.axios = axios; // Assume que Axios está carregado globalmente
@@ -330,14 +342,14 @@ function atualizarStatusDeAmigosNaUI() {
             const friendElement = document.createElement('div');
             friendElement.className = 'friend-item';
             
-            // CORREÇÃO: O seu AmigoDTO usa 'fotoPerfil'
-            // e o seu ArquivoController serve de '/api/arquivos/'
-            const friendAvatar = friend.fotoPerfil ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` : defaultAvatarUrl;
+            const friendAvatar = friend.fotoPerfil 
+                ? (friend.fotoPerfil.startsWith('http') 
+                    ? friend.fotoPerfil 
+                    : `${backendUrl}/api/arquivos/${friend.fotoPerfil}`) 
+                : defaultAvatarUrl;
             
-            // CORREÇÃO: Pega o ID do usuário (amigo) do DTO
             const friendId = friend.idUsuario; 
 
-            // CORREÇÃO: Adiciona a tag <a> em volta do avatar e nome
             friendElement.innerHTML = `
                 <a href="perfil.html?id=${friendId}" class="friend-item-link">
                     <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${defaultAvatarUrl}';"></div>
@@ -821,6 +833,224 @@ document.addEventListener("DOMContentLoaded", () => {
   let urlsParaRemover = [];
   const searchInput = document.getElementById("search-input");
 
+  // --- FUNÇÕES DE CARROSSEL ---
+
+  // Função para abrir o visualizador de mídias
+  window.openMediaViewer = (mediaUrls, startIndex = 0) => {
+      const modal = document.getElementById('media-viewer-modal');
+      const container = document.getElementById('carousel-container');
+      const indicators = document.getElementById('carousel-indicators');
+      
+      if (!modal || !container) return;
+      
+      currentMediaItems = mediaUrls;
+      currentMediaIndex = startIndex;
+      
+      // Limpar conteúdo anterior
+      container.innerHTML = '';
+      indicators.innerHTML = '';
+      
+      // Adicionar mídias ao carrossel
+      mediaUrls.forEach((url, index) => {
+          const slide = document.createElement('div');
+          slide.className = `carousel-slide ${index === startIndex ? 'active' : ''}`;
+          
+          const fullMediaUrl = url.startsWith('http') ? url : `${backendUrl}${url}`;
+          
+          if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
+              slide.innerHTML = `<video controls autoplay src="${fullMediaUrl}" style="max-width: 100%; max-height: 100%;"></video>`;
+          } else {
+              slide.innerHTML = `<img src="${fullMediaUrl}" alt="Mídia da postagem" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          }
+          
+          container.appendChild(slide);
+          
+          // Adicionar indicador
+          const indicator = document.createElement('span');
+          indicator.className = `carousel-indicator ${index === startIndex ? 'active' : ''}`;
+          indicator.onclick = () => goToMedia(index);
+          indicators.appendChild(indicator);
+      });
+      
+      modal.style.display = 'flex';
+      updateCarouselControls();
+  };
+
+  // Função para navegar para uma mídia específica
+  function goToMedia(index) {
+      const slides = document.querySelectorAll('.carousel-slide');
+      const indicators = document.querySelectorAll('.carousel-indicator');
+      
+      if (index < 0 || index >= slides.length) return;
+      
+      // Remover classe active de todos
+      slides.forEach(slide => slide.classList.remove('active'));
+      indicators.forEach(indicator => indicator.classList.remove('active'));
+      
+      // Adicionar classe active ao slide e indicador atual
+      slides[index].classList.add('active');
+      indicators[index].classList.add('active');
+      
+      currentMediaIndex = index;
+      updateCarouselControls();
+  }
+
+  // Função para ir para a próxima mídia
+  function nextMedia() {
+      goToMedia(currentMediaIndex + 1);
+  }
+
+  // Função para ir para a mídia anterior
+  function prevMedia() {
+      goToMedia(currentMediaIndex - 1);
+  }
+
+  // Função para atualizar controles do carrossel
+  function updateCarouselControls() {
+      const prevBtn = document.getElementById('carousel-prev');
+      const nextBtn = document.getElementById('carousel-next');
+      
+      if (prevBtn) prevBtn.disabled = currentMediaIndex === 0;
+      if (nextBtn) nextBtn.disabled = currentMediaIndex === currentMediaItems.length - 1;
+  }
+
+  // Fechar visualizador de mídias
+  function closeMediaViewer() {
+      const modal = document.getElementById('media-viewer-modal');
+      if (modal) modal.style.display = 'none';
+      
+      // Parar vídeos
+      document.querySelectorAll('.carousel-slide video').forEach(video => {
+          video.pause();
+          video.currentTime = 0;
+      });
+      
+      currentMediaItems = [];
+      currentMediaIndex = 0;
+  }
+
+  // Função para renderizar mídias em grid
+  function renderMediaGrid(mediaUrls) {
+      if (!mediaUrls || mediaUrls.length === 0) return '';
+      
+      const count = mediaUrls.length;
+      let gridClass = 'single';
+      let displayItems = mediaUrls;
+      
+      if (count === 2) {
+          gridClass = 'double';
+      } else if (count === 3) {
+          gridClass = 'triple';
+      } else if (count >= 4) {
+          gridClass = 'multiple';
+          displayItems = mediaUrls.slice(0, 4);
+      }
+      
+      let mediaHtml = `<div class="post-media-grid ${gridClass}">`;
+      
+      displayItems.forEach((url, index) => {
+          const fullMediaUrl = url.startsWith('http') ? url : `${backendUrl}${url}`;
+          const isMoreItem = count > 4 && index === 3;
+          const moreClass = isMoreItem ? ' more' : '';
+          
+          mediaHtml += `
+              <div class="post-media-item${moreClass}" 
+                   onclick="window.openMediaViewer(${JSON.stringify(mediaUrls)}, ${index})">
+          `;
+          
+          if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
+              mediaHtml += `<video src="${fullMediaUrl}" style="width: 100%; height: 100%; object-fit: cover;"></video>`;
+          } else {
+              mediaHtml += `<img src="${fullMediaUrl}" alt="Mídia da postagem" style="width: 100%; height: 100%; object-fit: cover;">`;
+          }
+          
+          if (isMoreItem) {
+              mediaHtml += `<div class="more-overlay">+${count - 4}</div>`;
+          }
+          
+          mediaHtml += `</div>`;
+      });
+      
+      mediaHtml += `</div>`;
+      return mediaHtml;
+  }
+
+  // =================================================================
+// NOVAS FUNÇÕES DO CARROSSEL DO FEED
+// =================================================================
+
+// Função para rolar o carrossel do feed
+window.scrollFeedCarousel = (postId, direction) => {
+    const track = document.getElementById(`feed-track-${postId}`);
+    if (track) {
+        // Rola a largura do container (um slide completo)
+        const scrollAmount = track.clientWidth; 
+        track.scrollBy({
+            left: scrollAmount * direction,
+            behavior: 'smooth'
+        });
+    }
+};
+
+// Função que gera o HTML do carrossel para o Feed
+function renderFeedCarousel(mediaUrls, postId) {
+    let slidesHtml = '';
+
+    mediaUrls.forEach((url, index) => {
+        const fullMediaUrl = url.startsWith('http') ? url : `${backendUrl}${url}`;
+        // Escapa as aspas para passar o array no onclick sem quebrar o HTML
+        const safeMediaArray = JSON.stringify(mediaUrls).replace(/"/g, '&quot;');
+        
+        let contentHtml = '';
+        if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
+            // Vídeo no carrossel
+            contentHtml = `<video src="${fullMediaUrl}" preload="metadata"></video>`;
+        } else {
+            // Imagem no carrossel
+            contentHtml = `<img src="${fullMediaUrl}" alt="Mídia do post">`;
+        }
+
+        // O clique ainda abre o modal de visualização em tela cheia (lightbox)
+        slidesHtml += `
+            <div class="feed-carousel-slide" onclick="window.openMediaViewer(${safeMediaArray}, ${index})">
+                ${contentHtml}
+            </div>
+        `;
+    });
+
+    // Retorna a estrutura completa com botões de navegação
+    return `
+        <div class="feed-carousel-wrapper">
+            <button class="feed-carousel-btn prev" onclick="event.stopPropagation(); window.scrollFeedCarousel(${postId}, -1)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            
+            <div class="feed-carousel-track" id="feed-track-${postId}">
+                ${slidesHtml}
+            </div>
+            
+            <button class="feed-carousel-btn next" onclick="event.stopPropagation(); window.scrollFeedCarousel(${postId}, 1)">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            
+            <div class="feed-carousel-counter">1 / ${mediaUrls.length}</div>
+        </div>
+        
+        <script>
+            (function(){
+                const track = document.getElementById('feed-track-${postId}');
+                const counter = track.parentElement.querySelector('.feed-carousel-counter');
+                if(track && counter) {
+                    track.addEventListener('scroll', () => {
+                        const index = Math.round(track.scrollLeft / track.clientWidth) + 1;
+                        counter.textContent = index + ' / ${mediaUrls.length}';
+                    });
+                }
+            })();
+        </script>
+    `;
+}
+
   // --- FUNÇÕES (Específicas do Feed) ---
 
   async function fetchPublicPosts() {
@@ -839,45 +1069,49 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function createPostElement(post) {
-    //
+ function createPostElement(post) {
     const postElement = document.createElement("div");
     postElement.className = "post";
     postElement.id = `post-${post.id}`;
+    
     const autorNome = post.nomeAutor || "Usuário Desconhecido";
     const autorIdDoPost = post.autorId;
     const fotoAutorPath = post.urlFotoAutor;
-    const autorAvatar =
-      fotoAutorPath && fotoAutorPath.startsWith("http")
+    const autorAvatar = fotoAutorPath && fotoAutorPath.startsWith("http")
         ? fotoAutorPath
-        : `${window.backendUrl}${
-            fotoAutorPath || "/images/default-avatar.jpg"
-          }`;
+        : `${window.backendUrl}${fotoAutorPath || "/images/default-avatar.jpg"}`;
+        
     const dataFormatada = new Date(post.dataCriacao).toLocaleString("pt-BR");
     const isAuthor = currentUser && autorIdDoPost === currentUser.id;
+    
     let mediaHtml = "";
- if (post.urlsMidia && post.urlsMidia.length > 0) {
-      mediaHtml = `<div class="post-media">${post.urlsMidia
-        .map((url) => {
-          const fullMediaUrl = url.startsWith("http")
-            ? url
-            : `${backendUrl}${url}`;
 
-          // 1. Checa IMAGENS (lista expandida, incluindo .avif)
-          if (url.match(/\.(jpeg|jpg|gif|png|webp|bmp|tiff|ico|svg|heic|heif|avif|jxr|wdp|jp2)$/i)) {
-            return `<img src="${fullMediaUrl}" alt="Mídia da postagem">`;
-          }
+    // --- LÓGICA MODIFICADA DE MÍDIA ---
+    if (post.urlsMidia && post.urlsMidia.length > 0) {
+        if (post.urlsMidia.length > 2) {
+            // SE MAIS DE 2 MÍDIAS: Usa o Carrossel Horizontal
+            mediaHtml = renderFeedCarousel(post.urlsMidia, post.id);
+        } else if (post.urlsMidia.length === 1) {
+            // Apenas uma mídia (comportamento original)
+            const url = post.urlsMidia[0];
+            const fullMediaUrl = url.startsWith("http") ? url : `${window.backendUrl}${url}`;
+            const safeMediaArray = JSON.stringify(post.urlsMidia).replace(/"/g, '&quot;');
 
-          // 2. Checa VÍDEOS (lista expandida)
-          if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
-            return `<video controls src="${fullMediaUrl}"></video>`;
-          }
-
-          const fileName = url.substring(url.lastIndexOf('/') + 1);
-          return `<div class="raw-file-link"><i class="fas fa-paperclip"></i> <a href="${fullMediaUrl}" target="_blank" rel="noopener noreferrer">${fileName}</a></div>`;
-        })
-        .join("")}</div>`;
+            if (url.match(/\.(mp4|webm|mov|avi|mkv|flv|wmv|3gp|ogv|m3u8|ts|asf)$/i)) {
+                mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${safeMediaArray}, 0)">
+                                <video controls src="${fullMediaUrl}" style="max-width: 100%; border-radius: 8px;"></video>
+                             </div>`;
+            } else {
+                mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${safeMediaArray}, 0)">
+                                <img src="${fullMediaUrl}" alt="Mídia da postagem" style="max-width: 100%; border-radius: 8px; cursor: pointer;">
+                             </div>`;
+            }
+        } else {
+            // Exatamente 2 mídias: Mantém o Grid (renderMediaGrid existente no seu código)
+            mediaHtml = renderMediaGrid(post.urlsMidia);
+        }
     }
+
     const rootComments = (post.comentarios || []).filter((c) => !c.parentId);
     let commentsHtml = rootComments
       .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao))
@@ -1365,6 +1599,47 @@ async function fetchAndReplacePost(postId) {
   // --- SETUP DE EVENT LISTENERS (Específicos do Feed) ---
   function setupFeedEventListeners() {
     if (searchInput) searchInput.addEventListener("input", filterPosts);
+
+    // Event listeners para o carrossel de mídias
+    const mediaViewerModal = document.getElementById('media-viewer-modal');
+    const mediaViewerClose = document.getElementById('media-viewer-close');
+    const carouselPrev = document.getElementById('carousel-prev');
+    const carouselNext = document.getElementById('carousel-next');
+    
+    if (mediaViewerClose) {
+        mediaViewerClose.addEventListener('click', closeMediaViewer);
+    }
+    
+    if (carouselPrev) {
+        carouselPrev.addEventListener('click', prevMedia);
+    }
+    
+    if (carouselNext) {
+        carouselNext.addEventListener('click', nextMedia);
+    }
+    
+    // Fechar modal ao clicar fora do conteúdo
+    if (mediaViewerModal) {
+        mediaViewerModal.addEventListener('click', (e) => {
+            if (e.target === mediaViewerModal) {
+                closeMediaViewer();
+            }
+        });
+    }
+    
+    // Navegação por teclado
+    document.addEventListener('keydown', (e) => {
+        const mediaViewer = document.getElementById('media-viewer-modal');
+        if (mediaViewer && mediaViewer.style.display === 'flex') {
+            if (e.key === 'Escape') {
+                closeMediaViewer();
+            } else if (e.key === 'ArrowLeft') {
+                prevMedia();
+            } else if (e.key === 'ArrowRight') {
+                nextMedia();
+            }
+        }
+    });
 
     //
     if (feedElements.editPostFileInput)

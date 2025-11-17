@@ -172,31 +172,24 @@ document.addEventListener("DOMContentLoaded", () => {
     axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
 
     try {
-      // 1. Pega o ID da URL
       const urlParams = new URLSearchParams(window.location.search);
       const profileUserId = urlParams.get("id");
 
-      // 2. Carrega o USUÁRIO LOGADO (para saber quem "eu" sou)
-      // Essencial para WebSocket, notificações e saber se o perfil é meu.
       const meResponse = await axios.get(`${backendUrl}/usuarios/me`);
       currentUser = meResponse.data;
       window.currentUser = currentUser; // Expor globalmente
 
-      // 3. Decide qual perfil carregar
       let fetchUrl;
       let isMyProfile;
 
       if (profileUserId && profileUserId != currentUser.id) {
-        // Vendo o perfil de OUTRA pessoa
         fetchUrl = `${backendUrl}/usuarios/${profileUserId}`;
         isMyProfile = false;
       } else {
-        // Vendo o MEU perfil (seja por /perfil.html ou /perfil.html?id=meuId)
         fetchUrl = `${backendUrl}/usuarios/me`;
         isMyProfile = true;
       }
 
-      // 4. Busca os dados do perfil
       const profileResponse = await axios.get(fetchUrl);
       profileUser = profileResponse.data; // Dados do perfil sendo exibido
 
@@ -316,13 +309,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const friendElement = document.createElement("div");
         friendElement.className = "friend-item";
         
-        // CORREÇÃO: Pega o ID do usuário (amigo) do DTO
         const friendId = friend.idUsuario;
-        // CORREÇÃO: O seu AmigoDTO usa 'fotoPerfil'
-        // e o seu ArquivoController serve de '/api/arquivos/'
-        const friendAvatar = friend.fotoPerfil ? `${backendUrl}/api/arquivos/${friend.fotoPerfil}` : defaultAvatarUrl;
         
-        // CORREÇÃO: Adiciona a tag <a> em volta do avatar e nome
+        const friendAvatar = friend.fotoPerfil 
+            ? (friend.fotoPerfil.startsWith('http') 
+                ? friend.fotoPerfil 
+                : `${backendUrl}/api/arquivos/${friend.fotoPerfil}`) 
+            : defaultAvatarUrl;
+
         friendElement.innerHTML = `
                 <a href="perfil.html?id=${friendId}" class="friend-item-link">
                     <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${defaultAvatarUrl}';"></div>

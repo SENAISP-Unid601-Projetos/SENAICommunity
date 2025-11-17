@@ -1,5 +1,6 @@
 package com.SenaiCommunity.BackEnd.DTO;
 
+import jakarta.persistence.Lob;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,6 +12,7 @@ import java.util.List;
 public class PostagemSaidaDTO {
 
     private Long id;
+    @Lob
     private String conteudo;
     private LocalDateTime dataCriacao;
     private Long autorId;

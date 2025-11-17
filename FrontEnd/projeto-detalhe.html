@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAI Community | Detalhes do Projeto</title>
+    <link rel="icon" href="img/LogoFavicon-removebg-preview.png2.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Projeto/CSS/projeto-detalhe.css">
+</head>
+<body>
+    <div class="notification-center"></div>
+
+    <header class="topbar">
+        <div class="header-left">
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            <a href="/projeto.html" class="back-btn" data-tooltip="Voltar">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+        </div>
+
+        <div class="project-info">
+            
+            <h2 id="project-name">Carregando...</h2>
+            
+            <span class="project-status" id="project-status">Online</span>
+        </div>
+
+        <nav class="nav-icons">
+            <div class="nav-icon" data-tooltip="Informações do Projeto" id="project-info-btn">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="nav-icon" data-tooltip="Configurações" id="project-settings-btn">
+                <i class="fas fa-cog"></i>
+            </div>
+            <div class="theme-toggle" data-tooltip="Alternar tema">
+                <i class="fas fa-moon"></i>
+            </div>
+        </nav>
+    </header>
+
+    <div class="project-container">
+        <!-- Sidebar com membros do projeto -->
+        <aside class="members-sidebar">
+            <div class="members-header">
+                <h3>Membros do Projeto</h3>
+                <span class="members-count" id="members-count">0</span>
+            </div>
+            
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-members" placeholder="Buscar membros...">
+            </div>
+            
+            <div class="members-list" id="members-list">
+                <p class="empty-state">Carregando membros...</p>
+            </div>
+            
+            <div class="project-details">
+                <h4>Detalhes do Projeto</h4>
+                <div class="project-description">
+                    <p id="project-description">Carregando descrição...</p>
+                </div>
+                <div class="project-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-users"></i>
+                        <span id="project-max-members">Máx: 0 membros</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-lock"></i>
+                        <span id="project-privacy">Privado</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-tag"></i>
+                        <span id="project-category">Categoria</span>
+                    </div>
+                </div>
+                <div class="project-technologies" id="project-technologies">
+                    <!-- Tecnologias serão inseridas aqui -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Área principal de chat -->
+        <main class="chat-area">
+            <div class="chat-header">
+                <div class="chat-info">
+                    <h3 id="chat-project-name">Carregando...</h3>
+                    <span class="online-indicator">
+                        <span class="status-dot"></span>
+                        <span id="online-count">0 membros online</span>
+                    </span>
+                </div>
+                <div class="chat-actions">
+                    <button class="action-btn" id="attach-file-btn" data-tooltip="Anexar arquivo">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <button class="action-btn" id="search-chat-btn" data-tooltip="Buscar no chat">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messages-container">
+                <p class="empty-state">Carregando mensagens...</p>
+            </div>
+
+            <div class="message-input-area">
+                <div class="input-wrapper">
+                    <button class="emoji-btn" id="emoji-btn" data-tooltip="Emojis">
+                        <i class="fas fa-smile"></i>
+                    </button>
+                    <input type="text" id="message-input" placeholder="Digite sua mensagem...">
+                    <input type="file" id="file-input" style="display: none;" accept="image/*,video/*,audio/*,.pdf,.doc,.docx">
+                    <button class="send-btn" id="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div id="file-preview-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de informações do projeto -->
+    <div id="project-info-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Informações do Projeto</h3>
+                <button class="close-modal" id="close-project-info-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="project-info-details">
+                    <div class="project-image">
+                        <img id="project-image" src="" alt="Imagem do projeto" style="display: none;">
+                    </div>
+                    <div class="project-details-text">
+                        
+                        <h4 id="modal-project-name">Nome do Projeto</h4>
+                        <p id="modal-project-description">Descrição do projeto</p>
+                        <div class="project-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-users"></i>
+                                <span id="modal-members-count">0 membros</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-lock"></i>
+                                <span id="modal-project-privacy">Privado</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-user"></i>
+                                <span id="modal-project-leader">Líder: Carregando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-members-modal">
+                    <h4>Membros do Projeto</h4>
+                    <div class="members-list-modal" id="members-list-modal">
+                        <!-- Lista de membros para o modal -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de configurações do projeto (apenas para admin) -->
+    <div id="project-settings-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Configurações do Projeto</h3>
+                <button class="close-modal" id="close-project-settings-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="project-settings-form">
+                    <div class="form-group">
+                        <label for="edit-project-name">Nome do Projeto</label>
+                        <input type="text" id="edit-project-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-project-description">Descrição</label>
+                        <textarea id="edit-project-description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-project-max-members">Máximo de Membros</label>
+                        <input type="number" id="edit-project-max-members" min="1" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-project-privacy">Privacidade</label>
+                        <select id="edit-project-privacy">
+                            <option value="true">Privado</option>
+                            <option value="false">Público</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-project-status">Status do Projeto</label>
+                        <select id="edit-project-status" class="form-control">
+                            <option value="PLANEJAMENTO">Em Planejamento</option>
+                            <option value="EM_ANDAMENTO">Em progresso</option>
+                            <option value="CONCLUIDO">Concluído</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-project-category">Categoria</label>
+                        <input type="text" id="edit-project-category">
+                    </div>
+                    <div class="form-group">
+                        <label>Tecnologias (separadas por vírgula)</label>
+                        <input type="text" id="edit-project-technologies" placeholder="Java, Spring Boot, React...">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="cancel-project-settings-btn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de gerenciamento de membros -->
+    <div id="manage-members-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Gerenciar Membros</h3>
+                <button class="close-modal" id="close-manage-members-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-members-modal" placeholder="Buscar membros...">
+                </div>
+                <div class="members-management-list" id="members-management-list">
+                    <!-- Lista de membros para gerenciamento -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="Projeto/JS/projeto-detalhe.js"></script>
+</body>
+</html>
