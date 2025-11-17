@@ -89,6 +89,21 @@ public class MensagemGrupoController {
         }
     }
 
+
+    @GetMapping("/{id}")
+    public ResponseEntity<MensagemGrupoSaidaDTO> getMensagemPorId(@PathVariable Long id) {
+        try {
+            MensagemGrupo mensagem = mensagemGrupoService.findById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Mensagem não encontrada"));
+
+            return ResponseEntity.ok(mensagemGrupoService.toDTO(mensagem));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> editarMensagem(@PathVariable Long id,
                                             @RequestBody Map<String, String> request,

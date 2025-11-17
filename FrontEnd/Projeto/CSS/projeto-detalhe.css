@@ -1591,3 +1591,239 @@ html::-webkit-scrollbar-thumb:hover,
     color: var(--text-primary);
     padding: 0.5rem;
 }
+
+/* CORREÇÃO: Estilos para ações de mensagem */
+.message-actions {
+    display: none;
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 5px;
+    box-shadow: var(--shadow);
+    z-index: 10;
+}
+
+.message:hover .message-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.message-action-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: var(--transition);
+    font-size: 0.8rem;
+}
+
+.message-action-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* CORREÇÃO: Estilos para o seletor de função */
+.role-select {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 1rem;
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+}
+
+.role-descriptions {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border-left: 4px solid var(--accent-primary);
+}
+
+.role-info {
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.role-info:last-child {
+    margin-bottom: 0;
+}
+
+.role-info strong {
+    color: var(--text-primary);
+}
+
+/* CORREÇÃO: Melhorar visualização do status online */
+.member-status {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+    box-shadow: 0 0 3px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.member-status.online {
+    background-color: var(--online);
+    animation: pulse 2s infinite;
+}
+
+.member-status.offline {
+    background-color: var(--text-tertiary);
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(63, 185, 80, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(63, 185, 80, 0);
+    }
+}
+
+/* CORREÇÃO: Garantir que as ações dos membros sejam visíveis */
+.member-actions-modal {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+    opacity: 1;
+    visibility: visible;
+}
+
+.member-action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: var(--transition);
+    opacity: 1;
+}
+
+.member-action-btn:hover {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+/* CORREÇÃO: Melhorar responsividade */
+@media (max-width: 768px) {
+    .message-actions {
+        position: static;
+        display: flex;
+        margin-top: 0.5rem;
+        justify-content: flex-end;
+    }
+    
+    .message:hover .message-actions {
+        display: flex;
+    }
+    
+    .role-descriptions {
+        font-size: 0.8rem;
+    }
+}
+
+.member-status.online {
+    background-color: #3fb950; /* Verde GitHub */
+    box-shadow: 0 0 0 2px var(--bg-secondary); /* Borda para destacar */
+    transform: scale(1.1); /* Leve destaque de tamanho */
+    transition: all 0.3s ease;
+}
+
+/* Animação de pulso para destacar que está online */
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(63, 185, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); }
+}
+
+.member-status.online {
+    animation: pulse-green 2s infinite;
+}
+
+/* CORREÇÃO: Estilos para o input de foto no modal de configurações */
+/* CORREÇÃO: Estilos para o input de foto no modal de configurações */
+.form-group-file {
+    margin-bottom: 1.25rem;
+}
+
+.form-group-file label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.file-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.current-photo-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.current-photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.file-input-label {
+    flex: 1;
+    padding: 0.75rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    cursor: pointer;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.file-input-label:hover {
+    background-color: var(--bg-quaternary);
+}
+
+.file-input {
+    display: none;
+}
+
+.file-name {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    text-align: center;
+}

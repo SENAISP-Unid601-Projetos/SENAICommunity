@@ -206,4 +206,8 @@ public class MensagemGrupoService {
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
+
+    public java.util.Optional<MensagemGrupo> findById(Long id) {
+        return mensagemGrupoRepository.findById(id);
+    }
 }
