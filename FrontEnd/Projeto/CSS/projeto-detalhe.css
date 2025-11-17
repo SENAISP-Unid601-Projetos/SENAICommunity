@@ -1768,7 +1768,6 @@ html::-webkit-scrollbar-thumb:hover,
 }
 
 /* CORREÇÃO: Estilos para o input de foto no modal de configurações */
-/* CORREÇÃO: Estilos para o input de foto no modal de configurações */
 .form-group-file {
     margin-bottom: 1.25rem;
 }
@@ -1826,4 +1825,219 @@ html::-webkit-scrollbar-thumb:hover,
     color: var(--text-secondary);
     margin-top: 0.5rem;
     text-align: center;
+}
+
+/* Estilos para botões de ação em mensagens */
+.message-actions {
+    display: none;
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 5px;
+    box-shadow: var(--shadow);
+    z-index: 10;
+}
+
+.message:hover .message-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.message-action-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: var(--transition);
+    font-size: 0.8rem;
+}
+
+.message-action-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* Estilos para mensagens truncadas */
+.message-truncated {
+    position: relative;
+}
+
+.truncated-content {
+    display: inline;
+}
+
+.show-more-btn {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-left: 5px;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.show-more-btn:hover {
+    color: var(--accent-secondary);
+}
+
+/* Estilos para loading */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid var(--bg-tertiary);
+    border-top: 5px solid var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: var(--text-primary);
+    margin-top: 1rem;
+    text-align: center;
+}
+
+/* Loading para botões */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--text-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Melhorar visualização de mensagens longas */
+.message-bubble {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+.message-truncated {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.truncated-content {
+    display: inline;
+}
+
+.full-content {
+    display: none;
+}
+
+/* Garantir que a mensagem não quebre o layout */
+.message {
+    display: flex;
+    gap: 0.75rem;
+    max-width: 70%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+}
+
+.message-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-width: 100%;
+    min-width: 0; /* Permite que o conteúdo quebre */
+}
+
+.message-bubble {
+    padding: 0.75rem 1rem;
+    border-radius: 18px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: pre-wrap;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.message.own .message-bubble {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+/* Estilos para mensagens truncadas */
+.message-truncated {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.truncated-content {
+    display: inline;
+}
+
+.full-content {
+    display: none;
+}
+
+.show-more-btn {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-left: 5px;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.show-more-btn:hover {
+    color: var(--accent-secondary);
+}
+
+/* Garantir que o contêiner de mensagens não tenha rolagem horizontal */
+.messages-container {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }

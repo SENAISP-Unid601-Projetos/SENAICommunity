@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/curtidas")
@@ -32,9 +33,26 @@ public class CurtidaController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    // Cache simples para Rate Limiting (Chave: UsuarioID+PostID, Valor: Timestamp)
+    private final Map<String, Long> rateLimitCache = new ConcurrentHashMap<>();
+
     @PostMapping("/toggle")
     public ResponseEntity<?> toggleCurtida(@RequestBody CurtidaEntradaDTO dto, Principal principal) {
         try {
+
+            String spamKey = principal.getName() + "_" +
+                    (dto.getComentarioId() != null ? "C" + dto.getComentarioId() : "P" + dto.getPostagemId());
+
+            Long lastRequestTime = rateLimitCache.getOrDefault(spamKey, 0L);
+            long currentTime = System.currentTimeMillis();
+
+            if (currentTime - lastRequestTime < 1500) {
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                        .body("Aguarde um momento antes de curtir novamente.");
+            }
+
+            rateLimitCache.put(spamKey, currentTime);
+
             Long postagemIdParaNotificar = curtidaService.toggleCurtida(principal.getName(), dto.getPostagemId(), dto.getComentarioId());
 
             Usuario autorDaAcao = usuarioService.buscarPorEmail(principal.getName());
