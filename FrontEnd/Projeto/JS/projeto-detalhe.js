@@ -274,19 +274,42 @@ async function fetchOnlineStatus() {
     }
 }
 
+// Função de segurança para validar acesso
+function validateAccess() {
+    if (!currentProject || !currentUser) return;
+
+    const isAuthor = currentProject.autorId === currentUser.id;
+    
+    // Verifica na lista de membros carregada
+    const isMember = projectMembers.some(m => {
+        const id = m.usuarioId || m.id;
+        return id === currentUser.id;
+    });
+
+    if (!isAuthor && !isMember) {
+        alert("Acesso negado: Você precisa entrar neste projeto para visualizar os detalhes e o chat.");
+        window.location.href = "projeto.html"; // Redireciona de volta
+    }
+}
+
 function isMemberOnline(member) {
+    // OTIMIZAÇÃO VISUAL: Se for o próprio usuário logado, sempre retorne true imediatamente
+    // Isso remove a sensação de atraso para o próprio perfil
+    if (currentUser && (member.id === currentUser.id || member.usuarioId === currentUser.id)) {
+        return true;
+    }
+
     // Se a lista global ainda não existe, ninguém está online
     if (!window.latestOnlineEmails || !Array.isArray(window.latestOnlineEmails)) return false;
     
-    // Pega o email do membro (tenta várias propriedades possíveis)
+    // Pega o email do membro
     const memberEmail = (member.email || member.usuarioEmail || "").toLowerCase();
     
     if (!memberEmail) return false;
 
-    // Verifica se o email está na lista (normalizando a lista também para garantir)
+    // Verifica se o email está na lista
     return window.latestOnlineEmails.some(email => email.toLowerCase() === memberEmail);
 }
-
 function updateMembersCount() {
     if (!projectMembers || projectMembers.length === 0) {
         document.getElementById('members-count').textContent = '0';
@@ -375,6 +398,8 @@ async function loadProjectData() {
         
         // Carregar membros do projeto
         await loadProjectMembers();
+
+        validateAccess();
         
         // Carregar mensagens do projeto
         await loadProjectMessages();
@@ -599,7 +624,7 @@ function setButtonLoading(button, isLoading) {
     }
 }
 
-// CORREÇÃO: Função MELHORADA para processar conteúdo da mensagem - CORRIGIDA
+// CORREÇÃO: Função MELHORADA para processar conteúdo da mensagem
 function processMessageContent(content) {
     if (!content) return '';
     
@@ -611,9 +636,9 @@ function processMessageContent(content) {
         .replace(/\n/g, '<br>');
     
     // CORREÇÃO: Compactar mensagens muito longas com limite menor
-    const maxLength = 300; // Reduzido para melhor visualização
+    const maxLength = 200; // Reduzido para melhor visualização
     if (content.length > maxLength) {
-        const truncatedContent = content.substring(0, maxLength) + '...';
+        const truncatedContent = content.substring(0, maxLength);
         const truncatedWithBreaks = truncatedContent
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -622,7 +647,6 @@ function processMessageContent(content) {
         
         const fullContent = processedContent;
         
-        // CORREÇÃO: Usar template string corretamente escapada
         return `
             <div class="message-truncated">
                 <div class="truncated-content">${truncatedWithBreaks}</div>
@@ -635,18 +659,26 @@ function processMessageContent(content) {
     return processedContent;
 }
 
-// CORREÇÃO: Função para expandir mensagem - CORRIGIDA
+// CORREÇÃO: Função para expandir/recolher mensagem
 function expandMessage(button) {
     const messageContainer = button.parentElement;
     const truncatedContent = messageContainer.querySelector('.truncated-content');
     const fullContent = messageContainer.querySelector('.full-content');
     
     if (truncatedContent && fullContent) {
-        truncatedContent.style.display = 'none';
-        fullContent.style.display = 'block';
-        button.style.display = 'none';
+        if (truncatedContent.style.display !== 'none') {
+            // Expandir
+            truncatedContent.style.display = 'none';
+            fullContent.style.display = 'block';
+            button.textContent = 'Ver menos';
+        } else {
+            // Recolher
+            truncatedContent.style.display = 'inline';
+            fullContent.style.display = 'none';
+            button.textContent = 'Ver mais';
+        }
         
-        // CORREÇÃO: Ajustar layout após expandir
+        // CORREÇÃO: Ajustar layout após expandir/recolher
         setTimeout(() => {
             scrollToBottom();
         }, 100);
@@ -678,9 +710,12 @@ function renderMessages() {
     
     // Rolar para a última mensagem
     scrollToBottom();
+
+    // CORREÇÃO: Configurar eventos de hover para as mensagens
+    setupMessageHover();
 }
 
-// CORREÇÃO: Função MELHORADA para criar elemento de mensagem - CORRIGIDA
+// CORREÇÃO: Função MELHORADA para criar elemento de mensagem
 function createMessageElement(message) {
     if (!message) return null;
     
@@ -691,12 +726,14 @@ function createMessageElement(message) {
     // CORREÇÃO: Estilo para prevenir quebra de layout
     messageDiv.style.cssText = `
         display: flex;
-        gap: 0.75rem;
-        max-width: 85%;
+        gap: 0.5rem;
+        max-width: 75%;
         width: fit-content;
         word-wrap: break-word;
         overflow-wrap: break-word;
         align-items: flex-start;
+        margin-bottom: 0.5rem;
+        position: relative;
     `;
     
     if (message.autorId === currentUser.id) {
@@ -743,24 +780,22 @@ function createMessageElement(message) {
             }
             
             const mediaType = anexo.type || detectMediaType(mediaUrl);
-            
-            // CORREÇÃO: Sanitizar URLs para prevenir quebra de layout
             const safeMediaUrl = mediaUrl.replace(/'/g, "\\'").replace(/"/g, '&quot;');
             
             if (mediaType === 'image') {
                 return `
-                <div class="message-file" style="margin-top: 8px; max-width: 100%;">
+                <div class="message-file" style="margin-top: 6px; max-width: 100%;">
                     <img src="${safeMediaUrl}" alt="Imagem" 
                          onload="this.style.opacity='1'" 
                          onerror="this.style.display='none'"
-                         style="opacity:0; transition: opacity 0.3s; cursor: pointer; max-width: 100%; max-height: 300px; border-radius: 8px;"
+                         style="opacity:0; transition: opacity 0.3s; cursor: pointer; max-width: 100%; max-height: 200px; border-radius: 6px;"
                          onclick="openMediaModal('${safeMediaUrl}', 'image')">
                 </div>`;
             } else if (mediaType === 'video') {
                 return `
-                <div class="message-file" style="margin-top: 8px; max-width: 100%;">
+                <div class="message-file" style="margin-top: 6px; max-width: 100%;">
                     <video controls src="${safeMediaUrl}" 
-                           style="max-width: 100%; max-height: 300px; border-radius: 8px;"
+                           style="max-width: 100%; max-height: 200px; border-radius: 6px;"
                            onerror="console.error('Erro ao carregar vídeo: ${safeMediaUrl}')">
                         Seu navegador não suporta o elemento de vídeo.
                     </video>
@@ -768,8 +803,8 @@ function createMessageElement(message) {
             } else {
                 const fileName = (anexo.name || mediaUrl.split('/').pop() || 'Arquivo').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 return `
-                <div class="message-file" style="margin-top: 8px; max-width: 100%;">
-                    <a href="${safeMediaUrl}" target="_blank" class="message-file-document" download style="text-decoration: none; color: inherit;">
+                <div class="message-file" style="margin-top: 6px; max-width: 100%;">
+                    <a href="${safeMediaUrl}" target="_blank" class="message-file-document" download style="text-decoration: none; color: inherit; padding: 6px; font-size: 0.8rem;">
                         <i class="fas fa-file-download"></i>
                         <div class="message-file-info">
                             <div class="message-file-name">${fileName}</div>
@@ -783,21 +818,21 @@ function createMessageElement(message) {
     
     messageDiv.innerHTML = `
         <div class="message-avatar" style="flex-shrink: 0;">
-            <img src="${messageAvatar}" alt="${message.nomeAutor || 'Usuário'}" onerror="this.src='${defaultAvatarUrl}'" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+            <img src="${messageAvatar}" alt="${message.nomeAutor || 'Usuário'}" onerror="this.src='${defaultAvatarUrl}'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
         </div>
-        <div class="message-content" style="flex: 1; min-width: 0; max-width: 100%;">
-            <div class="message-header" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-                <span class="message-sender" style="font-size: 0.85rem; font-weight: 600;">${message.nomeAutor || 'Usuário'}</span>
-                <span class="message-time" style="font-size: 0.7rem; color: var(--text-secondary);">${messageTime}</span>
+        <div class="message-content" style="flex: 1; min-width: 0; max-width: 100%; position: relative;">
+            <div class="message-header" style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.1rem;">
+                <span class="message-sender" style="font-size: 0.8rem; font-weight: 600;">${message.nomeAutor || 'Usuário'}</span>
+                <span class="message-time" style="font-size: 0.65rem; color: var(--text-secondary);">${messageTime}</span>
             </div>
             ${messageContent ? `
             <div class="message-bubble" style="
-                padding: 0.75rem 1rem; 
-                border-radius: 18px; 
+                padding: 0.5rem 0.75rem; 
+                border-radius: 16px; 
                 background-color: ${message.autorId === currentUser.id ? 'var(--accent-primary)' : 'var(--bg-tertiary)'}; 
                 color: ${message.autorId === currentUser.id ? 'white' : 'var(--text-primary)'};
-                font-size: 0.9rem; 
-                line-height: 1.4; 
+                font-size: 0.875rem; 
+                line-height: 1.3; 
                 word-wrap: break-word; 
                 overflow-wrap: break-word; 
                 max-width: 100%;
@@ -811,6 +846,33 @@ function createMessageElement(message) {
     `;
     
     return messageDiv;
+}
+
+// CORREÇÃO: Adicionar evento para mostrar ações ao passar o mouse
+function setupMessageHover() {
+    const messagesContainer = document.getElementById('messages-container');
+    if (messagesContainer) {
+        // Usamos delegação de eventos para lidar com mensagens dinâmicas
+        messagesContainer.addEventListener('mouseover', function(e) {
+            const message = e.target.closest('.message');
+            if (message) {
+                const actions = message.querySelector('.message-actions');
+                if (actions) {
+                    actions.style.display = 'flex';
+                }
+            }
+        });
+        
+        messagesContainer.addEventListener('mouseout', function(e) {
+            const message = e.target.closest('.message');
+            if (message && !message.matches(':hover')) {
+                const actions = message.querySelector('.message-actions');
+                if (actions) {
+                    actions.style.display = 'none';
+                }
+            }
+        });
+    }
 }
 
 // CORREÇÃO: Função para detectar tipo de mídia pela URL
@@ -926,7 +988,7 @@ function openMediaModal(url, type) {
 function connectToWebSocket() {
     const socket = new SockJS(`${backendUrl}/ws`);
     stompClient = Stomp.over(socket);
-    stompClient.debug = null;
+    stompClient.debug = null; // Desativa logs excessivos
     
     const headers = {
         Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -935,12 +997,38 @@ function connectToWebSocket() {
     stompClient.connect(headers, (frame) => {
         console.log("Conectado ao WebSocket!");
         
-        // Inscrever-se para mensagens do chat
+        // CORREÇÃO: Força uma busca inicial de online assim que conecta
+        fetchOnlineStatus();
+
+        // Inscrever-se para mensagens do chat E EVENTOS DE SISTEMA
         stompClient.subscribe(`/topic/grupo/${projectId}`, (message) => {
             const newMessage = JSON.parse(message.body);
-            // Se não for atualização de status (chat normal)
-            if (!newMessage.tipo || newMessage.tipo !== 'status') {
-                handleNewMessage(newMessage);
+            
+            // LÓGICA PARA EVENTOS DE SISTEMA (Atualização em Tempo Real)
+            if (newMessage.tipo === 'projeto_atualizado') {
+                console.log("Recebido evento de atualização do projeto");
+                loadProjectData(); // Recarrega tudo (info + foto + status)
+                return;
+            }
+            
+            if (newMessage.tipo === 'membros_atualizados') {
+                console.log("Recebido evento de atualização de membros");
+                loadProjectMembers(); // Recarrega apenas a lista de membros e permissões
+                return;
+            }
+
+            if (newMessage.tipo === 'projeto_removido') {
+                alert("Este projeto foi excluído.");
+                window.location.href = 'projeto.html';
+                return;
+            }
+
+            // Se não for evento de sistema, é mensagem de chat normal
+            if (!newMessage.tipo || newMessage.tipo === 'status') {
+                // Verifica se não é uma mensagem duplicada (opcional, mas bom ter)
+                if (!projectMessages.some(msg => msg.id === newMessage.id)) {
+                    handleNewMessage(newMessage);
+                }
             }
         });
         
@@ -959,6 +1047,7 @@ function connectToWebSocket() {
         
     }, (error) => {
         console.error("Erro na conexão WebSocket:", error);
+        // Tenta reconectar em 5 segundos
         setTimeout(connectToWebSocket, 5000);
     });
 }

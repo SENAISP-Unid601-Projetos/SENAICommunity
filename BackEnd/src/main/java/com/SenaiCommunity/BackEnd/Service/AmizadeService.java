@@ -157,13 +157,9 @@ public class AmizadeService {
     }
 
     public List<AmigoDTO> listarAmigosOnline(Usuario usuarioLogado) {
-        // 1. Pega a lista completa de amigos do usuário.
-        // Supondo que o método listarAmigos retorne List<AmigoDTO>
         List<AmigoDTO> todosOsAmigos = this.listarAmigos(usuarioLogado);
-
-        // 2. Filtra a lista, mantendo apenas os amigos que estão online.
         return todosOsAmigos.stream()
-                .filter(amigo -> userStatusService.isOnline(amigo.getEmail()))
+                .filter(AmigoDTO::isOnline)
                 .collect(Collectors.toList());
     }
 }

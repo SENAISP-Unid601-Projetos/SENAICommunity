@@ -6,6 +6,7 @@ import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,9 +48,32 @@ public class ProjetoService {
     @Autowired
     private ArquivoMidiaService midiaService;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate; // INJEÇÃO NECESSÁRIA
+
+    // Método auxiliar para notificar atualizações em tempo real
+    private void notificarAtualizacaoProjeto(Long projetoId, String tipo) {
+        try {
+            // Envia um payload leve avisando o frontend para recarregar dados
+            messagingTemplate.convertAndSend("/topic/grupo/" + projetoId,
+                    Map.of("tipo", tipo, "projetoId", projetoId));
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar notificação de atualização via WebSocket: " + e.getMessage());
+        }
+    }
+
     public List<ProjetoDTO> listarTodos() {
         List<Projeto> projetos = projetoRepository.findAll();
         return projetos.stream().map(this::converterParaDTO).collect(Collectors.toList());
+    }
+
+    public List<ProjetoDTO> listarProjetosDoUsuario(Long usuarioId) {
+        List<ProjetoMembro> membros = projetoMembroRepository.findByUsuarioId(usuarioId);
+
+        return membros.stream()
+                .map(ProjetoMembro::getProjeto)
+                .map(this::converterParaDTO)
+                .collect(Collectors.toList());
     }
 
     public ProjetoDTO buscarPorId(Long id) {
@@ -74,12 +99,10 @@ public class ProjetoService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        // Verificar se já é membro
         if (projetoMembroRepository.existsByProjetoIdAndUsuarioId(projetoId, usuarioId)) {
             throw new IllegalArgumentException("Usuário já é membro do projeto");
         }
 
-        // Verificar limite de membros
         Integer totalMembros = projetoMembroRepository.countMembrosByProjetoId(projetoId);
         if (totalMembros == null) totalMembros = 0;
 
@@ -90,18 +113,20 @@ public class ProjetoService {
             throw new IllegalArgumentException("Projeto atingiu o limite máximo de membros");
         }
 
-        // Adicionar como membro
         ProjetoMembro membro = new ProjetoMembro();
         membro.setProjeto(projeto);
         membro.setUsuario(usuario);
         membro.setRole(ProjetoMembro.RoleMembro.MEMBRO);
         membro.setDataEntrada(LocalDateTime.now());
-        membro.setConvidadoPor(projeto.getAutor()); // O criador do projeto é quem "convida"
+        membro.setConvidadoPor(projeto.getAutor());
 
         projetoMembroRepository.save(membro);
 
         String mensagem = String.format("%s entrou no projeto '%s'.", usuario.getNome(), projeto.getTitulo());
         notificacaoService.criarNotificacao(projeto.getAutor(), mensagem, "MEMBRO_ADICIONADO", projeto.getId());
+
+        // NOTIFICAR WEBSOCKET
+        notificarAtualizacaoProjeto(projetoId, "membros_atualizados");
     }
 
     @Transactional
@@ -137,27 +162,20 @@ public class ProjetoService {
             projeto.setStatus(dto.getStatus());
         }
 
-        // --- LÓGICA DE IMAGEM CORRIGIDA ---
         if (foto != null && !foto.isEmpty()) {
             try {
                 String urlCloudinary = midiaService.upload(foto);
-                projeto.setImagemUrl(urlCloudinary); // Salva a URL do Cloudinary
-
+                projeto.setImagemUrl(urlCloudinary);
             } catch (IOException e) {
                 System.err.println("[ERROR] Erro ao salvar a foto do projeto: " + e.getMessage());
                 e.printStackTrace();
                 throw new RuntimeException("Erro ao salvar a foto do projeto", e);
             }
         } else {
-            // Se nenhuma foto foi enviada:
             if (isNovoGrupo) {
-                // Se é um projeto novo, define a imagem padrão (Igual ao Aluno)
                 projeto.setImagemUrl("/images/default-project.jpg");
             }
-            // Se for edição (update), não fazemos nada aqui,
-            // mantendo a imagem que já estava salva no banco (projeto.getImagemUrl antigo).
         }
-        // ----------------------------------
 
         projeto.setMaxMembros(dto.getMaxMembros() != null ? dto.getMaxMembros() : 50);
         projeto.setGrupoPrivado(dto.getGrupoPrivado() != null ? dto.getGrupoPrivado() : false);
@@ -166,12 +184,10 @@ public class ProjetoService {
             projeto.setDataCriacao(LocalDateTime.now());
         }
 
-        // Autor
         Usuario autor = usuarioRepository.findById(dto.getAutorId())
                 .orElseThrow(() -> new EntityNotFoundException("Autor não encontrado com id: " + dto.getAutorId()));
         projeto.setAutor(autor);
 
-        // Manter compatibilidade com código existente
         if (dto.getProfessorIds() != null && !dto.getProfessorIds().isEmpty()) {
             List<Professor> professores = dto.getProfessorIds().stream()
                     .map(id -> professorRepository.findById(id)
@@ -193,6 +209,9 @@ public class ProjetoService {
         if (isNovoGrupo) {
             adicionarMembroComoAdmin(salvo, autor);
             enviarConvitesAutomaticos(salvo, dto.getProfessorIds(), dto.getAlunoIds(), autor.getId());
+        } else {
+            // SE FOR ATUALIZAÇÃO, NOTIFICAR WEBSOCKET
+            notificarAtualizacaoProjeto(salvo.getId(), "projeto_atualizado");
         }
 
         return converterParaDTO(salvo);
@@ -204,7 +223,6 @@ public class ProjetoService {
                 try {
                     enviarConvite(projeto.getId(), professorId, autorId);
                 } catch (Exception e) {
-                    // Log do erro mas não interrompe o processo
                     System.out.println("Erro ao enviar convite para professor " + professorId + ": " + e.getMessage());
                 }
             }
@@ -236,12 +254,10 @@ public class ProjetoService {
             throw new IllegalArgumentException("Apenas administradores e moderadores podem enviar convites");
         }
 
-        // Verificar se já é membro
         if (projetoMembroRepository.existsByProjetoIdAndUsuarioId(projetoId, usuarioConvidadoId)) {
             throw new IllegalArgumentException("Usuário já é membro do grupo");
         }
 
-        // Verificar se já tem convite pendente
         if (conviteProjetoRepository.existsByProjetoIdAndUsuarioConvidadoIdAndStatus(
                 projetoId, usuarioConvidadoId, ConviteProjeto.StatusConvite.PENDENTE)) {
             throw new IllegalArgumentException("Usuário já possui convite pendente");
@@ -293,12 +309,10 @@ public class ProjetoService {
             throw new IllegalArgumentException("Grupo atingiu o limite máximo de membros");
         }
 
-        // Aceitar convite
         convite.setStatus(ConviteProjeto.StatusConvite.ACEITO);
         convite.setDataResposta(LocalDateTime.now());
         conviteProjetoRepository.save(convite);
 
-        // Adicionar como membro
         ProjetoMembro membro = new ProjetoMembro();
         membro.setProjeto(convite.getProjeto());
         membro.setUsuario(convite.getUsuarioConvidado());
@@ -309,8 +323,10 @@ public class ProjetoService {
         projetoMembroRepository.save(membro);
 
         String mensagem = String.format("%s aceitou seu convite e agora faz parte do projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
-        // Notificar o autor do projeto
         notificacaoService.criarNotificacao(convite.getProjeto().getAutor(), mensagem, "MEMBRO_ADICIONADO", convite.getProjeto().getId());
+
+        // NOTIFICAR WEBSOCKET
+        notificarAtualizacaoProjeto(convite.getProjeto().getId(), "membros_atualizados");
     }
 
     @Transactional
@@ -322,7 +338,6 @@ public class ProjetoService {
         ProjetoMembro membro = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, membroId)
                 .orElseThrow(() -> new EntityNotFoundException("Membro não encontrado no projeto"));
 
-        // Não pode expulsar o criador do projeto
         Projeto projeto = projetoRepository.findById(projetoId).orElseThrow();
         if (membro.getUsuario().getId().equals(projeto.getAutor().getId())) {
             throw new IllegalArgumentException("Não é possível expulsar o criador do projeto");
@@ -338,6 +353,9 @@ public class ProjetoService {
 
         String mensagem = String.format("Você foi removido do projeto '%s'.", projeto.getTitulo());
         notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "MEMBRO_REMOVIDO", projeto.getId());
+
+        // NOTIFICAR WEBSOCKET
+        notificarAtualizacaoProjeto(projetoId, "membros_atualizados");
     }
 
     @Transactional
@@ -350,7 +368,6 @@ public class ProjetoService {
         ProjetoMembro membro = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, membroId)
                 .orElseThrow(() -> new EntityNotFoundException("Membro não encontrado no projeto"));
 
-        // Não pode alterar permissão do criador
         if (membro.getUsuario().getId().equals(projeto.getAutor().getId())) {
             throw new IllegalArgumentException("Não é possível alterar permissão do criador do projeto");
         }
@@ -361,9 +378,10 @@ public class ProjetoService {
         String mensagem = String.format("Sua permissão no projeto '%s' foi alterada para %s.", projeto.getTitulo(), novaRole.toString());
         notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "PERMISSAO_ALTERADA", projeto.getId());
 
+        // NOTIFICAR WEBSOCKET
+        notificarAtualizacaoProjeto(projetoId, "membros_atualizados");
     }
 
-    // CORREÇÃO: Atualizar método para aceitar categoria e tecnologias
     @Transactional
     public void atualizarInfoGrupo(Long projetoId, String novoTitulo, String novaDescricao, String novaImagemUrl,
                                    String novoStatus, Integer novoMaxMembros, Boolean novoGrupoPrivado,
@@ -379,9 +397,8 @@ public class ProjetoService {
         if (novaDescricao != null) projeto.setDescricao(novaDescricao);
         if (novaImagemUrl != null) projeto.setImagemUrl(novaImagemUrl);
         if (novoStatus != null) {
-            // CORREÇÃO: Aceitar diferentes formatos de status
             String statusNormalizado = novoStatus.toUpperCase();
-            if (statusNormalizado.equals("PLANEJAMENTO") || statusNormalizado.equals("EM_ANDAMENTO") ||
+            if (statusNormalizado.equals("PLANEJAMENTO") || statusNormalizado.equals("EM ANDAMENTO") ||
                     statusNormalizado.equals("CONCLUIDO") || novoStatus.equals("Em planejamento") ||
                     novoStatus.equals("Em progresso") || novoStatus.equals("Concluído")) {
                 projeto.setStatus(novoStatus);
@@ -395,6 +412,9 @@ public class ProjetoService {
         if (novasTecnologias != null) projeto.setTecnologias(novasTecnologias);
 
         projetoRepository.save(projeto);
+
+        // NOTIFICAR WEBSOCKET
+        notificarAtualizacaoProjeto(projetoId, "projeto_atualizado");
     }
 
     @Transactional

@@ -50,6 +50,12 @@ public class ProjetoController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<ProjetoDTO>> listarProjetosDoUsuario(@PathVariable Long usuarioId) {
+        List<ProjetoDTO> projetos = projetoService.listarProjetosDoUsuario(usuarioId);
+        return ResponseEntity.ok(projetos);
+    }
+
     @PostMapping("/{projetoId}/entrar")
     public ResponseEntity<?> entrarEmProjetoPublico(
             @PathVariable Long projetoId,

@@ -104,44 +104,85 @@
         </div>
         </aside>
 
-        <main class="main-content">
-            <div class="profile-page">
-                <div class="profile-header">
-                    <div class="profile-banner">
-                    </div>
-                    <div class="profile-details">
-                        <div class="profile-picture-container">
-                            <img src="https://via.placeholder.com/150" alt="Foto do Perfil" id="profile-pic-img">
-                        </div>
-                        <div class="profile-info-actions">
-                            <div class="profile-info">
-                                <h1 id="profile-name">Carregando...</h1>
-                                <p id="profile-title">Carregando...</p>
-                            </div>
-                            <div class="profile-actions">
-                                <button class="btn btn-primary" id="edit-profile-btn-page" style="display: none;"><i class="fas fa-pen"></i>
-                                    Editar Perfil
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+  <main class="main-content">
+    <div class="profile-page">
+        <div class="profile-header">
+            <div class="profile-banner">
                 </div>
-
-                <div class="profile-body">
-                    <div class="widget-card">
-                        <h3>Sobre</h3>
-                        <p id="profile-bio">Carregando bio...</p>
-                        <ul class="profile-metadata">
-                            <li><i class="fas fa-envelope"></i><span id="profile-email">Carregando...</span></li>
-                            <li><i class="fas fa-calendar-alt"></i>Nascido em&nbsp;<span id="profile-dob">...</span></li>
-                        </ul>
+            <div class="profile-details">
+                <div class="profile-picture-container">
+                    <img src="https://via.placeholder.com/150" alt="Foto do Perfil" id="profile-pic-img">
+                </div>
+                <div class="profile-info-actions">
+                    <div class="profile-info">
+                        <h1 id="profile-name">Carregando...</h1>
+                        <p id="profile-title">Carregando...</p>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn btn-primary" id="edit-profile-btn-page" style="display: none;"><i class="fas fa-pen"></i>
+                            Editar Perfil
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="posts-container" style="margin-top: 1.5rem;">
+        <div class="profile-body">
+            <div class="widget-card">
+                <h3>Sobre</h3>
+                <p id="profile-bio">Carregando bio...</p>
+                <ul class="profile-metadata">
+                    <li><i class="fas fa-envelope"></i><span id="profile-email">Carregando...</span></li>
+                    <li><i class="fas fa-calendar-alt"></i>Nascido em&nbsp;<span id="profile-dob">...</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="profile-nav-tabs">
+            <button class="tab-btn active" data-target="tab-posts">
+                <i class="fas fa-th"></i> Postagens
+            </button>
+            <button class="tab-btn" data-target="tab-friends">
+                <i class="fas fa-user-friends"></i> Amigos <span id="tab-friends-count" class="tab-count">0</span>
+            </button>
+            <button class="tab-btn" data-target="tab-projects">
+                <i class="fas fa-project-diagram"></i> Projetos <span id="tab-projects-count" class="tab-count">0</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="tab-posts" class="tab-content active">
+        <div class="posts-container" style="margin-top: 1.5rem;">
+            </div>
+    </div>
+
+    <div id="tab-friends" class="tab-content" style="display: none;">
+        <div class="friends-grid" id="profile-friends-list">
+            <p class="empty-state">Carregando amigos...</p>
+        </div>
+    </div>
+
+    <div id="tab-projects" class="tab-content" style="display: none;">
+        <div class="projects-grid" id="profile-projects-list">
+            <p class="empty-state">Nenhum projeto encontrado.</p>
+        </div>
+    </div>
+</main>
+
+<div id="media-viewer-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center;">
+    <div class="media-viewer-content">
+        <div class="media-viewer-header">
+            <button id="media-viewer-close" class="media-viewer-close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="media-carousel">
+            <button id="carousel-prev" class="carousel-btn carousel-prev"><i class="fas fa-chevron-left"></i></button>
+            <div id="carousel-container" class="carousel-container">
                 </div>
-            </main>
+            <button id="carousel-next" class="carousel-btn carousel-next"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div id="carousel-indicators" class="carousel-indicators"></div>
+    </div>
+</div>
 
         
         </div>
@@ -216,11 +257,6 @@
         </div>
     </div>
     
-    ```
-
-Isso irá adicionar o HTML que faltava, e o seu JavaScript (`perfil.js`) finalmente terá os campos de formulário para preencher e o modal para exibir.
-
-
     <div id="edit-post-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <form id="edit-post-form">
