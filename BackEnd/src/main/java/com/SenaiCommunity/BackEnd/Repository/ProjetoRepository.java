@@ -11,5 +11,5 @@ public interface ProjetoRepository extends JpaRepository<Projeto, Long> {
 
     // Adicione este método ao ProjetoRepository
     List<Projeto> findByGrupoPrivadoFalse();
-
+    List<Projeto> findByGrupoPrivadoTrue();
 }

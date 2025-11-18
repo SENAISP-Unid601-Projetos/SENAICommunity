@@ -67,6 +67,13 @@ public class ProjetoService {
         return projetos.stream().map(this::converterParaDTO).collect(Collectors.toList());
     }
 
+    public List<ProjetoDTO> listarProjetosPrivados() {
+        List<Projeto> projetos = projetoRepository.findByGrupoPrivadoTrue();
+        return projetos.stream()
+                .map(this::converterParaDTO)
+                .collect(Collectors.toList());
+    }
+
     public List<ProjetoDTO> listarProjetosDoUsuario(Long usuarioId) {
         List<ProjetoMembro> membros = projetoMembroRepository.findByUsuarioId(usuarioId);
 

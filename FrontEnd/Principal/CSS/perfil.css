@@ -457,3 +457,94 @@
     --border-color: #444444;
     --text-primary: #ffffff;
 }
+
+/* Estilos para o modal de projeto */
+.project-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.project-info-item {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.project-info-item:last-child {
+    border-bottom: none;
+}
+
+.tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.tech-tag {
+    background-color: var(--accent-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.project-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.project-status:contains("Concluído"),
+.project-status:contains("completo") {
+    background-color: #10b981;
+    color: white;
+}
+
+.project-status:contains("Andamento"),
+.project-status:contains("em andamento") {
+    background-color: #f59e0b;
+    color: white;
+}
+
+.project-status:contains("Planejamento"),
+.project-status:contains("planejamento") {
+    background-color: #6b7280;
+    color: white;
+}
+
+/* Melhorar a aparência dos cards de projeto */
+.project-card {
+    transition: all 0.3s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+}
+
+.modal-close:hover {
+    color: var(--text-primary);
+}

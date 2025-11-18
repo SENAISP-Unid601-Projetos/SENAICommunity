@@ -449,9 +449,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       projects.forEach(proj => {
-          const card = document.createElement('a');
-          card.href = `projeto.html?id=${proj.id}`;
+          const card = document.createElement('div');
           card.className = 'profile-card-item project-card';
+          card.style.cursor = 'pointer';
           
           const imageUrl = proj.imagemUrl 
               ? (proj.imagemUrl.startsWith('http') 
@@ -465,6 +465,12 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="profile-card-subtitle">${proj.categoria || 'Projeto'}</div>
               <div class="profile-card-status">${proj.status || 'Em andamento'}</div>
           `;
+          
+          // Adiciona evento de clique para abrir modal
+          card.addEventListener('click', () => {
+              window.openProjectModal(proj.id);
+          });
+          
           elements.profileProjectsList.appendChild(card);
       });
   }
@@ -1119,6 +1125,69 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // --- FUNÇÕES DO MODAL DE PROJETOS ---
+  window.openProjectModal = async (projectId) => {
+    try {
+        const response = await axios.get(`${backendUrl}/projetos/${projectId}`);
+        const project = response.data;
+        
+        // Preencher modal com dados do projeto
+        document.getElementById('project-modal-title').textContent = project.titulo;
+        document.getElementById('project-modal-description').textContent = project.descricao || 'Sem descrição';
+        document.getElementById('project-modal-category').textContent = project.categoria || 'Não especificada';
+        document.getElementById('project-modal-status').textContent = project.status || 'Em andamento';
+        document.getElementById('project-modal-date').textContent = new Date(project.dataCriacao).toLocaleDateString('pt-BR');
+        
+        // Imagem do projeto
+        const projectImage = document.getElementById('project-modal-img');
+        if (project.imagemUrl) {
+            projectImage.src = project.imagemUrl.startsWith('http') 
+                ? project.imagemUrl 
+                : `${backendUrl}${project.imagemUrl}`;
+        } else {
+            projectImage.src = 'https://via.placeholder.com/600x300?text=Projeto';
+        }
+        
+        // Tecnologias
+        const techContainer = document.getElementById('project-modal-technologies');
+        techContainer.innerHTML = '';
+        if (project.tags && project.tags.length > 0) {
+            project.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tech-tag';
+                tagElement.textContent = tag;
+                techContainer.appendChild(tagElement);
+            });
+        } else {
+            techContainer.innerHTML = '<span>Nenhuma tecnologia especificada</span>';
+        }
+        
+        // Links
+        const projectLink = document.getElementById('project-modal-link');
+        const projectFullLink = document.getElementById('project-modal-full-link');
+        if (project.link) {
+            projectLink.href = project.link;
+            projectLink.style.display = 'inline';
+        } else {
+            projectLink.style.display = 'none';
+        }
+        
+        projectFullLink.href = `projeto.html?id=${project.id}`;
+        
+        // Mostrar modal
+        document.getElementById('project-modal').style.display = 'flex';
+        
+    } catch (error) {
+        console.error('Erro ao carregar detalhes do projeto:', error);
+        showNotification('Erro ao carregar detalhes do projeto', 'error');
+    }
+  };
+
+  // Função para fechar modal do projeto
+  window.closeProjectModal = () => {
+    document.getElementById('project-modal').style.display = 'none';
+  };
+
   // --- SETUP EVENT LISTENERS ---
   function setupCarouselModalEvents() {
       if (elements.mediaViewerClose) {
@@ -1217,7 +1286,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Submeter edição do perfil
+    // Submeter edição do perfil - CORRIGIDO
     if (elements.editProfileForm) {
       elements.editProfileForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -1230,14 +1299,36 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         
-        const updateData = {
-          nome: document.getElementById("edit-profile-name").value,
-          bio: document.getElementById("edit-profile-bio").value,
-          dataNascimento: document.getElementById("edit-profile-dob").value ? new Date(document.getElementById("edit-profile-dob").value).toISOString() : null,
-          senha: password || null,
-        };
-        
         try {
+          // Primeiro, atualizar a foto se houver uma nova
+          const profilePicInput = document.getElementById("edit-profile-pic-input");
+          if (profilePicInput.files[0]) {
+            const formData = new FormData();
+            formData.append("foto", profilePicInput.files[0]);
+            try {
+              const fotoResponse = await axios.put(`${backendUrl}/usuarios/me/foto`, formData);
+              currentUser = fotoResponse.data;
+              updateUIWithUserData(currentUser);
+              showNotification("Foto de perfil atualizada!", "success");
+            } catch (error) {
+              let errorMessage = "Erro ao atualizar a foto.";
+              if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
+              }
+              showNotification(errorMessage, "error");
+              return;
+            }
+          }
+          
+          // Depois, atualizar os outros dados
+          const updateData = {
+            nome: document.getElementById("edit-profile-name").value,
+            bio: document.getElementById("edit-profile-bio").value,
+            dataNascimento: document.getElementById("edit-profile-dob").value ? 
+              new Date(document.getElementById("edit-profile-dob").value).toISOString() : null,
+            senha: password || null,
+          };
+          
           const response = await axios.put(`${backendUrl}/usuarios/me`, updateData);
           currentUser = response.data;
           updateUIWithUserData(currentUser);
@@ -1279,6 +1370,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     }
+
+    // Fechar modal de projeto ao clicar fora
+    if (document.getElementById('project-modal')) {
+      document.getElementById('project-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('project-modal')) {
+          closeProjectModal();
+        }
+      });
+    }
+
+    // Fechar modal de projeto com ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.getElementById('project-modal').style.display === 'flex') {
+        closeProjectModal();
+      }
+    });
 
     // Fechar menus ao clicar fora
     document.addEventListener('click', (e) => {

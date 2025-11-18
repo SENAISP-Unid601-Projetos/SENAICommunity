@@ -39,10 +39,12 @@
     display: flex;
     gap: 1rem;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
 }
 .search-projetos {
     flex-grow: 1;
     position: relative;
+    min-width: 200px;
 }
 .search-projetos i {
     position: absolute;
@@ -60,6 +62,7 @@
     color: var(--text-primary);
     font-size: 0.9rem;
 }
+/* CORREÇÃO DA SETA DO FILTRO */
 .projetos-filters select {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
@@ -71,7 +74,9 @@
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
-    padding-right: 2.5rem;
+    background-size: 12px;
+    padding-right: 2rem;
+    min-width: 140px;
 }
 
 /* --- GRID DE PROJETOS --- */
@@ -90,6 +95,7 @@
     transition: var(--transition);
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 .projeto-card:hover {
     transform: translateY(-5px);
@@ -105,6 +111,7 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    gap: 0.75rem;
 }
 .projeto-conteudo h3 {
     font-size: 1.1rem;
@@ -135,7 +142,17 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
 }
+
+.projeto-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
 .tech-tag {
     background-color: var(--bg-tertiary);
     color: var(--text-secondary);
@@ -260,6 +277,7 @@
     gap: 0.5rem;
     margin-bottom: 1.5rem;
     border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
 }
 
 .tab-btn {
@@ -271,33 +289,22 @@
     border-bottom: 2px solid transparent;
     transition: var(--transition);
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .tab-btn:hover {
     color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+    border-radius: 6px 6px 0 0;
 }
 
 .tab-btn.active {
     color: var(--accent-primary);
     border-bottom-color: var(--accent-primary);
+    background-color: var(--bg-tertiary);
 }
 
 /* Estilos para ações em projetos públicos */
-.projeto-footer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
-}
-
-.projeto-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
 .projeto-actions {
     display: flex;
     gap: 0.5rem;
@@ -465,4 +472,84 @@
     padding: 1.5rem 0 0;
     border-top: 1px solid var(--border-color);
     margin-top: 1.5rem;
+}
+
+/* NOVOS ESTILOS PARA PROJETOS PRIVADOS */
+.btn-solicitar-entrada {
+    background-color: var(--warning);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-solicitar-entrada:hover:not(:disabled) {
+    background-color: #e0a800;
+}
+
+.btn-solicitar-entrada:disabled {
+    background-color: var(--bg-quaternary);
+    cursor: not-allowed;
+}
+
+.projeto-privacy.private {
+    color: var(--error);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.projeto-privacy.public {
+    color: var(--success);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* Ajustes para mobile */
+@media (max-width: 768px) {
+    .projetos-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .projetos-filters {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .search-projetos {
+        width: 100%;
+    }
+    
+    .projetos-filters select {
+        width: 100%;
+    }
+    
+    .tab-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .projetos-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .projeto-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .projeto-actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: space-between;
+    }
 }
