@@ -62,6 +62,8 @@ function normalizeProjectStatus(status) {
 // CORREÇÃO: Atualizar a função loadProjectMembers
 async function loadProjectMembers() {
     try {
+        showLoading("Carregando membros...");
+        
         // Buscar membros diretamente da API de membros do projeto
         const response = await axios.get(`${backendUrl}/projetos/${projectId}/membros`);
         projectMembers = response.data.map(normalizeMemberData);
@@ -80,6 +82,8 @@ async function loadProjectMembers() {
             updateMembersCount();
             renderMembersList();
         }
+    } finally {
+        hideLoading();
     }
 }
 
@@ -270,19 +274,42 @@ async function fetchOnlineStatus() {
     }
 }
 
+// Função de segurança para validar acesso
+function validateAccess() {
+    if (!currentProject || !currentUser) return;
+
+    const isAuthor = currentProject.autorId === currentUser.id;
+    
+    // Verifica na lista de membros carregada
+    const isMember = projectMembers.some(m => {
+        const id = m.usuarioId || m.id;
+        return id === currentUser.id;
+    });
+
+    if (!isAuthor && !isMember) {
+        alert("Acesso negado: Você precisa entrar neste projeto para visualizar os detalhes e o chat.");
+        window.location.href = "projeto.html"; // Redireciona de volta
+    }
+}
+
 function isMemberOnline(member) {
+    // OTIMIZAÇÃO VISUAL: Se for o próprio usuário logado, sempre retorne true imediatamente
+    // Isso remove a sensação de atraso para o próprio perfil
+    if (currentUser && (member.id === currentUser.id || member.usuarioId === currentUser.id)) {
+        return true;
+    }
+
     // Se a lista global ainda não existe, ninguém está online
     if (!window.latestOnlineEmails || !Array.isArray(window.latestOnlineEmails)) return false;
     
-    // Pega o email do membro (tenta várias propriedades possíveis)
+    // Pega o email do membro
     const memberEmail = (member.email || member.usuarioEmail || "").toLowerCase();
     
     if (!memberEmail) return false;
 
-    // Verifica se o email está na lista (normalizando a lista também para garantir)
+    // Verifica se o email está na lista
     return window.latestOnlineEmails.some(email => email.toLowerCase() === memberEmail);
 }
-
 function updateMembersCount() {
     if (!projectMembers || projectMembers.length === 0) {
         document.getElementById('members-count').textContent = '0';
@@ -354,6 +381,8 @@ async function initializePage() {
 // Carregar dados do projeto
 async function loadProjectData() {
     try {
+        showLoading("Carregando projeto...");
+        
         const response = await axios.get(`${backendUrl}/projetos/${projectId}`);
         currentProject = response.data;
         
@@ -369,6 +398,8 @@ async function loadProjectData() {
         
         // Carregar membros do projeto
         await loadProjectMembers();
+
+        validateAccess();
         
         // Carregar mensagens do projeto
         await loadProjectMessages();
@@ -376,6 +407,8 @@ async function loadProjectData() {
     } catch (error) {
         console.error("Erro ao carregar dados do projeto:", error);
         showNotification("Erro ao carregar dados do projeto", "error");
+    } finally {
+        hideLoading();
     }
 }
 
@@ -541,7 +574,9 @@ function createMemberModalElement(member) {
 // Carregar mensagens do projeto
 async function loadProjectMessages() {
     try {
-        const response = await axios.get(`${backendUrl}/api/chat/grupo/${projectId}`);
+        showLoading("Carregando mensagens...");
+        
+        const response = await axios.get(`${backendUrl}/api/mensagens/grupo/projeto/${projectId}`);
         projectMessages = response.data;
         
         // Renderizar mensagens
@@ -550,33 +585,104 @@ async function loadProjectMessages() {
     } catch (error) {
         console.error("Erro ao carregar mensagens do projeto:", error);
         document.getElementById('messages-container').innerHTML = '<p class="empty-state">Erro ao carregar mensagens</p>';
+    } finally {
+        hideLoading();
     }
 }
 
-// CORREÇÃO: Função para processar conteúdo da mensagem
+// CORREÇÃO: Função para mostrar/ocultar loading
+function showLoading(message = "Carregando...") {
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'loading-overlay';
+    loadingOverlay.id = 'global-loading';
+    
+    loadingOverlay.innerHTML = `
+        <div style="text-align: center;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">${message}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(loadingOverlay);
+}
+
+function hideLoading() {
+    const loadingOverlay = document.getElementById('global-loading');
+    if (loadingOverlay) {
+        loadingOverlay.remove();
+    }
+}
+
+// CORREÇÃO: Função para mostrar loading em botões
+function setButtonLoading(button, isLoading) {
+    if (isLoading) {
+        button.classList.add('btn-loading');
+        button.disabled = true;
+    } else {
+        button.classList.remove('btn-loading');
+        button.disabled = false;
+    }
+}
+
+// CORREÇÃO: Função MELHORADA para processar conteúdo da mensagem
 function processMessageContent(content) {
     if (!content) return '';
     
-    // Substituir quebras de linha por <br>
-    let processedContent = content.replace(/\n/g, '<br>');
+    // CORREÇÃO: Substituir quebras de linha por <br> e sanitizar conteúdo
+    let processedContent = content
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>');
     
-    // Compactar mensagens muito longas
-    const maxLength = 500;
+    // CORREÇÃO: Compactar mensagens muito longas com limite menor
+    const maxLength = 200; // Reduzido para melhor visualização
     if (content.length > maxLength) {
-        const truncatedContent = content.substring(0, maxLength) + '...';
-        const fullContent = content.replace(/\n/g, '<br>');
+        const truncatedContent = content.substring(0, maxLength);
+        const truncatedWithBreaks = truncatedContent
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\n/g, '<br>');
+        
+        const fullContent = processedContent;
         
         return `
             <div class="message-truncated">
-                <div class="truncated-content">${truncatedContent.replace(/\n/g, '<br>')}</div>
-                <button class="show-more-btn" onclick="this.parentElement.innerHTML = '${fullContent.replace(/'/g, "\\'")}'">
-                    Ver mais
-                </button>
+                <div class="truncated-content">${truncatedWithBreaks}</div>
+                <button type="button" class="show-more-btn" onclick="expandMessage(this)">Ver mais</button>
+                <div class="full-content" style="display: none;">${fullContent}</div>
             </div>
         `;
     }
     
     return processedContent;
+}
+
+// CORREÇÃO: Função para expandir/recolher mensagem
+function expandMessage(button) {
+    const messageContainer = button.parentElement;
+    const truncatedContent = messageContainer.querySelector('.truncated-content');
+    const fullContent = messageContainer.querySelector('.full-content');
+    
+    if (truncatedContent && fullContent) {
+        if (truncatedContent.style.display !== 'none') {
+            // Expandir
+            truncatedContent.style.display = 'none';
+            fullContent.style.display = 'block';
+            button.textContent = 'Ver menos';
+        } else {
+            // Recolher
+            truncatedContent.style.display = 'inline';
+            fullContent.style.display = 'none';
+            button.textContent = 'Ver mais';
+        }
+        
+        // CORREÇÃO: Ajustar layout após expandir/recolher
+        setTimeout(() => {
+            scrollToBottom();
+        }, 100);
+    }
 }
 
 // Renderizar mensagens
@@ -597,18 +703,43 @@ function renderMessages() {
     // Renderizar cada mensagem
     sortedMessages.forEach(message => {
         const messageElement = createMessageElement(message);
-        messagesContainer.appendChild(messageElement);
+        if (messageElement) {
+            messagesContainer.appendChild(messageElement);
+        }
     });
     
     // Rolar para a última mensagem
     scrollToBottom();
+
+    // CORREÇÃO: Configurar eventos de hover para as mensagens
+    setupMessageHover();
 }
 
-// CORREÇÃO: Função melhorada para criar elemento de mensagem
+// CORREÇÃO: Função MELHORADA para criar elemento de mensagem
 function createMessageElement(message) {
+    if (!message) return null;
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.autorId === currentUser.id ? 'own' : ''}`;
     messageDiv.id = `message-${message.id}`;
+    
+    // CORREÇÃO: Estilo para prevenir quebra de layout
+    messageDiv.style.cssText = `
+        display: flex;
+        gap: 0.5rem;
+        max-width: 75%;
+        width: fit-content;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+        position: relative;
+    `;
+    
+    if (message.autorId === currentUser.id) {
+        messageDiv.style.alignSelf = 'flex-end';
+        messageDiv.style.flexDirection = 'row-reverse';
+    }
     
     const messageAvatar = getMessageAvatarUrl(message);
     const messageTime = new Date(message.dataEnvio || message.dataCriacao).toLocaleTimeString('pt-BR', {
@@ -623,10 +754,12 @@ function createMessageElement(message) {
     if (message.autorId === currentUser.id) {
         messageActions = `
             <div class="message-actions">
-                <button class="message-action-btn" onclick="editMessage(${message.id}, '${message.conteudo.replace(/'/g, "\\'")}')" title="Editar mensagem">
+                <button class="message-action-btn" onclick="editMessage(${message.id})" 
+                        data-tooltip="Editar mensagem" title="Editar mensagem">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="message-action-btn" onclick="deleteMessage(${message.id})" title="Excluir mensagem">
+                <button class="message-action-btn" onclick="deleteMessage(${message.id})" 
+                        data-tooltip="Excluir mensagem" title="Excluir mensagem">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -647,30 +780,31 @@ function createMessageElement(message) {
             }
             
             const mediaType = anexo.type || detectMediaType(mediaUrl);
+            const safeMediaUrl = mediaUrl.replace(/'/g, "\\'").replace(/"/g, '&quot;');
             
             if (mediaType === 'image') {
                 return `
-                <div class="message-file">
-                    <img src="${mediaUrl}" alt="Imagem" 
+                <div class="message-file" style="margin-top: 6px; max-width: 100%;">
+                    <img src="${safeMediaUrl}" alt="Imagem" 
                          onload="this.style.opacity='1'" 
                          onerror="this.style.display='none'"
-                         style="opacity:0; transition: opacity 0.3s; cursor: pointer; max-width: 300px; max-height: 300px;"
-                         onclick="openMediaModal('${mediaUrl}', 'image')">
+                         style="opacity:0; transition: opacity 0.3s; cursor: pointer; max-width: 100%; max-height: 200px; border-radius: 6px;"
+                         onclick="openMediaModal('${safeMediaUrl}', 'image')">
                 </div>`;
             } else if (mediaType === 'video') {
                 return `
-                <div class="message-file">
-                    <video controls src="${mediaUrl}" 
-                           style="max-width: 300px; max-height: 300px;"
-                           onerror="console.error('Erro ao carregar vídeo: ${mediaUrl}')">
+                <div class="message-file" style="margin-top: 6px; max-width: 100%;">
+                    <video controls src="${safeMediaUrl}" 
+                           style="max-width: 100%; max-height: 200px; border-radius: 6px;"
+                           onerror="console.error('Erro ao carregar vídeo: ${safeMediaUrl}')">
                         Seu navegador não suporta o elemento de vídeo.
                     </video>
                 </div>`;
             } else {
-                const fileName = anexo.name || mediaUrl.split('/').pop() || 'Arquivo';
+                const fileName = (anexo.name || mediaUrl.split('/').pop() || 'Arquivo').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 return `
-                <div class="message-file">
-                    <a href="${mediaUrl}" target="_blank" class="message-file-document" download>
+                <div class="message-file" style="margin-top: 6px; max-width: 100%;">
+                    <a href="${safeMediaUrl}" target="_blank" class="message-file-document" download style="text-decoration: none; color: inherit; padding: 6px; font-size: 0.8rem;">
                         <i class="fas fa-file-download"></i>
                         <div class="message-file-info">
                             <div class="message-file-name">${fileName}</div>
@@ -683,21 +817,62 @@ function createMessageElement(message) {
     }
     
     messageDiv.innerHTML = `
-        <div class="message-avatar">
-            <img src="${messageAvatar}" alt="${message.nomeAutor}" onerror="this.src='${defaultAvatarUrl}'">
+        <div class="message-avatar" style="flex-shrink: 0;">
+            <img src="${messageAvatar}" alt="${message.nomeAutor || 'Usuário'}" onerror="this.src='${defaultAvatarUrl}'" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
         </div>
-        <div class="message-content">
-            <div class="message-header">
-                <span class="message-sender">${message.nomeAutor}</span>
-                <span class="message-time">${messageTime}</span>
+        <div class="message-content" style="flex: 1; min-width: 0; max-width: 100%; position: relative;">
+            <div class="message-header" style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.1rem;">
+                <span class="message-sender" style="font-size: 0.8rem; font-weight: 600;">${message.nomeAutor || 'Usuário'}</span>
+                <span class="message-time" style="font-size: 0.65rem; color: var(--text-secondary);">${messageTime}</span>
             </div>
-            ${messageContent ? `<div class="message-bubble">${messageContent}</div>` : ''}
+            ${messageContent ? `
+            <div class="message-bubble" style="
+                padding: 0.5rem 0.75rem; 
+                border-radius: 16px; 
+                background-color: ${message.autorId === currentUser.id ? 'var(--accent-primary)' : 'var(--bg-tertiary)'}; 
+                color: ${message.autorId === currentUser.id ? 'white' : 'var(--text-primary)'};
+                font-size: 0.875rem; 
+                line-height: 1.3; 
+                word-wrap: break-word; 
+                overflow-wrap: break-word; 
+                max-width: 100%;
+                word-break: break-word;
+                white-space: pre-wrap;
+                display: inline-block;
+            ">${messageContent}</div>` : ''}
             ${anexosHTML}
             ${messageActions}
         </div>
     `;
     
     return messageDiv;
+}
+
+// CORREÇÃO: Adicionar evento para mostrar ações ao passar o mouse
+function setupMessageHover() {
+    const messagesContainer = document.getElementById('messages-container');
+    if (messagesContainer) {
+        // Usamos delegação de eventos para lidar com mensagens dinâmicas
+        messagesContainer.addEventListener('mouseover', function(e) {
+            const message = e.target.closest('.message');
+            if (message) {
+                const actions = message.querySelector('.message-actions');
+                if (actions) {
+                    actions.style.display = 'flex';
+                }
+            }
+        });
+        
+        messagesContainer.addEventListener('mouseout', function(e) {
+            const message = e.target.closest('.message');
+            if (message && !message.matches(':hover')) {
+                const actions = message.querySelector('.message-actions');
+                if (actions) {
+                    actions.style.display = 'none';
+                }
+            }
+        });
+    }
 }
 
 // CORREÇÃO: Função para detectar tipo de mídia pela URL
@@ -813,7 +988,7 @@ function openMediaModal(url, type) {
 function connectToWebSocket() {
     const socket = new SockJS(`${backendUrl}/ws`);
     stompClient = Stomp.over(socket);
-    stompClient.debug = null; // Desativar logs de debug do stomp se quiser limpar o console
+    stompClient.debug = null; // Desativa logs excessivos
     
     const headers = {
         Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -822,36 +997,47 @@ function connectToWebSocket() {
     stompClient.connect(headers, (frame) => {
         console.log("Conectado ao WebSocket!");
         
-        // 1. Inscrever-se para mensagens do chat
+        // CORREÇÃO: Força uma busca inicial de online assim que conecta
+        fetchOnlineStatus();
+
+        // Inscrever-se para mensagens do chat E EVENTOS DE SISTEMA
         stompClient.subscribe(`/topic/grupo/${projectId}`, (message) => {
             const newMessage = JSON.parse(message.body);
-            // Se não for atualização de status (chat normal)
-            if (!newMessage.tipo || newMessage.tipo !== 'status') {
-                handleNewMessage(newMessage);
+            
+            // LÓGICA PARA EVENTOS DE SISTEMA (Atualização em Tempo Real)
+            if (newMessage.tipo === 'projeto_atualizado') {
+                console.log("Recebido evento de atualização do projeto");
+                loadProjectData(); // Recarrega tudo (info + foto + status)
+                return;
+            }
+            
+            if (newMessage.tipo === 'membros_atualizados') {
+                console.log("Recebido evento de atualização de membros");
+                loadProjectMembers(); // Recarrega apenas a lista de membros e permissões
+                return;
+            }
+
+            if (newMessage.tipo === 'projeto_removido') {
+                alert("Este projeto foi excluído.");
+                window.location.href = 'projeto.html';
+                return;
+            }
+
+            // Se não for evento de sistema, é mensagem de chat normal
+            if (!newMessage.tipo || newMessage.tipo === 'status') {
+                // Verifica se não é uma mensagem duplicada (opcional, mas bom ter)
+                if (!projectMessages.some(msg => msg.id === newMessage.id)) {
+                    handleNewMessage(newMessage);
+                }
             }
         });
         
-        // 2. CRÍTICO: Inscrever-se para Status Online GLOBAL
+        // Inscrever-se para Status Online GLOBAL
         stompClient.subscribe("/topic/status", (message) => {
-            // O corpo da mensagem é um Array de emails strings ["a@a.com", "b@b.com"]
             const onlineEmails = JSON.parse(message.body);
-            
-            console.log("Lista de usuários online atualizada:", onlineEmails);
-            
-            // Atualiza a variável global
             window.latestOnlineEmails = onlineEmails;
-            
-            // Força a re-renderização da interface
             updateMembersCount();
             renderMembersList();
-            
-            // Se o modal de membros estiver aberto, atualiza ele também
-            const membersListModal = document.getElementById('members-list-modal');
-            if (membersListModal && membersListModal.innerHTML !== '') {
-                // Uma renderização forçada específica para o modal poderia ser feita aqui
-                // Mas renderMembersList já trata ambos se chamarem as funções certas
-                renderMembersList(); 
-            }
         });
         
         // Inscrever-se para erros
@@ -861,9 +1047,33 @@ function connectToWebSocket() {
         
     }, (error) => {
         console.error("Erro na conexão WebSocket:", error);
-        // Tenta reconectar após 5 segundos se cair
+        // Tenta reconectar em 5 segundos
         setTimeout(connectToWebSocket, 5000);
     });
+}
+
+// CORREÇÃO: Função para atualizar mensagem existente
+function updateExistingMessage(updatedMessage) {
+    const messageIndex = projectMessages.findIndex(m => m.id === updatedMessage.id);
+    if (messageIndex !== -1) {
+        projectMessages[messageIndex] = updatedMessage;
+        
+        const messageElement = document.getElementById(`message-${updatedMessage.id}`);
+        if (messageElement) {
+            const newMessageElement = createMessageElement(updatedMessage);
+            messageElement.replaceWith(newMessageElement);
+        }
+    }
+}
+
+// CORREÇÃO: Função para remover mensagem da UI
+function removeMessageFromUI(messageId) {
+    const messageElement = document.getElementById(`message-${messageId}`);
+    if (messageElement) {
+        messageElement.remove();
+    }
+    
+    projectMessages = projectMessages.filter(msg => msg.id !== messageId);
 }
 
 // Manipular nova mensagem recebida
@@ -873,7 +1083,9 @@ function handleNewMessage(message) {
     
     // Renderizar a nova mensagem
     const messageElement = createMessageElement(message);
-    document.getElementById('messages-container').appendChild(messageElement);
+    if (messageElement) {
+        document.getElementById('messages-container').appendChild(messageElement);
+    }
     
     // Rolar para a última mensagem
     scrollToBottom();
@@ -882,59 +1094,143 @@ function handleNewMessage(message) {
 // Rolar para o final das mensagens
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages-container');
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
 }
 
-// NOVO: Função para editar mensagem
-async function editMessage(messageId, currentContent) {
-    const newContent = prompt('Editar mensagem:', currentContent);
+// CORREÇÃO: Função melhorada para editar mensagem
+async function editMessage(messageId) {
+    const message = projectMessages.find(m => m.id === messageId);
+    if (!message) return;
     
-    if (newContent === null || newContent.trim() === currentContent.trim()) {
-        return; // Usuário cancelou ou conteúdo não mudou
-    }
-
-    try {
-        const response = await axios.put(`${backendUrl}/api/mensagens/grupo/${messageId}`, {
-            conteudo: newContent.trim()
-        });
-
-        if (response.status === 200) {
+    // Criar modal de edição
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    `;
+    
+    modalOverlay.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Editar Mensagem</h3>
+                <button class="close-modal" id="close-edit-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="edit-message-content">Mensagem:</label>
+                    <textarea id="edit-message-content" rows="6" style="width: 100%; resize: vertical; font-family: inherit;">${message.conteudo || ''}</textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-edit-message">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-edit-message">Salvar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modalOverlay);
+    
+    // Configurar eventos
+    const closeBtn = document.getElementById('close-edit-modal');
+    const cancelBtn = document.getElementById('cancel-edit-message');
+    const saveBtn = document.getElementById('save-edit-message');
+    const textarea = document.getElementById('edit-message-content');
+    
+    const closeModal = () => modalOverlay.remove();
+    
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    
+    saveBtn.addEventListener('click', async () => {
+        const newContent = textarea.value.trim();
+        
+        if (newContent === message.conteudo) {
+            closeModal();
+            return;
+        }
+        
+        if (!newContent) {
+            showNotification("A mensagem não pode estar vazia", "error");
+            return;
+        }
+        
+        try {
+            setButtonLoading(saveBtn, true);
+            
+            await axios.put(`${backendUrl}/api/mensagens/grupo/${messageId}`, {
+                conteudo: newContent
+            });
+            
             showNotification("Mensagem editada com sucesso", "success");
+            closeModal();
+            
             // Recarregar mensagens para refletir a edição
             await loadProjectMessages();
+            
+        } catch (error) {
+            console.error("Erro ao editar mensagem:", error);
+            showNotification("Erro ao editar mensagem", "error");
+        } finally {
+            setButtonLoading(saveBtn, false);
         }
-    } catch (error) {
-        console.error("Erro ao editar mensagem:", error);
-        showNotification("Erro ao editar mensagem", "error");
-    }
+    });
+    
+    // Fechar modal ao clicar fora
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+    
+    // Focar no textarea e selecionar todo o conteúdo
+    textarea.focus();
+    textarea.select();
 }
 
-// NOVO: Função para excluir mensagem
+// CORREÇÃO: Função melhorada para excluir mensagem
 async function deleteMessage(messageId) {
     if (!confirm("Tem certeza que deseja excluir esta mensagem?")) {
         return;
     }
-
+    
     try {
-        const response = await axios.delete(`${backendUrl}/api/mensagens/grupo/${messageId}`);
+        showLoading("Excluindo mensagem...");
         
-        if (response.status === 200) {
-            showNotification("Mensagem excluída com sucesso", "success");
-            // Remover a mensagem da interface
-            const messageElement = document.getElementById(`message-${messageId}`);
-            if (messageElement) {
-                messageElement.remove();
-            }
-            // Também remover da lista de mensagens
-            projectMessages = projectMessages.filter(msg => msg.id !== messageId);
+        await axios.delete(`${backendUrl}/api/mensagens/grupo/${messageId}`);
+        
+        showNotification("Mensagem excluída com sucesso", "success");
+        
+        // Remover a mensagem da interface
+        const messageElement = document.getElementById(`message-${messageId}`);
+        if (messageElement) {
+            messageElement.remove();
         }
+        
+        // Remover da lista de mensagens
+        projectMessages = projectMessages.filter(msg => msg.id !== messageId);
+        
     } catch (error) {
         console.error("Erro ao excluir mensagem:", error);
         showNotification("Erro ao excluir mensagem", "error");
+    } finally {
+        hideLoading();
     }
 }
 
-// CORREÇÃO: Enviar mensagem com suporte a arquivos
+// CORREÇÃO: Enviar mensagem com suporte a arquivos e loading
 async function sendMessage() {
     const messageInput = document.getElementById('message-input');
     const messageText = messageInput.value.trim();
@@ -944,14 +1240,16 @@ async function sendMessage() {
     if (messageText === '' && selectedFiles.length === 0) return;
     
     // Desabilitar botão durante o envio
-    sendBtn.disabled = true;
+    setButtonLoading(sendBtn, true);
 
     try {
         let fileUrls = [];
         
         // CORREÇÃO: Fazer upload dos arquivos se houver
         if (selectedFiles.length > 0) {
+            showLoading("Enviando arquivos...");
             fileUrls = await uploadFiles(selectedFiles);
+            hideLoading();
         }
 
         if (stompClient && stompClient.connected) {
@@ -959,7 +1257,7 @@ async function sendMessage() {
             const messageDTO = {
                 conteudo: messageText,
                 projetoId: parseInt(projectId),
-                anexos: fileUrls // Adicionar URLs dos arquivos
+                anexos: fileUrls
             };
             
             stompClient.send(`/app/grupo/${projectId}`, {}, JSON.stringify(messageDTO));
@@ -996,7 +1294,7 @@ async function sendMessage() {
         showNotification(errorMessage, "error");
     } finally {
         // Reabilitar botão
-        sendBtn.disabled = false;
+        setButtonLoading(sendBtn, false);
     }
 }
 
@@ -1206,6 +1504,8 @@ async function changeMemberRole(memberId) {
         const newRole = document.getElementById('role-select').value;
         
         try {
+            setButtonLoading(confirmBtn, true);
+            
             await axios.put(`${backendUrl}/projetos/${projectId}/membros/${memberId}/permissao`, null, {
                 params: {
                     role: newRole,
@@ -1226,6 +1526,8 @@ async function changeMemberRole(memberId) {
                 errorMessage = error.response.data;
             }
             showNotification(errorMessage, "error");
+        } finally {
+            setButtonLoading(confirmBtn, false);
         }
     });
     
@@ -1243,24 +1545,28 @@ function setupEventListeners() {
     const messageInput = document.getElementById('message-input');
     const sendBtn = document.getElementById('send-btn');
     
-    messageInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-    
-    sendBtn.addEventListener('click', sendMessage);
+    if (messageInput && sendBtn) {
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        sendBtn.addEventListener('click', sendMessage);
+    }
     
     // Anexar arquivo
     const attachFileBtn = document.getElementById('attach-file-btn');
     const fileInput = document.getElementById('file-input');
     
-    attachFileBtn.addEventListener('click', function() {
-        fileInput.click();
-    });
-    
-    fileInput.addEventListener('change', handleFileSelect);
+    if (attachFileBtn && fileInput) {
+        attachFileBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', handleFileSelect);
+    }
     
     // Modal de informações do projeto
     const projectInfoBtn = document.getElementById('project-info-btn');
@@ -1362,7 +1668,7 @@ function setupAddMemberButton() {
         addMemberBtn.className = 'add-member-btn';
         addMemberBtn.innerHTML = '<i class="fas fa-user-plus"></i>';
         addMemberBtn.setAttribute('data-tooltip', 'Adicionar membro');
-        addMemberBtn.style.display = 'none'; // Será mostrado apenas para admin/moderador
+        addMemberBtn.style.display = 'none';
         
         addMemberBtn.addEventListener('click', function() {
             openAddMemberModal();
@@ -1436,6 +1742,8 @@ function openAddMemberModal() {
 // CORREÇÃO: Buscar usuários para adicionar ao projeto
 async function searchUsers(searchTerm) {
     try {
+        showLoading("Buscando usuários...");
+        
         const response = await axios.get(`${backendUrl}/usuarios/buscar?nome=${encodeURIComponent(searchTerm)}`);
         const users = response.data;
         
@@ -1483,12 +1791,16 @@ async function searchUsers(searchTerm) {
     } catch (error) {
         console.error("Erro ao buscar usuários:", error);
         document.getElementById('users-search-results').innerHTML = '<p class="empty-state">Erro ao buscar usuários</p>';
+    } finally {
+        hideLoading();
     }
 }
 
 // CORREÇÃO: Convidar usuário para o projeto
 async function inviteUserToProject(userId) {
     try {
+        showLoading("Enviando convite...");
+        
         await axios.post(`${backendUrl}/projetos/${projectId}/convites`, null, {
             params: {
                 usuarioConvidadoId: userId,
@@ -1510,6 +1822,8 @@ async function inviteUserToProject(userId) {
         }
         
         showNotification(errorMessage, "error");
+    } finally {
+        hideLoading();
     }
 }
 
@@ -1569,6 +1883,8 @@ async function updateProjectSettings() {
     if (!currentProject) return;
     
     try {
+        showLoading("Atualizando projeto...");
+        
         const formData = new FormData();
         formData.append('titulo', document.getElementById('edit-project-name').value);
         formData.append('descricao', document.getElementById('edit-project-description').value);
@@ -1620,6 +1936,8 @@ async function updateProjectSettings() {
         }
         
         showNotification(errorMessage, "error");
+    } finally {
+        hideLoading();
     }
 }
 
@@ -1813,7 +2131,7 @@ function updateFilePreview() {
                 </button>
             `;
             
-            filePreview.querySelector('.removeFileBtn').addEventListener('click', function() {
+            filePreview.querySelector('.remove-file-btn').addEventListener('click', function() {
                 removeFileFromInput(index);
             });
         }
@@ -1829,6 +2147,8 @@ async function expelMember(memberId) {
     }
     
     try {
+        showLoading("Expulsando membro...");
+        
         await axios.delete(`${backendUrl}/projetos/${projectId}/membros/${memberId}`, {
             params: {
                 adminId: currentUser.id
@@ -1847,6 +2167,8 @@ async function expelMember(memberId) {
             errorMessage = error.response.data;
         }
         showNotification(errorMessage, "error");
+    } finally {
+        hideLoading();
     }
 }
 
@@ -1886,3 +2208,7 @@ window.openMediaModal = openMediaModal;
 window.editMessage = editMessage;
 window.deleteMessage = deleteMessage;
 window.isMemberOnline = isMemberOnline;
+window.showLoading = showLoading;
+window.hideLoading = hideLoading;
+window.setButtonLoading = setButtonLoading;
+window.expandMessage = expandMessage;

@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     messageInput: document.getElementById("chat-input"),
     chatForm: document.getElementById("chat-form"),
     chatSendBtn: document.getElementById("chat-send-btn"),
-    recordAudioBtn: document.getElementById("record-audio-btn"), // Botão de gravar
+    recordAudioBtn: document.getElementById("record-audio-btn"),
     conversationSearch: document.getElementById("convo-search"),
     addGroupBtn: document.querySelector(".add-convo-btn"),
     addConvoModal: document.getElementById("add-convo-modal"),
@@ -21,26 +21,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- VARIÁVEIS DE ESTADO DO CHAT ---
   let conversas = [];
-  let userFriends = []; // Será preenchido pela variável global
+  let userFriends = [];
   let activeConversation = { usuarioId: null, nome: null, avatar: null };
   let chatMessages = new Map();
+  let unreadMessagesCount = new Map(); // Mapeia userId -> contagem de não lidas
 
   // --- Variáveis de Estado de Gravação ---
   let mediaRecorder;
   let audioChunks = [];
   let isRecording = false;
-  let timerInterval; 
-  let startTime;   
+  let timerInterval;
+  let startTime;
 
-  // --- VARIÁVEIS GLOBAIS (Definidas pelo principal.js) ---
+  // --- VARIÁVEIS GLOBAIS ---
   let currentUser;
   let stompClient;
   let backendUrl;
   let defaultAvatarUrl;
 
   /**
-   * Esta é a função principal. Ela espera o 'principal.js' carregar
-   * o usuário e o WebSocket antes de executar qualquer lógica de chat.
+   * Função principal que inicializa a página de chat
    */
   function initChatPage(detail) {
     currentUser = detail.currentUser;
@@ -49,30 +49,55 @@ document.addEventListener("DOMContentLoaded", () => {
     backendUrl = window.backendUrl;
     defaultAvatarUrl = window.defaultAvatarUrl;
 
+    // Inscreve para receber mensagens privadas
     stompClient.subscribe(`/user/queue/usuario`, onMessageReceived);
+    
+    // Inscreve para receber atualizações de contagem de não lidas (WebSocket)
+    stompClient.subscribe(`/user/queue/contagem`, (message) => {
+      const count = JSON.parse(message.body);
+      updateTotalUnreadCount(count);
+    });
+
     fetchConversations();
     setupChatEventListeners();
   }
 
-document.addEventListener("globalScriptsLoaded", (e) => {
-  initChatPage(e.detail);
-  document.addEventListener("friendsListUpdated", () => {
-    userFriends = window.userFriends;
-    if (elements.addConvoModal.style.display === "flex") {
-      renderAvailableUsers();
-    }
+  document.addEventListener("globalScriptsLoaded", (e) => {
+    initChatPage(e.detail);
+    document.addEventListener("friendsListUpdated", () => {
+      userFriends = window.userFriends;
+      if (elements.addConvoModal.style.display === "flex") {
+        renderAvailableUsers();
+      }
+    });
   });
-});
 
   /**
-   * Busca apenas as conversas existentes.
+   * Atualiza contagem total de mensagens não lidas (para o badge global)
+   */
+  function updateTotalUnreadCount(count) {
+    // Atualiza o badge global de mensagens (se existir na página)
+    const messageBadgeElement = document.getElementById("message-badge");
+    if (messageBadgeElement) {
+      messageBadgeElement.textContent = count;
+      messageBadgeElement.style.display = count > 0 ? "flex" : "none";
+    }
+  }
+
+  /**
+   * Busca as conversas existentes
    */
   async function fetchConversations() {
     try {
+      // Mostra loading
+      showConversationsLoading();
+      
       // Busca conversas existentes
       const convosResponse = await axios.get(
         `${backendUrl}/api/chat/privado/minhas-conversas`
       );
+      
+      // Processa conversas - a contagem de não lidas virá via WebSocket
       conversas = convosResponse.data.map((c) => ({
         ...c,
         avatarUrl:
@@ -82,12 +107,39 @@ document.addEventListener("globalScriptsLoaded", (e) => {
             : `${window.backendUrl}${
                 c.fotoPerfilOutroUsuario || "/images/default-avatar.jpg"
               }`,
+        unreadCount: unreadMessagesCount.get(c.outroUsuarioId) || 0
       }));
+
+      // Ordena conversas: não lidas primeiro, depois pela data
+      conversas.sort((a, b) => {
+        if (a.unreadCount > 0 && b.unreadCount === 0) return -1;
+        if (a.unreadCount === 0 && b.unreadCount > 0) return 1;
+        return new Date(b.dataEnvioUltimaMensagem) - new Date(a.dataEnvioUltimaMensagem);
+      });
 
       renderConversationsList();
     } catch (error) {
       console.error("Erro ao carregar conversas:", error);
+      elements.conversationsList.innerHTML = `
+        <div class="error-state">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Erro ao carregar conversas</p>
+          <button class="retry-btn" data-action="retry-conversations">Tentar novamente</button>
+        </div>
+      `;
     }
+  }
+
+  /**
+   * Mostra estado de carregamento nas conversas
+   */
+  function showConversationsLoading() {
+    elements.conversationsList.innerHTML = `
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Carregando conversas...</p>
+      </div>
+    `;
   }
 
   /**
@@ -99,26 +151,44 @@ document.addEventListener("globalScriptsLoaded", (e) => {
   }
 
   /**
-   * Seleciona uma conversa e carrega o histórico.
+   * Cria elemento de card de conversa
    */
   function createConversationCardElement(convoData) {
     const convoCard = document.createElement("div");
     convoCard.className = `convo-card ${
       convoData.outroUsuarioId == activeConversation.usuarioId ? "selected" : ""
-    }`;
+    } ${convoData.unreadCount > 0 ? "unread" : ""}`;
     convoCard.dataset.userId = convoData.outroUsuarioId;
     convoCard.dataset.userName = convoData.nomeOutroUsuario;
 
-    const ultimoAutor =
-      convoData.remetenteUltimaMensagemId === currentUser.id
+    // Formata última mensagem
+    let ultimoAutor = "";
+    let ultimaMsg = "";
+    
+    if (convoData.conteudoUltimaMensagem) {
+      ultimoAutor = convoData.remetenteUltimaMensagemId === currentUser.id
         ? "<strong>Você:</strong> "
         : "";
-    const ultimaMsg =
-      convoData.conteudoUltimaMensagem || "Inicie a conversa..."; // Mensagem padrão para novas
+      
+      // Verifica se é áudio
+      if (isAudioUrl(convoData.conteudoUltimaMensagem)) {
+        ultimaMsg = '<i class="fas fa-microphone audio-icon"></i> Mensagem de áudio';
+      } else {
+        ultimaMsg = convoData.conteudoUltimaMensagem;
+      }
+    } else {
+      ultimaMsg = "Inicie a conversa...";
+    }
+
+    // Badge de mensagens não lidas
+    const unreadBadge = convoData.unreadCount > 0 
+      ? `<div class="unread-badge">${convoData.unreadCount}</div>`
+      : '';
 
     convoCard.innerHTML = `
             <div class="convo-avatar-wrapper">
                 <img src="${convoData.avatarUrl}" class="avatar" alt="${convoData.nomeOutroUsuario}">
+                ${unreadBadge}
             </div>
             <div class="group-info">
                 <div class="group-title">${convoData.nomeOutroUsuario}</div>
@@ -134,14 +204,14 @@ document.addEventListener("globalScriptsLoaded", (e) => {
   }
 
   /**
-   * Seleciona uma conversa (existente ou nova) e carrega o histórico.
+   * Seleciona uma conversa e carrega o histórico
    */
   async function selectConversation(otherUserId) {
     if (!otherUserId) return;
     otherUserId = parseInt(otherUserId, 10);
 
     let convoData = conversas.find((c) => c.outroUsuarioId === otherUserId);
-    let isNewConversation = false; // Flag para rastrear se é nova
+    let isNewConversation = false;
 
     if (!convoData) {
       const friendData = userFriends.find((f) => f.idUsuario === otherUserId);
@@ -152,14 +222,8 @@ document.addEventListener("globalScriptsLoaded", (e) => {
               friendData.fotoPerfil || "/images/default-avatar.jpg"
             }`;
       if (!friendData) {
-        console.error(
-          "Amigo não encontrado para iniciar conversa:",
-          otherUserId
-        );
-        window.showNotification(
-          "Não foi possível encontrar os dados deste contato.",
-          "error"
-        );
+        console.error("Amigo não encontrado para iniciar conversa:", otherUserId);
+        window.showNotification("Não foi possível encontrar os dados deste contato.", "error");
         return; 
       }
 
@@ -167,16 +231,17 @@ document.addEventListener("globalScriptsLoaded", (e) => {
         outroUsuarioId: friendData.idUsuario,
         nomeOutroUsuario: friendData.nome,
         avatarUrl: friendAvatar,
-        conteudoUltimaMensagem: null, 
-        dataEnvioUltimaMensagem: new Date().toISOString(), 
+        conteudoUltimaMensagem: null,
+        dataEnvioUltimaMensagem: new Date().toISOString(),
         remetenteUltimaMensagemId: null,
+        unreadCount: 0
       };
       isNewConversation = true;
     }
 
     activeConversation = {
       usuarioId: otherUserId,
-      nome: convoData.nomeOutroUsuario || convoData.nome, 
+      nome: convoData.nomeOutroUsuario || convoData.nome,
       avatar: convoData.avatarUrl || defaultAvatarUrl,
     };
 
@@ -186,7 +251,7 @@ document.addEventListener("globalScriptsLoaded", (e) => {
       );
       if (!existingCard) {
         const tempCard = createConversationCardElement(convoData);
-        elements.conversationsList.prepend(tempCard); // Adiciona no topo
+        elements.conversationsList.prepend(tempCard);
       }
       if (!conversas.some((c) => c.outroUsuarioId === otherUserId)) {
         conversas.unshift(convoData);
@@ -203,41 +268,92 @@ document.addEventListener("globalScriptsLoaded", (e) => {
     if (selectedCard) {
       selectedCard.classList.add("selected");
     } else {
-      console.warn(
-        "Card da conversa não encontrado para destacar:",
-        otherUserId
-      );
+      console.warn("Card da conversa não encontrado para destacar:", otherUserId);
     }
+
+    // Marca como lida
     try {
       await axios.post(
         `${backendUrl}/api/chat/privado/marcar-lida/${otherUserId}`
       );
 
-      if (typeof fetchAndUpdateUnreadCount === "function") {
-        fetchAndUpdateUnreadCount();
+      // Atualiza contagem local
+      unreadMessagesCount.set(otherUserId, 0);
+      updateConversationUnreadCount(otherUserId, 0);
+
+      // Atualiza contagem global via WebSocket
+      if (stompClient && stompClient.connected) {
+        // Pode enviar uma mensagem para atualizar a contagem ou confiar no backend
       }
     } catch (error) {
       console.error("Erro ao marcar conversa como lida:", error);
     }
 
-    elements.chatMessagesContainer.innerHTML =
-      '<div class="empty-chat">Carregando histórico...</div>';
-
-    await fetchMessages(otherUserId); //
-
-    if (typeof fetchAndUpdateUnreadCount === "function") {
-      fetchAndUpdateUnreadCount();
-    }
+    // Mostra loading e carrega mensagens
+    showMessagesLoading();
+    await fetchMessages(otherUserId);
 
     elements.messageInput.disabled = false;
     elements.chatSendBtn.disabled = false;
-    elements.recordAudioBtn.disabled = false; // Habilita o botão de gravar
-    elements.messageInput.placeholder = `Escreva para ${activeConversation.nome}...`; // Placeholder dinâmico
+    elements.recordAudioBtn.disabled = false;
+    elements.messageInput.placeholder = `Escreva para ${activeConversation.nome}...`;
     elements.messageInput.focus();
   }
 
   /**
-   * Busca o histórico de mensagens.
+   * Atualiza contagem de não lidas em uma conversa
+   */
+  function updateConversationUnreadCount(userId, count) {
+    const convoIndex = conversas.findIndex(c => c.outroUsuarioId === userId);
+    if (convoIndex !== -1) {
+      conversas[convoIndex].unreadCount = count;
+      
+      // Atualiza badge no DOM
+      const convoCard = document.querySelector(`.convo-card[data-user-id="${userId}"]`);
+      if (convoCard) {
+        const badge = convoCard.querySelector('.unread-badge');
+        if (count > 0) {
+          if (!badge) {
+            const newBadge = document.createElement('div');
+            newBadge.className = 'unread-badge';
+            newBadge.textContent = count;
+            convoCard.querySelector('.convo-avatar-wrapper').appendChild(newBadge);
+          } else {
+            badge.textContent = count;
+          }
+          convoCard.classList.add('unread');
+        } else {
+          if (badge) badge.remove();
+          convoCard.classList.remove('unread');
+        }
+      }
+      
+      // Reordena conversas se necessário
+      if (count === 0 || count > 0) {
+        conversas.sort((a, b) => {
+          if (a.unreadCount > 0 && b.unreadCount === 0) return -1;
+          if (a.unreadCount === 0 && b.unreadCount > 0) return 1;
+          return new Date(b.dataEnvioUltimaMensagem) - new Date(a.dataEnvioUltimaMensagem);
+        });
+        renderConversationsList();
+      }
+    }
+  }
+
+  /**
+   * Mostra estado de carregamento nas mensagens
+   */
+  function showMessagesLoading() {
+    elements.chatMessagesContainer.innerHTML = `
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Carregando mensagens...</p>
+      </div>
+    `;
+  }
+
+  /**
+   * Busca o histórico de mensagens
    */
   async function fetchMessages(otherUserId) {
     const cacheKey = getCacheKey(otherUserId);
@@ -258,13 +374,19 @@ document.addEventListener("globalScriptsLoaded", (e) => {
       renderMessages(messages);
     } catch (error) {
       console.error("Erro ao carregar mensagens:", error);
-      elements.chatMessagesContainer.innerHTML = `<div class="empty-chat">Erro ao carregar histórico.</div>`;
+      elements.chatMessagesContainer.innerHTML = `
+        <div class="error-state">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Erro ao carregar mensagens</p>
+          <button class="retry-btn" data-action="retry-messages">Tentar novamente</button>
+        </div>
+      `;
       chatMessages.set(cacheKey, []);
     }
   }
 
   /**
-   * Envia uma mensagem DE TEXTO.
+   * Envia uma mensagem DE TEXTO
    */
   function handleSendMessage(e) {
     e.preventDefault();
@@ -277,7 +399,7 @@ document.addEventListener("globalScriptsLoaded", (e) => {
       destinatarioId: activeConversation.usuarioId,
     };
 
-    sendPrivateMessage(messageData); // Usa a função centralizada
+    sendPrivateMessage(messageData);
     
     elements.messageInput.value = "";
     elements.messageInput.focus();
@@ -302,7 +424,7 @@ document.addEventListener("globalScriptsLoaded", (e) => {
   // --- FUNÇÕES DE EDITAR/EXCLUIR ---
 
   /**
-   * Dispara a edição de uma mensagem.
+   * Dispara a edição de uma mensagem
    */
   async function handleEditMessage(messageId) {
     const msgElement = document.querySelector(
@@ -350,7 +472,7 @@ document.addEventListener("globalScriptsLoaded", (e) => {
   }
 
   /**
-   * Dispara a exclusão de uma mensagem.
+   * Dispara a exclusão de uma mensagem
    */
   async function handleDeleteMessage(messageId) {
     if (!confirm("Tem certeza de que deseja excluir esta mensagem?")) {
@@ -367,7 +489,7 @@ document.addEventListener("globalScriptsLoaded", (e) => {
   // --- FIM DAS FUNÇÕES DE EDITAR/EXCLUIR ---
 
   /**
-   * Recebe uma mensagem (do WebSocket).
+   * Recebe uma mensagem (do WebSocket)
    */
   function onMessageReceived(payload) {
     const msg = JSON.parse(payload.body);
@@ -409,6 +531,13 @@ document.addEventListener("globalScriptsLoaded", (e) => {
       messageList.push(msg);
     }
 
+    // Atualiza contagem de não lidas se a mensagem é para o usuário atual
+    if (msg.destinatarioId === currentUser.id && !msg.lida) {
+      const currentCount = unreadMessagesCount.get(otherUserId) || 0;
+      unreadMessagesCount.set(otherUserId, currentCount + 1);
+      updateConversationUnreadCount(otherUserId, currentCount + 1);
+    }
+
     let convoIndex = conversas.findIndex(
       (c) => c.outroUsuarioId === otherUserId
     );
@@ -430,6 +559,7 @@ document.addEventListener("globalScriptsLoaded", (e) => {
         dataEnvioUltimaMensagem: msg.dataEnvio,
         remetenteUltimaMensagemId: msg.remetenteId,
         avatarUrl: defaultAvatarUrl,
+        unreadCount: msg.destinatarioId === currentUser.id ? 1 : 0
       };
 
       const friendData = userFriends.find((f) => f.usuarioId === otherUserId);
@@ -454,13 +584,23 @@ document.addEventListener("globalScriptsLoaded", (e) => {
    */
   function isAudioUrl(url) {
       if (typeof url !== 'string') return false;
-      // Checa se é uma URL (simplificado) e se termina com extensão de áudio
       return (url.startsWith('http://') || url.startsWith('https://')) &&
              /\.(mp3|wav|ogg|aac|flac|m4a|webm|opus)$/i.test(url);
   }
 
   function renderMessages(messages) {
     if (!elements.chatMessagesContainer) return;
+
+    if (messages.length === 0) {
+      elements.chatMessagesContainer.innerHTML = `
+        <div class="empty-chat">
+          <i class="fas fa-comments"></i>
+          <p>Nenhuma mensagem ainda</p>
+          <p class="empty-chat-subtitle">Envie uma mensagem para iniciar a conversa</p>
+        </div>
+      `;
+      return;
+    }
 
     elements.chatMessagesContainer.innerHTML = messages
       .map((msg) => {
@@ -502,7 +642,12 @@ document.addEventListener("globalScriptsLoaded", (e) => {
         let messageContentHtml = '';
         if (isAudioUrl(msg.conteudo)) {
             // É uma URL de áudio
-            messageContentHtml = `<audio controls src="${msg.conteudo}"></audio>`;
+            messageContentHtml = `
+              <div class="audio-message">
+                <audio controls src="${msg.conteudo}"></audio>
+                <span class="audio-duration">${msg.duracao || ''}</span>
+              </div>
+            `;
         } else {
             // É texto, vamos escapar para evitar XSS
             const textNode = document.createTextNode(msg.conteudo);
@@ -512,9 +657,7 @@ document.addEventListener("globalScriptsLoaded", (e) => {
         }
 
         return `
-                <div class="message-group ${messageClass}" data-message-id="${
-          msg.id
-        }">
+                <div class="message-group ${messageClass}" data-message-id="${msg.id}">
                     ${
                       !isMyMessage
                         ? `<div class="message-avatar"><img src="${avatarUrl}" alt="${nome}"></div>`
@@ -522,7 +665,8 @@ document.addEventListener("globalScriptsLoaded", (e) => {
                     }
                     
                     <div class="message-content-wrapper">
-                        ${messageActions} <div class="message-block">
+                        ${messageActions} 
+                        <div class="message-block">
                             <div class="message-author-header">
                                 <strong>${nome}</strong>
                                 <span>${time}</span>
@@ -530,7 +674,7 @@ document.addEventListener("globalScriptsLoaded", (e) => {
                             <div class="message-content">${messageContentHtml}</div>
                         </div>
                     </div>
-                    </div>
+                </div>
             `;
       })
       .join("");
@@ -542,9 +686,15 @@ document.addEventListener("globalScriptsLoaded", (e) => {
   function renderConversationsList() {
     if (!elements.conversationsList) return;
     elements.conversationsList.innerHTML = "";
+    
     if (conversas.length === 0) {
-      elements.conversationsList.innerHTML =
-        '<p class="empty-state" style="padding: 1rem; text-align: center; color: var(--text-secondary);">Nenhuma conversa.</p>';
+      elements.conversationsList.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-comments"></i>
+          <p>Nenhuma conversa</p>
+          <p class="empty-state-subtitle">Inicie uma conversa clicando no botão +</p>
+        </div>
+      `;
       return;
     }
 
@@ -605,7 +755,6 @@ document.addEventListener("globalScriptsLoaded", (e) => {
       if (timerElement) {
           timerElement.textContent = `${minutes}:${seconds}`;
       } else {
-          // Se o elemento não existir, cria e insere
           elements.recordAudioBtn.innerHTML = `
               <i class="fas fa-stop"></i>
               <span class="audio-timer">00:00</span>
@@ -646,7 +795,7 @@ document.addEventListener("globalScriptsLoaded", (e) => {
   }
 
   /**
-   * Para a gravação, processa o blob, e faz o upload.
+   * Para a gravação, processa o blob, e faz o upload
    */
   async function stopAndUploadAudio() {
       isRecording = false;
@@ -702,7 +851,6 @@ document.addEventListener("globalScriptsLoaded", (e) => {
       }
   }
 
-
   // --- SETUP DE EVENT LISTENERS (Específicos do Chat) ---
   function setupChatEventListeners() {
     if (elements.chatForm) {
@@ -718,7 +866,7 @@ document.addEventListener("globalScriptsLoaded", (e) => {
             }
 
             if (isRecording) {
-                mediaRecorder.stop(); // Isso vai triggar o 'onstop' (stopAndUploadAudio)
+                mediaRecorder.stop();
             } else {
                 startRecording();
             }
@@ -783,5 +931,18 @@ document.addEventListener("globalScriptsLoaded", (e) => {
         }
       });
     }
+
+    // Event delegation para botões de retry
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('retry-btn')) {
+        const action = e.target.dataset.action;
+        
+        if (action === 'retry-conversations') {
+          fetchConversations();
+        } else if (action === 'retry-messages' && activeConversation.usuarioId) {
+          fetchMessages(activeConversation.usuarioId);
+        }
+      }
+    });
   }
 });

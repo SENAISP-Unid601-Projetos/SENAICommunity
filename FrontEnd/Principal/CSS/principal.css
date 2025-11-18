@@ -2547,3 +2547,103 @@ a.user-card-link:hover h4 {
     border: 1px solid rgba(255,255,255,0.1);
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
+
+/* =================================================================
+   ESTILOS DE ESQUELETO DE CARREGAMENTO
+   ================================================================= */
+
+.post-skeleton {
+  background-color: var(--bg-secondary);
+  border-radius: var(--card-radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  animation: pulse 1.5s infinite;
+}
+
+.skeleton-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: var(--bg-tertiary);
+}
+
+.skeleton-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+}
+
+.skeleton-line.short {
+  width: 30%;
+}
+
+.skeleton-line.medium {
+  width: 60%;
+}
+
+.skeleton-line.long {
+  width: 90%;
+}
+
+.friend-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  animation: pulse 1.5s infinite;
+}
+
+.friend-skeleton .skeleton-avatar {
+  width: 32px;
+  height: 32px;
+}
+
+.friend-skeleton .skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+  flex: 1;
+}
+
+.notification-skeleton {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  animation: pulse 1.5s infinite;
+}
+
+.notification-skeleton .skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--bg-tertiary);
+}
+
+.notification-skeleton .skeleton-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}

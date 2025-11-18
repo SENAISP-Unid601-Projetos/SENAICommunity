@@ -1,7 +1,7 @@
 /* LAYOUT GERAL COM A NAV-RAIL */
 .main-wrapper {
   display: flex;
-  height: calc(100vh - 70px); /* Altura da viewport menos o topbar */
+  height: calc(100vh - 70px);
 }
 
 /* BARRA DE NAVEGAÇÃO PRINCIPAL (RAIL) */
@@ -139,12 +139,17 @@
  cursor: pointer;
  transition: background .17s;
  border: 1.5px solid transparent;
+ position: relative;
 }
 .convo-card.selected, .convo-card:hover {
  background: var(--bg-tertiary);
 }
 .convo-card.selected {
     border-color: var(--accent-primary);
+}
+.convo-card.unread {
+    background: rgba(var(--accent-primary-rgb), 0.08);
+    border-left: 3px solid var(--accent-primary);
 }
 
 .convo-avatar-wrapper {
@@ -157,15 +162,24 @@
  border-radius: 12px;
  object-fit: cover;
 }
-.status-dot {
+
+/* Badge de mensagens não lidas */
+.unread-badge {
     position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 15px;
-    height: 15px;
-    background-color: var(--online);
-    border-radius: 50%;
-    border: 3px solid var(--bg-secondary);
+    top: -5px;
+    right: -5px;
+    background: var(--accent-primary);
+    color: white;
+    border-radius: 10px;
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid var(--bg-secondary);
 }
 
 .group-info {
@@ -178,8 +192,15 @@
 .group-last-msg {
  font-size: 0.9rem; color: var(--text-secondary);
  margin-top: 2px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 220px;
+ display: flex;
+ align-items: center;
+ gap: 4px;
 }
 .group-last-msg strong { color: var(--text-primary); }
+.audio-icon {
+    color: var(--accent-primary);
+    font-size: 0.8rem;
+}
 
 .chat-main {
  flex: 1; display: flex; min-width: 0;
@@ -216,7 +237,24 @@
  display: flex; flex-direction: column;
 }
 .empty-chat {
- margin: auto; color: var(--text-secondary); font-size: 1.1rem; text-align: center;
+ margin: auto; 
+ color: var(--text-secondary); 
+ font-size: 1.1rem; 
+ text-align: center;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ gap: 0.5rem;
+ padding: 2rem;
+}
+.empty-chat i {
+    font-size: 3rem;
+    color: var(--text-tertiary);
+    margin-bottom: 1rem;
+}
+.empty-chat-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
 }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0);} }
@@ -285,6 +323,24 @@
 .message-group.outro .message-block .message-content:last-child { border-bottom-left-radius: 4px; }
 .message-group.me .message-block .message-content:first-child { border-top-right-radius: 4px; }
 .message-group.me .message-block .message-content:last-child { border-bottom-right-radius: 4px; }
+
+/* Estilo para mensagens de áudio */
+.audio-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.audio-message audio {
+    max-width: 250px;
+    height: 36px;
+}
+.audio-duration {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+.message-group.me .audio-duration {
+    color: rgba(255, 255, 255, 0.8);
+}
 
 .chat-input-area {
  display: flex; align-items: center; gap: 0.8rem; background: var(--bg-secondary);
@@ -454,38 +510,130 @@
 }
 
 :root, [data-theme="dark"] {
-    --danger-color: #ff4545; /* Vermelho para gravação */
+    --danger-color: #ff4545;
     --danger-color-rgb: 255, 69, 69;
+    --accent-primary-rgb: 88, 166, 255;
 }
 .btn-delete-msg:hover {
     color: var(--danger-color);
 }
 
-/* Animação de Pulsar */
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0px rgba(var(--danger-color-rgb), 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(var(--danger-color-rgb), 0); }
-    100% { box-shadow: 0 0 0 0px rgba(var(--danger-color-rgb), 0); }
+/* Estados de loading e erro */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    gap: 1rem;
 }
 
-/* Estilo do botão de gravação quando ativo */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top: 3px solid var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    gap: 1rem;
+    text-align: center;
+}
+
+.error-state i {
+    font-size: 2rem;
+    color: var(--danger-color);
+}
+
+.retry-btn {
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.retry-btn:hover {
+    background: var(--accent-secondary);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    text-align: center;
+    gap: 0.5rem;
+}
+
+.empty-state i {
+    font-size: 2.5rem;
+    color: var(--text-tertiary);
+    margin-bottom: 1rem;
+}
+
+.empty-state-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+}
+
+/* Melhorias no gravador de áudio */
 .chat-input-area #record-audio-btn {
-    position: relative; 
+    position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
     flex-shrink: 0;
+    background: var(--bg-tertiary);
+    border: none;
+    color: var(--text-primary);
+    border-radius: 8px;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-input-area #record-audio-btn:hover:not(:disabled) {
+    background: var(--bg-quaternary);
+}
+
+.chat-input-area #record-audio-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Estado de Gravação: Pulsar, cor vermelha e formato */
 .chat-input-area #record-audio-btn.recording {
     background-color: var(--danger-color);
-    width: 85px; 
-    border-radius: 8px; 
+    width: 100px;
+    border-radius: 8px;
     animation: pulse 1.5s infinite;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 4px; 
+    gap: 6px;
+    color: white;
 }
 
 .chat-input-area #record-audio-btn .fa-microphone,
@@ -497,17 +645,35 @@
 .chat-input-area #record-audio-btn.recording .fa-microphone {
     display: none;
 }
+
 .chat-input-area #record-audio-btn .fa-stop,
 .chat-input-area #record-audio-btn .audio-timer {
     display: none;
-    color: white; 
+    color: white;
 }
 
 .chat-input-area #record-audio-btn.recording .fa-stop,
 .chat-input-area #record-audio-btn.recording .audio-timer {
     display: block;
 }
+
 .chat-input-area #record-audio-btn .audio-timer {
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+}
+
+/* Animação de Pulsar melhorada */
+@keyframes pulse {
+    0% { 
+        box-shadow: 0 0 0 0 rgba(var(--danger-color-rgb), 0.7);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 0 0 10px rgba(var(--danger-color-rgb), 0);
+        transform: scale(1.05);
+    }
+    100% { 
+        box-shadow: 0 0 0 0 rgba(var(--danger-color-rgb), 0);
+        transform: scale(1);
+    }
 }

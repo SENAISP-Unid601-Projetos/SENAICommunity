@@ -341,3 +341,128 @@
 .btn-ver-detalhes:hover {
     background-color: var(--bg-quaternary);
 }
+
+.info-text-small {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.8rem;
+    opacity: 0.8;
+}
+
+/* ESTILOS PARA PREVIEW DE PROJETO */
+.project-preview {
+    padding: 0;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+}
+
+.preview-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.preview-section {
+    margin-bottom: 1.5rem;
+}
+
+.preview-section h4 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.25rem;
+}
+
+.preview-info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item strong {
+    color: var(--text-secondary);
+}
+
+.preview-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.preview-members {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.no-tech,
+.no-members {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Botões melhorados */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-secondary);
+}
+
+.btn-secondary {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-quaternary);
+}
+
+.btn-disabled {
+    background-color: var(--bg-quaternary);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem 0 0;
+    border-top: 1px solid var(--border-color);
+    margin-top: 1.5rem;
+}

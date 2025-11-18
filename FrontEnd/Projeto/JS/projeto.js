@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
         searchInput: document.getElementById("project-search-input"),
         categoryFilter: document.getElementById("filter-category"),
         tabButtons: document.querySelectorAll(".tab-btn"),
-        
+
         modalOverlay: document.getElementById("novo-projeto-modal"),
         openModalBtn: document.getElementById("btn-new-project"),
         closeModalBtn: document.querySelector(".modal-content .close-modal-btn"),
@@ -27,10 +27,10 @@ document.addEventListener("DOMContentLoaded", () => {
         projCategoriaInput: document.getElementById("proj-categoria"),
         projTecnologiasInput: document.getElementById("proj-tecnologias"),
         projPrivacidadeInput: document.getElementById("proj-privacidade"),
-        
+
         modalUserAvatar: document.getElementById("modal-user-avatar"),
         modalUserName: document.getElementById("modal-user-name"),
-        
+
         connectionsCount: document.getElementById("connections-count"),
         projectsCount: document.getElementById("projects-count"),
         onlineFriendsList: document.getElementById("online-friends-list"),
@@ -48,19 +48,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         this.renderOnlineFriends();
-        
+
         await this.fetchMeusProjetos();
         await this.fetchProjetosPublicos();
-        
+
         this.setupEventListeners();
         this.setupTabs();
-        
+
         document.addEventListener("friendsListUpdated", () => {
           if (this.elements.connectionsCount) {
             this.elements.connectionsCount.textContent =
               window.userFriends?.length || "0";
           }
-          this.renderOnlineFriends();        
+          this.renderOnlineFriends();
         });
       },
 
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
             this.elements.tabButtons.forEach(b => b.classList.remove('active'));
             // Add active class to clicked button
             btn.classList.add('active');
-            
+
             this.state.currentTab = btn.dataset.tab;
             this.switchTab(this.state.currentTab);
           });
@@ -121,46 +121,53 @@ document.addEventListener("DOMContentLoaded", () => {
       renderPublicProjects() {
         const grid = this.elements.publicGrid;
         if (!grid) return;
-        
+
         grid.innerHTML = "";
-        
+
         if (this.state.publicProjects.length === 0) {
           grid.innerHTML = `<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Nenhum projeto público disponível no momento.</p>`;
           return;
         }
-        
+
         this.state.publicProjects.forEach((proj) => {
           const card = document.createElement("div");
           card.className = "projeto-card";
-          
+
           const imageUrl = this.getProjectImageUrl(proj.imagemUrl);
-          
+
           const membrosHtml = (proj.membros || [])
-            .slice(0, 5) // Mostrar apenas os primeiros 5 membros
+            .slice(0, 5)
             .map((membro) => {
               const avatarUrl = this.getMemberAvatarUrl(membro);
               return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
             })
             .join("");
-          
+
           const remainingMembers = (proj.membros || []).length - 5;
-          const moreMembersHtml = remainingMembers > 0 
+          const moreMembersHtml = remainingMembers > 0
             ? `<div class="membro-avatar more-members">+${remainingMembers}</div>`
             : '';
-          
+
           const tagsHtml = (proj.tecnologias || [])
-            .slice(0, 3) // Mostrar apenas as primeiras 3 tecnologias
+            .slice(0, 3)
             .map(tag => `<span class="tech-tag">${tag}</span>`)
             .join("");
-          
-          const moreTags = (proj.tecnologias || []).length > 3 
+
+          const moreTags = (proj.tecnologias || []).length > 3
             ? `<span class="tech-tag more-tags">+${(proj.tecnologias || []).length - 3}</span>`
             : '';
-          
+
           // Verificar se o usuário atual já é membro
           const isMember = proj.membros && proj.membros.some(membro => membro.usuarioId === currentUser.id);
           const isAuthor = proj.autorId === currentUser.id;
-          
+
+          let detailsButton = '';
+          if (isMember || isAuthor) {
+            detailsButton = `<a href="projeto-detalhe.html?id=${proj.id}" class="btn-ver-detalhes">Acessar Área do Projeto</a>`;
+          } else {
+            detailsButton = `<button class="btn-ver-detalhes" onclick="ProjetosPage.showProjectPreview(${JSON.stringify(proj).replace(/"/g, '&quot;')})">Ver Detalhes</button>`;
+          }
+
           card.innerHTML = `
             <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
             <div class="projeto-conteudo">
@@ -183,13 +190,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${tagsHtml}${moreTags}
                   </div>
                   <div class="projeto-actions">
-                    ${isAuthor 
-                      ? '<button class="btn-entrar disabled" disabled>Criador</button>' 
-                      : isMember 
-                        ? '<button class="btn-entrar disabled" disabled>Já é membro</button>' 
+                    ${isAuthor
+                      ? '<button class="btn-entrar disabled" disabled>Criador</button>'
+                      : isMember
+                        ? '<button class="btn-entrar disabled" disabled>Já é membro</button>'
                         : `<button class="btn-entrar" onclick="ProjetosPage.entrarNoProjeto(${proj.id})">Entrar no Projeto</button>`
                     }
-                    <a href="projeto-detalhe.html?id=${proj.id}" class="btn-ver-detalhes">Ver Detalhes</a>
+                    ${detailsButton}
                   </div>
               </div>
             </div>`;
@@ -201,35 +208,35 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!imagemUrl) {
           return "https://placehold.co/600x400/161b22/ffffff?text=Projeto";
         }
-        
+
         if (imagemUrl.startsWith("http")) {
           return imagemUrl;
         }
-        
+
         if (imagemUrl.startsWith("/")) {
           return `${window.backendUrl}${imagemUrl}`;
         }
-        
+
         return `${window.backendUrl}/api/arquivos/${imagemUrl}`;
       },
 
       getMemberAvatarUrl(member) {
         if (!member) return window.defaultAvatarUrl;
-        
+
         const fotoUrl = member.usuarioFotoPerfil || member.fotoPerfil;
-        
+
         if (!fotoUrl) {
           return window.defaultAvatarUrl;
         }
-        
+
         if (fotoUrl.startsWith('http')) {
           return fotoUrl;
         }
-        
+
         if (fotoUrl.startsWith('/')) {
           return `${window.backendUrl}${fotoUrl}`;
         }
-        
+
         return `${window.backendUrl}/api/arquivos/${fotoUrl}`;
       },
 
@@ -240,41 +247,148 @@ document.addEventListener("DOMContentLoaded", () => {
               usuarioId: currentUser.id
             }
           });
-          
+
           window.showNotification("Você entrou no projeto com sucesso!", "success");
-          
-          // Recarregar a lista de projetos públicos
+
+          // Recarregar ambas as listas
           await this.fetchProjetosPublicos();
-          this.renderPublicProjects();
-          
-          // Também recarregar meus projetos para refletir a nova adesão
           await this.fetchMeusProjetos();
-          
+
+          // Se estiver na aba de projetos públicos, renderizar novamente
+          if (this.state.currentTab === 'projetos-publicos') {
+            this.renderPublicProjects();
+          }
+
         } catch (error) {
           let errorMessage = "Falha ao entrar no projeto.";
           if (error.response?.data) {
-            errorMessage = typeof error.response.data === 'string' 
-              ? error.response.data 
+            errorMessage = typeof error.response.data === 'string'
+              ? error.response.data
               : error.response.data.message || errorMessage;
           }
           window.showNotification(errorMessage, "error");
         }
       },
 
+      showProjectPreview(projeto) {
+        // Criar modal de preview
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay visible';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            padding: 1rem;
+        `;
+
+        const imageUrl = this.getProjectImageUrl(projeto.imagemUrl);
+        const membrosHtml = (projeto.membros || [])
+            .slice(0, 5)
+            .map((membro) => {
+                const avatarUrl = this.getMemberAvatarUrl(membro);
+                return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
+            })
+            .join('');
+
+        const tagsHtml = (projeto.tecnologias || [])
+            .slice(0, 5)
+            .map(tag => `<span class="tech-tag">${tag}</span>`)
+            .join('');
+
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px; max-height: 90vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <h2>Detalhes do Projeto</h2>
+                    <button class="close-modal-btn" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="project-preview">
+                        <div class="preview-image" style="background-image: url('${imageUrl}'); height: 200px; border-radius: 8px; background-size: cover; background-position: center; margin-bottom: 1rem;"></div>
+                        
+                        <div class="preview-header">
+                            <h3>${projeto.titulo}</h3>
+                            <span class="projeto-status ${projeto.status?.toLowerCase() || 'planejamento'}">${projeto.status || 'Em planejamento'}</span>
+                        </div>
+                        
+                        <div class="preview-section">
+                            <h4>Descrição</h4>
+                            <p>${projeto.descricao || "Este projeto não possui uma descrição."}</p>
+                        </div>
+                        
+                        <div class="preview-section">
+                            <h4>Informações</h4>
+                            <div class="preview-info-grid">
+                                <div class="info-item">
+                                    <strong>Categoria:</strong>
+                                    <span>${projeto.categoria || 'Sem categoria'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Privacidade:</strong>
+                                    <span>${projeto.grupoPrivado ? 'Privado' : 'Público'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Membros:</strong>
+                                    <span>${projeto.totalMembros || projeto.membros?.length || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="preview-section">
+                            <h4>Tecnologias</h4>
+                            <div class="preview-tags">
+                                ${tagsHtml || '<span class="no-tech">Nenhuma tecnologia informada</span>'}
+                            </div>
+                        </div>
+                        
+                        <div class="preview-section">
+                            <h4>Membros</h4>
+                            <div class="preview-members">
+                                ${membrosHtml || '<span class="no-members">Nenhum membro</span>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Fechar</button>
+                    ${!projeto.grupoPrivado ? 
+                        `<button class="btn btn-primary" onclick="ProjetosPage.entrarNoProjeto(${projeto.id}); this.closest('.modal-overlay').remove()">Entrar no Projeto</button>` : 
+                        '<button class="btn btn-disabled" disabled>Projeto Privado</button>'
+                    }
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Fechar modal ao clicar fora
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+      },
+
       renderOnlineFriends() {
         if (!this.elements.onlineFriendsList) return;
-        
-        const onlineFriends = (window.userFriends || []).filter(friend => 
+
+        const onlineFriends = (window.userFriends || []).filter(friend =>
           (window.latestOnlineEmails || []).includes(friend.email)
         );
         this.elements.onlineFriendsList.innerHTML = "";
-        
+
         if (onlineFriends.length === 0) {
-          this.elements.onlineFriendsList.innerHTML = 
+          this.elements.onlineFriendsList.innerHTML =
             '<p class="empty-state">Nenhum amigo online</p>';
           return;
         }
-        
+
         onlineFriends.forEach(friend => {
           const friendElement = this.createFriendElement(friend);
           this.elements.onlineFriendsList.appendChild(friendElement);
@@ -285,10 +399,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const friendElement = document.createElement("div");
         friendElement.className = "friend-item";
         const friendId = friend.idUsuario;
-        const friendAvatar = friend.fotoPerfil 
-          ? (friend.fotoPerfil.startsWith('http') 
-              ? friend.fotoPerfil 
-              : `${window.backendUrl}/api/arquivos/${friend.fotoPerfil}`) 
+        const friendAvatar = friend.fotoPerfil
+          ? (friend.fotoPerfil.startsWith('http')
+            ? friend.fotoPerfil
+            : `${window.backendUrl}/api/arquivos/${friend.fotoPerfil}`)
           : window.defaultAvatarUrl;
         friendElement.innerHTML = `
           <a href="perfil.html?id=${friendId}" class="friend-item-link">
@@ -305,11 +419,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!grid) return;
         grid.innerHTML = "";
         const projetosParaRenderizar = this.state.myProjects;
-        
+
         if (this.elements.projectsCount) {
           this.elements.projectsCount.textContent = projetosParaRenderizar.length;
         }
-        
+
         if (projetosParaRenderizar.length === 0) {
           grid.innerHTML = `
             <div style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center; padding: 3rem;">
@@ -319,14 +433,14 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>`;
           return;
         }
-        
+
         projetosParaRenderizar.forEach((proj) => {
           const card = document.createElement("a");
           card.className = "projeto-card";
           card.href = `projeto-detalhe.html?id=${proj.id}`;
-          
+
           const imageUrl = this.getProjectImageUrl(proj.imagemUrl);
-          
+
           const membrosHtml = (proj.membros || [])
             .slice(0, 5)
             .map((membro) => {
@@ -334,21 +448,21 @@ document.addEventListener("DOMContentLoaded", () => {
               return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
             })
             .join("");
-          
+
           const remainingMembers = (proj.membros || []).length - 5;
-          const moreMembersHtml = remainingMembers > 0 
+          const moreMembersHtml = remainingMembers > 0
             ? `<div class="membro-avatar more-members">+${remainingMembers}</div>`
             : '';
-          
+
           const tagsHtml = (proj.tecnologias || [])
             .slice(0, 3)
             .map(tag => `<span class="tech-tag">${tag}</span>`)
             .join("");
-          
-          const moreTags = (proj.tecnologias || []).length > 3 
+
+          const moreTags = (proj.tecnologias || []).length > 3
             ? `<span class="tech-tag more-tags">+${(proj.tecnologias || []).length - 3}</span>`
             : '';
-          
+
           card.innerHTML = `
             <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
             <div class="projeto-conteudo">
@@ -389,63 +503,63 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           this.elements.modalOverlay?.classList.add("visible");
         },
-        
+
         closeModal() {
           this.elements.modalOverlay?.classList.remove("visible");
         },
-        
+
         async handleFormSubmit(e) {
           e.preventDefault();
           const form = this.elements.form;
           const btn = form.querySelector(".btn-publish");
           btn.disabled = true;
           btn.textContent = "Publicando...";
-          
+
           const formData = new FormData();
           formData.append("titulo", this.elements.projTituloInput.value);
           formData.append("descricao", this.elements.projDescricaoInput.value);
           formData.append("autorId", currentUser.id);
-          formData.append("maxMembros", 50); 
+          formData.append("maxMembros", 50);
           formData.append("grupoPrivado", this.elements.projPrivacidadeInput.value === 'true');
-          
+
           const categoria = this.elements.projCategoriaInput.value;
           if (categoria) {
-              formData.append("categoria", categoria);
+            formData.append("categoria", categoria);
           }
-          
+
           const techsString = this.elements.projTecnologiasInput.value;
           if (techsString) {
-              const tecnologias = techsString.split(',')
-                                          .map(tech => tech.trim())
-                                          .filter(tech => tech.length > 0); 
-              tecnologias.forEach(tech => {
-                  formData.append("tecnologias", tech); 
-              });
+            const tecnologias = techsString.split(',')
+              .map(tech => tech.trim())
+              .filter(tech => tech.length > 0);
+            tecnologias.forEach(tech => {
+              formData.append("tecnologias", tech);
+            });
           }
-          
+
           if (this.elements.projImagemInput.files[0]) {
             formData.append("foto", this.elements.projImagemInput.files[0]);
           }
-          
+
           try {
             await window.axios.post(`${window.backendUrl}/projetos`, formData, {
               headers: { "Content-Type": "multipart/form-data" },
             });
-            
+
             form.reset();
             this.handlers.closeModal.call(this);
-            
+
             // Recarregar ambas as listas
             await this.fetchMeusProjetos();
             await this.fetchProjetosPublicos();
-            
+
             // Voltar para a aba de meus projetos
             this.state.currentTab = 'meus-projetos';
             this.elements.tabButtons.forEach(btn => {
               btn.classList.toggle('active', btn.dataset.tab === 'meus-projetos');
             });
             this.switchTab('meus-projetos');
-            
+
             window.showNotification("Projeto criado com sucesso!", "success");
           } catch (error) {
             let errorMessage = "Falha ao criar o projeto.";
@@ -466,20 +580,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const search = this.elements.searchInput.value.toLowerCase();
         const category = this.elements.categoryFilter.value;
         if (!currentUser) return;
-        
+
         this.state.myProjects = this.state.allProjects.filter((proj) => {
           const isMember = proj.membros && proj.membros.some(
             (membro) => membro.usuarioId === currentUser.id
           );
           const searchMatch = (proj.titulo || "")
             .toLowerCase()
-            .includes(search) || 
+            .includes(search) ||
             (proj.descricao || "").toLowerCase().includes(search) ||
             (proj.tecnologias || []).some(tech => tech.toLowerCase().includes(search));
-            
-          const categoryMatch = (category === "todos") || 
+
+          const categoryMatch = (category === "todos") ||
             (proj.categoria && proj.categoria.toLowerCase() === category);
-          
+
           return isMember && searchMatch && categoryMatch;
         });
         this.render();
@@ -488,33 +602,33 @@ document.addEventListener("DOMContentLoaded", () => {
       setupEventListeners() {
         const { openModalBtn, closeModalBtn, modalOverlay, form, searchInput, categoryFilter } =
           this.elements;
-          
+
         if (openModalBtn) {
           openModalBtn.addEventListener("click", this.handlers.openModal.bind(this));
         }
-        
+
         if (closeModalBtn) {
           closeModalBtn.addEventListener("click", this.handlers.closeModal.bind(this));
         }
-        
+
         if (form) {
           form.addEventListener("submit", (e) => this.handlers.handleFormSubmit.call(this, e));
         }
-        
+
         if (searchInput) {
           searchInput.addEventListener("input", this.applyFilters.bind(this));
         }
-        
+
         if (categoryFilter) {
           categoryFilter.addEventListener("change", this.applyFilters.bind(this));
         }
-        
+
         if (modalOverlay) {
           modalOverlay.addEventListener("click", (e) => {
             if (e.target === modalOverlay) this.handlers.closeModal.call(this);
           });
         }
-        
+
         // Adicionar listener para busca em projetos públicos
         if (searchInput) {
           searchInput.addEventListener('input', () => {
@@ -523,7 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           });
         }
-        
+
         if (categoryFilter) {
           categoryFilter.addEventListener('change', () => {
             if (this.state.currentTab === 'projetos-publicos') {
@@ -532,33 +646,33 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
       },
-      
+
       filterPublicProjects() {
         const search = this.elements.searchInput.value.toLowerCase();
         const category = this.elements.categoryFilter.value;
-        
+
         const filteredProjects = this.state.publicProjects.filter((proj) => {
           const searchMatch = (proj.titulo || "")
             .toLowerCase()
-            .includes(search) || 
+            .includes(search) ||
             (proj.descricao || "").toLowerCase().includes(search) ||
             (proj.tecnologias || []).some(tech => tech.toLowerCase().includes(search));
-            
-          const categoryMatch = (category === "todos") || 
+
+          const categoryMatch = (category === "todos") ||
             (proj.categoria && proj.categoria.toLowerCase() === category);
-          
+
           return searchMatch && categoryMatch;
         });
-        
+
         this.renderFilteredPublicProjects(filteredProjects);
       },
-      
+
       renderFilteredPublicProjects(filteredProjects) {
         const grid = this.elements.publicGrid;
         if (!grid) return;
-        
+
         grid.innerHTML = "";
-        
+
         if (filteredProjects.length === 0) {
           grid.innerHTML = `
             <div style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center; padding: 3rem;">
@@ -567,13 +681,13 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>`;
           return;
         }
-        
+
         filteredProjects.forEach((proj) => {
           const card = document.createElement("div");
           card.className = "projeto-card";
-          
+
           const imageUrl = this.getProjectImageUrl(proj.imagemUrl);
-          
+
           const membrosHtml = (proj.membros || [])
             .slice(0, 5)
             .map((membro) => {
@@ -581,25 +695,32 @@ document.addEventListener("DOMContentLoaded", () => {
               return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
             })
             .join("");
-          
+
           const remainingMembers = (proj.membros || []).length - 5;
-          const moreMembersHtml = remainingMembers > 0 
+          const moreMembersHtml = remainingMembers > 0
             ? `<div class="membro-avatar more-members">+${remainingMembers}</div>`
             : '';
-          
+
           const tagsHtml = (proj.tecnologias || [])
             .slice(0, 3)
             .map(tag => `<span class="tech-tag">${tag}</span>`)
             .join("");
-          
-          const moreTags = (proj.tecnologias || []).length > 3 
+
+          const moreTags = (proj.tecnologias || []).length > 3
             ? `<span class="tech-tag more-tags">+${(proj.tecnologias || []).length - 3}</span>`
             : '';
-          
+
           // Verificar se o usuário atual já é membro
           const isMember = proj.membros && proj.membros.some(membro => membro.usuarioId === currentUser.id);
           const isAuthor = proj.autorId === currentUser.id;
-          
+
+          let detailsButton = '';
+          if (isAuthor || isMember) {
+            detailsButton = `<a href="projeto-detalhe.html?id=${proj.id}" class="btn-ver-detalhes">Acessar Área do Projeto</a>`;
+          } else {
+            detailsButton = `<button class="btn-ver-detalhes" onclick="ProjetosPage.showProjectPreview(${JSON.stringify(proj).replace(/"/g, '&quot;')})">Ver Detalhes</button>`;
+          }
+
           card.innerHTML = `
             <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
             <div class="projeto-conteudo">
@@ -622,13 +743,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${tagsHtml}${moreTags}
                   </div>
                   <div class="projeto-actions">
-                    ${isAuthor 
-                      ? '<button class="btn-entrar disabled" disabled>Criador</button>' 
-                      : isMember 
-                        ? '<button class="btn-entrar disabled" disabled>Já é membro</button>' 
+                    ${isAuthor
+                      ? '<button class="btn-entrar disabled" disabled>Criador</button>'
+                      : isMember
+                        ? '<button class="btn-entrar disabled" disabled>Já é membro</button>'
                         : `<button class="btn-entrar" onclick="ProjetosPage.entrarNoProjeto(${proj.id})">Entrar no Projeto</button>`
                     }
-                    <a href="projeto-detalhe.html?id=${proj.id}" class="btn-ver-detalhes">Ver Detalhes</a>
+                    ${detailsButton}
                   </div>
               </div>
             </div>`;

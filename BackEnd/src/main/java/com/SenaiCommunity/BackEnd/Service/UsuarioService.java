@@ -48,6 +48,12 @@ public class UsuarioService {
         return new UsuarioSaidaDTO(usuario);
     }
 
+    // Adicione este método na classe UsuarioService
+    public Usuario buscarEntidadePorId(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o ID: " + id));
+    }
+
     /**
      * método público para buscar usuário por email.
      * necessário para o CurtidaController.

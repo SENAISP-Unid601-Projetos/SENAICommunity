@@ -131,10 +131,13 @@ async function initGlobal() {
     // 2. Atualiza a UI (sidebar/topbar)
     updateUIWithUserData(currentUser);
 
-    // 3. Conecta ao WebSocket
+    // 3. Buscar contagem de projetos do usuário
+    await fetchUserProjectsCount();
+
+    // 4. Conecta ao WebSocket
     connectWebSocket(); // Define window.stompClient
 
-    // 4. Busca dados da sidebar (Amigos/Notificações)
+    // 5. Busca dados da sidebar (Amigos/Notificações)
     await fetchFriends();
     await fetchInitialOnlineFriends();
     atualizarStatusDeAmigosNaUI();
@@ -151,6 +154,28 @@ async function initGlobal() {
 }
 
 // --- FUNÇÕES GLOBAIS (Auth, UI, WebSocket, Notificações) ---
+
+// NOVA FUNÇÃO: Buscar contagem de projetos do usuário
+async function fetchUserProjectsCount() {
+  try {
+    const response = await axios.get(`${backendUrl}/projetos`);
+    const allProjects = response.data;
+    
+    // Filtra os projetos em que o usuário atual é membro
+    const myProjects = allProjects.filter(proj => 
+      proj.membros && proj.membros.some(membro => membro.usuarioId === currentUser.id)
+    );
+    
+    if (globalElements.projectsCount) {
+      globalElements.projectsCount.textContent = myProjects.length;
+    }
+  } catch (error) {
+    console.error("Erro ao buscar projetos do usuário:", error);
+    if (globalElements.projectsCount) {
+      globalElements.projectsCount.textContent = "0";
+    }
+  }
+}
 
 function updateUIWithUserData(user) {
   if (!user) return;
@@ -1060,8 +1085,33 @@ function setupCarouselEventListeners(postElement, postId) {
 
   // --- FUNÇÕES (Específicas do Feed) ---
 
+  // NOVA FUNÇÃO: Mostrar estado de carregamento do feed
+  function showFeedLoading() {
+    feedElements.postsContainer.innerHTML = `
+      <div class="post-skeleton">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-content">
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line medium"></div>
+          <div class="skeleton-line long"></div>
+        </div>
+      </div>
+      <div class="post-skeleton">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-content">
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line medium"></div>
+          <div class="skeleton-line long"></div>
+        </div>
+      </div>
+    `;
+  }
+
   async function fetchPublicPosts() {
     //
+    // Mostra estado de carregamento
+    showFeedLoading();
+    
     try {
       const response = await axios.get(`${backendUrl}/api/chat/publico`);
       feedElements.postsContainer.innerHTML = "";
