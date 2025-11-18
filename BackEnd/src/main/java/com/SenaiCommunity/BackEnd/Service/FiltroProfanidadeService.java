@@ -40,15 +40,11 @@ public class FiltroProfanidadeService {
             "rapariga", "lazarento", "inútil", "meretriz", "quenga", "biscate", "mocorongo",
             "paspalho", "nojento", "nojenta", "nojentinho", "imundo", "fedorento", "lixo",
             "verme", "chifrudo", "chifrudinho", "chifrudão", "galinha", "piriguete", "vtnc",
-<<<<<<< HEAD
             "vai tomar no cu", "tmnc", "tnc", "gorda", "gordo", "gordinha", "gordão",
             "gordinho", "rolha de poço", "negrinho", "neguinho", "xvideos", "xvideo", "pornhub",
             "porno", "porn", "ass", "pussy"
-=======
-            "vai tomar no cu", "tmnc", "vtmnc", "tnc", "gorda", "gordo", "gordinha", "gordão",
-            "gordinho", "rolha de poço", "negrinho",
-            "neguinho"
->>>>>>> 314e65128b482f7679c0aadc5a2bf9d0bd220a5e
+
+
     );
 
     private static final Pattern PADRAO_PROFANIDADE;

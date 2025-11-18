@@ -961,7 +961,6 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-<<<<<<< HEAD
   // --- LÓGICA DOS MODAIS E MENUS ---
 
   const closeAllMenus = () => {
@@ -1413,9 +1412,6 @@ async function fetchAndReplacePost(postId) {
  function handlePublicFeedUpdate(payload) {
     // NÃO vamos mais ignorar. Precisamos da atualização para atualizar os contadores.
     /*
-=======
-  function handlePublicFeedUpdate(payload) {
->>>>>>> 314e65128b482f7679c0aadc5a2bf9d0bd220a5e
     if (payload.autorAcaoId && currentUser && payload.autorAcaoId == currentUser.id)
       return; 
     */
@@ -1430,7 +1426,6 @@ async function fetchAndReplacePost(postId) {
     }
   }
 
-<<<<<<< HEAD
   // 3. Funções de Ação (Janelas)
   window.openPostMenu = (postId) => {
     closeAllMenus();
@@ -1592,9 +1587,6 @@ window.toggleReplies = (buttonElement, commentId) => {
     updateEditFilePreview();
     elements.editExistingMediaContainer.innerHTML = "";
 
-=======
-  async function fetchAndReplacePost(postId) {
->>>>>>> 314e65128b482f7679c0aadc5a2bf9d0bd220a5e
     try {
       const response = await axios.get(`${backendUrl}/postagem/${postId}`);
       const oldPostElement = document.getElementById(`post-${postId}`);
