@@ -44,17 +44,29 @@ function normalizeMessageData(message) {
 }
 
 // CORREÇÃO: Função para normalizar status do projeto
-// CORREÇÃO: Função para normalizar status do projeto - apenas para exibição
 function normalizeProjectStatus(status) {
     if (!status) return 'Em planejamento';
     
     const statusMap = {
         'PLANEJAMENTO': 'Em planejamento',
         'EM_ANDAMENTO': 'Em progresso', 
-        'CONCLUIDO': 'Concluido',
+        'CONCLUIDO': 'Concluído',
         'Em planejamento': 'Em planejamento',
         'Em progresso': 'Em progresso',
-        'Concluído': 'Concluido'
+        'Concluído': 'Concluído'
+    };
+    
+    return statusMap[status] || 'Em planejamento';
+}
+
+// CORREÇÃO: Função para normalizar status para o backend
+function normalizeStatusForBackend(status) {
+    if (!status) return 'Em planejamento';
+    
+    const statusMap = {
+        'Em planejamento': 'Em planejamento',
+        'Em progresso': 'Em progresso', 
+        'Concluído': 'Concluído'
     };
     
     return statusMap[status] || 'Em planejamento';
@@ -116,6 +128,7 @@ function checkUserRole() {
     // CORREÇÃO: Mostrar/ocultar botões de administração
     const settingsBtn = document.getElementById('project-settings-btn');
     const addMemberBtn = document.getElementById('add-member-btn');
+    const solicitacoesBtn = document.getElementById('solicitacoes-btn');
     
     const isAdminOrModerator = (userRole === 'ADMIN' || userRole === 'MODERADOR');
     
@@ -127,6 +140,11 @@ function checkUserRole() {
     if (addMemberBtn) {
         addMemberBtn.style.display = isAdminOrModerator ? 'block' : 'none';
         console.log(`[DEBUG] Add member button display: ${addMemberBtn.style.display}`);
+    }
+    
+    if (solicitacoesBtn) {
+        solicitacoesBtn.style.display = isAdminOrModerator ? 'block' : 'none';
+        console.log(`[DEBUG] Solicitações button display: ${solicitacoesBtn.style.display}`);
     }
     
     // CORREÇÃO: Forçar re-renderização da lista de membros para mostrar ações
@@ -311,6 +329,7 @@ function isMemberOnline(member) {
     // Verifica se o email está na lista
     return window.latestOnlineEmails.some(email => email.toLowerCase() === memberEmail);
 }
+
 function updateMembersCount() {
     if (!projectMembers || projectMembers.length === 0) {
         document.getElementById('members-count').textContent = '0';
@@ -1658,6 +1677,9 @@ function setupEventListeners() {
 
     // CORREÇÃO: Adicionar botão de adicionar membro se não existir
     setupAddMemberButton();
+
+    // CORREÇÃO: Adicionar botão de solicitações se não existir
+    setupSolicitacoesButton();
 }
 
 // CORREÇÃO: Configurar botão de adicionar membro
@@ -1676,6 +1698,25 @@ function setupAddMemberButton() {
         });
         
         membersHeader.appendChild(addMemberBtn);
+    }
+}
+
+// CORREÇÃO: Configurar botão de solicitações
+function setupSolicitacoesButton() {
+    const chatActions = document.querySelector('.chat-actions');
+    if (chatActions && !document.getElementById('solicitacoes-btn')) {
+        const solicitacoesBtn = document.createElement('button');
+        solicitacoesBtn.id = 'solicitacoes-btn';
+        solicitacoesBtn.className = 'action-btn';
+        solicitacoesBtn.innerHTML = '<i class="fas fa-user-clock"></i>';
+        solicitacoesBtn.setAttribute('data-tooltip', 'Solicitações de entrada');
+        solicitacoesBtn.style.display = 'none';
+        
+        solicitacoesBtn.addEventListener('click', function() {
+            openSolicitacoesModal();
+        });
+        
+        chatActions.appendChild(solicitacoesBtn);
     }
 }
 
@@ -1842,22 +1883,11 @@ function openProjectSettingsModal() {
     document.getElementById('edit-project-privacy').value = currentProject.grupoPrivado ? 'true' : 'false';
     document.getElementById('edit-project-category').value = currentProject.categoria || '';
     
-   // CORREÇÃO: Preencher status do projeto corretamente com valores EXATOS que o backend espera
-const statusSelect = document.getElementById('edit-project-status');
-if (statusSelect) {
-    // Mapear status atual para os valores exatos do backend
-    const statusMapping = {
-        'PLANEJAMENTO': 'Em planejamento',
-        'EM_ANDAMENTO': 'Em progresso', 
-        'CONCLUIDO': 'Concluído',
-        'Em planejamento': 'Em planejamento',
-        'Em progresso': 'Em progresso',
-        'Concluído': 'Concluído'
-    };
-    
-    const currentStatus = currentProject.status || 'Em planejamento';
-    statusSelect.value = statusMapping[currentStatus] || 'Em planejamento';
-}
+    // CORREÇÃO: Preencher status do projeto corretamente
+    const statusSelect = document.getElementById('edit-project-status');
+    if (statusSelect) {
+        statusSelect.value = normalizeProjectStatus(currentProject.status);
+    }
     
     // Preencher tecnologias
     const technologiesInput = document.getElementById('edit-project-technologies');
@@ -1893,13 +1923,13 @@ async function updateProjectSettings() {
         formData.append('grupoPrivado', document.getElementById('edit-project-privacy').value);
         formData.append('categoria', document.getElementById('edit-project-category').value);
         
-        // NOVO: Adicionar status ao formulário
+        // CORREÇÃO: Adicionar status normalizado para o backend
         const statusSelect = document.getElementById('edit-project-status');
         if (statusSelect) {
-            formData.append('status', statusSelect.value);
+            formData.append('status', normalizeStatusForBackend(statusSelect.value));
         }
         
-        // NOVO: Adicionar foto se houver uma nova
+        // CORREÇÃO: Adicionar foto se houver uma nova
         const photoInput = document.getElementById('edit-project-photo');
         if (photoInput && photoInput.files[0]) {
             formData.append('foto', photoInput.files[0]);
@@ -1995,16 +2025,16 @@ function updateProjectStatusIndicator() {
     let statusClass = '';
     
     switch(status) {
-        case 'PLANEJAMENTO':
+        case 'Em planejamento':
             statusText = 'Em Planejamento';
             statusClass = 'status-planning';
             break;
-        case 'EM_ANDAMENTO':
-            statusText = 'Em progresso';
+        case 'Em progresso':
+            statusText = 'Em Progresso';
             statusClass = 'status-progress';
             break;
-        case 'CONCLUIDO':
-            statusText = 'Concluido';
+        case 'Concluído':
+            statusText = 'Concluído';
             statusClass = 'status-completed';
             break;
         default:
@@ -2014,6 +2044,147 @@ function updateProjectStatusIndicator() {
     
     statusElement.textContent = statusText;
     statusElement.className = `project-status ${statusClass}`;
+}
+
+// NOVA FUNÇÃO: Abrir modal de solicitações de entrada
+function openSolicitacoesModal() {
+    const modalOverlay = document.createElement('div');
+    modalOverlay.id = 'solicitacoes-modal';
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.display = 'flex';
+    
+    modalOverlay.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Solicitações de Entrada</h3>
+                <button class="close-modal" id="close-solicitacoes-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="solicitacoes-list" class="solicitacoes-list">
+                    <p class="empty-state">Carregando solicitações...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modalOverlay);
+    
+    // Configurar eventos do modal
+    const closeBtn = document.getElementById('close-solicitacoes-modal');
+    closeBtn.addEventListener('click', function() {
+        modalOverlay.remove();
+    });
+    
+    modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+            modalOverlay.remove();
+        }
+    });
+    
+    // Carregar solicitações
+    loadSolicitacoes();
+}
+
+// NOVA FUNÇÃO: Carregar solicitações pendentes
+async function loadSolicitacoes() {
+    try {
+        const response = await axios.get(`${backendUrl}/projetos/${projectId}/solicitacoes?usuarioId=${currentUser.id}`);
+        const solicitacoes = response.data;
+        
+        const solicitacoesList = document.getElementById('solicitacoes-list');
+        solicitacoesList.innerHTML = '';
+        
+        if (solicitacoes.length === 0) {
+            solicitacoesList.innerHTML = '<p class="empty-state">Nenhuma solicitação pendente</p>';
+            return;
+        }
+        
+        solicitacoes.forEach(solicitacao => {
+            const solicitacaoElement = document.createElement('div');
+            solicitacaoElement.className = 'solicitacao-item';
+            
+            const userAvatar = solicitacao.usuarioFoto ? 
+                (solicitacao.usuarioFoto.startsWith('http') ? solicitacao.usuarioFoto : `${backendUrl}${solicitacao.usuarioFoto}`) :
+                defaultAvatarUrl;
+            
+            solicitacaoElement.innerHTML = `
+                <div class="solicitacao-user">
+                    <img src="${userAvatar}" alt="${solicitacao.usuarioNome}" onerror="this.src='${defaultAvatarUrl}'">
+                    <div class="solicitacao-user-info">
+                        <div class="solicitacao-user-name">${solicitacao.usuarioNome}</div>
+                        <div class="solicitacao-user-email">${solicitacao.usuarioEmail}</div>
+                        <div class="solicitacao-data">${new Date(solicitacao.dataSolicitacao).toLocaleString('pt-BR')}</div>
+                    </div>
+                </div>
+                <div class="solicitacao-actions">
+                    <button class="btn btn-primary" onclick="aceitarSolicitacao(${solicitacao.id})">Aceitar</button>
+                    <button class="btn btn-danger" onclick="recusarSolicitacao(${solicitacao.id})">Recusar</button>
+                </div>
+            `;
+            solicitacoesList.appendChild(solicitacaoElement);
+        });
+        
+    } catch (error) {
+        console.error("Erro ao carregar solicitações:", error);
+        document.getElementById('solicitacoes-list').innerHTML = '<p class="empty-state">Erro ao carregar solicitações</p>';
+    }
+}
+
+// NOVA FUNÇÃO: Aceitar solicitação
+async function aceitarSolicitacao(solicitacaoId) {
+    try {
+        showLoading("Aceitando solicitação...");
+        
+        await axios.post(`${backendUrl}/projetos/solicitacoes/${solicitacaoId}/aprovar?usuarioId=${currentUser.id}`);
+        
+        showNotification("Solicitação aceita com sucesso", "success");
+        
+        // Recarregar a lista de solicitações
+        loadSolicitacoes();
+        
+        // Recarregar membros do projeto
+        await loadProjectMembers();
+        
+    } catch (error) {
+        console.error("Erro ao aceitar solicitação:", error);
+        
+        let errorMessage = "Erro ao aceitar solicitação";
+        if (error.response && error.response.data) {
+            errorMessage = error.response.data;
+        }
+        
+        showNotification(errorMessage, "error");
+    } finally {
+        hideLoading();
+    }
+}
+
+// NOVA FUNÇÃO: Recusar solicitação
+async function recusarSolicitacao(solicitacaoId) {
+    try {
+        showLoading("Recusando solicitação...");
+        
+        await axios.post(`${backendUrl}/projetos/solicitacoes/${solicitacaoId}/recusar?usuarioId=${currentUser.id}`);
+        
+        showNotification("Solicitação recusada com sucesso", "success");
+        
+        // Recarregar a lista de solicitações
+        loadSolicitacoes();
+        
+    } catch (error) {
+        console.error("Erro ao recusar solicitação:", error);
+        
+        let errorMessage = "Erro ao recusar solicitação";
+        if (error.response && error.response.data) {
+            errorMessage = error.response.data;
+        }
+        
+        showNotification(errorMessage, "error");
+    } finally {
+        hideLoading();
+    }
 }
 
 // Filtrar membros na lista
@@ -2213,3 +2384,5 @@ window.showLoading = showLoading;
 window.hideLoading = hideLoading;
 window.setButtonLoading = setButtonLoading;
 window.expandMessage = expandMessage;
+window.aceitarSolicitacao = aceitarSolicitacao;
+window.recusarSolicitacao = recusarSolicitacao;
