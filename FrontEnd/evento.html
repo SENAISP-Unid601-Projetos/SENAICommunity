@@ -30,13 +30,13 @@
     </nav>
     <div class="user-dropdown">
       <div class="user">
-        <div class="profile-pic"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"></div>
-        <span>Vinicius G.</span><i class="fas fa-chevron-down"></i>
+        <div class="profile-pic"><img id="topbar-user-img" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"></div>
+        <span id="topbar-user-name">Vinicius G.</span><i class="fas fa-chevron-down"></i>
       </div>
       <div class="dropdown-menu">
-        <a href="#"><i class="fas fa-user"></i> Meu Perfil</a>
-        <a href="#"><i class="fas fa-cog"></i> Configurações</a>
-        <a href="principal.html"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        <a href="perfil.html"><i class="fas fa-user"></i> Meu Perfil</a>
+        <a href="#" id="edit-profile-btn"><i class="fas fa-cog"></i> Configurações</a>
+        <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
       </div>
     </div>
   </header>
@@ -44,18 +44,32 @@
   <div class="container">
     <aside class="sidebar">
       <div class="user-info">
-        <div class="avatar"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"><div class="status online"></div></div>
-        <h2>Vinicius Gallo Santos</h2><p class="user-title">Estudante de ADS</p>
-        <div class="user-stats"><div class="stat"><strong>11</strong><span>Conexões</span></div><div class="stat"><strong>2</strong><span>Projetos</span></div></div>
+        <div class="avatar">
+          <img id="sidebar-user-img" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil">
+          <div class="status online"></div>
+        </div>
+        <h2 id="sidebar-user-name">Vinicius Gallo Santos</h2>
+        <p class="user-title" id="sidebar-user-title">Estudante de ADS</p>
+        <div class="user-stats">
+          <div class="stat"><strong id="connections-count">11</strong><span>Conexões</span></div>
+          <div class="stat"><strong id="projects-count">2</strong><span>Projetos</span></div>
+        </div>
       </div>
       <nav class="menu">
-        <a href="principal.html" class="active"><i class="fas fa-home"></i> Feed</a>
+        <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
         <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge" id="message-badge" style="display: none;">0</span></a>
         <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
         <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
-        <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+        <a href="evento.html" class="active"><i class="fas fa-calendar-check"></i> Eventos</a>
       </nav>
-      </aside>
+      
+      <div class="online-friends">
+        <h3>Amigos Online</h3>
+        <div class="friends-list" id="online-friends-list">
+          <p class="empty-state">Carregando...</p>
+        </div>
+      </div>
+    </aside>
 
     <main class="main-content">
       <div class="eventos-header">
@@ -84,18 +98,20 @@
       </div>
       
       <div class="eventos-grid">
+        <div class="no-events" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+          <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+          <h3 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Carregando eventos...</h3>
         </div>
+      </div>
     </main>
     
     <aside class="right-sidebar">
       <div class="meus-eventos-card">
         <h3><i class="fas fa-check-circle"></i> Meus Eventos</h3>
         <div id="meus-eventos-lista">
-          <p class="empty-message">Você ainda não confirmou presença em nenhum evento.</p>
+          <p class="empty-message">Carregando seus eventos...</p>
         </div>
       </div>
-      
-      
     </aside>
   </div>
 
@@ -160,7 +176,67 @@
   <p>Carregando eventos...</p>
 </div>
 
-  <script src="Principal/JS/principal.js"></script>
-  <script src="Evento/JS/evento.js"></script>
+<!-- Modais de Perfil -->
+<div id="edit-profile-modal" class="modal">
+  <div class="modal-content">
+    <h2>Editar Perfil</h2>
+    <form id="edit-profile-form">
+      <div class="form-group">
+        <label for="edit-profile-pic-input">Foto de Perfil</label>
+        <input type="file" id="edit-profile-pic-input" accept="image/*">
+        <div class="profile-pic-preview">
+          <img id="edit-profile-pic-preview" src="" alt="Preview">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="edit-profile-name">Nome</label>
+        <input type="text" id="edit-profile-name" required>
+      </div>
+      <div class="form-group">
+        <label for="edit-profile-bio">Bio</label>
+        <textarea id="edit-profile-bio" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="edit-profile-dob">Data de Nascimento</label>
+        <input type="date" id="edit-profile-dob">
+      </div>
+      <div class="form-group">
+        <label for="edit-profile-password">Nova Senha</label>
+        <input type="password" id="edit-profile-password" placeholder="Deixe em branco para manter a atual">
+      </div>
+      <div class="form-group">
+        <label for="edit-profile-password-confirm">Confirmar Nova Senha</label>
+        <input type="password" id="edit-profile-password-confirm" placeholder="Deixe em branco para manter a atual">
+      </div>
+    </form>
+    <div class="modal-actions">
+      <button type="submit" form="edit-profile-form" class="btn btn-primary">Salvar</button>
+      <button id="cancel-edit-profile-btn" class="btn btn-secondary">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="delete-account-modal" class="modal">
+  <div class="modal-content">
+    <h2>Excluir Conta</h2>
+    <p>Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.</p>
+    <form id="delete-account-form">
+      <div class="form-group">
+        <label for="delete-confirm-password">Digite sua senha para confirmar:</label>
+        <input type="password" id="delete-confirm-password" required>
+      </div>
+    </form>
+    <div class="modal-actions">
+      <button type="submit" form="delete-account-form" class="btn btn-danger">Excluir Conta</button>
+      <button id="cancel-delete-account-btn" class="btn btn-secondary">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="Principal/JS/principal.js"></script>
+<script src="Evento/JS/evento.js"></script>
 </body>
 </html>

@@ -1,5 +1,14 @@
-// evento.js - Substitua todo o conteúdo por este código
+// evento.js - Código completo e funcional
 document.addEventListener('DOMContentLoaded', () => {
+  // Aguardar a inicialização global do principal.js
+  if (!window.currentUser) {
+    document.addEventListener('globalScriptsLoaded', initEventos);
+  } else {
+    initEventos();
+  }
+});
+
+async function initEventos() {
   const eventosGrid = document.querySelector('.eventos-grid');
   const meusEventosLista = document.getElementById('meus-eventos-lista');
   const searchInput = document.getElementById('search-input');
@@ -34,8 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Verificar se o usuário é admin
   async function checkUserRole() {
     try {
-      const response = await axios.get(`${window.backendUrl}/usuarios/me`);
-      isAdmin = response.data.tipoUsuario === 'ADMIN';
+      isAdmin = window.currentUser && window.currentUser.tipoUsuario === 'ADMIN';
       
       // Mostrar botão de criar evento se for admin
       if (isAdmin) {
@@ -75,21 +83,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Carregar eventos que o usuário tem interesse
   async function loadEventosInteressados() {
     try {
-      // Esta é uma implementação simplificada - você precisará ajustar conforme sua API
-      const userEvents = localStorage.getItem('eventosInteressados');
-      eventosInteressados = userEvents ? JSON.parse(userEvents) : [];
+      const response = await axios.get(`${window.backendUrl}/api/eventos/meus-eventos`);
+      eventosInteressados = response.data.map(evento => evento.id);
     } catch (error) {
       console.error('Erro ao carregar eventos interessados:', error);
       eventosInteressados = [];
-    }
-  }
-
-  // Salvar eventos com interesse do usuário
-  async function saveEventosInteressados() {
-    try {
-      localStorage.setItem('eventosInteressados', JSON.stringify(eventosInteressados));
-    } catch (error) {
-      console.error('Erro ao salvar eventos interessados:', error);
     }
   }
 
@@ -214,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification('Lembrete definido com sucesso!', 'success');
       }
       
-      await saveEventosInteressados();
       renderEventos();
       updateMeusEventos();
     } catch (error) {
@@ -421,4 +418,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Inicializar
   init();
-});
+}
