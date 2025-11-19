@@ -7,12 +7,14 @@ document.addEventListener("DOMContentLoaded", () => {
         allProjects: [],
         myProjects: [],
         publicProjects: [],
+        privateProjects: [], // NOVA LISTA: projetos privados
         currentTab: 'meus-projetos'
       },
 
       elements: {
         grid: document.getElementById("projetos-grid"),
         publicGrid: document.getElementById("projetos-publicos-grid"),
+        privateGrid: document.getElementById("projetos-privados-grid"), // NOVO ELEMENTO: grid para projetos privados
         searchInput: document.getElementById("project-search-input"),
         categoryFilter: document.getElementById("filter-category"),
         tabButtons: document.querySelectorAll(".tab-btn"),
@@ -51,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         await this.fetchMeusProjetos();
         await this.fetchProjetosPublicos();
+        await this.fetchProjetosPrivados(); // NOVO: buscar projetos privados
 
         this.setupEventListeners();
         this.setupTabs();
@@ -79,14 +82,20 @@ document.addEventListener("DOMContentLoaded", () => {
       },
 
       switchTab(tabName) {
+        // Esconder todos os grids primeiro
+        if (this.elements.grid) this.elements.grid.style.display = 'none';
+        if (this.elements.publicGrid) this.elements.publicGrid.style.display = 'none';
+        if (this.elements.privateGrid) this.elements.privateGrid.style.display = 'none';
+
         if (tabName === 'meus-projetos') {
-          this.elements.grid.style.display = 'grid';
-          this.elements.publicGrid.style.display = 'none';
+          if (this.elements.grid) this.elements.grid.style.display = 'grid';
           this.applyFilters();
         } else if (tabName === 'projetos-publicos') {
-          this.elements.grid.style.display = 'none';
-          this.elements.publicGrid.style.display = 'grid';
+          if (this.elements.publicGrid) this.elements.publicGrid.style.display = 'grid';
           this.renderPublicProjects();
+        } else if (tabName === 'projetos-privados') {
+          if (this.elements.privateGrid) this.elements.privateGrid.style.display = 'grid';
+          this.renderPrivateProjects();
         }
       },
 
@@ -118,6 +127,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       },
 
+      // NOVO MÉTODO: Buscar projetos privados
+      async fetchProjetosPrivados() {
+        if (!this.elements.privateGrid) return;
+        try {
+          const response = await window.axios.get(
+            `${window.backendUrl}/projetos/privados`
+          );
+          this.state.privateProjects = response.data;
+          this.renderPrivateProjects();
+        } catch (error) {
+          console.error("Erro ao buscar projetos privados:", error);
+          this.elements.privateGrid.innerHTML = `<p class="error-message">Não foi possível carregar os projetos privados.</p>`;
+        }
+      },
+
       renderPublicProjects() {
         const grid = this.elements.publicGrid;
         if (!grid) return;
@@ -125,7 +149,11 @@ document.addEventListener("DOMContentLoaded", () => {
         grid.innerHTML = "";
 
         if (this.state.publicProjects.length === 0) {
-          grid.innerHTML = `<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Nenhum projeto público disponível no momento.</p>`;
+          grid.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-globe-americas"></i>
+              <p>Nenhum projeto público disponível no momento.</p>
+            </div>`;
           return;
         }
 
@@ -202,6 +230,126 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>`;
           grid.appendChild(card);
         });
+      },
+
+      // NOVO MÉTODO: Renderizar projetos privados
+      renderPrivateProjects() {
+        const grid = this.elements.privateGrid;
+        if (!grid) return;
+
+        grid.innerHTML = "";
+
+        if (this.state.privateProjects.length === 0) {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-lock"></i>
+              <p>Nenhum projeto privado disponível no momento.</p>
+              <p style="font-size: 0.9rem; margin-top: 0.5rem;">Projetos privados exigem convite para participação.</p>
+            </div>`;
+          return;
+        }
+
+        this.state.privateProjects.forEach((proj) => {
+          const card = document.createElement("div");
+          card.className = "projeto-card";
+
+          const imageUrl = this.getProjectImageUrl(proj.imagemUrl);
+
+          const membrosHtml = (proj.membros || [])
+            .slice(0, 5)
+            .map((membro) => {
+              const avatarUrl = this.getMemberAvatarUrl(membro);
+              return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
+            })
+            .join("");
+
+          const remainingMembers = (proj.membros || []).length - 5;
+          const moreMembersHtml = remainingMembers > 0
+            ? `<div class="membro-avatar more-members">+${remainingMembers}</div>`
+            : '';
+
+          const tagsHtml = (proj.tecnologias || [])
+            .slice(0, 3)
+            .map(tag => `<span class="tech-tag">${tag}</span>`)
+            .join("");
+
+          const moreTags = (proj.tecnologias || []).length > 3
+            ? `<span class="tech-tag more-tags">+${(proj.tecnologias || []).length - 3}</span>`
+            : '';
+
+          // Verificar se o usuário atual já é membro
+          const isMember = proj.membros && proj.membros.some(membro => membro.usuarioId === currentUser.id);
+          const isAuthor = proj.autorId === currentUser.id;
+
+          let actionButton = '';
+          if (isAuthor) {
+            actionButton = '<button class="btn-entrar disabled" disabled>Criador</button>';
+          } else if (isMember) {
+            actionButton = '<button class="btn-entrar disabled" disabled>Já é membro</button>';
+          } else {
+            actionButton = `<button class="btn-solicitar-entrada" onclick="ProjetosPage.solicitarEntradaProjeto(${proj.id})">Solicitar Entrada</button>`;
+          }
+
+          card.innerHTML = `
+            <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
+            <div class="projeto-conteudo">
+              <div class="projeto-header">
+                <h3>${proj.titulo}</h3>
+                <span class="projeto-status ${proj.status?.toLowerCase() || 'planejamento'}">${proj.status || 'Em planejamento'}</span>
+              </div>
+              <p class="projeto-descricao">${proj.descricao || "Este projeto não possui uma descrição."}</p>
+              
+              <div class="projeto-meta">
+                <div class="projeto-membros">
+                  ${membrosHtml}${moreMembersHtml}
+                  <span class="membros-count">${proj.totalMembros || proj.membros?.length || 0} membros</span>
+                </div>
+                <div class="projeto-categoria">${proj.categoria || 'Sem categoria'}</div>
+              </div>
+              
+              <div class="projeto-footer">
+                  <div class="projeto-tags">
+                    ${tagsHtml}${moreTags}
+                  </div>
+                  <div class="projeto-actions">
+                    ${actionButton}
+                    <button class="btn-ver-detalhes" onclick="ProjetosPage.showProjectPreview(${JSON.stringify(proj).replace(/"/g, '&quot;')})">Ver Detalhes</button>
+                  </div>
+              </div>
+            </div>`;
+          grid.appendChild(card);
+        });
+      },
+
+      // NOVO MÉTODO: Solicitar entrada em projeto privado
+      async solicitarEntradaProjeto(projetoId) {
+        try {
+          const response = await window.axios.post(`${window.backendUrl}/projetos/${projetoId}/solicitar-entrada`, null, {
+            params: {
+              usuarioId: currentUser.id
+            }
+          });
+
+          window.showNotification("Solicitação de entrada enviada com sucesso!", "success");
+          
+          // Atualizar o botão
+          const buttons = document.querySelectorAll(`[onclick="ProjetosPage.solicitarEntradaProjeto(${projetoId})"]`);
+          buttons.forEach(btn => {
+            btn.textContent = "Solicitação Enviada";
+            btn.disabled = true;
+            btn.classList.remove('btn-solicitar-entrada');
+            btn.classList.add('btn-entrar', 'disabled');
+          });
+
+        } catch (error) {
+          let errorMessage = "Falha ao enviar solicitação de entrada.";
+          if (error.response?.data) {
+            errorMessage = typeof error.response.data === 'string'
+              ? error.response.data
+              : error.response.data.message || errorMessage;
+          }
+          window.showNotification(errorMessage, "error");
+        }
       },
 
       getProjectImageUrl(imagemUrl) {
@@ -426,10 +574,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (projetosParaRenderizar.length === 0) {
           grid.innerHTML = `
-            <div style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center; padding: 3rem;">
-              <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <div class="empty-state">
+              <i class="fas fa-users"></i>
               <p>Nenhum projeto encontrado com esses filtros.</p>
-              <p style="font-size: 0.9rem; margin-top: 0.5rem;">Experimente a aba "Projetos Públicos" para explorar mais projetos!</p>
+              <p style="font-size: 0.9rem; margin-top: 0.5rem;">Experimente as outras abas para explorar mais projetos!</p>
             </div>`;
           return;
         }
@@ -549,9 +697,10 @@ document.addEventListener("DOMContentLoaded", () => {
             form.reset();
             this.handlers.closeModal.call(this);
 
-            // Recarregar ambas as listas
+            // Recarregar todas as listas
             await this.fetchMeusProjetos();
             await this.fetchProjetosPublicos();
+            await this.fetchProjetosPrivados();
 
             // Voltar para a aba de meus projetos
             this.state.currentTab = 'meus-projetos';
@@ -629,11 +778,13 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
 
-        // Adicionar listener para busca em projetos públicos
+        // Adicionar listener para busca em todas as abas
         if (searchInput) {
           searchInput.addEventListener('input', () => {
             if (this.state.currentTab === 'projetos-publicos') {
               this.filterPublicProjects();
+            } else if (this.state.currentTab === 'projetos-privados') {
+              this.filterPrivateProjects();
             }
           });
         }
@@ -642,6 +793,8 @@ document.addEventListener("DOMContentLoaded", () => {
           categoryFilter.addEventListener('change', () => {
             if (this.state.currentTab === 'projetos-publicos') {
               this.filterPublicProjects();
+            } else if (this.state.currentTab === 'projetos-privados') {
+              this.filterPrivateProjects();
             }
           });
         }
@@ -667,6 +820,27 @@ document.addEventListener("DOMContentLoaded", () => {
         this.renderFilteredPublicProjects(filteredProjects);
       },
 
+      // NOVO MÉTODO: Filtro para projetos privados
+      filterPrivateProjects() {
+        const search = this.elements.searchInput.value.toLowerCase();
+        const category = this.elements.categoryFilter.value;
+
+        const filteredProjects = this.state.privateProjects.filter((proj) => {
+          const searchMatch = (proj.titulo || "")
+            .toLowerCase()
+            .includes(search) ||
+            (proj.descricao || "").toLowerCase().includes(search) ||
+            (proj.tecnologias || []).some(tech => tech.toLowerCase().includes(search));
+
+          const categoryMatch = (category === "todos") ||
+            (proj.categoria && proj.categoria.toLowerCase() === category);
+
+          return searchMatch && categoryMatch;
+        });
+
+        this.renderFilteredPrivateProjects(filteredProjects);
+      },
+
       renderFilteredPublicProjects(filteredProjects) {
         const grid = this.elements.publicGrid;
         if (!grid) return;
@@ -675,8 +849,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (filteredProjects.length === 0) {
           grid.innerHTML = `
-            <div style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center; padding: 3rem;">
-              <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <div class="empty-state">
+              <i class="fas fa-search"></i>
               <p>Nenhum projeto público encontrado com esses filtros.</p>
             </div>`;
           return;
@@ -750,6 +924,94 @@ document.addEventListener("DOMContentLoaded", () => {
                         : `<button class="btn-entrar" onclick="ProjetosPage.entrarNoProjeto(${proj.id})">Entrar no Projeto</button>`
                     }
                     ${detailsButton}
+                  </div>
+              </div>
+            </div>`;
+          grid.appendChild(card);
+        });
+      },
+
+      // NOVO MÉTODO: Renderizar projetos privados filtrados
+      renderFilteredPrivateProjects(filteredProjects) {
+        const grid = this.elements.privateGrid;
+        if (!grid) return;
+
+        grid.innerHTML = "";
+
+        if (filteredProjects.length === 0) {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-search"></i>
+              <p>Nenhum projeto privado encontrado com esses filtros.</p>
+            </div>`;
+          return;
+        }
+
+        filteredProjects.forEach((proj) => {
+          const card = document.createElement("div");
+          card.className = "projeto-card";
+
+          const imageUrl = this.getProjectImageUrl(proj.imagemUrl);
+
+          const membrosHtml = (proj.membros || [])
+            .slice(0, 5)
+            .map((membro) => {
+              const avatarUrl = this.getMemberAvatarUrl(membro);
+              return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
+            })
+            .join("");
+
+          const remainingMembers = (proj.membros || []).length - 5;
+          const moreMembersHtml = remainingMembers > 0
+            ? `<div class="membro-avatar more-members">+${remainingMembers}</div>`
+            : '';
+
+          const tagsHtml = (proj.tecnologias || [])
+            .slice(0, 3)
+            .map(tag => `<span class="tech-tag">${tag}</span>`)
+            .join("");
+
+          const moreTags = (proj.tecnologias || []).length > 3
+            ? `<span class="tech-tag more-tags">+${(proj.tecnologias || []).length - 3}</span>`
+            : '';
+
+          // Verificar se o usuário atual já é membro
+          const isMember = proj.membros && proj.membros.some(membro => membro.usuarioId === currentUser.id);
+          const isAuthor = proj.autorId === currentUser.id;
+
+          let actionButton = '';
+          if (isAuthor) {
+            actionButton = '<button class="btn-entrar disabled" disabled>Criador</button>';
+          } else if (isMember) {
+            actionButton = '<button class="btn-entrar disabled" disabled>Já é membro</button>';
+          } else {
+            actionButton = `<button class="btn-solicitar-entrada" onclick="ProjetosPage.solicitarEntradaProjeto(${proj.id})">Solicitar Entrada</button>`;
+          }
+
+          card.innerHTML = `
+            <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
+            <div class="projeto-conteudo">
+              <div class="projeto-header">
+                <h3>${proj.titulo}</h3>
+                <span class="projeto-status ${proj.status?.toLowerCase() || 'planejamento'}">${proj.status || 'Em planejamento'}</span>
+              </div>
+              <p class="projeto-descricao">${proj.descricao || "Este projeto não possui uma descrição."}</p>
+              
+              <div class="projeto-meta">
+                <div class="projeto-membros">
+                  ${membrosHtml}${moreMembersHtml}
+                  <span class="membros-count">${proj.totalMembros || proj.membros?.length || 0} membros</span>
+                </div>
+                <div class="projeto-categoria">${proj.categoria || 'Sem categoria'}</div>
+              </div>
+              
+              <div class="projeto-footer">
+                  <div class="projeto-tags">
+                    ${tagsHtml}${moreTags}
+                  </div>
+                  <div class="projeto-actions">
+                    ${actionButton}
+                    <button class="btn-ver-detalhes" onclick="ProjetosPage.showProjectPreview(${JSON.stringify(proj).replace(/"/g, '&quot;')})">Ver Detalhes</button>
                   </div>
               </div>
             </div>`;

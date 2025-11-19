@@ -44,19 +44,20 @@ function normalizeMessageData(message) {
 }
 
 // CORREÇÃO: Função para normalizar status do projeto
+// CORREÇÃO: Função para normalizar status do projeto - apenas para exibição
 function normalizeProjectStatus(status) {
-    if (!status) return 'PLANEJAMENTO';
+    if (!status) return 'Em planejamento';
     
     const statusMap = {
-        'PLANEJAMENTO': 'PLANEJAMENTO',
-        'EM_ANDAMENTO': 'EM_ANDAMENTO',
-        'CONCLUIDO': 'CONCLUIDO',
-        'Em planejamento': 'PLANEJAMENTO',
-        'Em progresso': 'EM_ANDAMENTO', 
-        'Concluído': 'CONCLUIDO'
+        'PLANEJAMENTO': 'Em planejamento',
+        'EM_ANDAMENTO': 'Em progresso', 
+        'CONCLUIDO': 'Concluido',
+        'Em planejamento': 'Em planejamento',
+        'Em progresso': 'Em progresso',
+        'Concluído': 'Concluido'
     };
     
-    return statusMap[status] || 'PLANEJAMENTO';
+    return statusMap[status] || 'Em planejamento';
 }
 
 // CORREÇÃO: Atualizar a função loadProjectMembers
@@ -1841,22 +1842,22 @@ function openProjectSettingsModal() {
     document.getElementById('edit-project-privacy').value = currentProject.grupoPrivado ? 'true' : 'false';
     document.getElementById('edit-project-category').value = currentProject.categoria || '';
     
-    // CORREÇÃO: Preencher status do projeto corretamente
-    const statusSelect = document.getElementById('edit-project-status');
-    if (statusSelect) {
-        // Mapear status do backend para as opções do frontend
-        const statusMapping = {
-            'PLANEJAMENTO': 'PLANEJAMENTO',
-            'EM_ANDAMENTO': 'EM_ANDAMENTO', 
-            'CONCLUIDO': 'CONCLUIDO',
-            'Em planejamento': 'PLANEJAMENTO',
-            'Em progresso': 'EM_ANDAMENTO',
-            'Concluído': 'CONCLUIDO'
-        };
-        
-        const currentStatus = currentProject.status || 'PLANEJAMENTO';
-        statusSelect.value = statusMapping[currentStatus] || 'PLANEJAMENTO';
-    }
+   // CORREÇÃO: Preencher status do projeto corretamente com valores EXATOS que o backend espera
+const statusSelect = document.getElementById('edit-project-status');
+if (statusSelect) {
+    // Mapear status atual para os valores exatos do backend
+    const statusMapping = {
+        'PLANEJAMENTO': 'Em planejamento',
+        'EM_ANDAMENTO': 'Em progresso', 
+        'CONCLUIDO': 'Concluído',
+        'Em planejamento': 'Em planejamento',
+        'Em progresso': 'Em progresso',
+        'Concluído': 'Concluído'
+    };
+    
+    const currentStatus = currentProject.status || 'Em planejamento';
+    statusSelect.value = statusMapping[currentStatus] || 'Em planejamento';
+}
     
     // Preencher tecnologias
     const technologiesInput = document.getElementById('edit-project-technologies');
@@ -1999,11 +2000,11 @@ function updateProjectStatusIndicator() {
             statusClass = 'status-planning';
             break;
         case 'EM_ANDAMENTO':
-            statusText = 'Em Andamento';
+            statusText = 'Em progresso';
             statusClass = 'status-progress';
             break;
         case 'CONCLUIDO':
-            statusText = 'Concluído';
+            statusText = 'Concluido';
             statusClass = 'status-completed';
             break;
         default:

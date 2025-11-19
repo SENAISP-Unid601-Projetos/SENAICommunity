@@ -1,6 +1,7 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.ProjetoDTO;
+import com.SenaiCommunity.BackEnd.DTO.SolicitacaoEntradaDTO;
 import com.SenaiCommunity.BackEnd.Entity.ProjetoMembro;
 import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Service.ArquivoMidiaService;
@@ -31,6 +32,67 @@ public class ProjetoController {
     @Autowired
     private ArquivoMidiaService midiaService;
 
+
+    @PostMapping("/{projetoId}/solicitar-entrada")
+    public ResponseEntity<?> solicitarEntrada(
+            @PathVariable Long projetoId,
+            @RequestParam Long usuarioId) {
+        try {
+            projetoService.solicitarEntrada(projetoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Solicitação enviada com sucesso! O dono do projeto foi notificado."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    // Endpoint para o Dono/Admin ver quem quer entrar
+    @GetMapping("/{projetoId}/solicitacoes")
+    public ResponseEntity<?> listarSolicitacoes(
+            @PathVariable Long projetoId,
+            @RequestParam Long usuarioId) { // ID de quem está tentando ver a lista (o dono)
+        try {
+            List<SolicitacaoEntradaDTO> lista = projetoService.listarSolicitacoesPendentes(projetoId, usuarioId);
+            return ResponseEntity.ok(lista);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro ao buscar solicitações: " + e.getMessage());
+        }
+    }
+
+    // Endpoint para Aceitar
+    @PostMapping("/solicitacoes/{solicitacaoId}/aprovar")
+    public ResponseEntity<?> aprovarSolicitacao(
+            @PathVariable Long solicitacaoId,
+            @RequestParam Long usuarioId) { // ID do dono que está aprovando
+        try {
+            projetoService.aprovarSolicitacaoEntrada(solicitacaoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Solicitação aprovada! Novo membro adicionado."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    // Endpoint para Recusar
+    @PostMapping("/solicitacoes/{solicitacaoId}/recusar")
+    public ResponseEntity<?> recusarSolicitacao(
+            @PathVariable Long solicitacaoId,
+            @RequestParam Long usuarioId) { // ID do dono que está recusando
+        try {
+            projetoService.recusarSolicitacaoEntrada(solicitacaoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Solicitação recusada com sucesso."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
 
     @GetMapping
     public ResponseEntity<List<ProjetoDTO>> listarTodos() {
