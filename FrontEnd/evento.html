@@ -24,14 +24,28 @@
     </div>
     <nav class="nav-icons">
       <div class="nav-icon" data-tooltip="Início"><a href="principal.html"><i class="fas fa-home"></i></a></div>
-      <div class="nav-icon" data-tooltip="Mensagens"><a href="grupo.html"><i class="fas fa-comment-dots"></i></a><span class="badge">3</span></div>
-      <div class="nav-icon" data-tooltip="Notificações"><i class="fas fa-bell"></i><span class="badge">5</span></div>
+      <div class="nav-icon" data-tooltip="Mensagens">
+        <a href="mensagem.html"><i class="fas fa-comment-dots"></i></a>
+        <span class="badge" id="message-badge" style="display: none;">0</span>
+      </div>
+      <div class="nav-icon" data-tooltip="Notificações" id="notifications-icon">
+        <i class="fas fa-bell"></i>
+        <span class="badge" id="notifications-badge" style="display: none;">0</span>
+        <div class="notifications-panel" id="notifications-panel">
+          <div class="notifications-header">
+            <h3>Notificações</h3>
+          </div>
+          <div class="notifications-list" id="notifications-list">
+            <p class="empty-state">Nenhuma notificação nova.</p>
+          </div>
+        </div>
+      </div>
       <div class="theme-toggle" data-tooltip="Alternar tema"><i class="fas fa-moon"></i></div>
     </nav>
     <div class="user-dropdown">
       <div class="user">
-        <div class="profile-pic"><img id="topbar-user-img" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil"></div>
-        <span id="topbar-user-name">Vinicius G.</span><i class="fas fa-chevron-down"></i>
+        <div class="profile-pic"><img id="topbar-user-img" src="https://via.placeholder.com/40" alt="Perfil"></div>
+        <span id="topbar-user-name">Carregando...</span><i class="fas fa-chevron-down"></i>
       </div>
       <div class="dropdown-menu">
         <a href="perfil.html"><i class="fas fa-user"></i> Meu Perfil</a>
@@ -43,30 +57,34 @@
 
   <div class="container">
     <aside class="sidebar">
-      <div class="user-info">
-        <div class="avatar">
-          <img id="sidebar-user-img" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Perfil">
-          <div class="status online"></div>
+      <a href="perfil.html" class="user-info-link">
+        <div class="user-info">
+          <div class="avatar">
+            <img id="sidebar-user-img" src="https://via.placeholder.com/80" alt="Perfil">
+            <div class="status online"></div>
+          </div>
+          <h2 id="sidebar-user-name">Carregando...</h2>
+          <p class="user-title" id="sidebar-user-title">Carregando...</p>
+          <div class="user-stats">
+            <div class="stat"><strong id="connections-count">-</strong><span>Conexões</span></div>
+            <div class="stat"><strong id="projects-count">-</strong><span>Projetos</span></div>
+          </div>
         </div>
-        <h2 id="sidebar-user-name">Vinicius Gallo Santos</h2>
-        <p class="user-title" id="sidebar-user-title">Estudante de ADS</p>
-        <div class="user-stats">
-          <div class="stat"><strong id="connections-count">11</strong><span>Conexões</span></div>
-          <div class="stat"><strong id="projects-count">2</strong><span>Projetos</span></div>
-        </div>
-      </div>
+      </a>
       <nav class="menu">
         <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
-        <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge" id="message-badge" style="display: none;">0</span></a>
+        <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge" id="message-badge-sidebar" style="display: none;">0</span></a>
         <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
         <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
         <a href="evento.html" class="active"><i class="fas fa-calendar-check"></i> Eventos</a>
+        <a href="buscar_amigos.html"><i class="fas fa-user-plus"></i> Encontrar Pessoas</a>
+        <a href="amizades.html"><i class="fas fa-user-friends"></i> Minhas Conexões</a>
       </nav>
       
-      <div class="online-friends">
-        <h3>Amigos Online</h3>
-        <div class="friends-list" id="online-friends-list">
-          <p class="empty-state">Carregando...</p>
+      <div class="widget-card online-friends" id="online-friends-widget">
+        <h3 class="widget-title">Amigos Online</h3>
+        <div class="friend-list" id="online-friends-list">
+          <p class="empty-state">Nenhum amigo online no momento.</p>
         </div>
       </div>
     </aside>
@@ -116,9 +134,11 @@
   </div>
 
 <!-- Modal para Criar/Editar Evento -->
-<div id="evento-modal" class="modal">
+<div id="evento-modal" class="modal-overlay" style="display: none;">
   <div class="modal-content">
-    <h2 id="evento-modal-titulo">Criar Evento</h2>
+    <div class="modal-header">
+      <h3 id="evento-modal-titulo">Criar Evento</h3>
+    </div>
     <form id="evento-form">
       <input type="hidden" id="evento-id">
       <div class="form-group">
@@ -163,9 +183,9 @@
         <input type="text" id="evento-imagem" placeholder="Cole a URL da imagem">
       </div>
     </form>
-    <div class="modal-actions">
-      <button id="salvar-evento-btn" class="btn btn-primary">Salvar</button>
+    <div class="modal-footer">
       <button id="cancelar-evento-btn" class="btn btn-secondary">Cancelar</button>
+      <button id="salvar-evento-btn" class="btn btn-primary">Salvar</button>
     </div>
   </div>
 </div>
@@ -177,64 +197,79 @@
 </div>
 
 <!-- Modais de Perfil -->
-<div id="edit-profile-modal" class="modal">
+<div id="edit-profile-modal" class="modal-overlay" style="display: none;">
   <div class="modal-content">
-    <h2>Editar Perfil</h2>
+    <div class="modal-header">
+      <h3>Editar Perfil</h3>
+    </div>
     <form id="edit-profile-form">
-      <div class="form-group">
-        <label for="edit-profile-pic-input">Foto de Perfil</label>
-        <input type="file" id="edit-profile-pic-input" accept="image/*">
-        <div class="profile-pic-preview">
-          <img id="edit-profile-pic-preview" src="" alt="Preview">
-        </div>
+      <div class="profile-pic-editor">
+        <label for="edit-profile-pic-input">
+          <img src="https://via.placeholder.com/100" alt="Foto de Perfil" id="edit-profile-pic-preview">
+          <div class="pic-editor-overlay">
+            <i class="fas fa-camera"></i>
+            <span>Alterar Foto</span>
+          </div>
+        </label>
+        <input type="file" id="edit-profile-pic-input" accept="image/*" style="display: none;">
       </div>
+
       <div class="form-group">
-        <label for="edit-profile-name">Nome</label>
-        <input type="text" id="edit-profile-name" required>
+        <label for="edit-profile-name">Nome Completo</label>
+        <input type="text" id="edit-profile-name">
       </div>
       <div class="form-group">
         <label for="edit-profile-bio">Bio</label>
-        <textarea id="edit-profile-bio" rows="3"></textarea>
+        <textarea id="edit-profile-bio" rows="3" placeholder="Fale um pouco sobre você..."></textarea>
       </div>
       <div class="form-group">
         <label for="edit-profile-dob">Data de Nascimento</label>
         <input type="date" id="edit-profile-dob">
       </div>
+
+      <hr class="form-divider">
+
       <div class="form-group">
-        <label for="edit-profile-password">Nova Senha</label>
-        <input type="password" id="edit-profile-password" placeholder="Deixe em branco para manter a atual">
+        <label for="edit-profile-password">Nova Senha (deixe em branco para não alterar)</label>
+        <input type="password" id="edit-profile-password">
       </div>
       <div class="form-group">
         <label for="edit-profile-password-confirm">Confirmar Nova Senha</label>
-        <input type="password" id="edit-profile-password-confirm" placeholder="Deixe em branco para manter a atual">
+        <input type="password" id="edit-profile-password-confirm">
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancel-edit-profile-btn">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
       </div>
     </form>
-    <div class="modal-actions">
-      <button type="submit" form="edit-profile-form" class="btn btn-primary">Salvar</button>
-      <button id="cancel-edit-profile-btn" class="btn btn-secondary">Cancelar</button>
-    </div>
   </div>
 </div>
 
-<div id="delete-account-modal" class="modal">
+<div id="delete-account-modal" class="modal-overlay" style="display: none;">
   <div class="modal-content">
-    <h2>Excluir Conta</h2>
-    <p>Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.</p>
+    <div class="modal-header">
+      <h3>Excluir Conta</h3>
+    </div>
     <form id="delete-account-form">
+      <p class="warning-text">
+        <strong>Atenção!</strong> Esta ação é irreversível. Todos os seus dados, posts e comentários serão
+        permanentemente apagados.
+      </p>
       <div class="form-group">
-        <label for="delete-confirm-password">Digite sua senha para confirmar:</label>
+        <label for="delete-confirm-password">Para confirmar, digite sua senha atual:</label>
         <input type="password" id="delete-confirm-password" required>
       </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancel-delete-account-btn">Cancelar</button>
+        <button type="submit" class="btn btn-danger">Excluir Minha Conta Permanentemente</button>
+      </div>
     </form>
-    <div class="modal-actions">
-      <button type="submit" form="delete-account-form" class="btn btn-danger">Excluir Conta</button>
-      <button id="cancel-delete-account-btn" class="btn btn-secondary">Cancelar</button>
-    </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script src="Principal/JS/principal.js"></script>
 <script src="Evento/JS/evento.js"></script>

@@ -61,7 +61,10 @@ public class UsuarioController {
     }
 
     @GetMapping("/buscar")
-    public ResponseEntity<List<UsuarioBuscaDTO>> buscarUsuarios(@RequestParam("nome") String nome, Principal principal) {
+    public ResponseEntity<List<UsuarioBuscaDTO>> buscarUsuarios(
+            @RequestParam(value = "nome", required = false, defaultValue = "") String nome,
+            Principal principal) {
+
         List<UsuarioBuscaDTO> usuarios = usuarioService.buscarUsuariosPorNome(nome, principal.getName());
         return ResponseEntity.ok(usuarios);
     }

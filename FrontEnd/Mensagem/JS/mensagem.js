@@ -40,6 +40,24 @@ document.addEventListener("DOMContentLoaded", () => {
   let defaultAvatarUrl;
 
   /**
+   * Atualiza badge de mensagens não lidas
+   */
+  function updateMessageBadge(count) {
+    const messageBadgeElement = document.getElementById("message-badge");
+    const messageBadgeSidebar = document.getElementById("message-badge-sidebar");
+    
+    if (messageBadgeElement) {
+      messageBadgeElement.textContent = count;
+      messageBadgeElement.style.display = count > 0 ? "flex" : "none";
+    }
+    
+    if (messageBadgeSidebar) {
+      messageBadgeSidebar.textContent = count;
+      messageBadgeSidebar.style.display = count > 0 ? "flex" : "none";
+    }
+  }
+
+  /**
    * Função principal que inicializa a página de chat
    */
   function initChatPage(detail) {
@@ -55,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Inscreve para receber atualizações de contagem de não lidas (WebSocket)
     stompClient.subscribe(`/user/queue/contagem`, (message) => {
       const count = JSON.parse(message.body);
-      updateTotalUnreadCount(count);
+      updateMessageBadge(count);
     });
 
     fetchConversations();
@@ -71,18 +89,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
-  /**
-   * Atualiza contagem total de mensagens não lidas (para o badge global)
-   */
-  function updateTotalUnreadCount(count) {
-    // Atualiza o badge global de mensagens (se existir na página)
-    const messageBadgeElement = document.getElementById("message-badge");
-    if (messageBadgeElement) {
-      messageBadgeElement.textContent = count;
-      messageBadgeElement.style.display = count > 0 ? "flex" : "none";
-    }
-  }
 
   /**
    * Busca as conversas existentes

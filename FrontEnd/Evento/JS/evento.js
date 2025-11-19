@@ -402,6 +402,13 @@ async function initEventos() {
         eventoModal.style.display = 'none';
       }
     });
+
+    // Fechar modal com ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        eventoModal.style.display = 'none';
+      }
+    });
   }
 
   // Funções globais para os botões
