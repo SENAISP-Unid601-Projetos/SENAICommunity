@@ -1,0 +1,304 @@
+/* =================================================================
+ESTILOS ESPECÍFICOS PARA A PÁGINA DE AMIZADES - CORRIGIDO
+================================================================= */
+
+/* Container principal */
+.friends-page-container {
+    width: 100%;
+}
+
+/* --- GRID DE AMIGOS --- */
+.friends-grid {
+    display: grid;
+    /* Ajuste para caber melhor em telas médias e grandes */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+    gap: 1.5rem;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+/* --- CARD DE AMIGO --- */
+.friend-card {
+    /* MUDANÇA CRÍTICA: Usar bg-tertiary ou bg-primary para dar contraste com o widget-card */
+    background: var(--bg-tertiary); 
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.friend-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    border-color: var(--accent-primary);
+    background: var(--bg-hover); /* Leve destaque no hover */
+}
+
+/* Header do card */
+.friend-card-header {
+    display: flex;
+    align-items: center; /* Centraliza verticalmente */
+    gap: 1rem;
+    margin-bottom: 1rem;
+    text-decoration: none;
+    color: inherit;
+    flex: 1;
+}
+
+/* Avatar */
+.friend-avatar {
+    position: relative;
+    flex-shrink: 0;
+    width: 70px;
+    height: 70px;
+}
+
+.friend-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%; /* Garante que fique redondo */
+    object-fit: cover;
+    border: 3px solid var(--bg-secondary); /* Borda para separar do fundo */
+    background-color: var(--bg-quaternary); /* Cor de fundo caso imagem falhe */
+}
+
+/* Status Online/Offline */
+.friend-status {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-tertiary);
+    z-index: 2;
+}
+
+.friend-status.online {
+    background-color: var(--online);
+    box-shadow: 0 0 8px rgba(35, 134, 54, 0.5);
+}
+
+.friend-status.offline {
+    background-color: var(--text-tertiary);
+}
+
+/* Infos do Usuário */
+.friend-info {
+    flex: 1;
+    overflow: hidden; /* Previne que textos longos quebrem o layout */
+}
+
+.friend-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.friend-email {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Ações (Botões) */
+.friend-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.friend-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    text-align: center;
+    border: none;
+}
+
+.friend-action-btn.primary {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.friend-action-btn.primary:hover {
+    background: var(--accent-secondary);
+}
+
+.friend-action-btn.danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+.friend-action-btn.danger:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* --- ESTADOS VAZIOS --- */
+.empty-friends-state, .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    border-radius: 16px;
+    border: 1px dashed var(--border-color);
+    width: 100%;
+}
+
+.empty-friends-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+    color: var(--accent-primary);
+}
+
+/* --- SEÇÕES DE CONEXÃO --- */
+.connections-section {
+    margin-bottom: 3rem; /* Espaço entre as seções */
+}
+
+.connections-section h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.connections-section h3::before {
+    content: "";
+    display: block;
+    width: 4px;
+    height: 20px;
+    background: var(--accent-primary);
+    border-radius: 2px;
+}
+
+/* --- CARDS DE PEDIDOS (RECEBIDOS/ENVIADOS) --- */
+/* Ajustando para usar Grid também nos pedidos para consistência */
+#received-requests-list, #sent-requests-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.request-card {
+    background: var(--bg-tertiary); /* Contraste */
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s ease;
+}
+
+.request-card:hover {
+    border-color: var(--accent-primary);
+}
+
+.request-avatar img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.request-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.request-info h4 {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.request-info p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.request-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.request-actions .btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.request-actions .btn-primary {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.request-actions .btn-secondary {
+    background: var(--bg-quaternary);
+    color: var(--text-primary);
+}
+
+.request-actions .btn-danger {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .friends-grid {
+        grid-template-columns: 1fr; /* 1 coluna no mobile */
+    }
+    
+    .friend-card-header {
+        flex-direction: row;
+        text-align: left;
+    }
+
+    .request-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .request-actions {
+        width: 100%;
+        justify-content: center;
+    }
+}

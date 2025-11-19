@@ -54,7 +54,7 @@ function normalizeProjectStatus(status) {
         'Em planejamento': 'Em planejamento',
         'Em progresso': 'Em progresso',
         'Concluído': 'Concluído',
-        'Concluido': 'Concluído' // Adicionado para lidar com variação sem acento
+        'Concluido': 'Concluído'
     };
     
     return statusMap[status] || 'Em planejamento';
@@ -67,7 +67,8 @@ function normalizeStatusForBackend(status) {
     const statusMap = {
         'Em planejamento': 'Em planejamento',
         'Em progresso': 'Em progresso', 
-        'Concluído': 'Concluído'
+        'Concluído': 'Concluido', 
+        'Concluido': 'Concluido'
     };
     
     return statusMap[status] || 'Em planejamento';
@@ -98,6 +99,52 @@ async function loadProjectMembers() {
         }
     } finally {
         hideLoading();
+    }
+}
+
+async function loadSolicitacoes() {
+    try {
+        // CORREÇÃO DE SINTAXE: Havia uma quebra de linha incorreta aqui
+        const response = await axios.get(`${backendUrl}/projetos/${projectId}/solicitacoes?usuarioId=${currentUser.id}`);
+        const solicitacoes = response.data;
+        
+        const solicitacoesList = document.getElementById('solicitacoes-list');
+        solicitacoesList.innerHTML = '';
+        
+        if (solicitacoes.length === 0) {
+            solicitacoesList.innerHTML = '<p class="empty-state">Nenhuma solicitação pendente</p>';
+            return;
+        }
+        
+        solicitacoes.forEach(solicitacao => {
+            const solicitacaoElement = document.createElement('div');
+            solicitacaoElement.className = 'solicitacao-item';
+            
+            const userAvatar = solicitacao.usuarioFoto ? 
+                (solicitacao.usuarioFoto.startsWith('http') ? solicitacao.usuarioFoto : `${backendUrl}${solicitacao.usuarioFoto}`) :
+                defaultAvatarUrl;
+            
+            solicitacaoElement.innerHTML = `
+                <div class="solicitacao-user">
+                    <img src="${userAvatar}" alt="${solicitacao.usuarioNome}" onerror="this.src='${defaultAvatarUrl}'">
+                    <div class="solicitacao-user-info">
+                        <div class="solicitacao-user-name">${solicitacao.usuarioNome}</div>
+                        <div class="solicitacao-user-email">${solicitacao.usuarioEmail}</div>
+                        <div class="solicitacao-data">${new Date(solicitacao.dataSolicitacao).toLocaleString('pt-BR')}</div>
+                    </div>
+                </div>
+                <div class="solicitacao-actions">
+                    <button class="btn btn-primary" onclick="aceitarSolicitacao(${solicitacao.id})">Aceitar</button>
+                    <button class="btn btn-danger" onclick="recusarSolicitacao(${solicitacao.id})">Recusar</button>
+                </div>
+            `;
+            solicitacoesList.appendChild(solicitacaoElement);
+        });
+        
+    } catch (error) {
+        console.error("Erro ao carregar solicitações:", error);
+        // Mostra erro visual para o usuário saber que falhou
+        document.getElementById('solicitacoes-list').innerHTML = '<p class="empty-state" style="color: var(--danger);">Erro ao carregar solicitações. Tente novamente.</p>';
     }
 }
 
@@ -1744,13 +1791,17 @@ function setupSolicitacoesButton() {
         solicitacoesBtn.className = 'action-btn';
         solicitacoesBtn.innerHTML = '<i class="fas fa-user-clock"></i>';
         solicitacoesBtn.setAttribute('data-tooltip', 'Solicitações de entrada');
-        solicitacoesBtn.style.display = 'none';
+        solicitacoesBtn.style.display = 'none'; // Começa invisível
         
         solicitacoesBtn.addEventListener('click', function() {
             openSolicitacoesModal();
         });
         
         chatActions.appendChild(solicitacoesBtn);
+
+        if (currentUser && currentProject) {
+            checkUserRole();
+        }
     }
 }
 
@@ -2124,8 +2175,7 @@ function openSolicitacoesModal() {
 // NOVA FUNÇÃO: Carregar solicitações pendentes
 async function loadSolicitacoes() {
     try {
-        const response = await axios.get(`${backendUrl}/projetos/${projectId}/solicitacoes?usuarioId=${currentUser.id}`);
-        const solicitacoes = response.data;
+        const response = await axios.get(`${backendUrl}/projetos/${projectId}/solicitacoes?usuarioId=${currentUser.id}`);        const solicitacoes = response.data;
         
         const solicitacoesList = document.getElementById('solicitacoes-list');
         solicitacoesList.innerHTML = '';

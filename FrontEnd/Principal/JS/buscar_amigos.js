@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="status ${statusClass}" data-user-email="${usuario.email}"></div>
           </div>
           <div class="user-card-info">
-            <a href="perfil_usuario.html?id=${usuario.id}" class="user-card-link">
+            <a href="perfil.html?id=${usuario.id}" class="user-card-link">
               <h4>${usuario.nome}</h4>
             </a>
             <p>${usuario.email}</p>

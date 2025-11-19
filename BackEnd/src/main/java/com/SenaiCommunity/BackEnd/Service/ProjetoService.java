@@ -58,7 +58,6 @@ public class ProjetoService {
     // Método auxiliar para notificar atualizações em tempo real
     private void notificarAtualizacaoProjeto(Long projetoId, String tipo) {
         try {
-            // Envia um payload leve avisando o frontend para recarregar dados
             messagingTemplate.convertAndSend("/topic/grupo/" + projetoId,
                     Map.of("tipo", tipo, "projetoId", projetoId));
         } catch (Exception e) {
@@ -66,10 +65,6 @@ public class ProjetoService {
         }
     }
 
-    /**
-     * Permite que um usuário solicite entrada em um projeto privado.
-     * Notifica o dono do projeto via WebSocket/Banco.
-     */
     @Transactional
     public void solicitarEntrada(Long projetoId, Long usuarioId) {
         Projeto projeto = projetoRepository.findById(projetoId)
@@ -78,7 +73,6 @@ public class ProjetoService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        // 1. Verifica se o projeto é privado
         if (!projeto.getGrupoPrivado()) {
             throw new IllegalArgumentException("Este projeto é público. Você pode entrar diretamente sem solicitar.");
         }
@@ -113,7 +107,6 @@ public class ProjetoService {
         SolicitacaoEntrada solicitacao = solicitacaoEntradaRepository.findById(solicitacaoId)
                 .orElseThrow(() -> new EntityNotFoundException("Solicitação não encontrada"));
 
-        // Verifica se quem está cancelando é o próprio dono da solicitação
         if (!solicitacao.getUsuarioSolicitante().getId().equals(usuarioId)) {
             throw new IllegalArgumentException("Você só pode cancelar suas próprias solicitações.");
         }
@@ -135,14 +128,12 @@ public class ProjetoService {
         ProjetoMembro membro = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Você não é membro deste projeto."));
 
-        // Regra importante: O dono (Autor) não pode sair sem antes passar a liderança ou deletar o grupo
         if (projeto.getAutor().getId().equals(usuarioId)) {
             throw new IllegalArgumentException("O dono do projeto não pode sair. Delete o projeto ou transfira a propriedade.");
         }
 
         projetoMembroRepository.delete(membro);
 
-        // Notificações
         String mensagem = String.format("%s saiu do projeto '%s'.", membro.getUsuario().getNome(), projeto.getTitulo());
         notificacaoService.criarNotificacao(projeto.getAutor(), mensagem, "MEMBRO_SAIU", projeto.getId());
 
@@ -150,7 +141,6 @@ public class ProjetoService {
     }
 
     public List<SolicitacaoEntradaDTO> listarSolicitacoesPendentes(Long projetoId, Long usuarioLogadoId) {
-        // Apenas Admin ou Moderador pode ver solicitações
         if (!isAdminOuModerador(projetoId, usuarioLogadoId)) {
             throw new IllegalArgumentException("Sem permissão para visualizar solicitações.");
         }
@@ -176,7 +166,6 @@ public class ProjetoService {
         SolicitacaoEntrada solicitacao = solicitacaoEntradaRepository.findById(solicitacaoId)
                 .orElseThrow(() -> new EntityNotFoundException("Solicitação não encontrada"));
 
-        // Verifica permissão (quem está aprovando deve ser dono/admin do projeto)
         if (!isAdminOuModerador(solicitacao.getProjeto().getId(), usuarioLogadoId)) {
             throw new IllegalArgumentException("Você não tem permissão para aprovar membros neste projeto.");
         }
@@ -187,7 +176,6 @@ public class ProjetoService {
 
         Projeto projeto = solicitacao.getProjeto();
 
-        // Verifica limite de membros (Lógica reutilizada do seu código existente)
         Integer totalMembros = projetoMembroRepository.countMembrosByProjetoId(projeto.getId());
         if (totalMembros == null) totalMembros = 0;
         Integer maxMembros = projeto.getMaxMembros() != null ? projeto.getMaxMembros() : 50;
@@ -196,27 +184,22 @@ public class ProjetoService {
             throw new IllegalArgumentException("O projeto já atingiu o limite máximo de membros.");
         }
 
-        // 1. Atualiza status da solicitação
         solicitacao.setStatus(SolicitacaoEntrada.StatusSolicitacao.ACEITO);
         solicitacaoEntradaRepository.save(solicitacao);
 
-        // 2. Cria o membro no projeto
         ProjetoMembro novoMembro = new ProjetoMembro();
         novoMembro.setProjeto(projeto);
         novoMembro.setUsuario(solicitacao.getUsuarioSolicitante());
         novoMembro.setRole(ProjetoMembro.RoleMembro.MEMBRO);
         novoMembro.setDataEntrada(LocalDateTime.now());
-        // Define quem aprovou como quem "convidou" para fins de registro
         Usuario quemAprovou = usuarioRepository.findById(usuarioLogadoId).orElse(projeto.getAutor());
         novoMembro.setConvidadoPor(quemAprovou);
 
         projetoMembroRepository.save(novoMembro);
 
-        // 3. Notifica o solicitante que ele foi aceito
         String mensagem = String.format("Sua solicitação para entrar no projeto '%s' foi aprovada!", projeto.getTitulo());
         notificacaoService.criarNotificacao(solicitacao.getUsuarioSolicitante(), mensagem, "SOLICITACAO_ACEITA", projeto.getId());
 
-        // 4. Atualiza WebSocket para todos no grupo verem o novo membro
         notificarAtualizacaoProjeto(projeto.getId(), "membros_atualizados");
     }
 
@@ -233,11 +216,9 @@ public class ProjetoService {
             throw new IllegalArgumentException("Esta solicitação não está pendente.");
         }
 
-        // Atualiza status para recusado
         solicitacao.setStatus(SolicitacaoEntrada.StatusSolicitacao.RECUSADO);
         solicitacaoEntradaRepository.save(solicitacao);
 
-        // Notifica o solicitante
         String mensagem = String.format("Sua solicitação para entrar no projeto '%s' foi recusada.", solicitacao.getProjeto().getTitulo());
         notificacaoService.criarNotificacao(solicitacao.getUsuarioSolicitante(), mensagem, "SOLICITACAO_RECUSADA", solicitacao.getProjeto().getId());
     }
@@ -249,18 +230,12 @@ public class ProjetoService {
 
     public List<ProjetoDTO> listarProjetosPrivados() {
         List<Projeto> projetos = projetoRepository.findByGrupoPrivadoTrue();
-        return projetos.stream()
-                .map(this::converterParaDTO)
-                .collect(Collectors.toList());
+        return projetos.stream().map(this::converterParaDTO).collect(Collectors.toList());
     }
 
     public List<ProjetoDTO> listarProjetosDoUsuario(Long usuarioId) {
         List<ProjetoMembro> membros = projetoMembroRepository.findByUsuarioId(usuarioId);
-
-        return membros.stream()
-                .map(ProjetoMembro::getProjeto)
-                .map(this::converterParaDTO)
-                .collect(Collectors.toList());
+        return membros.stream().map(ProjetoMembro::getProjeto).map(this::converterParaDTO).collect(Collectors.toList());
     }
 
     public ProjetoDTO buscarPorId(Long id) {
@@ -312,13 +287,11 @@ public class ProjetoService {
         String mensagem = String.format("%s entrou no projeto '%s'.", usuario.getNome(), projeto.getTitulo());
         notificacaoService.criarNotificacao(projeto.getAutor(), mensagem, "MEMBRO_ADICIONADO", projeto.getId());
 
-        // NOTIFICAR WEBSOCKET
         notificarAtualizacaoProjeto(projetoId, "membros_atualizados");
     }
 
     @Transactional
     public ProjetoDTO salvar(ProjetoDTO dto, MultipartFile foto) {
-
         if (filtroProfanidade.contemProfanidade(dto.getTitulo()) ||
                 filtroProfanidade.contemProfanidade(dto.getDescricao())) {
             throw new ConteudoImproprioException("Os dados do projeto contêm texto não permitido.");
@@ -354,7 +327,6 @@ public class ProjetoService {
                 String urlCloudinary = midiaService.upload(foto);
                 projeto.setImagemUrl(urlCloudinary);
             } catch (IOException e) {
-                System.err.println("[ERROR] Erro ao salvar a foto do projeto: " + e.getMessage());
                 e.printStackTrace();
                 throw new RuntimeException("Erro ao salvar a foto do projeto", e);
             }
@@ -397,7 +369,6 @@ public class ProjetoService {
             adicionarMembroComoAdmin(salvo, autor);
             enviarConvitesAutomaticos(salvo, dto.getProfessorIds(), dto.getAlunoIds(), autor.getId());
         } else {
-            // SE FOR ATUALIZAÇÃO, NOTIFICAR WEBSOCKET
             notificarAtualizacaoProjeto(salvo.getId(), "projeto_atualizado");
         }
 
@@ -414,7 +385,6 @@ public class ProjetoService {
                 }
             }
         }
-
         if (alunoIds != null) {
             for (Long alunoId : alunoIds) {
                 try {
@@ -452,7 +422,6 @@ public class ProjetoService {
 
         Integer totalMembros = projetoMembroRepository.countMembrosByProjetoId(projetoId);
         if (totalMembros == null) totalMembros = 0;
-
         Integer maxMembros = projeto.getMaxMembros();
         if (maxMembros == null) maxMembros = 50;
 
@@ -488,7 +457,6 @@ public class ProjetoService {
 
         Integer totalMembros = projetoMembroRepository.countMembrosByProjetoId(convite.getProjeto().getId());
         if (totalMembros == null) totalMembros = 0;
-
         Integer maxMembros = convite.getProjeto().getMaxMembros();
         if (maxMembros == null) maxMembros = 50;
 
@@ -512,7 +480,6 @@ public class ProjetoService {
         String mensagem = String.format("%s aceitou seu convite e agora faz parte do projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
         notificacaoService.criarNotificacao(convite.getProjeto().getAutor(), mensagem, "MEMBRO_ADICIONADO", convite.getProjeto().getId());
 
-        // NOTIFICAR WEBSOCKET
         notificarAtualizacaoProjeto(convite.getProjeto().getId(), "membros_atualizados");
     }
 
@@ -541,7 +508,6 @@ public class ProjetoService {
         String mensagem = String.format("Você foi removido do projeto '%s'.", projeto.getTitulo());
         notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "MEMBRO_REMOVIDO", projeto.getId());
 
-        // NOTIFICAR WEBSOCKET
         notificarAtualizacaoProjeto(projetoId, "membros_atualizados");
     }
 
@@ -565,7 +531,6 @@ public class ProjetoService {
         String mensagem = String.format("Sua permissão no projeto '%s' foi alterada para %s.", projeto.getTitulo(), novaRole.toString());
         notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "PERMISSAO_ALTERADA", projeto.getId());
 
-        // NOTIFICAR WEBSOCKET
         notificarAtualizacaoProjeto(projetoId, "membros_atualizados");
     }
 
@@ -583,15 +548,27 @@ public class ProjetoService {
         if (novoTitulo != null) projeto.setTitulo(novoTitulo);
         if (novaDescricao != null) projeto.setDescricao(novaDescricao);
         if (novaImagemUrl != null) projeto.setImagemUrl(novaImagemUrl);
+
+        // --- CORREÇÃO AQUI: Aceitar com e sem acento ---
         if (novoStatus != null) {
-            String statusNormalizado = novoStatus.toUpperCase();
-            if (novoStatus.equals("Em planejamento") ||
-                    novoStatus.equals("Em progresso") || novoStatus.equals("Concluido")) {
-                projeto.setStatus(novoStatus);
+            if (novoStatus.equalsIgnoreCase("Em planejamento") ||
+                    novoStatus.equalsIgnoreCase("Em progresso") ||
+                    novoStatus.equalsIgnoreCase("Concluido") ||
+                    novoStatus.equalsIgnoreCase("Concluído")) {
+
+                // Se for "Concluído" (com acento), salva como "Concluido" ou mantém,
+                // dependendo de como você quer no banco. Vou manter o original "Concluido" (sem acento)
+                // se vier com acento, para padronizar.
+                if (novoStatus.equalsIgnoreCase("Concluído")) {
+                    projeto.setStatus("Concluido");
+                } else {
+                    projeto.setStatus(novoStatus);
+                }
             } else {
                 throw new IllegalArgumentException("Status deve ser: Em planejamento, Em progresso ou Concluído");
             }
         }
+
         if (novoMaxMembros != null) projeto.setMaxMembros(novoMaxMembros);
         if (novoGrupoPrivado != null) projeto.setGrupoPrivado(novoGrupoPrivado);
         if (novaCategoria != null) projeto.setCategoria(novaCategoria);
@@ -599,7 +576,6 @@ public class ProjetoService {
 
         projetoRepository.save(projeto);
 
-        // NOTIFICAR WEBSOCKET
         notificarAtualizacaoProjeto(projetoId, "projeto_atualizado");
     }
 
@@ -616,24 +592,20 @@ public class ProjetoService {
             throw new IllegalArgumentException("Convite não está pendente");
         }
 
-        // Recusar convite
         convite.setStatus(ConviteProjeto.StatusConvite.RECUSADO);
         convite.setDataResposta(LocalDateTime.now());
         conviteProjetoRepository.save(convite);
 
         String mensagem = String.format("%s recusou o convite para o projeto '%s'.", convite.getUsuarioConvidado().getNome(), convite.getProjeto().getTitulo());
-        // Notificar quem convidou
         notificacaoService.criarNotificacao(convite.getConvidadoPor(), mensagem, "CONVITE_RECUSADO", convite.getProjeto().getId());
     }
 
     private boolean isAdminOuModerador(Long projetoId, Long usuarioId) {
-        // Verificar se é o criador do projeto
         Projeto projeto = projetoRepository.findById(projetoId).orElse(null);
         if (projeto != null && projeto.getAutor() != null && projeto.getAutor().getId().equals(usuarioId)) {
             return true;
         }
 
-        // Verificar se tem role de ADMIN ou MODERADOR
         ProjetoMembro membro = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, usuarioId).orElse(null);
         return membro != null && (membro.getRole() == ProjetoMembro.RoleMembro.ADMIN ||
                 membro.getRole() == ProjetoMembro.RoleMembro.MODERADOR);
@@ -644,15 +616,11 @@ public class ProjetoService {
         Projeto projeto = projetoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado com id: " + id));
 
-        // Verificar se o usuário é admin do projeto
         if (!isAdmin(id, adminId)) {
             throw new IllegalArgumentException("Apenas administradores podem deletar o projeto");
         }
 
-        // Deletar o projeto (cascade irá remover membros automaticamente)
         projetoRepository.deleteById(id);
-
-        System.out.println("[DEBUG] Projeto deletado com sucesso");
     }
 
     private ProjetoDTO converterParaDTO(Projeto projeto) {
@@ -681,28 +649,21 @@ public class ProjetoService {
         dto.setAutorId(projeto.getAutor() != null ? projeto.getAutor().getId() : null);
         dto.setAutorNome(projeto.getAutor() != null ? projeto.getAutor().getNome() : null);
 
-        // Manter compatibilidade
         if (projeto.getProfessores() != null) {
-            dto.setProfessorIds(projeto.getProfessores().stream()
-                    .map(Professor::getId)
-                    .collect(Collectors.toList()));
+            dto.setProfessorIds(projeto.getProfessores().stream().map(Professor::getId).collect(Collectors.toList()));
         }
-
         if (projeto.getAlunos() != null) {
-            dto.setAlunoIds(projeto.getAlunos().stream()
-                    .map(Aluno::getId)
-                    .collect(Collectors.toList()));
+            dto.setAlunoIds(projeto.getAlunos().stream().map(Aluno::getId).collect(Collectors.toList()));
         }
 
         List<ProjetoMembro> membros;
         try {
             membros = projetoMembroRepository.findByProjetoId(projeto.getId());
         } catch (Exception e) {
-            membros = List.of(); // Lista vazia em caso de erro
+            membros = List.of();
         }
 
         dto.setTotalMembros(membros.size());
-
         dto.setMembros(membros.stream().map(membro -> {
             ProjetoDTO.MembroDTO membroDTO = new ProjetoDTO.MembroDTO();
             membroDTO.setId(membro.getId());
@@ -740,13 +701,10 @@ public class ProjetoService {
     }
 
     private boolean isAdmin(Long projetoId, Long usuarioId) {
-        // Verificar se é o criador do projeto
         Projeto projeto = projetoRepository.findById(projetoId).orElse(null);
         if (projeto != null && projeto.getAutor() != null && projeto.getAutor().getId().equals(usuarioId)) {
             return true;
         }
-
-        // Verificar se tem role de ADMIN
         ProjetoMembro membro = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, usuarioId).orElse(null);
         return membro != null && membro.getRole() == ProjetoMembro.RoleMembro.ADMIN;
     }

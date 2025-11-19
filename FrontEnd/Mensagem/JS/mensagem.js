@@ -76,6 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updateMessageBadge(count);
     });
 
+    checkStartChatParam();
     fetchConversations();
     setupChatEventListeners();
   }
