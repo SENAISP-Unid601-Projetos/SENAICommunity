@@ -1,259 +1,424 @@
+// evento.js - Substitua todo o conteúdo por este código
 document.addEventListener('DOMContentLoaded', () => {
-  const messageBadgeElement = document.getElementById('message-badge');
   const eventosGrid = document.querySelector('.eventos-grid');
   const meusEventosLista = document.getElementById('meus-eventos-lista');
-  const hoje = new Date();
-  // Pega o elemento da barra de pesquisa pelo ID
   const searchInput = document.getElementById('search-input');
-
-  // Simulação de dados de eventos
-  const mockEventos = [
-    // --- EVENTOS FUTUROS ---
-    {
-      id: 5,
-      titulo: "Semana da Cibersegurança: Defenda-se no Mundo Digital",
-      imagem: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-      data: new Date(2025, 5, 13), // 13 de Junho de 2025 (já passou da data atual)
-      hora: "19:00 - 21:00 (dias 9 a 13)",
-      local: "Online e Laboratório 5",
-      formato: "Híbrido",
-      categoria: "Tecnologia",
-      confirmado: false
-    },
-    {
-      id: 2,
-      titulo: "Workshop de Design de APIs com Node.js",
-      imagem: "https://images.unsplash.com/photo-1521185496955-15097b20c5fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-      data: new Date(2025, 6, 15), // 15 de Julho de 2025
-      hora: "19:00 - 22:00",
-      local: "Plataforma Zoom",
-      formato: "Online",
-      categoria: "Tecnologia",
-      confirmado: true
-    },
-    {
-      id: 6,
-      titulo: "Workshop: Construindo seu Portfólio de Desenvolvedor",
-      imagem: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-      data: new Date(2025, 6, 12), // 12 de Julho de 2025
-      hora: "10:00 - 13:00",
-      local: "YouTube Live",
-      formato: "Online",
-      categoria: "Carreira",
-      confirmado: false
-    },
-     {
-      id: 7,
-      titulo: "Introdução à Cloud com AWS e Azure",
-      imagem: "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-      data: new Date(2025, 5, 28), // 28 de Junho de 2025
-      hora: "14:00 - 18:00",
-      local: "Plataforma Teams",
-      formato: "Online",
-      categoria: "Tecnologia",
-      confirmado: false
-    },
-    {
-      id: 3,
-      titulo: "Feira de Carreiras Tech 2025",
-      imagem: "https://images.unsplash.com/photo-1556761175-b413da4baf72?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-      data: new Date(2025, 7, 5), // 05 de Agosto de 2025
-      hora: "10:00 - 17:00",
-      local: "Ginásio de Esportes",
-      formato: "Presencial",
-      categoria: "Carreira",
-      confirmado: false
-    },
-    {
-      id: 8,
-      titulo: "SENAI Games: Torneio de E-Sports",
-      imagem: "https://images.unsplash.com/photo-1542751371-adc38448a05e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-      data: new Date(2025, 7, 22), // 22 de Agosto de 2025
-      hora: "Dia todo",
-      local: "Arena Gamer SENAI",
-      formato: "Presencial",
-      categoria: "Competição",
-      confirmado: false
-    },
-    {
-      id: 1,
-      titulo: "Hackathon de Inteligência Artificial",
-      imagem: "https://www.aen.pr.gov.br/sites/default/arquivos_restritos/files/imagem/2024-09/hackathon_copel_11_0.jpg",      
-      data: new Date(2025, 5, 20), // 20 de Junho de 2025
-      hora: "09:00 - 18:00 (dois dias)",
-      local: "Auditório Principal SENAI",
-      formato: "Presencial",
-      categoria: "Competição",
-      confirmado: false
-    },
-    
-    // --- EVENTOS PASSADOS ---
-    {
-      id: 4,
-      titulo: "Palestra: O Futuro da Computação Quântica",
-      imagem: "https://images.unsplash.com/photo-1635070045091-d3a3f5a0e9aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-      data: new Date(2025, 5, 1), // 01 de Junho de 2025
-      hora: "20:00",
-      local: "YouTube Live",
-      formato: "Online",
-      categoria: "Inovação",
-      confirmado: false
-    },
-    {
-      id: 9,
-      titulo: "Painel: Indústria 4.0 e o Papel do Técnico",
-      imagem: "https://images.unsplash.com/photo-1581092921462-63f1c11d95ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-      data: new Date(2025, 4, 29), // 29 de Maio de 2025
-      hora: "19:30",
-      local: "Teatro SENAI",
-      formato: "Híbrido",
-      categoria: "Inovação",
-      confirmado: false
-    },
-    {
-      id: 10,
-      titulo: "Workshop: Como Brilhar no LinkedIn",
-      imagem: "https://images.unsplash.com/photo-1611944212129-29955ae402c3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-      data: new Date(2025, 4, 20), // 20 de Maio de 2025
-      hora: "19:00 - 21:00",
-      local: "Plataforma Zoom",
-      formato: "Online",
-      categoria: "Carreira",
-      confirmado: false
-    },
-     {
-      id: 11,
-      titulo: "Bootcamp: Python para Análise de Dados",
-      imagem: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-      data: new Date(2025, 4, 15), // 15 de Maio de 2025
-      hora: "18:30 - 22:30",
-      local: "Laboratório 3",
-      formato: "Presencial",
-      categoria: "Tecnologia",
-      confirmado: false
-    }
-  ];
+  const loadingOverlay = document.getElementById('loading-overlay');
   
-  // Função para renderizar os eventos no grid
-  function renderEventos(eventos) {
-    eventosGrid.innerHTML = '';
-    if (eventos.length === 0) {
-      eventosGrid.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1 / -1;">Nenhum evento encontrado para os filtros selecionados.</p>';
-      return;
-    }
-    eventos.forEach(evento => {
-      const dia = evento.data.getDate();
-      const mes = evento.data.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
-      const isConfirmed = evento.confirmado;
+  // Elementos do modal
+  const eventoModal = document.getElementById('evento-modal');
+  const eventoForm = document.getElementById('evento-form');
+  const eventoIdInput = document.getElementById('evento-id');
+  const eventoTituloInput = document.getElementById('evento-titulo');
+  const eventoDescricaoInput = document.getElementById('evento-descricao');
+  const eventoDataInput = document.getElementById('evento-data');
+  const eventoHoraInput = document.getElementById('evento-hora');
+  const eventoLocalInput = document.getElementById('evento-local');
+  const eventoFormatoSelect = document.getElementById('evento-formato');
+  const eventoCategoriaSelect = document.getElementById('evento-categoria');
+  const eventoImagemInput = document.getElementById('evento-imagem');
+  const salvarEventoBtn = document.getElementById('salvar-evento-btn');
+  const cancelarEventoBtn = document.getElementById('cancelar-evento-btn');
+  
+  let eventos = [];
+  let eventosInteressados = [];
+  let isAdmin = false;
+
+  // Inicialização
+  async function init() {
+    await checkUserRole();
+    await loadEventos();
+    setupEventListeners();
+  }
+
+  // Verificar se o usuário é admin
+  async function checkUserRole() {
+    try {
+      const response = await axios.get(`${window.backendUrl}/usuarios/me`);
+      isAdmin = response.data.tipoUsuario === 'ADMIN';
       
-      const card = document.createElement('div');
-      card.className = 'evento-card';
-      card.dataset.id = evento.id;
-      card.innerHTML = `
-        <div class="evento-imagem" style="background-image: url('${evento.imagem}')">
-          <div class="evento-data">
-            <span>${dia}</span>
-            <span>${mes}</span>
-          </div>
-        </div>
-        <div class="evento-conteudo">
-          <span class="evento-categoria">${evento.categoria}</span>
-          <h2 class="evento-titulo">${evento.titulo}</h2>
-          <div class="evento-detalhe"><i class="fas fa-clock"></i> ${evento.hora}</div>
-          <div class="evento-detalhe"><i class="fas fa-map-marker-alt"></i> ${evento.local} (${evento.formato})</div>
-          <button class="rsvp-btn ${isConfirmed ? 'confirmed' : ''}">
-            <i class="fas ${isConfirmed ? 'fa-check' : 'fa-calendar-plus'}"></i> 
-            ${isConfirmed ? 'Presença Confirmada' : 'Confirmar Presença'}
-          </button>
+      // Mostrar botão de criar evento se for admin
+      if (isAdmin) {
+        const criarEventoBtn = document.createElement('button');
+        criarEventoBtn.className = 'criar-evento-btn';
+        criarEventoBtn.innerHTML = '<i class="fas fa-plus"></i> Criar Evento';
+        criarEventoBtn.addEventListener('click', () => openEventoModal());
+        
+        const eventosHeader = document.querySelector('.eventos-header');
+        eventosHeader.appendChild(criarEventoBtn);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar role do usuário:', error);
+    }
+  }
+
+  // Carregar eventos do backend
+  async function loadEventos() {
+    showLoading();
+    try {
+      const response = await axios.get(`${window.backendUrl}/api/eventos`);
+      eventos = response.data;
+      
+      // Carregar eventos com interesse do usuário
+      await loadEventosInteressados();
+      
+      renderEventos();
+      updateMeusEventos();
+    } catch (error) {
+      console.error('Erro ao carregar eventos:', error);
+      showNotification('Erro ao carregar eventos', 'error');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // Carregar eventos que o usuário tem interesse
+  async function loadEventosInteressados() {
+    try {
+      // Esta é uma implementação simplificada - você precisará ajustar conforme sua API
+      const userEvents = localStorage.getItem('eventosInteressados');
+      eventosInteressados = userEvents ? JSON.parse(userEvents) : [];
+    } catch (error) {
+      console.error('Erro ao carregar eventos interessados:', error);
+      eventosInteressados = [];
+    }
+  }
+
+  // Salvar eventos com interesse do usuário
+  async function saveEventosInteressados() {
+    try {
+      localStorage.setItem('eventosInteressados', JSON.stringify(eventosInteressados));
+    } catch (error) {
+      console.error('Erro ao salvar eventos interessados:', error);
+    }
+  }
+
+  // Renderizar eventos no grid
+  function renderEventos() {
+    eventosGrid.innerHTML = '';
+    
+    if (eventos.length === 0) {
+      eventosGrid.innerHTML = `
+        <div class="no-events" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+          <i class="fas fa-calendar-times" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+          <h3 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Nenhum evento encontrado</h3>
+          <p style="color: var(--text-secondary);">Não há eventos cadastrados no momento.</p>
         </div>
       `;
+      return;
+    }
+
+    eventos.forEach(evento => {
+      const card = createEventoCard(evento);
       eventosGrid.appendChild(card);
     });
   }
 
-  // Função para atualizar a lista "Meus Eventos"
-  function updateMeusEventos() {
-    const eventosConfirmados = mockEventos.filter(e => e.confirmado);
-    meusEventosLista.innerHTML = '';
-    if (eventosConfirmados.length === 0) {
-        meusEventosLista.innerHTML = '<p class="empty-message">Você ainda não confirmou presença em nenhum evento.</p>';
-        return;
+  // Criar card de evento
+  function createEventoCard(evento) {
+    const card = document.createElement('div');
+    card.className = 'evento-card';
+    card.dataset.id = evento.id;
+
+    const dataEvento = new Date(evento.data);
+    const dia = dataEvento.getDate();
+    const mes = dataEvento.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+    const isInteressado = eventosInteressados.includes(evento.id);
+
+    let adminActions = '';
+    if (isAdmin) {
+      adminActions = `
+        <div class="evento-admin-actions">
+          <button class="evento-edit-btn" onclick="editEvento(${evento.id})">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="evento-delete-btn" onclick="deleteEvento(${evento.id})">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      `;
     }
+
+    card.innerHTML = `
+      <div class="evento-imagem" style="background-image: url('${evento.imagemCapaUrl || 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'}')">
+        ${adminActions}
+        <div class="evento-data">
+          <span>${dia}</span>
+          <span>${mes}</span>
+        </div>
+      </div>
+      <div class="evento-conteudo">
+        <span class="evento-categoria">${evento.categoria}</span>
+        <h2 class="evento-titulo">${evento.nome}</h2>
+        <div class="evento-detalhe"><i class="fas fa-clock"></i> ${formatarHora(dataEvento)}</div>
+        <div class="evento-detalhe"><i class="fas fa-map-marker-alt"></i> ${evento.local} (${evento.formato})</div>
+        ${!isAdmin ? `
+          <button class="rsvp-btn ${isInteressado ? 'confirmed' : ''}" onclick="toggleInteresse(${evento.id})">
+            <i class="fas ${isInteressado ? 'fa-check' : 'fa-calendar-plus'}"></i> 
+            ${isInteressado ? 'Lembrete Ativo' : 'Definir Lembrete'}
+          </button>
+        ` : ''}
+      </div>
+    `;
+
+    return card;
+  }
+
+  // Formatar hora
+  function formatarHora(data) {
+    return data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Atualizar lista "Meus Eventos"
+  function updateMeusEventos() {
+    meusEventosLista.innerHTML = '';
+    
+    const eventosConfirmados = eventos.filter(evento => 
+      eventosInteressados.includes(evento.id)
+    );
+
+    if (eventosConfirmados.length === 0) {
+      meusEventosLista.innerHTML = '<p class="empty-message">Você ainda não definiu lembrete para nenhum evento.</p>';
+      return;
+    }
+
     eventosConfirmados.forEach(evento => {
-        meusEventosLista.innerHTML += `
-            <div class="evento-confirmado-item">
-                <div class="evento-data" style="position: static; padding: 0.3rem; background: var(--bg-tertiary);">
-                    <span>${evento.data.getDate()}</span>
-                    <span>${evento.data.toLocaleString('pt-BR', { month: 'short' }).replace('.', '')}</span>
-                </div>
-                <span>${evento.titulo}</span>
-            </div>
-        `;
+      const dataEvento = new Date(evento.data);
+      const dia = dataEvento.getDate();
+      const mes = dataEvento.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+      
+      const item = document.createElement('div');
+      item.className = 'evento-confirmado-item';
+      item.innerHTML = `
+        <div class="evento-data" style="position: static; padding: 0.3rem; background: var(--bg-tertiary);">
+          <span>${dia}</span>
+          <span>${mes}</span>
+        </div>
+        <span>${evento.nome}</span>
+      `;
+      meusEventosLista.appendChild(item);
     });
   }
 
-  // Função para aplicar filtros (ATUALIZADA)
+  // Alternar interesse em evento
+  async function toggleInteresse(eventoId) {
+    try {
+      const response = await axios.post(`${window.backendUrl}/api/eventos/${eventoId}/interesse`);
+      
+      const index = eventosInteressados.indexOf(eventoId);
+      if (index > -1) {
+        eventosInteressados.splice(index, 1);
+        showNotification('Lembrete removido', 'info');
+      } else {
+        eventosInteressados.push(eventoId);
+        showNotification('Lembrete definido com sucesso!', 'success');
+      }
+      
+      await saveEventosInteressados();
+      renderEventos();
+      updateMeusEventos();
+    } catch (error) {
+      console.error('Erro ao alternar interesse:', error);
+      showNotification('Erro ao definir lembrete', 'error');
+    }
+  }
+
+  // Abrir modal para criar evento
+  function openEventoModal(evento = null) {
+    const modalTitulo = document.getElementById('evento-modal-titulo');
+    
+    if (evento) {
+      modalTitulo.textContent = 'Editar Evento';
+      eventoIdInput.value = evento.id;
+      eventoTituloInput.value = evento.nome;
+      eventoDescricaoInput.value = evento.descricao || '';
+      eventoDataInput.value = formatDateTimeForInput(evento.data);
+      eventoHoraInput.value = evento.hora || '';
+      eventoLocalInput.value = evento.local;
+      eventoFormatoSelect.value = evento.formato;
+      eventoCategoriaSelect.value = evento.categoria;
+      eventoImagemInput.value = evento.imagemCapaUrl || '';
+    } else {
+      modalTitulo.textContent = 'Criar Evento';
+      eventoForm.reset();
+      eventoIdInput.value = '';
+    }
+    
+    eventoModal.style.display = 'flex';
+  }
+
+  // Formatar data para input datetime-local
+  function formatDateTimeForInput(dateTimeString) {
+    const date = new Date(dateTimeString);
+    return date.toISOString().slice(0, 16);
+  }
+
+  // Salvar evento (criar ou editar)
+  async function saveEvento() {
+    const eventoData = {
+      nome: eventoTituloInput.value,
+      data: eventoDataInput.value,
+      local: eventoLocalInput.value,
+      formato: eventoFormatoSelect.value,
+      categoria: eventoCategoriaSelect.value
+    };
+
+    if (eventoDescricaoInput.value) {
+      eventoData.descricao = eventoDescricaoInput.value;
+    }
+
+    if (eventoHoraInput.value) {
+      eventoData.hora = eventoHoraInput.value;
+    }
+
+    if (eventoImagemInput.value) {
+      eventoData.imagemCapaUrl = eventoImagemInput.value;
+    }
+
+    try {
+      showLoading();
+      
+      if (eventoIdInput.value) {
+        // Editar evento existente
+        await axios.put(`${window.backendUrl}/api/eventos/${eventoIdInput.value}`, eventoData);
+        showNotification('Evento atualizado com sucesso!', 'success');
+      } else {
+        // Criar novo evento
+        await axios.post(`${window.backendUrl}/api/eventos`, eventoData);
+        showNotification('Evento criado com sucesso!', 'success');
+      }
+      
+      eventoModal.style.display = 'none';
+      await loadEventos();
+    } catch (error) {
+      console.error('Erro ao salvar evento:', error);
+      showNotification('Erro ao salvar evento', 'error');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // Excluir evento
+  async function deleteEvento(eventoId) {
+    if (!confirm('Tem certeza que deseja excluir este evento?')) {
+      return;
+    }
+
+    try {
+      showLoading();
+      await axios.delete(`${window.backendUrl}/api/eventos/${eventoId}`);
+      showNotification('Evento excluído com sucesso!', 'success');
+      await loadEventos();
+    } catch (error) {
+      console.error('Erro ao excluir evento:', error);
+      showNotification('Erro ao excluir evento', 'error');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // Aplicar filtros
   function applyFilters() {
     const periodo = document.getElementById('filter-periodo').value;
     const formato = document.getElementById('filter-formato').value;
     const categoria = document.getElementById('filter-categoria').value;
-    // Pega o valor da busca e converte para minúsculas
     const searchTerm = searchInput.value.toLowerCase();
+    const hoje = new Date();
     
-    let filteredEventos = mockEventos.filter(evento => {
-      // Normaliza 'hoje' para o início do dia
+    let filteredEventos = eventos.filter(evento => {
+      const dataEvento = new Date(evento.data);
       const hojeInicioDoDia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
       
-      // Condições dos filtros
-      const periodoMatch = periodo === 'proximos' ? evento.data >= hojeInicioDoDia : evento.data < hojeInicioDoDia;
+      const periodoMatch = periodo === 'proximos' ? 
+        dataEvento >= hojeInicioDoDia : 
+        dataEvento < hojeInicioDoDia;
+      
       const formatoMatch = formato === 'todos' || evento.formato === formato;
       const categoriaMatch = categoria === 'todos' || evento.categoria === categoria;
-      // Condição da busca por título
-      const searchMatch = evento.titulo.toLowerCase().includes(searchTerm);
+      const searchMatch = evento.nome.toLowerCase().includes(searchTerm);
 
-      // Retorna true somente se todas as condições forem atendidas
       return periodoMatch && formatoMatch && categoriaMatch && searchMatch;
     });
 
-    // Ordena os eventos por data
+    // Ordenar eventos
     filteredEventos.sort((a, b) => {
-        if(periodo === 'proximos') {
-            return a.data - b.data; // mais próximos primeiro
-        } else {
-            return b.data - a.data; // mais recentes (passados) primeiro
-        }
+      const dataA = new Date(a.data);
+      const dataB = new Date(b.data);
+      
+      if (periodo === 'proximos') {
+        return dataA - dataB; // Mais próximos primeiro
+      } else {
+        return dataB - dataA; // Mais recentes primeiro
+      }
     });
 
-    renderEventos(filteredEventos);
+    // Renderizar eventos filtrados
+    eventosGrid.innerHTML = '';
+    if (filteredEventos.length === 0) {
+      eventosGrid.innerHTML = `
+        <div class="no-events" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+          <i class="fas fa-search" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+          <h3 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Nenhum evento encontrado</h3>
+          <p style="color: var(--text-secondary);">Tente ajustar os filtros ou termos de pesquisa.</p>
+        </div>
+      `;
+      return;
+    }
+
+    filteredEventos.forEach(evento => {
+      const card = createEventoCard(evento);
+      eventosGrid.appendChild(card);
+    });
   }
 
-  // Delegação de evento para os botões de RSVP
-  eventosGrid.addEventListener('click', (e) => {
-    if (e.target.classList.contains('rsvp-btn')) {
-      const card = e.target.closest('.evento-card');
-      const eventoId = parseInt(card.dataset.id);
-      
-      const evento = mockEventos.find(ev => ev.id === eventoId);
-      if (evento) {
-        evento.confirmado = !evento.confirmado;
-        // Usar a função de notificação global
-        if(typeof showNotification === 'function'){
-          showNotification(evento.confirmado ? `Presença confirmada: ${evento.titulo}` : 'Presença cancelada.', evento.confirmado ? 'success' : 'info');
-        }
-        applyFilters(); 
-        updateMeusEventos();
-      }
+  // Mostrar loading
+  function showLoading() {
+    if (loadingOverlay) {
+      loadingOverlay.style.display = 'flex';
     }
-  });
+  }
 
-  // Adiciona event listeners aos filtros
-  document.getElementById('filter-periodo').addEventListener('change', applyFilters);
-  document.getElementById('filter-formato').addEventListener('change', applyFilters);
-  document.getElementById('filter-categoria').addEventListener('change', applyFilters);
-  // Adiciona o event listener para a barra de pesquisa
-  searchInput.addEventListener('input', applyFilters);
+  // Esconder loading
+  function hideLoading() {
+    if (loadingOverlay) {
+      loadingOverlay.style.display = 'none';
+    }
+  }
 
-  // Inicialização
-  applyFilters();
-  updateMeusEventos();
+  // Configurar event listeners
+  function setupEventListeners() {
+    // Filtros
+    document.getElementById('filter-periodo').addEventListener('change', applyFilters);
+    document.getElementById('filter-formato').addEventListener('change', applyFilters);
+    document.getElementById('filter-categoria').addEventListener('change', applyFilters);
+    searchInput.addEventListener('input', applyFilters);
+
+    // Modal
+    salvarEventoBtn.addEventListener('click', saveEvento);
+    cancelarEventoBtn.addEventListener('click', () => {
+      eventoModal.style.display = 'none';
+    });
+
+    // Fechar modal ao clicar fora
+    eventoModal.addEventListener('click', (e) => {
+      if (e.target === eventoModal) {
+        eventoModal.style.display = 'none';
+      }
+    });
+  }
+
+  // Funções globais para os botões
+  window.editEvento = (eventoId) => {
+    const evento = eventos.find(e => e.id === eventoId);
+    if (evento) {
+      openEventoModal(evento);
+    }
+  };
+
+  window.deleteEvento = deleteEvento;
+  window.toggleInteresse = toggleInteresse;
+  window.openEventoModal = openEventoModal;
+
+  // Inicializar
+  init();
 });

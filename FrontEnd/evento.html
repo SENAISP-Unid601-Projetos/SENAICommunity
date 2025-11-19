@@ -99,6 +99,67 @@
     </aside>
   </div>
 
+<!-- Modal para Criar/Editar Evento -->
+<div id="evento-modal" class="modal">
+  <div class="modal-content">
+    <h2 id="evento-modal-titulo">Criar Evento</h2>
+    <form id="evento-form">
+      <input type="hidden" id="evento-id">
+      <div class="form-group">
+        <label for="evento-titulo">Título</label>
+        <input type="text" id="evento-titulo" required>
+      </div>
+      <div class="form-group">
+        <label for="evento-descricao">Descrição</label>
+        <textarea id="evento-descricao" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="evento-data">Data</label>
+        <input type="datetime-local" id="evento-data" required>
+      </div>
+      <div class="form-group">
+        <label for="evento-hora">Horário</label>
+        <input type="text" id="evento-hora" placeholder="Ex: 19:00 - 21:00" required>
+      </div>
+      <div class="form-group">
+        <label for="evento-local">Local</label>
+        <input type="text" id="evento-local" required>
+      </div>
+      <div class="form-group">
+        <label for="evento-formato">Formato</label>
+        <select id="evento-formato" required>
+          <option value="Presencial">Presencial</option>
+          <option value="Online">Online</option>
+          <option value="Híbrido">Híbrido</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="evento-categoria">Categoria</label>
+        <select id="evento-categoria" required>
+          <option value="Tecnologia">Tecnologia</option>
+          <option value="Carreira">Carreira</option>
+          <option value="Inovação">Inovação</option>
+          <option value="Competição">Competição</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="evento-imagem">Imagem de Capa (URL)</label>
+        <input type="text" id="evento-imagem" placeholder="Cole a URL da imagem">
+      </div>
+    </form>
+    <div class="modal-actions">
+      <button id="salvar-evento-btn" class="btn btn-primary">Salvar</button>
+      <button id="cancelar-evento-btn" class="btn btn-secondary">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay">
+  <div class="loading-spinner"></div>
+  <p>Carregando eventos...</p>
+</div>
+
   <script src="Principal/JS/principal.js"></script>
   <script src="Evento/JS/evento.js"></script>
 </body>

@@ -6,7 +6,7 @@
     align-items: center;
     gap: 1rem;
     margin-bottom: 1.5rem;
-    flex-wrap: wrap; /* Para telas menores */
+    flex-wrap: wrap;
 }
 .projetos-header .header-text h1 {
     font-size: 1.75rem;
@@ -39,10 +39,12 @@
     display: flex;
     gap: 1rem;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
 }
 .search-projetos {
     flex-grow: 1;
     position: relative;
+    min-width: 200px;
 }
 .search-projetos i {
     position: absolute;
@@ -60,6 +62,8 @@
     color: var(--text-primary);
     font-size: 0.9rem;
 }
+
+/* --- CORREÇÃO DA SETA DO FILTRO --- */
 .projetos-filters select {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
@@ -71,7 +75,9 @@
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
-    padding-right: 2.5rem;
+    background-size: 12px;
+    padding-right: 2rem;
+    min-width: 140px;
 }
 
 /* --- GRID DE PROJETOS --- */
@@ -90,6 +96,7 @@
     transition: var(--transition);
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 .projeto-card:hover {
     transform: translateY(-5px);
@@ -105,6 +112,7 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    gap: 0.75rem;
 }
 .projeto-conteudo h3 {
     font-size: 1.1rem;
@@ -117,39 +125,147 @@
     flex-grow: 1;
     margin-bottom: 1rem;
 }
+
+/* --- MELHORIAS NOS CARDS --- */
+.projeto-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.projeto-header h3 {
+    font-size: 1.1rem;
+    margin: 0;
+    flex: 1;
+    word-break: break-word;
+}
+
+.projeto-status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.projeto-status.planejamento {
+    background-color: var(--info);
+    color: white;
+}
+
+.projeto-status.em.andamento,
+.projeto-status.em.progresso {
+    background-color: var(--warning);
+    color: white;
+}
+
+.projeto-status.concluído,
+.projeto-status.concluido {
+    background-color: var(--success);
+    color: white;
+}
+
+.projeto-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
 .projeto-membros {
     display: flex;
-    margin-bottom: 1rem;
+    align-items: center;
+    gap: 0.5rem;
 }
+
 .membro-avatar {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     border: 2px solid var(--bg-secondary);
-    margin-left: -10px;
     object-fit: cover;
 }
-.membro-avatar:first-child { margin-left: 0; }
+
+.more-members {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.membros-count {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-left: 0.5rem;
+}
+
+.projeto-categoria {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background-color: var(--bg-tertiary);
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+}
 
 .projeto-footer {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     flex-wrap: wrap;
     gap: 0.5rem;
+    margin-top: 0.5rem;
 }
+
+.projeto-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    flex: 1;
+}
+
 .tech-tag {
     background-color: var(--bg-tertiary);
     color: var(--text-secondary);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 500;
-    padding: 0.25rem 0.6rem;
-    border-radius: 6px;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
 }
 
-/* --- ESTILOS DO MODAL (O que corrige o BUG) --- */
+.more-tags {
+    background-color: var(--accent-primary);
+    color: white;
+}
 
+.projeto-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.projeto-privacy.private {
+    color: var(--error);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.projeto-privacy.public {
+    color: var(--success);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* --- ESTILOS DO MODAL --- */
 .modal-overlay {
-    /* POR PADRÃO, O MODAL FICA ESCONDIDO */
-    display: none; 
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -162,7 +278,6 @@
     animation: fadeIn 0.3s ease;
 }
 
-/* O JS ADICIONA ESSA CLASSE PARA MOSTRAR O MODAL */
 .modal-overlay.visible {
     display: flex;
 }
@@ -223,7 +338,7 @@
 
 /* Estilos do Formulário do Modal */
 .modal-content .form-group {
-  margin-bottom: 0; /* Removido, o gap do modal-body controla */
+  margin-bottom: 0;
 }
 .modal-content .form-group label {
   display: block;
@@ -254,12 +369,13 @@
     to { opacity: 1; }
 }
 
-/* Novos estilos para tabs */
+/* --- NOVAS ABAS --- */
 .projetos-tabs {
     display: flex;
     gap: 0.5rem;
     margin-bottom: 1.5rem;
     border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
 }
 
 .tab-btn {
@@ -271,39 +387,22 @@
     border-bottom: 2px solid transparent;
     transition: var(--transition);
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .tab-btn:hover {
     color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+    border-radius: 6px 6px 0 0;
 }
 
 .tab-btn.active {
     color: var(--accent-primary);
     border-bottom-color: var(--accent-primary);
+    background-color: var(--bg-tertiary);
 }
 
-/* Estilos para ações em projetos públicos */
-.projeto-footer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
-}
-
-.projeto-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.projeto-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-left: auto;
-}
-
+/* --- BOTÕES --- */
 .btn-entrar {
     background-color: var(--success);
     color: white;
@@ -340,6 +439,28 @@
 
 .btn-ver-detalhes:hover {
     background-color: var(--bg-quaternary);
+}
+
+/* Botão para solicitar entrada em projetos privados */
+.btn-solicitar-entrada {
+    background-color: var(--warning);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-solicitar-entrada:hover:not(:disabled) {
+    background-color: #e0a800;
+}
+
+.btn-solicitar-entrada:disabled {
+    background-color: var(--bg-quaternary);
+    cursor: not-allowed;
 }
 
 .info-text-small {
@@ -465,4 +586,79 @@
     padding: 1.5rem 0 0;
     border-top: 1px solid var(--border-color);
     margin-top: 1.5rem;
+}
+
+/* Estados vazios melhorados */
+.empty-state {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 3rem 1rem;
+    grid-column: 1 / -1;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+    display: block;
+}
+
+.error-message {
+    color: var(--error);
+    text-align: center;
+    padding: 2rem;
+    grid-column: 1 / -1;
+}
+
+/* Ajustes para mobile */
+@media (max-width: 768px) {
+    .projetos-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .projetos-filters {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .search-projetos {
+        width: 100%;
+    }
+    
+    .projetos-filters select {
+        width: 100%;
+    }
+    
+    .tab-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .projetos-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .projeto-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .projeto-actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem;
+    }
 }

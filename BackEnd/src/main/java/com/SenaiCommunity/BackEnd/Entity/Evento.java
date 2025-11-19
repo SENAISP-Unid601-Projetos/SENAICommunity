@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "eventos")
@@ -39,7 +41,15 @@ public class Evento {
     @Column(nullable = false)
     private CategoriaEvento categoria;
 
-    // Armazena apenas o nome do arquivo da imagem de capa (ex: "uuid-nome-do-arquivo.jpg")
     @Column(name = "imagem_capa")
     private String imagemCapa;
+
+    // NOVO: Lista de interessados para notificações/lembretes
+    @ManyToMany
+    @JoinTable(
+            name = "evento_interessados",
+            joinColumns = @JoinColumn(name = "evento_id"),
+            inverseJoinColumns = @JoinColumn(name = "usuario_id")
+    )
+    private Set<Usuario> interessados = new HashSet<>();
 }
