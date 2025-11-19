@@ -331,5 +331,288 @@
     height: 20px;
   }
   
-  
+/* ===== RESPONSIVIDADE PARA CELULARES ===== */
+
+@media (max-width: 768px) {
+    /* CORREÇÃO: Container sempre centralizado */
+    .auth-container {
+        padding: 1rem;
+        min-height: 100vh;
+        align-items: center; /* ← Mude de flex-start para center */
+        display: flex;
+        justify-content: center;
+    }
+    
+    .auth-card {
+        max-width: 100%;
+        padding: 1.5rem;
+        margin-top: 0; /* ← Remove margin-top */
+        width: 100%;
+    }
+    
+    /* Header mais compacto */
+    .auth-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .auth-header .subtext {
+        font-size: 0.9rem;
+    }
+    
+    /* Logo menor */
+    .logo {
+        font-size: 1.3rem;
+    }
+    
+    .logo i {
+        font-size: 1.5rem;
+    }
+    
+    /* Formulário com espaçamento reduzido */
+    .auth-form {
+        gap: 0.8rem;
+    }
+    
+    /* Inputs maiores para toque */
+    .input-group input {
+        padding: 1rem 1rem 1rem 2.8rem;
+        font-size: 16px; /* Previne zoom no iOS */
+    }
+    
+    .input-group i {
+        left: 1rem;
+    }
+    
+    .toggle-password {
+        right: 1rem;
+        width: 2rem;
+        height: 2rem;
+    }
+    
+    /* Auth options em coluna em telas pequenas */
+    .auth-options {
+        flex-direction: column;
+        gap: 0.8rem;
+        align-items: flex-start;
+    }
+    
+    .auth-options .checkbox {
+        font-size: 0.9rem;
+    }
+    
+    .auth-options .text-link {
+        font-size: 0.9rem;
+        align-self: flex-end;
+    }
+    
+    /* Botão principal maior */
+    .btn {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+    
+    /* Divider ajustado */
+    .divider {
+        margin: 1rem 0;
+        font-size: 0.8rem;
+    }
+    
+    /* Botão do Google responsivo */
+    #google-signin-button {
+        width: 100%;
+    }
+    
+    #google-signin-button iframe {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Footer ajustado */
+    .auth-footer p {
+        font-size: 0.9rem;
+    }
+    
+    /* Theme toggle reposicionado */
+    .theme-toggle {
+        bottom: 1rem;
+        right: 1rem;
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Ajustes para telas muito pequenas mantendo centralização */
+    .auth-container {
+        padding: 0.5rem; /* ← Menos padding em telas muito pequenas */
+    }
+    
+    .auth-card {
+        padding: 1.2rem;
+        margin: 0; /* ← Garante sem margens */
+    }
+    
+    .auth-header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .logo {
+        font-size: 1.1rem;
+    }
+    
+    .input-group input {
+        padding: 0.9rem 0.9rem 0.9rem 2.5rem;
+    }
+    
+    /* Auth options mais compacto */
+    .auth-options {
+        gap: 0.5rem;
+    }
+    
+    .auth-options .checkbox {
+        font-size: 0.85rem;
+    }
+    
+    .auth-options .text-link {
+        font-size: 0.85rem;
+    }
+    
+    .divider {
+        font-size: 0.75rem;
+        margin: 0.8rem 0;
+    }
+}
+
+/* CORREÇÃO EXTRA: Garantir centralização perfeita */
+@media (max-width: 768px) {
+    body, html {
+        height: 100%;
+    }
+    
+    .auth-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+    }
+}
+
+/* Prevenir zoom em inputs no iOS */
+@media (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* Melhorias de acessibilidade para toque */
+@media (hover: none) and (pointer: coarse) {
+    .btn:hover {
+        transform: none;
+    }
+    
+    .theme-toggle:hover {
+        transform: none;
+    }
+    
+    .toggle-password {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    
+    .btn-google:hover {
+        transform: none;
+    }
+}
+
+/* Correção específica para o botão do Google em mobile */
+@media (max-width: 768px) {
+    /* Garante que o botão do Google seja responsivo */
+    .g_id_signin {
+        width: 100% !important;
+    }
+    
+    .g_id_signin > div {
+        width: 100% !important;
+    }
+
+    @media (max-width: 768px) {
+    .auth-options {
+        flex-direction: row; /* ← Mantém em linha */
+        justify-content: space-between; /* ← Distribui igualmente */
+        align-items: center; /* ← Centraliza verticalmente */
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+        width: 100%;
+    }
+    
+    .auth-options .checkbox {
+        font-size: 0.85rem;
+        margin: 0;
+        flex-shrink: 0; /* ← Impede que quebre linha */
+    }
+    
+    .auth-options .text-link {
+        font-size: 0.85rem;
+        margin: 0;
+        white-space: nowrap; /* ← Impede quebra de texto */
+        text-align: right;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-options {
+        gap: 0.3rem;
+    }
+    
+    .auth-options .checkbox {
+        font-size: 0.8rem;
+    }
+    
+    .auth-options .text-link {
+        font-size: 0.8rem;
+    }
+}
+
+/* Melhoria para telas muito pequenas */
+@media (max-width: 360px) {
+    .auth-options {
+        flex-wrap: nowrap; /* ← Garante que fique em uma linha */
+    }
+    
+    .auth-options .checkbox {
+        font-size: 0.75rem;
+    }
+    
+    .auth-options .text-link {
+        font-size: 0.75rem;
+    }
+}
+
+/* Garantir que não quebre linha em nenhum tamanho de tela */
+.auth-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+.auth-options .checkbox {
+    flex-shrink: 0;
+}
+
+.auth-options .text-link {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+}
   

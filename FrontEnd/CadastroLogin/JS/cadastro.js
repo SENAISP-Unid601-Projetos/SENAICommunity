@@ -181,9 +181,31 @@ document.addEventListener('DOMContentLoaded', function() {
     setupPasswordStrengthMeter();
     setupImageUpload();
     setupFormSubmission();
+    setupMobileOptimizations();
     
     if (typeof setupPasswordToggles === 'function') {
         setupPasswordToggles(); 
-    }
-    
+    }  
 });
+
+// Adicione esta função no seu cadastro.js
+function setupMobileOptimizations() {
+    // Prevenir double-tap zoom em botões
+    const buttons = document.querySelectorAll('button, .btn, .toggle-password');
+    buttons.forEach(btn => {
+        btn.addEventListener('touchstart', function(e) {
+            if (!this.classList.contains('no-prevent')) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // Focar no primeiro campo ao carregar a página (apenas em mobile)
+    if (window.innerWidth <= 768) {
+        const firstInput = document.querySelector('input, select');
+        if (firstInput && firstInput.type !== 'hidden') {
+            setTimeout(() => firstInput.focus(), 300);
+        }
+    }
+}
+

@@ -211,6 +211,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
+    
+
     // -----------------------------------------------------------------
     // INICIALIZAÇÃO DA PÁGINA E LISTENERS GLOBAIS
     // -----------------------------------------------------------------

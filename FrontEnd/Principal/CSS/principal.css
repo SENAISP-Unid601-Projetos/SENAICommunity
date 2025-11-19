@@ -2647,3 +2647,463 @@ a.user-card-link:hover h4 {
     opacity: 1;
   }
 }
+
+/* ===== RESPONSIVIDADE MOBILE ===== */
+@media (max-width: 1200px) {
+    .container {
+        grid-template-columns: 250px 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    .right-sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+        padding: 0.5rem;
+    }
+    
+    .topbar {
+        padding: 0.75rem 1rem;
+    }
+    
+    .search {
+        display: none;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+    
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        z-index: 2000;
+        transition: transform 0.3s ease;
+        background: var(--bg-primary);
+    }
+    
+    .sidebar.mobile-open {
+        transform: translateX(280px);
+    }
+    
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1999;
+        display: none;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
+    
+    /* Correções das ações da postagem */
+    .post-actions {
+        flex-direction: row !important;
+        justify-content: space-around;
+        gap: 0.25rem;
+    }
+    
+    .post-actions .action-btn {
+        flex: 1;
+        min-height: 44px;
+        font-size: 0.8rem;
+        gap: 0.4rem;
+    }
+    
+    .post-header {
+        flex-direction: row !important;
+        align-items: flex-start;
+    }
+    
+    .post-author-info strong {
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Contadores - esconder quando zero */
+    .post-actions .action-btn .count:empty,
+    .post-actions .action-btn .count[data-count="0"] {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .post-author-info strong {
+        max-width: 120px;
+    }
+    
+    .post-actions .action-btn {
+        font-size: 0.75rem;
+        padding: 0.4rem;
+    }
+}
+
+/* Prevenir zoom iOS */
+@media (max-width: 768px) {
+    input, textarea {
+        font-size: 16px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Remove ícones Home e Mensagens */
+    .nav-icons .nav-icon:nth-child(1),
+    .nav-icons .nav-icon:nth-child(2) {
+        display: none;
+    }
+    
+    /* Ajusta espaçamento dos ícones restantes */
+    .nav-icons {
+        gap: 0.5rem;
+    }
+    
+    /* Corrige foto de perfil cortada */
+    .user-dropdown {
+        position: relative;
+        z-index: 1001;
+    }
+    
+    .user {
+        padding: 0.25rem;
+        margin-right: 0;
+    }
+    
+    .profile-pic {
+        width: 32px;
+        height: 32px;
+        border: 2px solid var(--bg-secondary);
+    }
+    
+    .profile-pic img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    
+    /* Garante que o dropdown não seja cortado */
+    .dropdown-menu {
+        position: fixed;
+        top: 60px;
+        right: 10px;
+        width: 200px;
+        z-index: 1002;
+    }
+    
+    /* Ajusta a topbar para caber melhor */
+    .topbar {
+        padding: 0.5rem;
+    }
+    
+    .header-left {
+        flex: 1;
+    }
+    
+    .nav-icons {
+        flex: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Ajustes adicionais para telas muito pequenas */
+    .profile-pic {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .nav-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .dropdown-menu {
+        right: 5px;
+        width: 180px;
+    }
+}
+
+/* ===== GARANTIR QUE FOTO NÃO SEJA CORTADA ===== */
+.user-dropdown {
+    position: relative;
+}
+
+.profile-pic {
+    overflow: visible;
+}
+
+.profile-pic img {
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Adicione estas regras ao final do seu arquivo principal.css */
+
+@media (max-width: 768px) {
+    /* Remove apenas os ícones Home e Mensagens, mantém notificações */
+    .nav-icons .nav-icon:nth-child(1),
+    .nav-icons .nav-icon:nth-child(2) {
+        display: none;
+    }
+    
+    /* Garante que o ícone de notificações fique visível */
+    .nav-icons .nav-icon:nth-child(3) {
+        display: flex !important;
+    }
+    
+    /* Ajusta espaçamento dos ícones restantes */
+    .nav-icons {
+        gap: 0.5rem;
+    }
+    
+    /* Corrige a logo para ficar menor em mobile */
+    .logo {
+        font-size: 1.1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Ajustes adicionais para telas muito pequenas */
+    .logo {
+        font-size: 1rem;
+        max-width: 120px;
+    }
+    
+    .profile-pic {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .nav-icon {
+        width: 36px;
+        height: 36px;
+    }
+}
+/* Adicione estas regras ao final do seu arquivo principal.css */
+
+@media (max-width: 768px) {
+    /* Ajusta a logo para ficar menor mas visível */
+    .logo {
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 140px;
+    }
+    
+    /* Remove apenas os ícones Home e Mensagens */
+    .nav-icons .nav-icon:nth-child(1),
+    .nav-icons .nav-icon:nth-child(2) {
+        display: none;
+    }
+    
+    /* Corrige o alinhamento dos ícones restantes */
+    .nav-icons {
+        gap: 0.25rem;
+        align-items: center;
+    }
+    
+    /* Garante que todos os ícones visíveis tenham o mesmo tamanho e alinhamento */
+    .nav-icon, .theme-toggle {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    
+    /* Esconde o nome do usuário no mobile, mantém apenas a foto */
+    .user span {
+        display: none !important;
+    }
+    
+    .user i.fa-chevron-down {
+        display: none !important;
+    }
+    
+    /* Ajusta o container do usuário para ficar compacto */
+    .user {
+        padding: 0.25rem;
+        margin: 0;
+        min-width: auto;
+    }
+    
+    .profile-pic {
+        width: 36px;
+        height: 36px;
+        margin: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Ajustes mais extremos para telas muito pequenas */
+    .logo {
+        font-size: 0.9rem;
+        max-width: 120px;
+    }
+    
+    .nav-icon, .theme-toggle {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .profile-pic {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .header-left {
+        gap: 0.5rem;
+    }
+}
+
+/* Garante alinhamento consistente dos ícones em todas as telas */
+.nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-icon, .theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Adicione estas regras ao final do seu arquivo principal.css */
+
+@media (max-width: 768px) {
+    /* Logo inteira sem ellipsis */
+    .logo {
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: visible !important; /* Remove o corte */
+        text-overflow: unset !important; /* Remove os ... */
+        max-width: none !important; /* Remove a limitação de largura */
+        width: auto !important;
+    }
+    
+    /* Remove apenas os ícones Home e Mensagens */
+    .nav-icons .nav-icon:nth-child(1),
+    .nav-icons .nav-icon:nth-child(2) {
+        display: none;
+    }
+    
+    /* Corrige o alinhamento dos ícones restantes */
+    .nav-icons {
+        gap: 0.25rem;
+        align-items: center;
+    }
+    
+    /* Garante que todos os ícones visíveis tenham o mesmo tamanho e alinhamento */
+    .nav-icon, .theme-toggle {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    
+    /* Esconde o nome do usuário no mobile, mantém apenas a foto */
+    .user span {
+        display: none !important;
+    }
+    
+    .user i.fa-chevron-down {
+        display: none !important;
+    }
+    
+    /* Ajusta o container do usuário para ficar compacto */
+    .user {
+        padding: 0.25rem;
+        margin: 0;
+        min-width: auto;
+    }
+    
+    .profile-pic {
+        width: 36px;
+        height: 36px;
+        margin: 0;
+    }
+    
+    /* Ajusta o header para acomodar a logo inteira */
+    .header-left {
+        flex: 0 1 auto; /* Permite que encolha se necessário */
+        min-width: 0;
+    }
+    
+    .topbar {
+        padding: 0.5rem 0.75rem;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Para telas muito pequenas, reduz um pouco a logo mas mantém inteira */
+    .logo {
+        font-size: 0.85rem;
+        letter-spacing: -0.3px; /* Compacta um pouco as letras */
+    }
+    
+    .nav-icon, .theme-toggle {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .profile-pic {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .header-left {
+        gap: 0.5rem;
+    }
+}
+
+/* Se mesmo assim a logo não couber em telas muito pequenas, 
+   podemos usar uma versão ainda mais compacta apenas em casos extremos */
+@media (max-width: 360px) {
+    .logo {
+        font-size: 0.8rem;
+    }
+    
+    .topbar {
+        padding: 0.5rem;
+    }
+}
+
+/* Garante alinhamento consistente dos ícones em todas as telas */
+.nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-icon, .theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
