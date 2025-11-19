@@ -209,6 +209,24 @@ document.addEventListener("DOMContentLoaded", () => {
     return convoCard;
   }
 
+  function checkStartChatParam() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const startChatUserId = urlParams.get('start_chat');
+  
+  if (startChatUserId) {
+    console.log("Iniciando conversa com usuário:", startChatUserId);
+    
+    // Remove o parâmetro da URL
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, newUrl);
+    
+    // Seleciona a conversa após um pequeno delay para garantir que tudo está carregado
+    setTimeout(() => {
+      selectConversation(parseInt(startChatUserId, 10));
+    }, 1000);
+  }
+}
+
   /**
    * Seleciona uma conversa e carrega o histórico
    */

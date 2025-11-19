@@ -1,32 +1,23 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Aguarda scripts globais se necessário, ou executa direto
   const initPage = () => {
-    // --- SELEÇÃO DE ELEMENTOS ---
     const elements = {
       userSearchInput: document.getElementById("user-search-input"),
       searchResultsContainer: document.getElementById("search-results-container"),
     };
 
-    // -----------------------------------------------------------------
-    // FUNÇÕES DE BUSCA E RENDERIZAÇÃO
-    // -----------------------------------------------------------------
-
-    /**
-     * Busca usuários no backend.
-     * Se 'nome' for vazio, o backend configurado retornará todos (ou sugestões).
-     */
     async function buscarUsuarios(nome = "") {
       if (!elements.searchResultsContainer) return;
       
-      // Mostra um loading visual (opcional, mas recomendado)
       if(!nome) { 
-         // Se for a carga inicial, talvez não queira limpar tudo imediatamente para não piscar, 
-         // mas aqui garante que o usuário saiba que está carregando.
-         elements.searchResultsContainer.innerHTML = '<p class="empty-state"><i class="fas fa-spinner fa-spin"></i> Carregando comunidade...</p>';
+         elements.searchResultsContainer.innerHTML = `
+           <div class="results-loading">
+             <i class="fas fa-spinner fa-spin"></i>
+             <p>Carregando comunidade...</p>
+           </div>
+         `;
       }
 
       try {
-        // Faz a requisição. O backend agora aceita 'nome' vazio.
         const response = await window.axios.get(
           `${window.backendUrl}/usuarios/buscar`,
           {
@@ -37,20 +28,17 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (error) {
         console.error("Erro ao buscar usuários:", error);
         elements.searchResultsContainer.innerHTML =
-          '<p class="empty-state">Erro ao buscar usuários. Tente recarregar a página.</p>';
+          '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao buscar usuários.</p><p class="empty-state-subtitle">Tente recarregar a página</p></div>';
       }
     }
 
-    /**
-     * Renderiza os resultados da busca no container.
-     */
     function renderizarResultados(usuarios) {
       if (!elements.searchResultsContainer) return;
       elements.searchResultsContainer.innerHTML = "";
 
       if (usuarios.length === 0) {
-        elements.searchResultsContainer.innerHTML =
-          '<p class="empty-state">Nenhum usuário encontrado.</p>';
+        elements.searchResultsContainer.innerHTML = 
+          '<div class="empty-state"><i class="fas fa-users"></i><p>Nenhum usuário encontrado</p><p class="empty-state-subtitle">Tente alterar os termos da busca</p></div>';
         return;
       }
 
@@ -66,52 +54,58 @@ document.addEventListener("DOMContentLoaded", () => {
         const statusClass = usuario.online ? "online" : "offline";
 
         let actionButtonHtml = "";
+        let messageButtonHtml = "";
+        
         switch (usuario.statusAmizade) {
           case "AMIGOS":
             actionButtonHtml =
               '<button class="btn btn-secondary" disabled><i class="fas fa-check"></i> Amigos</button>';
+            messageButtonHtml = 
+              `<button class="btn btn-message" onclick="window.iniciarConversa(${usuario.id}, '${usuario.nome.replace(/'/g, "\\'")}')">
+                 <i class="fas fa-comment-dots"></i> Enviar Mensagem
+               </button>`;
             break;
           case "SOLICITACAO_ENVIADA":
             actionButtonHtml =
-              '<button class="btn btn-secondary" disabled>Pendente</button>';
+              '<button class="btn btn-secondary" disabled><i class="fas fa-clock"></i> Pendente</button>';
             break;
           case "SOLICITACAO_RECEBIDA":
             actionButtonHtml =
-              '<a href="amizades.html" class="btn btn-primary">Responder</a>';
+              '<a href="amizades.html" class="btn btn-primary"><i class="fas fa-user-check"></i> Responder</a>';
             break;
           case "NENHUMA":
-            actionButtonHtml = `<button class="btn btn-primary" onclick="window.enviarSolicitacao(${usuario.id}, this)"><i class="fas fa-user-plus"></i> Adicionar</button>`;
+            actionButtonHtml = 
+              `<button class="btn btn-primary" onclick="window.enviarSolicitacao(${usuario.id}, this)">
+                 <i class="fas fa-user-plus"></i> Adicionar
+               </button>`;
             break;
         }
 
-        // Adicionei o link no nome do usuário para visitar o perfil
         userCard.innerHTML = `
-            <div class="user-card-avatar">
-                <img src="${fotoUrl}" alt="Foto de ${usuario.nome}">
-                <div class="status ${statusClass}" data-user-email="${usuario.email}"></div>
-            </div>
-            <div class="user-card-info">
-                <a href="perfil_usuario.html?id=${usuario.id}" class="user-card-link">
-                    <h4>${usuario.nome}</h4>
-                </a>
-                <p>${usuario.email}</p>
-            </div>
+          <div class="user-card-avatar">
+            <img src="${fotoUrl}" alt="Foto de ${usuario.nome}">
+            <div class="status ${statusClass}" data-user-email="${usuario.email}"></div>
+          </div>
+          <div class="user-card-info">
+            <a href="perfil_usuario.html?id=${usuario.id}" class="user-card-link">
+              <h4>${usuario.nome}</h4>
+            </a>
+            <p>${usuario.email}</p>
+          </div>
+          <div class="user-card-actions">
             <div class="user-card-action">
-                ${actionButtonHtml}
+              ${actionButtonHtml}
             </div>
+            ${messageButtonHtml}
+          </div>
         `;
         elements.searchResultsContainer.appendChild(userCard);
       });
 
-      // Atualiza status visual se houver função global para isso
       if (typeof window.atualizarStatusDeAmigosNaUI === "function") {
         window.atualizarStatusDeAmigosNaUI();
       }
     }
-
-    // -----------------------------------------------------------------
-    // EVENT LISTENERS
-    // -----------------------------------------------------------------
 
     function setupSearchListener() {
       if (elements.userSearchInput) {
@@ -119,56 +113,57 @@ document.addEventListener("DOMContentLoaded", () => {
         
         elements.userSearchInput.addEventListener("input", () => {
           clearTimeout(searchTimeout);
-          // Delay de 300ms para não fazer requisição a cada letra
           searchTimeout = setTimeout(() => {
             const searchTerm = elements.userSearchInput.value.trim();
-            // Removemos a restrição de 'searchTerm.length > 2'
-            // Agora buscamos qualquer coisa, inclusive vazio (retorna ao estado inicial)
             buscarUsuarios(searchTerm);
           }, 300);
         });
       }
     }
 
-    // --- AÇÃO GLOBAL (Para o botão funcionar) ---
     window.enviarSolicitacao = async (idSolicitado, buttonElement) => {
       buttonElement.disabled = true;
-      buttonElement.textContent = "Enviando...";
+      buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
       try {
         await window.axios.post(
           `${window.backendUrl}/api/amizades/solicitar/${idSolicitado}`
         );
-        buttonElement.textContent = "Pendente";
+        buttonElement.innerHTML = '<i class="fas fa-check"></i> Pendente';
         buttonElement.classList.remove("btn-primary");
         buttonElement.classList.add("btn-secondary");
+        buttonElement.disabled = true;
+        
+        if(window.showNotification) {
+          window.showNotification("Solicitação de amizade enviada!", "success");
+        }
       } catch (error) {
         console.error("Erro ao enviar solicitação:", error);
-        // Se tiver sistema de notificação global
         if(window.showNotification) {
-            window.showNotification("Erro ao enviar solicitação.", "error");
-        } else {
-            alert("Erro ao enviar solicitação.");
+          window.showNotification("Erro ao enviar solicitação.", "error");
         }
         buttonElement.disabled = false;
         buttonElement.innerHTML = '<i class="fas fa-user-plus"></i> Adicionar';
       }
     };
 
-    // --- INICIALIZAÇÃO ---
+    window.iniciarConversa = (userId, userName) => {
+      if(window.showNotification) {
+        window.showNotification(`Iniciando conversa com ${userName}...`, "info");
+      }
+      
+      setTimeout(() => {
+        window.location.href = `mensagem.html?start_chat=${userId}`;
+      }, 500);
+    };
+
     setupSearchListener();
-    
-    // CHAMADA IMEDIATA: Busca todos os usuários ao carregar a página
     buscarUsuarios(""); 
   };
 
-  // Verifica se os scripts globais já carregaram ou se roda direto
   if (document.readyState === "complete" || document.readyState === "interactive") {
-      // Se já carregou, roda
       initPage(); 
   } else {
-      // Se usa um evento customizado 'globalScriptsLoaded', mantém o listener
       document.addEventListener("globalScriptsLoaded", initPage);
-      // Fallback: caso o evento custom não dispare, roda no load padrão
       window.addEventListener("load", initPage);
   }
 });
