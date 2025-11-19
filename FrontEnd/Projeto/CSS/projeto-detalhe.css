@@ -15,6 +15,7 @@
   --away: #d29922;
   --danger: #f85149;
   --success: #238636;
+  --warning: #d29922;
   --border-color: #30363d;
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   --card-radius: 8px;
@@ -22,24 +23,25 @@
 }
 
 [data-theme="light"] {
-  /* Light Theme inspirado no Facebook */
-  --bg-primary: #f0f2f5;
+  /* Light Theme - Melhor contraste para balões de mensagem */
+  --bg-primary: #f5f7fa;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f0f2f5;
-  --bg-quaternary: #e4e6eb;
-  --bg-hover: rgba(228, 230, 235, 0.5);
-  --text-primary: #1c1e21;
-  --text-secondary: #65676b;
+  --bg-tertiary: #f8f9fa;
+  --bg-quaternary: #e9ecef;
+  --bg-hover: rgba(0, 0, 0, 0.05);
+  --text-primary: #1a1a1a;
+  --text-secondary: #6c757d;
   --text-tertiary: #8d949e;
   --accent-primary: #1877f2;
   --accent-secondary: #166fe5;
   --highlight: #fa383e;
   --online: #31a24c;
   --away: #f7b928;
-  --danger: #fa383e;
-  --success: #31a24c;
-  --border-color: #dddfe2;
-  --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --danger: #dc3545;
+  --success: #28a745;
+  --warning: #ffc107;
+  --border-color: #dee2e6;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -128,8 +130,24 @@ body {
 
 .project-status {
   font-size: 0.8rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-planning {
+  background-color: var(--away);
+  color: white;
+}
+
+.status-progress {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+.status-completed {
   background-color: var(--success);
   color: white;
 }
@@ -396,6 +414,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .tech-tag {
@@ -404,6 +423,32 @@ body {
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
   font-size: 0.75rem;
+}
+
+/* Ações do projeto */
+.project-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.btn-full {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-full:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
 }
 
 /* Chat Area */
@@ -539,7 +584,7 @@ body {
   color: var(--text-secondary);
 }
 
-/* CORREÇÃO: Balão de mensagem menor */
+/* CORREÇÃO: Balão de mensagem melhorado para modo claro */
 .message-bubble {
   padding: 0.5rem 0.75rem;
   border-radius: 16px;
@@ -554,11 +599,19 @@ body {
   white-space: pre-wrap;
   display: inline-block;
   position: relative;
+  border: 1px solid transparent;
+}
+
+[data-theme="light"] .message-bubble {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .message.own .message-bubble {
   background-color: var(--accent-primary);
   color: white;
+  border: none;
 }
 
 /* CORREÇÃO: Estilos para mensagens truncadas */
@@ -1031,6 +1084,7 @@ body {
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .modal-footer .btn {
@@ -1039,6 +1093,7 @@ body {
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
+  transition: var(--transition);
 }
 
 .btn-secondary {
@@ -1151,6 +1206,14 @@ body {
   
   .project-image {
     align-self: center;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
   }
 }
 
@@ -1355,31 +1418,6 @@ html::-webkit-scrollbar-thumb:hover,
   white-space: nowrap;
   z-index: 1000;
   border: 1px solid var(--border-color);
-}
-
-/* NOVOS ESTILOS: Status do projeto */
-.project-status {
-  font-size: 0.8rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.status-planning {
-  background-color: var(--away);
-  color: white;
-}
-
-.status-progress {
-  background-color: var(--accent-primary);
-  color: white;
-}
-
-.status-completed {
-  background-color: var(--success);
-  color: white;
 }
 
 /* CORREÇÃO: Estilos para o seletor de função */

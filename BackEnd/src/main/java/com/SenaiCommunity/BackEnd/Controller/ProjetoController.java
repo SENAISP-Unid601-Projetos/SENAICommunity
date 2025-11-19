@@ -32,6 +32,33 @@ public class ProjetoController {
     @Autowired
     private ArquivoMidiaService midiaService;
 
+    @DeleteMapping("/solicitacoes/{solicitacaoId}/cancelar")
+    public ResponseEntity<?> cancelarSolicitacao(
+            @PathVariable Long solicitacaoId,
+            @RequestParam Long usuarioId) { // ID do usuário que quer cancelar o PRÓPRIO pedido
+        try {
+            projetoService.cancelarSolicitacao(solicitacaoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Solicitação cancelada com sucesso."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{projetoId}/sair")
+    public ResponseEntity<?> sairDoProjeto(
+            @PathVariable Long projetoId,
+            @RequestParam Long usuarioId) {
+        try {
+            projetoService.sairDoProjeto(projetoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Você saiu do projeto."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
 
     @PostMapping("/{projetoId}/solicitar-entrada")
     public ResponseEntity<?> solicitarEntrada(

@@ -26,9 +26,7 @@
         </div>
 
         <div class="project-info">
-
             <h2 id="project-name">Carregando...</h2>
-
             <span class="project-status" id="project-status">Online</span>
         </div>
 
@@ -84,6 +82,16 @@
                 <div class="project-technologies" id="project-technologies">
                     <!-- Tecnologias serão inseridas aqui -->
                 </div>
+                
+                <!-- Botões de ação do projeto -->
+                <div class="project-actions">
+                    <button class="btn btn-danger btn-full" id="leave-project-btn" style="display: none;">
+                        <i class="fas fa-sign-out-alt"></i> Sair do Projeto
+                    </button>
+                    <button class="btn btn-danger btn-full" id="delete-project-btn" style="display: none;">
+                        <i class="fas fa-trash"></i> Excluir Projeto
+                    </button>
+                </div>
             </div>
         </aside>
 
@@ -103,6 +111,9 @@
                     </button>
                     <button class="action-btn" id="search-chat-btn" data-tooltip="Buscar no chat">
                         <i class="fas fa-search"></i>
+                    </button>
+                    <button class="action-btn" id="solicitacoes-btn" data-tooltip="Solicitações de entrada" style="display: none;">
+                        <i class="fas fa-user-clock"></i>
                     </button>
                 </div>
             </div>
@@ -143,7 +154,6 @@
                         <img id="project-image" src="" alt="Imagem do projeto" style="display: none;">
                     </div>
                     <div class="project-details-text">
-
                         <h4 id="modal-project-name">Nome do Projeto</h4>
                         <p id="modal-project-description">Descrição do projeto</p>
                         <div class="project-meta">
@@ -223,7 +233,7 @@
                         <select id="edit-project-status" class="form-control">
                             <option value="Em planejamento">Em Planejamento</option>
                             <option value="Em progresso">Em progresso</option>
-                            <option value="Concluido">Concluído</option>
+                            <option value="Concluído">Concluído</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -238,28 +248,29 @@
                         <button type="button" class="btn btn-secondary"
                             id="cancel-project-settings-btn">Cancelar</button>
                         <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        <button type="button" class="btn btn-danger" id="delete-project-modal-btn" style="display: none;">
+                            <i class="fas fa-trash"></i> Excluir Projeto
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Modal de gerenciamento de membros -->
-    <div id="manage-members-modal" class="modal-overlay" style="display: none;">
+    <!-- Modal de confirmação para ações perigosas -->
+    <div id="confirmation-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Gerenciar Membros</h3>
-                <button class="close-modal" id="close-manage-members-modal">
+                <h3 id="confirmation-title">Confirmar Ação</h3>
+                <button class="close-modal" id="close-confirmation-modal">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="search-members-modal" placeholder="Buscar membros...">
-                </div>
-                <div class="members-management-list" id="members-management-list">
-                    <!-- Lista de membros para gerenciamento -->
+                <p id="confirmation-message">Tem certeza que deseja realizar esta ação?</p>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-confirmation-btn">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirm-action-btn">Confirmar</button>
                 </div>
             </div>
         </div>

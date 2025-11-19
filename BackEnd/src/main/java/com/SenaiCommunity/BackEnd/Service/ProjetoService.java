@@ -108,6 +108,47 @@ public class ProjetoService {
         notificarAtualizacaoProjeto(projetoId, "nova_solicitacao");
     }
 
+    @Transactional
+    public void cancelarSolicitacao(Long solicitacaoId, Long usuarioId) {
+        SolicitacaoEntrada solicitacao = solicitacaoEntradaRepository.findById(solicitacaoId)
+                .orElseThrow(() -> new EntityNotFoundException("Solicitação não encontrada"));
+
+        // Verifica se quem está cancelando é o próprio dono da solicitação
+        if (!solicitacao.getUsuarioSolicitante().getId().equals(usuarioId)) {
+            throw new IllegalArgumentException("Você só pode cancelar suas próprias solicitações.");
+        }
+
+        if (solicitacao.getStatus() != SolicitacaoEntrada.StatusSolicitacao.PENDENTE) {
+            throw new IllegalArgumentException("Só é possível cancelar solicitações pendentes.");
+        }
+
+        solicitacaoEntradaRepository.delete(solicitacao);
+
+        notificarAtualizacaoProjeto(solicitacao.getProjeto().getId(), "nova_solicitacao");
+    }
+
+    @Transactional
+    public void sairDoProjeto(Long projetoId, Long usuarioId) {
+        Projeto projeto = projetoRepository.findById(projetoId)
+                .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado"));
+
+        ProjetoMembro membro = projetoMembroRepository.findByProjetoIdAndUsuarioId(projetoId, usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Você não é membro deste projeto."));
+
+        // Regra importante: O dono (Autor) não pode sair sem antes passar a liderança ou deletar o grupo
+        if (projeto.getAutor().getId().equals(usuarioId)) {
+            throw new IllegalArgumentException("O dono do projeto não pode sair. Delete o projeto ou transfira a propriedade.");
+        }
+
+        projetoMembroRepository.delete(membro);
+
+        // Notificações
+        String mensagem = String.format("%s saiu do projeto '%s'.", membro.getUsuario().getNome(), projeto.getTitulo());
+        notificacaoService.criarNotificacao(projeto.getAutor(), mensagem, "MEMBRO_SAIU", projeto.getId());
+
+        notificarAtualizacaoProjeto(projetoId, "membros_atualizados");
+    }
+
     public List<SolicitacaoEntradaDTO> listarSolicitacoesPendentes(Long projetoId, Long usuarioLogadoId) {
         // Apenas Admin ou Moderador pode ver solicitações
         if (!isAdminOuModerador(projetoId, usuarioLogadoId)) {
