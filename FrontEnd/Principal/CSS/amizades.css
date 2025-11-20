@@ -734,3 +734,35 @@
     flex: 1; /* Se tiver 1 botão, ocupa 100%. Se 2, ocupam 50% cada */
     justify-content: center;
 }
+
+/* =================================================================
+   CORREÇÃO: Spinner do Perfil no Topo (Header)
+================================================================= */
+
+/* Define o container da foto como referência para o spinner */
+.profile-pic {
+    position: relative !important; 
+    overflow: hidden; /* Garante a forma redonda */
+}
+
+/* Garante que o spinner preencha exatamente o tamanho da foto */
+.topbar-user-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-secondary);
+    z-index: 10;
+}
+
+/* Ajusta o tamanho do spinner interno para caber na foto pequena */
+.topbar-user-loading .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+}
