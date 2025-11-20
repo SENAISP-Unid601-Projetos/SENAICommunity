@@ -253,6 +253,7 @@ function connectWebSocket() {
       stompClient.subscribe("/topic/status", (message) => {
         latestOnlineEmails = JSON.parse(message.body); //
         atualizarStatusDeAmigosNaUI();
+        document.dispatchEvent(new CustomEvent("onlineStatusUpdated"));
       });
 
       document.dispatchEvent(
@@ -346,6 +347,7 @@ async function fetchInitialOnlineFriends() {
     const response = await axios.get(`${backendUrl}/api/amizades/online`); //
     const amigosOnlineDTOs = response.data;
     latestOnlineEmails = amigosOnlineDTOs.map((amigo) => amigo.email); //
+    document.dispatchEvent(new CustomEvent("onlineStatusUpdated"));
   } catch (error) {
     console.error("Erro ao buscar status inicial de amigos online:", error);
     latestOnlineEmails = [];

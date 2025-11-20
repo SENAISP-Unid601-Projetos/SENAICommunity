@@ -3,19 +3,91 @@ document.addEventListener("DOMContentLoaded", () => {
     const elements = {
       userSearchInput: document.getElementById("user-search-input"),
       searchResultsContainer: document.getElementById("search-results-container"),
+      userInfoLoading: document.getElementById("user-info-loading"),
+      topbarUserLoading: document.getElementById("topbar-user-loading"),
+      userInfo: document.querySelector('.user-info'),
+      topbarUser: document.querySelector('.user-dropdown .user'),
+      mobileMenuToggle: document.getElementById("mobile-menu-toggle"),
+      sidebar: document.getElementById("main-sidebar"),
+      sidebarOverlay: document.getElementById("sidebar-overlay"),
+      sidebarClose: document.getElementById("sidebar-close"),
+      mobileNotificationsIcon: document.getElementById("mobile-notifications-icon")
     };
+
+    // Função para mostrar/ocultar loading nos elementos do perfil
+    function setProfileLoading(isLoading) {
+      if (elements.userInfo && elements.topbarUser) {
+        if (isLoading) {
+          elements.userInfo.classList.remove('loaded');
+          elements.topbarUser.classList.remove('loaded');
+        } else {
+          elements.userInfo.classList.add('loaded');
+          elements.topbarUser.classList.add('loaded');
+        }
+      }
+    }
+
+    // Função para mostrar loading nos botões
+    function setButtonLoading(button, isLoading) {
+      if (isLoading) {
+        button.disabled = true;
+        button.classList.add('loading');
+      } else {
+        button.disabled = false;
+        button.classList.remove('loading');
+      }
+    }
+
+    // Inicialmente mostrar loading nos perfis
+    setProfileLoading(true);
+
+    // Configurar menu mobile
+    function setupMobileMenu() {
+      if (elements.mobileMenuToggle && elements.sidebar && elements.sidebarOverlay && elements.sidebarClose) {
+        elements.mobileMenuToggle.addEventListener('click', () => {
+          elements.sidebar.classList.add('active');
+          elements.sidebarOverlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        });
+        
+        elements.sidebarClose.addEventListener('click', () => {
+          elements.sidebar.classList.remove('active');
+          elements.sidebarOverlay.classList.remove('active');
+          document.body.style.overflow = '';
+        });
+        
+        elements.sidebarOverlay.addEventListener('click', () => {
+          elements.sidebar.classList.remove('active');
+          elements.sidebarOverlay.classList.remove('active');
+          document.body.style.overflow = '';
+        });
+      }
+    }
+
+    // Configurar notificações mobile
+    function setupMobileNotifications() {
+      if (elements.mobileNotificationsIcon) {
+        elements.mobileNotificationsIcon.addEventListener('click', () => {
+          // Abrir painel de notificações no mobile
+          const notificationsPanel = document.getElementById('notifications-panel');
+          if (notificationsPanel) {
+            notificationsPanel.style.display = 
+              notificationsPanel.style.display === 'block' ? 'none' : 'block';
+          }
+        });
+      }
+    }
 
     async function buscarUsuarios(nome = "") {
       if (!elements.searchResultsContainer) return;
       
-      if(!nome) { 
-         elements.searchResultsContainer.innerHTML = `
-           <div class="results-loading">
-             <i class="fas fa-spinner fa-spin"></i>
-             <p>Carregando comunidade...</p>
-           </div>
-         `;
-      }
+      // Mostrar loading circular
+      elements.searchResultsContainer.innerHTML = `
+        <div class="results-loading">
+          <div class="loading-spinner"></div>
+          <p>${nome ? 'Buscando usuários...' : 'Carregando comunidade...'}</p>
+        </div>
+      `;
 
       try {
         const response = await window.axios.get(
@@ -83,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         userCard.innerHTML = `
           <div class="user-card-avatar">
-            <img src="${fotoUrl}" alt="Foto de ${usuario.nome}">
+            <img src="${fotoUrl}" alt="Foto de ${usuario.nome}" loading="lazy">
             <div class="status ${statusClass}" data-user-email="${usuario.email}"></div>
           </div>
           <div class="user-card-info">
@@ -122,8 +194,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     window.enviarSolicitacao = async (idSolicitado, buttonElement) => {
-      buttonElement.disabled = true;
-      buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+      setButtonLoading(buttonElement, true);
+      
       try {
         await window.axios.post(
           `${window.backendUrl}/api/amizades/solicitar/${idSolicitado}`
@@ -141,21 +213,36 @@ document.addEventListener("DOMContentLoaded", () => {
         if(window.showNotification) {
           window.showNotification("Erro ao enviar solicitação.", "error");
         }
-        buttonElement.disabled = false;
+        setButtonLoading(buttonElement, false);
         buttonElement.innerHTML = '<i class="fas fa-user-plus"></i> Adicionar';
       }
     };
 
-    window.iniciarConversa = (userId, userName) => {
+    window.iniciarConversa = async (userId, userName) => {
+      const buttons = document.querySelectorAll(`.btn-message[onclick*="${userId}"]`);
+      buttons.forEach(btn => setButtonLoading(btn, true));
+      
       if(window.showNotification) {
         window.showNotification(`Iniciando conversa com ${userName}...`, "info");
       }
       
-      setTimeout(() => {
+      try {
+        // Simular um pequeno delay para mostrar o loading
+        await new Promise(resolve => setTimeout(resolve, 800));
         window.location.href = `mensagem.html?start_chat=${userId}`;
-      }, 500);
+      } catch (error) {
+        console.error("Erro ao iniciar conversa:", error);
+        buttons.forEach(btn => setButtonLoading(btn, false));
+      }
     };
 
+    // Simular carregamento do perfil (em produção, isso seria controlado pelo principal.js)
+    setTimeout(() => {
+      setProfileLoading(false);
+    }, 1500);
+
+    setupMobileMenu();
+    setupMobileNotifications();
     setupSearchListener();
     buscarUsuarios(""); 
   };
