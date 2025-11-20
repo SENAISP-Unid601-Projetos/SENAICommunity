@@ -6,6 +6,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // Exemplo: if (typeof setupPasswordToggles === 'function') setupPasswordToggles();
 
     const loginForm = document.getElementById('loginForm');
+
+    const togglePasswordButtons = document.querySelectorAll('.toggle-password');
+
+    togglePasswordButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Encontra o input associado (que está no mesmo grupo/pai)
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('i');
+
+            // Alterna entre tipo 'password' e 'text'
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash'); // Ícone de olho cortado
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye'); // Ícone de olho normal
+            }
+        });
+    });
     const backendUrl = 'http://localhost:8080';
     // ATENÇÃO: Verifique se este é o seu Client ID correto
     const googleClientId = '1055449517512-gq7f7doogo5e8vmaq84vgrabsk1q5f5k.apps.googleusercontent.com';

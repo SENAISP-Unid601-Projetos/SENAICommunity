@@ -13,6 +13,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -20,9 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+@Controller
+@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR') or hasRole('ADMIN')")
 @RestController
 @RequestMapping("/api/mensagens/grupo")
-@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
 public class MensagemGrupoController {
 
     @Autowired

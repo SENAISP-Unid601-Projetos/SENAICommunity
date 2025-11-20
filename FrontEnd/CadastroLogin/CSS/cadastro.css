@@ -304,4 +304,172 @@ body.theme-changing::before {
 .toggle-password:hover {
     color: var(--text-secondary);
 }
-/* ... (resto do seu CSS, como password-strength, checkbox, botões, etc, continua igual) ... */
+
+/* ===== RESPONSIVIDADE PARA CELULARES ===== */
+
+@media (max-width: 768px) {
+    /* Ajustes no container principal */
+    .auth-container {
+        padding: 1rem;
+        min-height: 100vh;
+        align-items: flex-start;
+    }
+    
+    .auth-card {
+        max-width: 100%;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    /* Header mais compacto */
+    .auth-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .auth-header .subtext {
+        font-size: 0.9rem;
+    }
+    
+    /* Logo menor */
+    .logo {
+        font-size: 1.3rem;
+    }
+    
+    .logo i {
+        font-size: 1.5rem;
+    }
+    
+    /* Formulário com espaçamento reduzido */
+    .auth-form {
+        gap: 0.8rem;
+    }
+    
+    /* Inputs maiores para toque */
+    .input-group input,
+    .input-group select {
+        padding: 1rem 1rem 1rem 2.8rem;
+        font-size: 16px; /* Previne zoom no iOS */
+    }
+    
+    .input-group i {
+        left: 1rem;
+    }
+    
+    .toggle-password {
+        right: 1rem;
+        width: 2rem;
+        height: 2rem;
+    }
+    
+    /* Upload de imagem mais compacto */
+    .file-upload-label {
+        height: 120px;
+        padding: 0.8rem;
+    }
+    
+    #upload-instructions i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    #upload-instructions p {
+        font-size: 0.9rem;
+    }
+    
+    #image-preview {
+        height: 120px;
+    }
+    
+    /* Botão principal maior */
+    .btn {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+    
+    /* Terms checkbox ajustado */
+    .checkbox.terms {
+        font-size: 0.85rem;
+        line-height: 1.3;
+    }
+    
+    /* Footer ajustado */
+    .auth-footer p {
+        font-size: 0.9rem;
+    }
+    
+    /* Theme toggle reposicionado */
+    .theme-toggle {
+        bottom: 1rem;
+        right: 1rem;
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Ajustes para telas muito pequenas */
+    .auth-card {
+        padding: 1.2rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .logo {
+        font-size: 1.1rem;
+    }
+    
+    .input-group input,
+    .input-group select {
+        padding: 0.9rem 0.9rem 0.9rem 2.5rem;
+    }
+    
+    .file-upload-label {
+        height: 100px;
+    }
+    
+    #upload-instructions i {
+        font-size: 1.7rem;
+    }
+    
+    #upload-instructions p {
+        font-size: 0.8rem;
+    }
+    
+    #upload-instructions span {
+        font-size: 0.75rem;
+    }
+}
+
+/* Prevenir zoom em inputs no iOS */
+@media (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* Melhorias de acessibilidade para toque */
+@media (hover: none) and (pointer: coarse) {
+    .btn:hover {
+        transform: none;
+    }
+    
+    .theme-toggle:hover {
+        transform: none;
+    }
+    
+    .toggle-password {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}

@@ -33,6 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+
+
 // =================================================================
 // LÓGICA GLOBAL (Executa em TODAS as páginas)
 // =================================================================
@@ -533,6 +535,24 @@ function createNotificationElement(notification) {
             }
         }
     }
+    // Função para mostrar/ocultar respostas aninhadas
+window.toggleReplies = (buttonElement, commentId) => {
+    const repliesContainer = document.getElementById(`replies-for-${commentId}`);
+    if (!repliesContainer) return;
+
+    if (repliesContainer.style.display === 'none') {
+        // Mostrar respostas
+        repliesContainer.style.display = 'flex'; // Usamos 'flex' pois .comment-replies é flex
+        buttonElement.innerHTML = `<i class="fas fa-minus-circle"></i> Ocultar respostas`;
+    } else {
+        // Ocultar respostas
+        repliesContainer.style.display = 'none';
+        // Re-calcula o número de respostas para o texto do botão
+        const replyCount = repliesContainer.children.length;
+        const plural = replyCount > 1 ? 'respostas' : 'resposta';
+        buttonElement.innerHTML = `<i class="fas fa-comment-dots"></i> Ver ${replyCount} ${plural}`;
+    }
+};
 
 async function markAllNotificationsAsRead() {
   //
@@ -1276,37 +1296,51 @@ function setupCarouselEventListeners(postElement, postId) {
                 </div>`;
     }
 
-  function renderCommentWithReplies(comment, allComments, post, isAlreadyInReplyThread = false) {
+// SUBSTITUA a função 'renderCommentWithReplies' inteira por esta:
+function renderCommentWithReplies(comment, allComments, post, isAlreadyInReplyThread = false) {
     // 1. Cria o HTML para o comentário atual
-    let commentHtml = createCommentElement(comment, post, allComments);
+    let commentHtml = createCommentElement(comment, post, allComments); 
 
     // 2. Encontra todas as respostas diretas a este comentário
     const replies = allComments
         .filter((reply) => reply.parentId === comment.id)
         .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao));
 
-    // 3. Se houver respostas...
-    if (replies.length > 0) {
+    // 3. Se este comentário tem respostas E é um comentário "principal" (não uma resposta de nível 2+)
+    if (replies.length > 0 && !isAlreadyInReplyThread) {
+        
+        // A. Adicionar o botão "Ver Respostas"
+        const plural = replies.length > 1 ? 'respostas' : 'resposta';
+        commentHtml += `
+            <div class="view-replies-container">
+                <button class="btn-view-replies" onclick="window.toggleReplies(this, ${comment.id})">
+                    <i class="fas fa-comment-dots"></i>
+                    Ver ${replies.length} ${plural}
+                </button>
+            </div>
+        `;
 
-        // 4. SÓ cria o contêiner de recuo se NÃO estivermos já em um.
-        // Esta é a mudança principal.
-        if (!isAlreadyInReplyThread) {
-            commentHtml += `<div class="comment-replies">`;
-        }
-
-        // 5. Adiciona as respostas
+        // B. Ocultar o contêiner de respostas por padrão
+        //    O 'display: flex' será adicionado pelo JS ao clicar
+        commentHtml += `<div class="comment-replies" id="replies-for-${comment.id}" style="display: none;">`;
+        
+        // C. Renderizar as respostas (lógica existente que achata a árvore)
         replies.forEach((reply) => {
-            // Chama a si mesmo para as respostas, mas agora passa 'true',
-            // dizendo: "você já está em um bloco de resposta, não crie outro".
+            // Passa 'true' para que as sub-respostas sejam aninhadas
+            commentHtml += renderCommentWithReplies(reply, allComments, post, true); 
+        });
+        
+        commentHtml += `</div>`; // Fecha o container
+    
+    } else if (replies.length > 0 && isAlreadyInReplyThread) {
+        // 4. Se for uma resposta (Nível 2+) que TAMBÉM tem respostas (Nível 3+),
+        //    apenas continue a recursão. A lógica original já achatava isso.
+        replies.forEach((reply) => {
             commentHtml += renderCommentWithReplies(reply, allComments, post, true);
         });
-
-        // 6. SÓ fecha o contêiner de recuo se o abrimos neste nível.
-        if (!isAlreadyInReplyThread) {
-            commentHtml += `</div>`;
-        }
     }
 
+    // 5. Se não houver respostas (replies.length === 0), só retorna o commentHtml
     return commentHtml;
 }
 
@@ -1318,36 +1352,92 @@ function setupCarouselEventListeners(postElement, postId) {
       : feedElements.postsContainer.appendChild(postElement);
   }
 
-  async function fetchAndReplacePost(postId) {
-    //
-    try {
-      const response = await axios.get(`${backendUrl}/postagem/${postId}`);
-      const oldPostElement = document.getElementById(`post-${postId}`);
-      if (oldPostElement) {
-        const wasCommentsVisible =
-          oldPostElement.querySelector(".comments-section").style.display ===
-          "block";
-        const newPostElement = createPostElement(response.data);
-        if (wasCommentsVisible)
-          newPostElement.querySelector(".comments-section").style.display =
-            "block";
-        oldPostElement.replaceWith(newPostElement);
-      } else {
-        showPublicPost(response.data, true);
-      }
-    } catch (error) {
-      console.error(`Falha ao recarregar post ${postId}:`, error);
+ /* SUBSTITUA a função 'fetchAndReplacePost' inteira por esta 
+   em CADA arquivo JS que a possua (principal.js, perfil.js)
+*/
+async function fetchAndReplacePost(postId) {
+    const oldPostElement = document.getElementById(`post-${postId}`);
+    
+    // --- 1. Salvar Estado da UI (Antes do Fetch) ---
+    let wasCommentsVisible = false;
+    const openReplyContainerIds = new Set(); // Guarda IDs dos containers de resposta abertos
+
+    if (oldPostElement) {
+        // Salva se os comentários principais (nível 0) estavam abertos
+        const oldCommentsSection = oldPostElement.querySelector(".comments-section");
+        if (oldCommentsSection) {
+            wasCommentsVisible = oldCommentsSection.style.display === 'block';
+        }
+        
+        // Salva o ID de todos os containers de RESPOSTA (nível 1+) que estavam abertos
+        const oldReplyContainers = oldPostElement.querySelectorAll('.comment-replies');
+        oldReplyContainers.forEach(container => {
+            // Usamos 'flex' porque foi o que definimos no toggleReplies
+            if (container.style.display === 'flex') { 
+                openReplyContainerIds.add(container.id);
+            }
+        });
     }
-  }
+
+    try {
+        // --- 2. Buscar Novos Dados ---
+        const response = await axios.get(`${backendUrl}/postagem/${postId}`);
+        const newPostElement = createPostElement(response.data); // Cria o novo HTML
+
+        // --- 3. Restaurar Estado da UI (no Novo Elemento) ---
+        
+        // Restaura o container principal de comentários
+        if (wasCommentsVisible) {
+            const newCommentsSection = newPostElement.querySelector(".comments-section");
+            if (newCommentsSection) newCommentsSection.style.display = 'block';
+        }
+        
+        // Restaura todos os containers de resposta que estavam abertos
+        if (openReplyContainerIds.size > 0) {
+            openReplyContainerIds.forEach(containerId => {
+                const newReplyContainer = newPostElement.querySelector(`#${containerId}`);
+                if (newReplyContainer) {
+                    // Encontra o botão que controla este container
+                    const commentId = containerId.replace('replies-for-', '');
+                    const button = newPostElement.querySelector(`button[onclick*="window.toggleReplies(this, ${commentId})"]`);
+                    
+                    // Aplica o estado "aberto"
+                    newReplyContainer.style.display = 'flex';
+                    if (button) {
+                        button.innerHTML = `<i class="fas fa-minus-circle"></i> Ocultar respostas`;
+                    }
+                }
+            });
+        }
+        
+        // --- 4. Substituir o Elemento na DOM ---
+        if (oldPostElement) {
+            oldPostElement.replaceWith(newPostElement);
+        } else {
+            // Lógica de fallback caso o post antigo não exista
+            // Garante que o nome da função é o correto para o script
+            if (typeof showPublicPost === 'function') {
+                showPublicPost(response.data, true); // Para principal.js
+            } else if (typeof showPost === 'function') {
+                showPost(response.data, true); // Para perfil.js
+            }
+        }
+
+    } catch (error) {
+        console.error(`Falha ao recarregar post ${postId}:`, error);
+        // Se o post foi excluído (ex: 404), remove o elemento antigo
+        if (error.response && error.response.status === 404) {
+             if (oldPostElement) oldPostElement.remove();
+        }
+    }
+}
 
   function handlePublicFeedUpdate(payload) {
-    //
-    if (
-      payload.autorAcaoId &&
-      currentUser &&
-      payload.autorAcaoId == currentUser.id
-    )
-      return;
+    // NÃO vamos mais ignorar. Precisamos da atualização para atualizar os contadores.
+    /*
+    if (payload.autorAcaoId && currentUser && payload.autorAcaoId == currentUser.id)
+      return; 
+    */
     const postId = payload.postagem?.id || payload.id || payload.postagemId;
     if (payload.tipo === "remocao" && payload.postagemId) {
       const postElement = document.getElementById(`post-${payload.postagemId}`);

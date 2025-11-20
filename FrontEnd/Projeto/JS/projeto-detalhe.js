@@ -102,52 +102,6 @@ async function loadProjectMembers() {
     }
 }
 
-async function loadSolicitacoes() {
-    try {
-        // CORREÇÃO DE SINTAXE: Havia uma quebra de linha incorreta aqui
-        const response = await axios.get(`${backendUrl}/projetos/${projectId}/solicitacoes?usuarioId=${currentUser.id}`);
-        const solicitacoes = response.data;
-        
-        const solicitacoesList = document.getElementById('solicitacoes-list');
-        solicitacoesList.innerHTML = '';
-        
-        if (solicitacoes.length === 0) {
-            solicitacoesList.innerHTML = '<p class="empty-state">Nenhuma solicitação pendente</p>';
-            return;
-        }
-        
-        solicitacoes.forEach(solicitacao => {
-            const solicitacaoElement = document.createElement('div');
-            solicitacaoElement.className = 'solicitacao-item';
-            
-            const userAvatar = solicitacao.usuarioFoto ? 
-                (solicitacao.usuarioFoto.startsWith('http') ? solicitacao.usuarioFoto : `${backendUrl}${solicitacao.usuarioFoto}`) :
-                defaultAvatarUrl;
-            
-            solicitacaoElement.innerHTML = `
-                <div class="solicitacao-user">
-                    <img src="${userAvatar}" alt="${solicitacao.usuarioNome}" onerror="this.src='${defaultAvatarUrl}'">
-                    <div class="solicitacao-user-info">
-                        <div class="solicitacao-user-name">${solicitacao.usuarioNome}</div>
-                        <div class="solicitacao-user-email">${solicitacao.usuarioEmail}</div>
-                        <div class="solicitacao-data">${new Date(solicitacao.dataSolicitacao).toLocaleString('pt-BR')}</div>
-                    </div>
-                </div>
-                <div class="solicitacao-actions">
-                    <button class="btn btn-primary" onclick="aceitarSolicitacao(${solicitacao.id})">Aceitar</button>
-                    <button class="btn btn-danger" onclick="recusarSolicitacao(${solicitacao.id})">Recusar</button>
-                </div>
-            `;
-            solicitacoesList.appendChild(solicitacaoElement);
-        });
-        
-    } catch (error) {
-        console.error("Erro ao carregar solicitações:", error);
-        // Mostra erro visual para o usuário saber que falhou
-        document.getElementById('solicitacoes-list').innerHTML = '<p class="empty-state" style="color: var(--danger);">Erro ao carregar solicitações. Tente novamente.</p>';
-    }
-}
-
 // CORREÇÃO: Atualizar a função checkUserRole
 function checkUserRole() {
     if (!currentProject || !currentUser) {
@@ -196,7 +150,7 @@ function checkUserRole() {
     }
     
     if (solicitacoesBtn) {
-        solicitacoesBtn.style.display = isAdminOrModerator ? 'block' : 'none';
+       solicitacoesBtn.style.display = isAdminOrModerator ? 'inline-flex' : 'none';
         console.log(`[DEBUG] Solicitações button display: ${solicitacoesBtn.style.display}`);
     }
     
@@ -1785,22 +1739,33 @@ function setupAddMemberButton() {
 // CORREÇÃO: Configurar botão de solicitações
 function setupSolicitacoesButton() {
     const chatActions = document.querySelector('.chat-actions');
-    if (chatActions && !document.getElementById('solicitacoes-btn')) {
-        const solicitacoesBtn = document.createElement('button');
+    let solicitacoesBtn = document.getElementById('solicitacoes-btn');
+    
+    // 1. Se o botão NÃO existir no HTML, cria ele dinamicamente
+    if (!solicitacoesBtn && chatActions) {
+        solicitacoesBtn = document.createElement('button');
         solicitacoesBtn.id = 'solicitacoes-btn';
         solicitacoesBtn.className = 'action-btn';
         solicitacoesBtn.innerHTML = '<i class="fas fa-user-clock"></i>';
         solicitacoesBtn.setAttribute('data-tooltip', 'Solicitações de entrada');
         solicitacoesBtn.style.display = 'none'; // Começa invisível
-        
+        chatActions.appendChild(solicitacoesBtn);
+    }
+
+    
+    if (solicitacoesBtn) {
+       
+        const newBtn = solicitacoesBtn.cloneNode(true);
+        solicitacoesBtn.parentNode.replaceChild(newBtn, solicitacoesBtn);
+        solicitacoesBtn = newBtn; // Atualiza a referência
+
         solicitacoesBtn.addEventListener('click', function() {
+            console.log("Botão de solicitações clicado!"); // Debug para confirmar
             openSolicitacoesModal();
         });
         
-        chatActions.appendChild(solicitacoesBtn);
-
         if (currentUser && currentProject) {
-            checkUserRole();
+            checkUserRole(); 
         }
     }
 }
@@ -2172,12 +2137,17 @@ function openSolicitacoesModal() {
     loadSolicitacoes();
 }
 
-// NOVA FUNÇÃO: Carregar solicitações pendentes
+
 async function loadSolicitacoes() {
     try {
-        const response = await axios.get(`${backendUrl}/projetos/${projectId}/solicitacoes?usuarioId=${currentUser.id}`);        const solicitacoes = response.data;
-        
         const solicitacoesList = document.getElementById('solicitacoes-list');
+        if (!solicitacoesList) return;
+        
+        solicitacoesList.innerHTML = '<div style="text-align:center"><div class="loading-spinner"></div></div>';
+
+        const response = await axios.get(`${backendUrl}/projetos/${projectId}/solicitacoes?usuarioId=${currentUser.id}`);
+        const solicitacoes = response.data;
+        
         solicitacoesList.innerHTML = '';
         
         if (solicitacoes.length === 0) {
@@ -2189,9 +2159,21 @@ async function loadSolicitacoes() {
             const solicitacaoElement = document.createElement('div');
             solicitacaoElement.className = 'solicitacao-item';
             
-            const userAvatar = solicitacao.usuarioFoto ? 
-                (solicitacao.usuarioFoto.startsWith('http') ? solicitacao.usuarioFoto : `${backendUrl}${solicitacao.usuarioFoto}`) :
-                defaultAvatarUrl;
+            // Lógica de Avatar robusta (igual à usada nos membros)
+            let userAvatar = defaultAvatarUrl;
+            if (solicitacao.usuarioFoto) {
+                if (solicitacao.usuarioFoto.startsWith('http')) {
+                    userAvatar = solicitacao.usuarioFoto;
+                } else {
+                    // Garante que não duplique barras ou falte barras
+                    const path = solicitacao.usuarioFoto.startsWith('/') ? solicitacao.usuarioFoto : `/${solicitacao.usuarioFoto}`;
+                    userAvatar = `${backendUrl}/api/arquivos${path}`;
+                    // Nota: Ajuste o caminho '/api/arquivos' conforme sua rota real de imagens se for diferente
+                    if(solicitacao.usuarioFoto.startsWith('/images/')) {
+                         userAvatar = `${backendUrl}${solicitacao.usuarioFoto}`;
+                    }
+                }
+            }
             
             solicitacaoElement.innerHTML = `
                 <div class="solicitacao-user">
@@ -2203,8 +2185,8 @@ async function loadSolicitacoes() {
                     </div>
                 </div>
                 <div class="solicitacao-actions">
-                    <button class="btn btn-primary" onclick="aceitarSolicitacao(${solicitacao.id})">Aceitar</button>
-                    <button class="btn btn-danger" onclick="recusarSolicitacao(${solicitacao.id})">Recusar</button>
+                    <button class="btn btn-primary" onclick="aceitarSolicitacao(${solicitacao.id})" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Aceitar</button>
+                    <button class="btn btn-danger" onclick="recusarSolicitacao(${solicitacao.id})" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Recusar</button>
                 </div>
             `;
             solicitacoesList.appendChild(solicitacaoElement);
@@ -2212,7 +2194,8 @@ async function loadSolicitacoes() {
         
     } catch (error) {
         console.error("Erro ao carregar solicitações:", error);
-        document.getElementById('solicitacoes-list').innerHTML = '<p class="empty-state">Erro ao carregar solicitações</p>';
+        const list = document.getElementById('solicitacoes-list');
+        if(list) list.innerHTML = '<p class="empty-state" style="color: var(--danger)">Erro ao carregar solicitações. Verifique se você tem permissão de administrador.</p>';
     }
 }
 
