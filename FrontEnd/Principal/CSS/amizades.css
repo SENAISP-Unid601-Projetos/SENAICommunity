@@ -263,15 +263,88 @@
 
 .menu-item i { width: 24px; text-align: center; }
 
-/* Widget Amigos Online */
-.sidebar-widget { padding: 1.5rem; }
-.online-friends {
-    background: var(--bg-tertiary);
-    border-radius: 12px;
-    padding: 1rem;
+/* =================================================================
+   WIDGET AMIGOS ONLINE (Estilo da Imagem)
+   Adicione ao final de amizades.css
+================================================================= */
+
+/* Container do Widget */
+.sidebar-widget .online-friends {
+    background: var(--bg-secondary); /* Fundo do card */
     border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: none; /* Remove sombras externas para ficar flat como na imagem */
 }
 
+/* Título "Amigos Online" */
+.sidebar-widget .widget-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary); /* Cor cinza */
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color); /* Linha fina separadora */
+    text-transform: none; /* Remove caixa alta se houver */
+}
+
+/* Item da Lista (Cada amigo) */
+.sidebar-widget .friend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Empurra a bolinha para a ponta direita */
+    padding: 0.6rem 0; /* Espaçamento vertical entre os amigos */
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+/* Link (Agrupa Avatar + Nome) */
+.sidebar-widget .friend-item-link {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Distância entre a foto e o nome */
+    text-decoration: none;
+    flex-grow: 1; /* Ocupa todo o espaço até a bolinha */
+    min-width: 0; /* Evita que nomes longos quebrem o layout */
+}
+
+/* Avatar do Amigo */
+.sidebar-widget .friend-item .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0; /* Remove margens antigas */
+    border: none; /* Remove bordas antigas */
+}
+
+.sidebar-widget .friend-item .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Nome do Amigo */
+.sidebar-widget .friend-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary); /* Branco/Claro */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Bolinha de Status (Lado Direito) */
+.sidebar-widget .friend-item .status.online {
+    position: static; /* Remove posicionamento absoluto antigo */
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #22c55e; /* Verde vibrante */
+    border: none;
+    margin-left: 10px; /* Afasta um pouco do nome */
+    flex-shrink: 0; /* Impede que a bolinha amasse */
+}
 /* --- MAIN CONTENT --- */
 .main-content {
     flex: 1; /* Ocupa todo o espaço restante */
@@ -616,4 +689,48 @@
 .sidebar .user-info.loaded .user-info-loading {
     opacity: 0;
     pointer-events: none;
+}
+
+/* =================================================================
+   CORREÇÃO: CARDS DE PEDIDOS (Enviados/Recebidos)
+   Adicione ao final de amizades.css
+================================================================= */
+
+/* Header do Card de Pedido (Foto + Texto lado a lado) */
+.request-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    text-align: left; /* Garante alinhamento à esquerda */
+}
+
+/* Ajuste da imagem no card de pedido */
+.request-avatar {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+}
+
+.request-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--bg-tertiary);
+}
+
+/* Container de Ações (Botões) */
+.request-actions {
+    display: flex; /* Mudamos de Grid para Flex */
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: auto;
+}
+
+/* Faz os botões ocuparem o espaço disponível uniformemente */
+.request-actions .btn {
+    flex: 1; /* Se tiver 1 botão, ocupa 100%. Se 2, ocupam 50% cada */
+    justify-content: center;
 }

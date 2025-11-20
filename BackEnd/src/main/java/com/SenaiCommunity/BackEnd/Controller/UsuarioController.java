@@ -3,6 +3,7 @@ package com.SenaiCommunity.BackEnd.Controller;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioAtualizacaoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioBuscaDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;
+import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import com.SenaiCommunity.BackEnd.Service.UserStatusService;
 import com.SenaiCommunity.BackEnd.Service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -29,6 +31,9 @@ public class UsuarioController {
     @Autowired
     private UserStatusService userStatusService;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     @GetMapping("/me")
     public ResponseEntity<UsuarioSaidaDTO> getMeuUsuario(Authentication authentication) {
         UsuarioSaidaDTO usuarioDTO = usuarioService.buscarUsuarioLogado(authentication);
@@ -36,9 +41,15 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioSaidaDTO> getUsuarioPorId(@PathVariable Long id) {
-        UsuarioSaidaDTO usuarioDTO = usuarioService.buscarUsuarioPorId(id);
-        return ResponseEntity.ok(usuarioDTO);
+    public ResponseEntity<?> buscarUsuarioPorId(@PathVariable Long id) {
+        return usuarioRepository.findById(id)
+                .map(usuario -> ResponseEntity.ok(Map.of(
+                        "id", usuario.getId(),
+                        "nome", usuario.getNome(),
+                        "fotoPerfil", usuario.getFotoPerfil() != null ? usuario.getFotoPerfil() : "",
+                        "email", usuario.getEmail() // Opcional, cuidadcom privacidade
+                )))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/me")

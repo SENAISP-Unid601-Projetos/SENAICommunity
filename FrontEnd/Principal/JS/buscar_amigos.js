@@ -117,8 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<div class="empty-state"><i class="fas fa-users"></i><p>Nenhum usuário encontrado</p><p class="empty-state-subtitle">Tente alterar os termos da busca</p></div>';
         return;
       }
-
-      usuarios.forEach((usuario) => {
+usuarios.forEach((usuario) => {
         const userCard = document.createElement("div");
         userCard.className = "user-card";
         
@@ -130,16 +129,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const statusClass = usuario.online ? "online" : "offline";
 
         let actionButtonHtml = "";
-        let messageButtonHtml = "";
         
+        // Botão de ação principal (Adicionar/Amigos/Pendente)
         switch (usuario.statusAmizade) {
           case "AMIGOS":
             actionButtonHtml =
               '<button class="btn btn-secondary" disabled><i class="fas fa-check"></i> Amigos</button>';
-            messageButtonHtml = 
-              `<button class="btn btn-message" onclick="window.iniciarConversa(${usuario.id}, '${usuario.nome.replace(/'/g, "\\'")}')">
-                 <i class="fas fa-comment-dots"></i> Enviar Mensagem
-               </button>`;
             break;
           case "SOLICITACAO_ENVIADA":
             actionButtonHtml =
@@ -156,6 +151,12 @@ document.addEventListener("DOMContentLoaded", () => {
                </button>`;
             break;
         }
+
+        // Botão de mensagem SEMPRE visível
+        const messageButtonHtml = 
+          `<button class="btn btn-message" onclick="window.iniciarConversa(${usuario.id}, '${usuario.nome.replace(/'/g, "\\'")}')">
+             <i class="fas fa-comment-dots"></i> Enviar Mensagem
+           </button>`;
 
         userCard.innerHTML = `
           <div class="card-header-info">

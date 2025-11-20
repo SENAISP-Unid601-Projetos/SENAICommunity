@@ -231,6 +231,9 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
    * Seleciona uma conversa e carrega o histórico
    */
+  /**
+   * Seleciona uma conversa e carrega o histórico
+   */
   async function selectConversation(otherUserId) {
     if (!otherUserId) return;
     otherUserId = parseInt(otherUserId, 10);
@@ -238,23 +241,47 @@ document.addEventListener("DOMContentLoaded", () => {
     let convoData = conversas.find((c) => c.outroUsuarioId === otherUserId);
     let isNewConversation = false;
 
+    // Se não existe uma conversa aberta ainda...
     if (!convoData) {
-      const friendData = userFriends.find((f) => f.idUsuario === otherUserId);
-      const friendAvatar =
-        friendData.fotoPerfil && friendData.fotoPerfil.startsWith("http")
-          ? friendData.fotoPerfil
-          : `${window.backendUrl}${
-              friendData.fotoPerfil || "/images/default-avatar.jpg"
-            }`;
-      if (!friendData) {
-        console.error("Amigo não encontrado para iniciar conversa:", otherUserId);
-        window.showNotification("Não foi possível encontrar os dados deste contato.", "error");
-        return; 
+      // 1. Tenta encontrar na lista de amigos local
+      let targetUser = userFriends.find((f) => f.idUsuario === otherUserId);
+
+      // 2. Se NÃO for amigo (não está na lista), busca os dados na API
+      if (!targetUser) {
+        try {
+            // Mostra um loading rápido ou apenas aguarda
+            const response = await axios.get(`${window.backendUrl}/usuarios/${otherUserId}`);
+            const userData = response.data;
+            
+            // Mapeia o retorno da API para o formato que o chat espera
+            targetUser = {
+                idUsuario: userData.id,
+                nome: userData.nome,
+                fotoPerfil: userData.urlFotoPerfil || userData.fotoPerfil
+            };
+        } catch (error) {
+            console.error("Erro ao buscar dados do usuário:", error);
+            // Fallback para não travar a tela se a API falhar
+            targetUser = {
+                idUsuario: otherUserId,
+                nome: "Usuário Desconhecido",
+                fotoPerfil: null
+            };
+        }
       }
 
+      // Configura a URL do avatar
+      const friendAvatar =
+        targetUser.fotoPerfil && targetUser.fotoPerfil.startsWith("http")
+          ? targetUser.fotoPerfil
+          : `${window.backendUrl}${
+              targetUser.fotoPerfil || "/images/default-avatar.jpg"
+            }`;
+
+      // Cria o objeto de dados da conversa temporária
       convoData = {
-        outroUsuarioId: friendData.idUsuario,
-        nomeOutroUsuario: friendData.nome,
+        outroUsuarioId: targetUser.idUsuario,
+        nomeOutroUsuario: targetUser.nome,
         avatarUrl: friendAvatar,
         conteudoUltimaMensagem: null,
         dataEnvioUltimaMensagem: new Date().toISOString(),
@@ -264,12 +291,14 @@ document.addEventListener("DOMContentLoaded", () => {
       isNewConversation = true;
     }
 
+    // Define a conversa ativa
     activeConversation = {
       usuarioId: otherUserId,
       nome: convoData.nomeOutroUsuario || convoData.nome,
       avatar: convoData.avatarUrl || defaultAvatarUrl,
     };
 
+    // Se for nova, adiciona visualmente na lista
     if (isNewConversation) {
       const existingCard = document.querySelector(
         `.convo-card[data-user-id="${otherUserId}"]`
@@ -278,12 +307,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const tempCard = createConversationCardElement(convoData);
         elements.conversationsList.prepend(tempCard);
       }
+      // Adiciona ao array interno se ainda não existir
       if (!conversas.some((c) => c.outroUsuarioId === otherUserId)) {
         conversas.unshift(convoData);
       }
     }
 
     renderChatHeader();
+    
+    // Atualiza classes visuais (Selected)
     document
       .querySelectorAll(".convo-card")
       .forEach((card) => card.classList.remove("selected"));
@@ -292,8 +324,6 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     if (selectedCard) {
       selectedCard.classList.add("selected");
-    } else {
-      console.warn("Card da conversa não encontrado para destacar:", otherUserId);
     }
 
     // Marca como lida
@@ -301,30 +331,24 @@ document.addEventListener("DOMContentLoaded", () => {
       await axios.post(
         `${backendUrl}/api/chat/privado/marcar-lida/${otherUserId}`
       );
-
-      // Atualiza contagem local
       unreadMessagesCount.set(otherUserId, 0);
       updateConversationUnreadCount(otherUserId, 0);
-
-      // Atualiza contagem global via WebSocket
-      if (stompClient && stompClient.connected) {
-        // Pode enviar uma mensagem para atualizar a contagem ou confiar no backend
-      }
     } catch (error) {
       console.error("Erro ao marcar conversa como lida:", error);
     }
 
-    // Mostra loading e carrega mensagens
+    // Carrega as mensagens
     showMessagesLoading();
     await fetchMessages(otherUserId);
 
+    // Habilita os inputs
     elements.messageInput.disabled = false;
     elements.chatSendBtn.disabled = false;
-    elements.recordAudioBtn.disabled = false;
+    if(elements.recordAudioBtn) elements.recordAudioBtn.disabled = false;
     elements.messageInput.placeholder = `Escreva para ${activeConversation.nome}...`;
     elements.messageInput.focus();
   }
-
+  
   /**
    * Atualiza contagem de não lidas em uma conversa
    */
