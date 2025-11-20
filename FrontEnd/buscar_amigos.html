@@ -64,102 +64,202 @@
             </div>
         </div>
 
-        <!-- Menu mobile para notificações e tema -->
-        <div class="mobile-nav-icons" id="mobile-nav-icons">
-            <div class="nav-icon" data-tooltip="Notificações" id="mobile-notifications-icon">
-                <i class="fas fa-bell"></i>
-                <span class="badge" id="mobile-notifications-badge" style="display: none;">0</span>
-            </div>
-            <div class="theme-toggle" data-tooltip="Alternar tema">
-                <i class="fas fa-moon"></i>
-            </div>
-        </div>
+       
     </header>
 
     <div class="container">
-        <aside class="sidebar" id="main-sidebar">
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" id="mobile-overlay"></div>
+
+       <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="perfil.html" class="user-info-link">
-                    <div class="user-info">
-                        <div class="user-info-loading" id="user-info-loading">
-                            <div class="loading-spinner"></div>
-                        </div>
-                        <div class="avatar">
-                            <img src="https://via.placeholder.com/80" alt="Perfil" id="sidebar-user-img">
-                            <div class="status online"></div>
-                        </div>
-                        <div class="user-details">
-                            <h2 id="sidebar-user-name">Carregando...</h2>
-                            <p class="user-title" id="sidebar-user-title">Carregando...</p>
+                <div class="sidebar-user-card">
+                    <a href="perfil.html" class="user-info-link">
+                        <div class="user-info">
+                            <div class="user-info-loading" id="user-info-loading">
+                                <div class="loading-spinner"></div>
+                            </div>
+
+                            <div class="avatar-container">
+                                <img src="https://via.placeholder.com/80" alt="Perfil" id="sidebar-user-img">
+                                <div class="status online"></div>
+                            </div>
+
+                            <div class="user-identity">
+                                <h2 id="sidebar-user-name">Carregando...</h2>
+                                <span class="user-role" id="sidebar-user-title">Carregando...</span>
+                            </div>
+
                             <div class="user-stats">
-                                <div class="stat">
+                                <div class="stat-item">
                                     <strong id="connections-count">-</strong>
-                                    <span>Conexões</span>
+                                    <span class="stat-label">Conexões</span>
                                 </div>
-                                <div class="stat">
+                                <div class="stat-item">
                                     <strong id="projects-count">-</strong>
-                                    <span>Projetos</span>
+                                    <span class="stat-label">Projetos</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </a>
-                <div class="sidebar-close" id="sidebar-close">
-                    <i class="fas fa-times"></i>
+                    </a>
                 </div>
+                <button class="sidebar-close" id="sidebar-close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
-            <nav class="menu">
-                <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
-                <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge" id="message-badge-sidebar" style="display: none;">0</span></a>
-                <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
-                <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
-                <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
-                <a href="buscar_amigos.html" class="active"><i class="fas fa-user-plus"></i> Encontrar Pessoas</a>
-                <a href="amizades.html"><i class="fas fa-user-friends"></i> Minhas Conexões</a> 
-            </nav>
+            <nav class="sidebar-menu">
+                <a href="principal.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span class="menu-text">Feed</span>
+                </a>
+                <a href="mensagem.html" class="menu-item">
+                    <i class="fas fa-comment-dots"></i>
+                    <span class="menu-text">Mensagens</span>
+                    <span class="badge" id="message-badge" style="display: none;">0</span>
+                </a>
+                <a href="projeto.html" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-text">Projetos</span>
+                </a>
+                <a href="vaga.html" class="menu-item">
+                    <i class="fas fa-briefcase"></i>
+                    <span class="menu-text">Vagas</span>
+                </a>
+                <a href="evento.html" class="menu-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span class="menu-text">Eventos</span>
+                </a>
+                <a href="buscar_amigos.html" class="menu-item active">
+                    <i class="fas fa-user-plus"></i>
+                    <span class="menu-text">Encontrar Pessoas</span>
+                </a>
+                <a href="amizades.html" class="menu-item">
+                    <i class="fas fa-user-friends"></i>
+                    <span class="menu-text">Minhas Conexões</span>
+                </a>
 
-            <div class="widget-card online-friends" id="online-friends-widget">
-                <h3 class="widget-title">Amigos Online</h3>
-                <div class="friend-list" id="online-friends-list">
-                    <div class="results-loading" style="padding: 1rem;">
-                        <div class="loading-spinner"></div>
-                        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Carregando...</p>
+                </nav>
+
+            <div class="sidebar-widget">
+                <div class="widget-card online-friends" id="online-friends-widget">
+                    <h3 class="widget-title">Amigos Online</h3>
+                    <div class="friend-list" id="online-friends-list">
+                        <div class="results-loading" style="padding: 1rem;">
+                            <div class="loading-spinner"></div>
+                            <p style="font-size: 0.8rem; margin-top: 0.5rem;">Carregando...</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
         <main class="main-content">
-            <div class="search-header-card">
-                <h2 class="search-title">Encontrar Pessoas na Comunidade</h2>
-                <p class="search-subtitle">Conecte-se com alunos, professores e profissionais</p>
-                
-                <div class="search-box-container">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="search" id="user-search-input" placeholder="Digite o nome de um aluno ou professor...">
-                    </div>
-                </div>
+            <div class="page-header-mobile">
+                <h1 class="page-title-mobile">Encontrar Pessoas</h1>
             </div>
 
-            <div class="search-results-container" id="search-results-container">
-                <div class="results-loading">
-                    <div class="loading-spinner"></div>
-                    <p>Carregando comunidade...</p>
+            <div class="connections-container">
+                <div class="search-header-card">
+                    <h2 class="search-title">Encontrar Pessoas na Comunidade</h2>
+                    <p class="search-subtitle">Conecte-se com alunos, professores e profissionais</p>
+                    
+                    <div class="search-box-container">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="search" id="user-search-input" placeholder="Digite o nome de um aluno ou professor...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="search-results-container" id="search-results-container">
+                    <div class="results-loading">
+                        <div class="loading-spinner"></div>
+                        <p>Carregando comunidade...</p>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="edit-profile-modal" class="modal-overlay" style="display: none;">
-        <!-- Modal content will be loaded from principal.js -->
+      <div id="edit-profile-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Perfil</h3>
+                <button class="btn-secondary" id="cancel-edit-profile-btn">Cancelar</button>
+            </div>
+            <form id="edit-profile-form">
+                <div class="profile-pic-editor">
+                    <label for="edit-profile-pic-input">
+                        <img src="https://via.placeholder.com/150" id="edit-profile-pic-preview" alt="Preview">
+                        <div class="pic-editor-overlay">
+                            <i class="fas fa-camera"></i>
+                            <span>Alterar Foto</span>
+                        </div>
+                    </label>
+                    <input type="file" id="edit-profile-pic-input" accept="image/*" style="display: none;">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-profile-name">Nome Completo</label>
+                    <input type="text" id="edit-profile-name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-profile-bio">Bio / Sobre</label>
+                    <textarea id="edit-profile-bio" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-profile-dob">Data de Nascimento</label>
+                    <input type="date" id="edit-profile-dob">
+                </div>
+
+                <hr class="form-divider">
+                <p class="warning-text"
+                    style="background: rgba(255, 255, 255, 0.05); border: none; color: var(--text-secondary);">
+                    Deixe as senhas em branco se não quiser alterá-las.
+                </p>
+
+                <div class="form-group">
+                    <label for="edit-profile-password">Nova Senha</label>
+                    <input type="password" id="edit-profile-password" placeholder="Nova senha">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-profile-password-confirm">Confirmar Nova Senha</label>
+                    <input type="password" id="edit-profile-password-confirm" placeholder="Confirme a senha">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
     </div>
-    
+
     <div id="delete-account-modal" class="modal-overlay" style="display: none;">
-        <!-- Modal content will be loaded from principal.js -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: var(--danger);">Excluir Conta</h3>
+            </div>
+            <div class="modal-body">
+                <p class="warning-text">
+                    <strong>ATENÇÃO:</strong> Esta ação é irreversível. Todos os seus dados, conexões, mensagens e
+                    projetos serão apagados permanentemente.
+                </p>
+                <form id="delete-account-form">
+                    <div class="form-group">
+                        <label for="delete-confirm-password">Digite sua senha para confirmar:</label>
+                        <input type="password" id="delete-confirm-password" required placeholder="Sua senha atual">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="cancel-delete-account-btn">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Excluir Permanentemente</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

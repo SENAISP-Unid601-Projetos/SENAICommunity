@@ -16,7 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
             mobileMenuBtn: document.getElementById('mobile-menu-btn'),
             sidebar: document.getElementById('sidebar'),
             sidebarClose: document.getElementById('sidebar-close'),
-            mobileOverlay: document.getElementById('mobile-overlay')
+            mobileOverlay: document.getElementById('mobile-overlay'),
+            // NOVO: Elemento do contador de projetos
+            projectsCount: document.getElementById("projects-count")
         };
 
         // -----------------------------------------------------------------
@@ -110,6 +112,25 @@ document.addEventListener("DOMContentLoaded", () => {
         // -----------------------------------------------------------------
         // FUNÇÕES DE BUSCA DE DADOS (Específicas da Página)
         // -----------------------------------------------------------------
+
+        /**
+         * NOVO: Busca a contagem de projetos do usuário (Igual ao projeto.js)
+         */
+        async function fetchUserProjectsCount() {
+            if (!elements.projectsCount) return;
+            
+            try {
+                // Usa o mesmo endpoint que a página de projetos usa para listar "Meus Projetos"
+                const response = await window.axios.get(`${window.backendUrl}/projetos`);
+                const projects = response.data;
+                
+                // Atualiza o texto com a quantidade de projetos
+                elements.projectsCount.textContent = projects.length;
+            } catch (error) {
+                console.error("Erro ao buscar contagem de projetos:", error);
+                elements.projectsCount.textContent = "0";
+            }
+        }
 
         /**
          * Busca apenas os pedidos de amizade RECEBIDOS.
@@ -395,6 +416,9 @@ document.addEventListener("DOMContentLoaded", () => {
             
             fetchReceivedRequests();
             fetchSentRequests();
+            
+            // NOVO: Busca a contagem de projetos
+            fetchUserProjectsCount();
             
             // Simular carregamento do perfil (em produção, isso seria controlado pelo principal.js)
             setTimeout(() => {

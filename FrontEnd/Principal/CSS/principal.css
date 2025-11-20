@@ -3107,3 +3107,32 @@ a.user-card-link:hover h4 {
     flex-shrink: 0;
 }
 
+/* ===============================================
+   CORREÇÃO: Notificações Centralizadas (Mobile)
+   =============================================== */
+@media (max-width: 768px) {
+    .notifications-panel {
+        /* Muda de absolute (preso ao sino) para fixed (preso à tela) */
+        position: fixed !important;
+        
+        /* Posiciona logo abaixo do header */
+        top: 75px !important; 
+        right: auto !important; /* Remove alinhamento à direita */
+        
+        /* Centraliza horizontalmente */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        
+        /* Garante largura boa para leitura */
+        width: 90% !important;
+        max-width: 380px !important;
+        max-height: 70vh; /* Evita que seja maior que a tela */
+        
+        /* Garante que fique acima de tudo */
+        z-index: 9999 !important;
+        
+        /* Sombra forte para destacar do fundo */
+        box-shadow: 0 0 0 100vmax rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.5) !important;
+    }
+}
+

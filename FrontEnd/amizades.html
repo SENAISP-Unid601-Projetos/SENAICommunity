@@ -84,22 +84,25 @@
                             <div class="user-info-loading" id="user-info-loading">
                                 <div class="loading-spinner"></div>
                             </div>
-                            <div class="avatar">
+
+                            <div class="avatar-container">
                                 <img src="https://via.placeholder.com/80" alt="Perfil" id="sidebar-user-img">
                                 <div class="status online"></div>
                             </div>
-                            <div class="user-details">
+
+                            <div class="user-identity">
                                 <h2 id="sidebar-user-name">Carregando...</h2>
-                                <p class="user-title" id="sidebar-user-title">Carregando...</p>
-                                <div class="user-stats">
-                                    <div class="stat">
-                                        <strong id="connections-count">-</strong>
-                                        <span>Conexões</span>
-                                    </div>
-                                    <div class="stat">
-                                        <strong id="projects-count">-</strong>
-                                        <span>Projetos</span>
-                                    </div>
+                                <span class="user-role" id="sidebar-user-title">Carregando...</span>
+                            </div>
+
+                            <div class="user-stats">
+                                <div class="stat-item">
+                                    <strong id="connections-count">-</strong>
+                                    <span class="stat-label">Conexões</span>
+                                </div>
+                                <div class="stat-item">
+                                    <strong id="projects-count">-</strong>
+                                    <span class="stat-label">Projetos</span>
                                 </div>
                             </div>
                         </div>
@@ -158,9 +161,7 @@
         <main class="main-content">
             <div class="page-header-mobile">
                 <h1 class="page-title-mobile">Minhas Conexões</h1>
-                <button class="mobile-menu-btn" id="mobile-menu-btn">
-                    <i class="fas fa-bars"></i>
-                </button>
+
             </div>
 
             <div class="connections-container">
@@ -220,6 +221,86 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <div id="edit-profile-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Perfil</h3>
+                <button class="btn-secondary" id="cancel-edit-profile-btn">Cancelar</button>
+            </div>
+            <form id="edit-profile-form">
+                <div class="profile-pic-editor">
+                    <label for="edit-profile-pic-input">
+                        <img src="https://via.placeholder.com/150" id="edit-profile-pic-preview" alt="Preview">
+                        <div class="pic-editor-overlay">
+                            <i class="fas fa-camera"></i>
+                            <span>Alterar Foto</span>
+                        </div>
+                    </label>
+                    <input type="file" id="edit-profile-pic-input" accept="image/*" style="display: none;">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-profile-name">Nome Completo</label>
+                    <input type="text" id="edit-profile-name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-profile-bio">Bio / Sobre</label>
+                    <textarea id="edit-profile-bio" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-profile-dob">Data de Nascimento</label>
+                    <input type="date" id="edit-profile-dob">
+                </div>
+
+                <hr class="form-divider">
+                <p class="warning-text"
+                    style="background: rgba(255, 255, 255, 0.05); border: none; color: var(--text-secondary);">
+                    Deixe as senhas em branco se não quiser alterá-las.
+                </p>
+
+                <div class="form-group">
+                    <label for="edit-profile-password">Nova Senha</label>
+                    <input type="password" id="edit-profile-password" placeholder="Nova senha">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-profile-password-confirm">Confirmar Nova Senha</label>
+                    <input type="password" id="edit-profile-password-confirm" placeholder="Confirme a senha">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="delete-account-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: var(--danger);">Excluir Conta</h3>
+            </div>
+            <div class="modal-body">
+                <p class="warning-text">
+                    <strong>ATENÇÃO:</strong> Esta ação é irreversível. Todos os seus dados, conexões, mensagens e
+                    projetos serão apagados permanentemente.
+                </p>
+                <form id="delete-account-form">
+                    <div class="form-group">
+                        <label for="delete-confirm-password">Digite sua senha para confirmar:</label>
+                        <input type="password" id="delete-confirm-password" required placeholder="Sua senha atual">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="cancel-delete-account-btn">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Excluir Permanentemente</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

@@ -8,10 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
       userInfo: document.querySelector('.user-info'),
       topbarUser: document.querySelector('.user-dropdown .user'),
       mobileMenuToggle: document.getElementById("mobile-menu-toggle"),
-      sidebar: document.getElementById("main-sidebar"),
-      sidebarOverlay: document.getElementById("sidebar-overlay"),
+      sidebar: document.getElementById("sidebar"),
+      mobileOverlay: document.getElementById("mobile-overlay"),
       sidebarClose: document.getElementById("sidebar-close"),
-      mobileNotificationsIcon: document.getElementById("mobile-notifications-icon")
+      // NOVO: Elemento do contador de projetos
+      projectsCount: document.getElementById("projects-count")
     };
 
     // Função para mostrar/ocultar loading nos elementos do perfil
@@ -41,42 +42,45 @@ document.addEventListener("DOMContentLoaded", () => {
     // Inicialmente mostrar loading nos perfis
     setProfileLoading(true);
 
-    // Configurar menu mobile
-    function setupMobileMenu() {
-      if (elements.mobileMenuToggle && elements.sidebar && elements.sidebarOverlay && elements.sidebarClose) {
-        elements.mobileMenuToggle.addEventListener('click', () => {
-          elements.sidebar.classList.add('active');
-          elements.sidebarOverlay.classList.add('active');
-          document.body.style.overflow = 'hidden';
-        });
-        
-        elements.sidebarClose.addEventListener('click', () => {
-          elements.sidebar.classList.remove('active');
-          elements.sidebarOverlay.classList.remove('active');
-          document.body.style.overflow = '';
-        });
-        
-        elements.sidebarOverlay.addEventListener('click', () => {
-          elements.sidebar.classList.remove('active');
-          elements.sidebarOverlay.classList.remove('active');
-          document.body.style.overflow = '';
-        });
+    // NOVO: Busca a contagem de projetos do usuário
+    async function fetchUserProjectsCount() {
+      if (!elements.projectsCount) return;
+      
+      try {
+          const response = await window.axios.get(`${window.backendUrl}/projetos`);
+          const projects = response.data;
+          elements.projectsCount.textContent = projects.length;
+      } catch (error) {
+          console.error("Erro ao buscar contagem de projetos:", error);
+          elements.projectsCount.textContent = "0";
       }
     }
 
-    // Configurar notificações mobile
-    function setupMobileNotifications() {
-      if (elements.mobileNotificationsIcon) {
-        elements.mobileNotificationsIcon.addEventListener('click', () => {
-          // Abrir painel de notificações no mobile
-          const notificationsPanel = document.getElementById('notifications-panel');
-          if (notificationsPanel) {
-            notificationsPanel.style.display = 
-              notificationsPanel.style.display === 'block' ? 'none' : 'block';
-          }
-        });
+    // Configurar menu mobile
+    function setupMobileMenu() {
+      if (elements.mobileMenuToggle && elements.sidebar && elements.mobileOverlay && elements.sidebarClose) {
+        elements.mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        elements.sidebarClose.addEventListener('click', toggleMobileMenu);
+        elements.mobileOverlay.addEventListener('click', toggleMobileMenu);
       }
     }
+
+    function toggleMobileMenu() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobile-overlay');
+
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+
+      if (sidebar.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    }
+
+    // NOTA: Removi a função setupMobileNotifications antiga pois você removeu o HTML duplicado
+    // O ícone principal de notificação já é tratado pelo principal.js
 
     async function buscarUsuarios(nome = "") {
       if (!elements.searchResultsContainer) return;
@@ -154,15 +158,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         userCard.innerHTML = `
-          <div class="user-card-avatar">
-            <img src="${fotoUrl}" alt="Foto de ${usuario.nome}" loading="lazy">
-            <div class="status ${statusClass}" data-user-email="${usuario.email}"></div>
-          </div>
-          <div class="user-card-info">
-            <a href="perfil.html?id=${usuario.id}" class="user-card-link">
-              <h4>${usuario.nome}</h4>
-            </a>
-            <p>${usuario.email}</p>
+          <div class="card-header-info">
+            <div class="user-card-avatar">
+              <img src="${fotoUrl}" alt="Foto de ${usuario.nome}" loading="lazy">
+              <div class="status ${statusClass}" data-user-email="${usuario.email}"></div>
+            </div>
+            <div class="user-card-info">
+              <a href="perfil.html?id=${usuario.id}" class="user-card-link">
+                <h4>${usuario.nome}</h4>
+              </a>
+              <p>${usuario.email}</p>
+            </div>
           </div>
           <div class="user-card-actions">
             <div class="user-card-action">
@@ -227,7 +233,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       
       try {
-        // Simular um pequeno delay para mostrar o loading
         await new Promise(resolve => setTimeout(resolve, 800));
         window.location.href = `mensagem.html?start_chat=${userId}`;
       } catch (error) {
@@ -236,15 +241,53 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    // Simular carregamento do perfil (em produção, isso seria controlado pelo principal.js)
+    // Configurar ações mobile (Editar, Excluir, Sair)
+    function setupMobileAccountActions() {
+      const mobileEditBtn = document.getElementById('mobile-edit-btn');
+      const mobileDeleteBtn = document.getElementById('mobile-delete-btn');
+      const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+
+      if (mobileEditBtn) {
+        mobileEditBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (typeof window.openEditProfileModal === 'function') {
+            window.openEditProfileModal();
+            toggleMobileMenu();
+          }
+        });
+      }
+
+      if (mobileDeleteBtn) {
+        mobileDeleteBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (typeof window.openDeleteAccountModal === 'function') {
+            window.openDeleteAccountModal();
+            toggleMobileMenu();
+          }
+        });
+      }
+
+      if (mobileLogoutBtn) {
+        mobileLogoutBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          localStorage.clear();
+          window.location.href = "login.html";
+        });
+      }
+    }
+
+    // Simular carregamento do perfil
     setTimeout(() => {
       setProfileLoading(false);
     }, 1500);
 
     setupMobileMenu();
-    setupMobileNotifications();
     setupSearchListener();
+    setupMobileAccountActions();
+    
+    // Inicializar Dados
     buscarUsuarios(""); 
+    fetchUserProjectsCount(); // Chama a contagem de projetos
   };
 
   if (document.readyState === "complete" || document.readyState === "interactive") {

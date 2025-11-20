@@ -1,6 +1,99 @@
 /* =================================================================
-   ESTILOS ESPECÍFICOS PARA A PÁGINA BUSCAR AMIGOS
-   ================================================================= */
+   VARIÁVEIS E RESET BÁSICO
+================================================================= */
+:root {
+  --sidebar-width: 320px;
+  --header-height: 60px;
+  --container-max-width: 1100px;
+}
+
+/* =================================================================
+   LAYOUT ESTRUTURAL
+================================================================= */
+.container {
+    display: flex;
+    min-height: calc(100vh - var(--header-height));
+    position: relative;
+    background-color: var(--bg-primary);
+}
+
+/* --- SIDEBAR (Desktop) --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    position: sticky;
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height));
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+/* Elementos internos da Sidebar */
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+}
+
+.sidebar-close {
+    display: none;
+}
+
+.sidebar-menu {
+    flex: 1;
+    padding: 1rem 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.menu-item:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.menu-item.active {
+    background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.1) 0%, transparent 100%);
+    color: var(--accent-primary);
+    border-left-color: var(--accent-primary);
+}
+
+.menu-item i {
+    width: 24px;
+    margin-right: 12px;
+    font-size: 1.1rem;
+}
+
+/* --- MAIN CONTENT --- */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Container centralizado */
+.connections-container {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* =================================================================
+   COMPONENTES DA PÁGINA
+================================================================= */
 
 /* --- HEADER DA BUSCA --- */
 .search-header-card {
@@ -71,26 +164,158 @@
 /* --- CONTAINER DE RESULTADOS --- */
 .search-results-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.5rem;
     margin-top: 1rem;
 }
 
-/* --- ESTADO DE CARREGAMENTO --- */
-.results-loading {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 3rem;
+/* --- CARD DE USUÁRIO --- */
+.user-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.user-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    border-color: var(--accent-primary);
+}
+
+/* Header do Card (Avatar + Info) */
+.card-header-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-card-avatar {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+}
+
+.user-card-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--bg-tertiary);
+}
+
+/* Status Online */
+.status {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+}
+.status.online { background-color: #22c55e; }
+.status.offline { background-color: #94a3b8; }
+
+.user-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-card-info h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-card-info p {
+    font-size: 0.85rem;
     color: var(--text-secondary);
+    margin: 2px 0 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.results-loading i {
-    font-size: 2rem;
-    margin-bottom: 1rem;
+/* Botões do Card */
+.user-card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: auto;
+}
+
+/* Botões Gerais */
+.btn {
+    border: none;
+    padding: 0.6rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    width: 100%;
+}
+
+.btn-primary { background: var(--accent-primary); color: white; }
+.btn-primary:hover { background: var(--accent-secondary); }
+
+.btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); }
+.btn-secondary:hover { background: var(--bg-quaternary); }
+
+.btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid transparent; }
+.btn-danger:hover { background: #ef4444; color: white; }
+
+.btn-message {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    padding: 0.7rem;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-message:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+}
+
+/* Link do Perfil */
+.user-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.user-card-link:hover h4 {
     color: var(--accent-primary);
+    text-decoration: underline;
 }
 
-/* --- LOADING SPINNER --- */
+/* =================================================================
+   ESTADOS DE CARREGAMENTO E VAZIO
+================================================================= */
+
+/* Loading Spinner */
 .loading-spinner {
     display: inline-block;
     width: 20px;
@@ -105,91 +330,228 @@
     to { transform: rotate(360deg); }
 }
 
-.loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--card-radius);
-    z-index: 10;
-}
-
-.loading-overlay .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border-width: 4px;
-}
-
-/* --- CARD DO PERFIL NA SIDEBAR --- */
-.user-info {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.5rem 1rem;
+.results-loading {
+    grid-column: 1 / -1;
     text-align: center;
-    width: 100%;
-}
-
-.user-info .avatar {
-    margin-bottom: 1rem;
-}
-
-.user-info .avatar img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--accent-primary);
-}
-
-.user-details {
-    width: 100%;
-}
-
-.user-info h2 {
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-.user-title {
+    padding: 3rem;
     color: var(--text-secondary);
+}
+
+.results-loading i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--accent-primary);
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state-subtitle {
     font-size: 0.9rem;
-    margin-bottom: 1rem;
+    color: var(--text-tertiary);
 }
 
-.user-stats {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    margin-top: 1rem;
+/* =================================================================
+   RESPONSIVIDADE (MOBILE & TABLET)
+================================================================= */
+
+/* Overlay Escuro para o Mobile */
+.mobile-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 99;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+    backdrop-filter: blur(2px);
 }
 
-.stat {
-    display: flex;
-    flex-direction: column;
+.mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Header Mobile (Só aparece no mobile) */
+.page-header-mobile {
+    display: none;
     align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
 }
 
-.stat strong {
-    font-size: 1.1rem;
+.page-title-mobile {
+    font-size: 1.25rem;
+    font-weight: 600;
     color: var(--text-primary);
-    font-weight: 700;
 }
 
-.stat span {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-top: 0.25rem;
+.mobile-menu-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
 }
 
+/* MOBILE (Max 768px) */
+@media (max-width: 768px) {
+    
+    /* Sidebar vira Gaveta */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 85%;
+        max-width: 320px;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    /* Botão de fechar sidebar (só no mobile) */
+    .sidebar-close {
+        display: block !important;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 1.5rem;
+        color: var(--text-secondary);
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    /* Conteúdo Principal */
+    .main-content {
+        padding: 1rem;
+        width: 100%;
+    }
+
+    .page-header-mobile {
+        display: flex;
+    }
+
+    /* Header da busca */
+    .search-header-card {
+        padding: 1.5rem;
+        margin: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .search-title {
+        font-size: 1.3rem;
+    }
+
+    /* Grid vira 1 coluna em celulares */
+    .search-results-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 0;
+    }
+
+    /* Ajuste nos cards */
+    .user-card {
+        padding: 1rem;
+    }
+
+    .card-header-info {
+        flex-direction: row;
+    }
+    
+    /* Ajuste nos botões */
+    .user-card-actions {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .btn-message {
+        margin-top: 0;
+    }
+}
+
+/* TABLET (769px até 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 240px;
+    }
+    
+    .search-results-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* =================================================================
+   UTILITÁRIOS
+================================================================= */
+
+/* Por padrão, esconde elementos mobile-only no Desktop */
+.mobile-only {
+    display: none !important;
+}
+
+.menu-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 0.5rem 1.5rem;
+    opacity: 0.5;
+}
+
+.dangerous-action {
+    color: #ef4444 !important;
+}
+
+.dangerous-action:hover {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+/* --- REGRAS APENAS PARA MOBILE (Max 768px) --- */
+@media (max-width: 768px) {
+    .menu-item.mobile-only, 
+    .menu-divider.mobile-only {
+        display: flex !important;
+    }
+
+    .user-dropdown {
+        display: none; 
+    }
+}
+
+/* Estados de loading para botões */
+.btn.loading {
+    color: transparent !important;
+    position: relative;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    border-top-color: currentColor;
+    animation: spin 1s ease infinite;
+}
+
+/* Loading states para elementos de perfil */
 .user-info-loading {
     position: absolute;
     top: 0;
@@ -209,11 +571,6 @@
 .user-info.loaded .user-info-loading {
     opacity: 0;
     pointer-events: none;
-}
-
-/* --- LOADING PARA O TOPBAR USER --- */
-.profile-pic {
-    position: relative;
 }
 
 .topbar-user-loading {
@@ -237,512 +594,261 @@
     pointer-events: none;
 }
 
-/* Ajuste o tamanho do spinner para o topbar */
-.topbar-user-loading .loading-spinner {
-    width: 20px;
-    height: 20px;
+/* =================================================================
+   CORREÇÃO: Ícones de Topo e Notificações (Mobile)
+================================================================= */
+
+@media (max-width: 768px) {
+    /* 1. Ajuste do container de ícones no topo */
+    .nav-icons {
+        display: flex !important; /* Força a exibição no mobile */
+        align-items: center;
+        gap: 0.5rem;
+        margin-right: 0.5rem;
+    }
+
+    /* Garante tamanho de toque adequado */
+    .nav-icon, .theme-toggle {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* 2. Correção do Painel de Notificações (Centralizado na tela) */
+    .notifications-panel {
+        position: fixed !important;
+        top: 70px !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        width: 90% !important;
+        max-width: 350px !important;
+        max-height: 70vh;
+        z-index: 9999 !important;
+        box-shadow: 0 0 0 100vmax rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.5) !important;
+        border-radius: 12px;
+    }
+
+    /* Esconde a setinha do painel se houver */
+    .notifications-panel::before,
+    .notifications-panel::after {
+        display: none !important;
+    }
 }
 
-/* Ajuste o tamanho do spinner para o card do perfil */
-.user-info-loading .loading-spinner {
-    width: 40px;
-    height: 40px;
+/* =================================================================
+   CORREÇÃO: Header e Menu Dropdown no Mobile
+================================================================= */
+
+/* Estilo do botão de perigo (Excluir Conta) no dropdown */
+.dropdown-menu a.danger {
+    color: #ef4444; /* Vermelho */
 }
 
-/* --- CARD DE USUÁRIO --- */
-.user-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--card-radius);
-    padding: 1.5rem;
-    transition: var(--transition);
-    box-shadow: var(--shadow);
+.dropdown-menu a.danger:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+@media (max-width: 768px) {
+    
+    /* 1. Container de ícones (Sino, Tema) */
+    .nav-icons {
+        display: flex !important;
+        align-items: center;
+        gap: 0.2rem; /* Menos espaço entre ícones */
+    }
+
+    #notifications-icon, .theme-toggle {
+        display: flex !important;
+        width: 36px;
+        height: 36px;
+    }
+
+    /* 2. Área do Usuário (Dropdown) - AGORA VISÍVEL */
+    .user-dropdown {
+        display: block !important; /* Força a exibição */
+        margin-left: 0.5rem;
+    }
+
+    .user {
+        padding: 0.25rem;
+        background: transparent; /* Remove fundo cinza no mobile se preferir */
+    }
+
+    /* Esconde o nome e a seta para caber na tela, mostra só a foto */
+    .user span, 
+    .user i.fa-chevron-down {
+        display: none !important; 
+    }
+
+    .profile-pic {
+        width: 36px;
+        height: 36px;
+        border: 2px solid var(--border-color);
+    }
+
+    /* 3. Posicionamento do Menu Dropdown Aberto */
+    .dropdown-menu {
+        position: fixed; /* Fixado na tela para não quebrar layout */
+        top: 70px;
+        right: 10px;
+        width: 200px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        border-radius: 12px;
+        z-index: 1002;
+    }
+
+    /* Aumenta a área de toque dos links no mobile */
+    .dropdown-menu a {
+        padding: 1rem; 
+        font-size: 1rem;
+    }
+
+    /* 4. Notificações Centralizadas */
+    .notifications-panel {
+        position: fixed !important;
+        top: 75px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 90% !important;
+        max-width: 350px !important;
+        max-height: 70vh;
+        z-index: 9999 !important;
+        right: auto !important;
+    }
+}
+
+/* =================================================================
+   CORREÇÃO: CARD DE PERFIL DA SIDEBAR
+   (Adicione ao final do arquivo buscar_amigos.css)
+================================================================= */
+
+.sidebar-user-card { 
+    margin-bottom: 0.5rem; 
+}
+
+/* Container do Card */
+.sidebar .user-info {
     display: flex;
-    align-items: center;
-    gap: 1rem;
+    flex-direction: column; /* Empilha: Foto -> Texto -> Stats */
+    align-items: center;    /* Centraliza tudo horizontalmente */
+    justify-content: center;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
     position: relative;
-    overflow: hidden;
+    gap: 0.75rem;
+    text-decoration: none;
+    min-height: auto; /* Reseta altura mínima se houver conflito */
 }
 
-.user-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary));
-    opacity: 0;
-    transition: var(--transition);
-}
-
-.user-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--accent-primary);
-}
-
-.user-card:hover::before {
-    opacity: 1;
-}
-
-.user-card-avatar {
+/* 1. Foto de Perfil (Avatar) */
+.sidebar .avatar-container {
     position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0.25rem;
     flex-shrink: 0;
 }
 
-.user-card-avatar img {
-    width: 70px;
-    height: 70px;
+.sidebar .avatar-container img {
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--bg-tertiary);
-    transition: var(--transition);
 }
 
-.user-card:hover .user-card-avatar img {
-    border-color: var(--accent-primary);
-    transform: scale(1.05);
-}
-
-.status {
+/* Status Online (Bolinha Verde) */
+.sidebar .avatar-container .status {
     position: absolute;
     bottom: 5px;
     right: 5px;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     border: 2px solid var(--bg-secondary);
+    background-color: #238636; /* Verde */
 }
 
-.status.online {
-    background-color: var(--online);
-}
-
-.status.offline {
-    background-color: var(--text-tertiary);
-}
-
-/* --- INFORMAÇÕES DO USUÁRIO --- */
-.user-card-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.user-card-info h4 {
-    margin: 0 0 0.25rem 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.user-card-info p {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* --- AÇÕES DO CARD --- */
-.user-card-actions {
+/* 2. Identidade (Nome e Cargo) */
+.sidebar .user-identity {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
     align-items: center;
+    text-align: center;
+    gap: 0.25rem;
 }
 
-.user-card-action {
+.sidebar .user-identity h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.sidebar .user-role {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+/* 3. Estatísticas (Lado a Lado) */
+.sidebar .user-stats {
     display: flex;
-    gap: 0.5rem;
-}
-
-/* --- BOTÕES --- */
-.btn {
-    display: inline-flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: var(--transition);
-    text-decoration: none;
-    white-space: nowrap;
-    position: relative;
-}
-
-.btn-primary {
-    background-color: var(--accent-primary);
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: var(--accent-secondary);
-    transform: translateY(-2px);
-}
-
-.btn-secondary {
-    background-color: var(--bg-quaternary);
-    color: var(--text-primary);
-}
-
-.btn-secondary:hover {
-    background-color: var(--bg-tertiary);
-}
-
-.btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-    transform: none !important;
-}
-
-.btn.loading {
-    color: transparent !important;
-}
-
-.btn.loading::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    border: 2px solid transparent;
-    border-radius: 50%;
-    border-top-color: currentColor;
-    animation: spin 1s ease infinite;
-    left: 50%;
-    top: 50%;
-    margin-left: -8px;
-    margin-top: -8px;
-}
-
-.btn-message {
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-    color: white;
-    padding: 0.7rem 1.5rem;
-    border-radius: 50px;
-    font-weight: 600;
+    gap: 1.5rem; /* Espaço entre os números */
     margin-top: 0.5rem;
     width: 100%;
-    justify-content: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
 }
 
-.btn-message:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
-}
-
-/* --- LINK DO PERFIL --- */
-.user-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-}
-
-.user-card-link:hover h4 {
-    color: var(--accent-primary);
-    text-decoration: underline;
-}
-
-/* --- ESTADOS VAZIOS --- */
-.empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 3rem;
-    color: var(--text-secondary);
-}
-
-.empty-state i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    color: var(--text-tertiary);
-}
-
-.empty-state p {
-    margin: 0.5rem 0;
-}
-
-.empty-state-subtitle {
-    font-size: 0.9rem;
-    color: var(--text-tertiary);
-}
-
-/* --- SIDEBAR RESPONSIVA --- */
-.sidebar-header {
+.sidebar .stat-item {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    position: relative;
-    padding: 0;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
 }
 
-.sidebar-close {
-    display: none;
+.sidebar .stat-item strong {
+    color: var(--accent-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.sidebar .stat-item .stat-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* Loading Overlay do Perfil */
+.sidebar .user-info-loading {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: var(--bg-tertiary);
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
+    inset: 0;
+    background: var(--bg-secondary);
+    display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
     z-index: 10;
-    color: var(--text-primary);
+    border-radius: 12px;
+    transition: opacity 0.3s ease;
 }
 
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 98;
-}
-
-/* --- NAVEGAÇÃO MOBILE --- */
-.mobile-nav-icons {
-    display: none;
-    align-items: center;
-    gap: 1rem;
-}
-
-.mobile-nav-icons .nav-icon {
-    position: relative;
-    cursor: pointer;
-    padding: 0.5rem;
-}
-
-/* --- TOOLBAR RESPONSIVA --- */
-@media (max-width: 768px) {
-    .nav-icons {
-        display: none;
-    }
-    
-    .mobile-nav-icons {
-        display: flex;
-    }
-    
-    .search {
-        display: none;
-    }
-    
-    .logo {
-        font-size: 1.1rem;
-    }
-    
-    .user-dropdown .user span {
-        display: none;
-    }
-    
-    .user-dropdown .user i {
-        display: none;
-    }
-}
-
-/* --- RESPONSIVIDADE --- */
-@media (max-width: 1200px) {
-    .search-results-container {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    }
-}
-
-@media (max-width: 992px) {
-    .search-results-container {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    }
-    
-    .user-card {
-        padding: 1.25rem;
-    }
-    
-    .user-card-avatar img {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .user-card-info h4 {
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .search-header-card {
-        padding: 1.5rem;
-        margin: 0.5rem;
-    }
-    
-    .search-title {
-        font-size: 1.3rem;
-    }
-    
-    .search-results-container {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-        padding: 0.5rem;
-    }
-    
-    .user-card {
-        flex-direction: column;
-        text-align: center;
-        padding: 1.25rem;
-    }
-    
-    .user-card-actions {
-        width: 100%;
-        margin-top: 1rem;
-    }
-    
-    .user-card-action {
-        justify-content: center;
-        width: 100%;
-    }
-    
-    .btn-message {
-        width: 100%;
-    }
-    
-    /* Sidebar mobile */
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: -100%;
-        width: 280px;
-        height: 100%;
-        z-index: 99;
-        transition: left 0.3s ease;
-        overflow-y: auto;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    }
-    
-    .sidebar.active {
-        left: 0;
-    }
-    
-    .sidebar-close {
-        display: flex;
-    }
-    
-    .sidebar-overlay.active {
-        display: block;
-    }
-    
-    .main-content {
-        margin-left: 0;
-        width: 100%;
-    }
-    
-    /* Ajustes no card de perfil para mobile */
-    .user-info {
-        padding: 1rem;
-    }
-    
-    .user-info .avatar img {
-        width: 70px;
-        height: 70px;
-    }
-    
-    .user-info h2 {
-        font-size: 1.1rem;
-    }
-    
-    .user-stats {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .stat {
-        flex-direction: row;
-        gap: 0.5rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .search-box input {
-        padding: 0.85rem 0.85rem 0.85rem 2.8rem;
-        font-size: 0.9rem;
-    }
-    
-    .user-card-avatar img {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .user-card-info h4 {
-        font-size: 1rem;
-    }
-    
-    .user-card-actions {
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .btn {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .search-title {
-        font-size: 1.2rem;
-    }
-    
-    .search-subtitle {
-        font-size: 0.9rem;
-    }
-    
-    .topbar {
-        padding: 0.75rem 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .search-header-card {
-        padding: 1.25rem;
-        margin: 0.25rem;
-    }
-    
-    .search-title {
-        font-size: 1.1rem;
-    }
-    
-    .search-subtitle {
-        font-size: 0.85rem;
-    }
-    
-    .user-card {
-        padding: 1rem;
-    }
-    
-    .user-card-avatar img {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .user-card-info h4 {
-        font-size: 0.95rem;
-    }
-    
-    .user-card-info p {
-        font-size: 0.8rem;
-    }
-    
-    .btn {
-        font-size: 0.8rem;
-        padding: 0.5rem 1rem;
-    }
-    
-    .sidebar {
-        width: 100%;
-    }
-    
-    .user-info .avatar img {
-        width: 60px;
-        height: 60px;
-    }
+.sidebar .user-info.loaded .user-info-loading {
+    opacity: 0;
+    pointer-events: none;
 }
