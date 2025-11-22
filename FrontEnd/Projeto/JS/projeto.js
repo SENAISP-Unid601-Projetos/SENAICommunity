@@ -1,7 +1,33 @@
 document.addEventListener("DOMContentLoaded", () => {
-  document.addEventListener("globalScriptsLoaded", (e) => {
-    const currentUser = window.currentUser;
+    
+    // --- CORREÇÃO MENU MOBILE (Executa Imediatamente) ---
+    function setupMobileMenu() {
+        const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+        const sidebar = document.getElementById("sidebar");
+        const mobileOverlay = document.getElementById("mobile-overlay");
+        const sidebarClose = document.getElementById("sidebar-close");
 
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            mobileOverlay.classList.toggle('active');
+            // Trava o scroll do corpo quando menu está aberto
+            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+        }
+
+        // Remove listeners antigos para evitar duplicação e adiciona novos
+        if (mobileMenuToggle) mobileMenuToggle.onclick = toggleMenu;
+        if (sidebarClose) sidebarClose.onclick = toggleMenu;
+        if (mobileOverlay) mobileOverlay.onclick = toggleMenu;
+    }
+
+    // Chama assim que o HTML estiver pronto
+    setupMobileMenu();
+
+    // --- RESTANTE DA LÓGICA DA PÁGINA ---
+    document.addEventListener("globalScriptsLoaded", (e) => {
+        const currentUser = window.currentUser;
+        
+        // ... (O restante do seu código ProjetosPage continua igual abaixo) ...
     const ProjetosPage = {
       state: {
         allProjects: [],
@@ -43,6 +69,9 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error("Página de Projetos: Usuário não carregado.");
           return;
         }
+
+        // Inicializar menu mobile
+        setupMobileMenu();
 
         if (this.elements.connectionsCount) {
           this.elements.connectionsCount.textContent =

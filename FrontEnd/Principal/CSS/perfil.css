@@ -123,7 +123,10 @@
 }
 
 .main-content {
-    grid-column: 2 / 4;
+    flex: 1;
+    padding: 2rem;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .sidebar {
@@ -400,17 +403,6 @@
     cursor: not-allowed;
 }
 
-/* Ajustes responsivos */
-@media (max-width: 768px) {
-    .profile-actions {
-        flex-direction: column;
-    }
-    
-    .profile-actions .btn {
-        justify-content: center;
-    }
-}
-
 /* Estilos para o status do projeto */
 .profile-card-status {
     font-size: 0.75rem;
@@ -547,4 +539,144 @@
 
 .modal-close:hover {
     color: var(--text-primary);
+}
+
+/* =================================================================
+   RESPONSIVIDADE (MOBILE & TABLET)
+================================================================= */
+
+/* MOBILE (Max 768px) */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem;
+        width: 100%;
+    }
+
+    .profile-page {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .profile-details {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 0 1rem;
+        margin-top: -60px;
+    }
+
+    .profile-picture-container {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 1rem;
+    }
+
+    .profile-info-actions {
+        flex-direction: column;
+        margin-left: 0;
+        padding-bottom: 1rem;
+        width: 100%;
+    }
+
+    .profile-info {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .profile-info h1 {
+        font-size: 1.4rem;
+    }
+
+    .profile-body {
+        padding: 1rem;
+    }
+
+    .profile-nav-tabs {
+        flex-direction: column;
+    }
+
+    .tab-btn {
+        justify-content: flex-start;
+        padding: 0.8rem 1rem;
+    }
+
+    .friends-grid, .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .profile-card-item {
+        padding: 1rem;
+    }
+
+    .profile-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .profile-actions .btn {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+/* TABLET (769px até 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .friends-grid, .projects-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .profile-details {
+        padding: 0 1.5rem;
+    }
+
+    .profile-info h1 {
+        font-size: 1.6rem;
+    }
+}
+
+/* Header Mobile (Só aparece no mobile) */
+.page-header-mobile {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding: 0 1rem;
+}
+
+.page-title-mobile {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.mobile-menu-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .page-header-mobile {
+        display: flex;
+    }
+}
+
+/* Ajustes para posts no mobile */
+@media (max-width: 768px) {
+    .posts-container {
+        padding: 0;
+    }
+
+    .post {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        margin-bottom: 1rem;
+    }
 }

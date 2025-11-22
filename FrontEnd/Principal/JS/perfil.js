@@ -50,12 +50,19 @@ document.addEventListener("DOMContentLoaded", () => {
     sidebarUserImg: document.getElementById("sidebar-user-img"),
     onlineFriendsList: document.getElementById("online-friends-list"),
     connectionsCount: document.getElementById("connections-count"),
+    projectsCount: document.getElementById("projects-count"),
     notificationsIcon: document.getElementById("notifications-icon"),
     notificationsPanel: document.getElementById("notifications-panel"),
     notificationsList: document.getElementById("notifications-list"),
     notificationsBadge: document.getElementById("notifications-badge"),
     userDropdownTrigger: document.querySelector(".user-dropdown .user"),
     logoutBtn: document.getElementById("logout-btn"),
+    
+    // Elementos mobile
+    mobileMenuToggle: document.getElementById("mobile-menu-toggle"),
+    sidebar: document.getElementById("sidebar"),
+    mobileOverlay: document.getElementById("mobile-overlay"),
+    sidebarClose: document.getElementById("sidebar-close"),
     
     // Modais
     editProfileModal: document.getElementById("edit-profile-modal"),
@@ -248,6 +255,82 @@ document.addEventListener("DOMContentLoaded", () => {
       return mediaHtml;
   }
 
+  // --- FUNÇÕES DE RESPONSIVIDADE MOBILE ---
+  function setupMobileMenu() {
+    if (elements.mobileMenuToggle && elements.sidebar && elements.mobileOverlay && elements.sidebarClose) {
+      elements.mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+      elements.sidebarClose.addEventListener('click', toggleMobileMenu);
+      elements.mobileOverlay.addEventListener('click', toggleMobileMenu);
+    }
+  }
+
+  function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+
+    if (sidebar.classList.contains('active')) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+
+  // Configurar ações mobile (Editar, Excluir, Sair)
+  function setupMobileAccountActions() {
+    const mobileEditBtn = document.getElementById('mobile-edit-btn');
+    const mobileDeleteBtn = document.getElementById('mobile-delete-btn');
+    const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+
+    if (mobileEditBtn) {
+      mobileEditBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (typeof window.openEditProfileModal === 'function') {
+          window.openEditProfileModal();
+          toggleMobileMenu();
+        }
+      });
+    }
+
+    if (mobileDeleteBtn) {
+      mobileDeleteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (typeof window.openDeleteAccountModal === 'function') {
+          window.openDeleteAccountModal();
+          toggleMobileMenu();
+        }
+      });
+    }
+
+    if (mobileLogoutBtn) {
+      mobileLogoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.clear();
+        window.location.href = "login.html";
+      });
+    }
+  }
+
+  function setupProfileMobileMenu() {
+    const profileMobileMenuToggle = document.getElementById("profile-mobile-menu-toggle");
+    if (profileMobileMenuToggle) {
+      profileMobileMenuToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Aqui você pode adicionar um menu de contexto específico do perfil
+        // Por enquanto, vamos apenas abrir o menu de edição se for o próprio perfil
+        const urlParams = new URLSearchParams(window.location.search);
+        const profileUserId = urlParams.get("id");
+        const isMyProfile = !profileUserId || profileUserId == currentUser.id;
+        
+        if (isMyProfile && typeof window.openEditProfileModal === 'function') {
+          window.openEditProfileModal();
+        }
+      });
+    }
+  }
+
   // --- INICIALIZAÇÃO ---
   async function init() {
     if (!jwtToken) { 
@@ -289,12 +372,18 @@ document.addEventListener("DOMContentLoaded", () => {
       setupCarouselModalEvents();
       setInitialTheme();
       
+      // Setup responsividade mobile
+      setupMobileMenu();
+      setupMobileAccountActions();
+      setupProfileMobileMenu();
+      
       // Busca dados globais
       await fetchFriends();
       await fetchInitialOnlineFriends();
       atualizarStatusDeAmigosNaUI();
       fetchNotifications();
       fetchAndUpdateUnreadCount();
+      fetchUserProjectsCount();
 
     } catch (error) {
       console.error("ERRO NO PERFIL:", error);
@@ -891,6 +980,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Função para buscar contagem de projetos do usuário
+  async function fetchUserProjectsCount() {
+    if (!elements.projectsCount) return;
+    
+    try {
+        const response = await axios.get(`${backendUrl}/projetos`);
+        const projects = response.data;
+        elements.projectsCount.textContent = projects.length;
+    } catch (error) {
+        console.error("Erro ao buscar contagem de projetos:", error);
+        elements.projectsCount.textContent = "0";
+    }
+  }
+
   // Funções de WebSocket - CORRIGIDAS
   function connectWebSocket() {
     const socket = new SockJS(`${backendUrl}/ws`);
@@ -1413,6 +1516,15 @@ document.addEventListener("DOMContentLoaded", () => {
           !elements.notificationsPanel.contains(e.target) && 
           !elements.notificationsIcon.contains(e.target)) {
         elements.notificationsPanel.style.display = "none";
+      }
+
+      // Fechar sidebar no mobile ao clicar em um link
+      if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-overlay');
+        if (sidebar && sidebar.classList.contains('active') && e.target.tagName === 'A') {
+          toggleMobileMenu();
+        }
       }
     });
   }
