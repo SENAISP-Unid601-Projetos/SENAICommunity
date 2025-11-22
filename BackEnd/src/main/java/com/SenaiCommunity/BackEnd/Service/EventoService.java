@@ -3,15 +3,21 @@ package com.SenaiCommunity.BackEnd.Service;
 import com.SenaiCommunity.BackEnd.DTO.EventoEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.EventoSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Evento;
-import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.EventoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,11 +26,7 @@ public class EventoService {
     @Autowired
     private EventoRepository eventoRepository;
 
-    @Autowired
-    private FiltroProfanidadeService filtroProfanidade;
-
-    @Autowired
-    private ArquivoMidiaService midiaService;
+    // ... métodos de conversão toDTO e toEntity ...
 
     private Evento toEntity(EventoEntradaDTO dto) {
         Evento evento = new Evento();
@@ -46,25 +48,35 @@ public class EventoService {
         dto.setCategoria(evento.getCategoria());
 
         if (evento.getImagemCapa() != null) {
-            dto.setImagemCapaUrl(evento.getImagemCapa());
+            String url = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/images/")
+                    .path(evento.getImagemCapa())
+                    .toUriString();
+            dto.setImagemCapaUrl(url);
         }
         return dto;
     }
 
+    private String salvarImagemCapa(MultipartFile imagem) throws IOException {
+        String nomeOriginal = StringUtils.cleanPath(imagem.getOriginalFilename());
+        String nomeUnico = UUID.randomUUID().toString() + "_" + nomeOriginal;
+
+        Path diretorio = Paths.get("src/main/resources/eventoPictures");
+        Files.createDirectories(diretorio);
+
+        Path caminhoDoArquivo = diretorio.resolve(nomeUnico);
+        Files.copy(imagem.getInputStream(), caminhoDoArquivo, StandardCopyOption.REPLACE_EXISTING);
+
+        return nomeUnico;
+    }
+
     public EventoSaidaDTO criarEventoComImagem(EventoEntradaDTO dto, MultipartFile imagem) {
-
-        if (filtroProfanidade.contemProfanidade(dto.getNome()) ||
-                filtroProfanidade.contemProfanidade(dto.getLocal())) {
-            throw new ConteudoImproprioException("Os dados do evento contêm texto não permitido.");
-        }
-
         Evento evento = toEntity(dto);
 
         if (imagem != null && !imagem.isEmpty()) {
             try {
-
-                String urlCloudinary = midiaService.upload(imagem);
-                evento.setImagemCapa(urlCloudinary); // Salva a URL completa
+                String nomeArquivo = salvarImagemCapa(imagem);
+                evento.setImagemCapa(nomeArquivo);
             } catch (IOException e) {
                 throw new RuntimeException("Erro ao salvar a imagem de capa do evento", e);
             }

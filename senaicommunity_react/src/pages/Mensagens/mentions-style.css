@@ -1,0 +1,46 @@
+/* senaicommunity_react/src/pages/Mensagens/mentions-style.css */
+
+.mentions-input {
+    width: 100%;
+}
+
+.mentions-input__control {
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.mentions-input__highlighter {
+    padding: 0.9rem 1.2rem;
+    border: 1px solid transparent;
+}
+
+.mentions-input__input {
+    flex-grow: 1;
+    padding: 0.9rem 1.2rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+}
+
+.mentions-input__suggestions {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.mentions-input__suggestions__item {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.mentions-input__suggestions__item--focused {
+    background-color: var(--bg-tertiary);
+}

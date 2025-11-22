@@ -2,7 +2,6 @@ package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.MensagemPrivadaSaidaDTO;
-import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Service.MensagemPrivadaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Controller
-@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR') or hasRole('ADMIN')")
+@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
 public class MensagemPrivadaController {
 
     @Autowired
@@ -28,27 +27,24 @@ public class MensagemPrivadaController {
     @Autowired
     private MensagemPrivadaService mensagemPrivadaService;
 
-    @MessageMapping("/privado/{destinatarioId}")
+    @MessageMapping("/chat/privado/{destinatarioId}")
     public void enviarPrivado(@DestinationVariable Long destinatarioId,
                               @Payload MensagemPrivadaEntradaDTO dto,
                               Principal principal) {
-        try {
-            dto.setDestinatarioId(destinatarioId);
-            MensagemPrivadaSaidaDTO dtoSalvo = mensagemPrivadaService.salvarMensagemPrivada(dto, principal.getName());
 
-            messagingTemplate.convertAndSendToUser(dtoSalvo.getDestinatarioEmail(), "/queue/usuario", dtoSalvo);
-            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/usuario", dtoSalvo);
+        dto.setDestinatarioId(destinatarioId);
 
-            long novaContagem = mensagemPrivadaService.contarMensagensNaoLidas(dtoSalvo.getDestinatarioEmail());
-            messagingTemplate.convertAndSendToUser(dtoSalvo.getDestinatarioEmail(), "/queue/contagem", novaContagem);
+        // Salva a mensagem no banco de dados e obtém o DTO de saída
+        MensagemPrivadaSaidaDTO dtoSalvo = mensagemPrivadaService.salvarMensagemPrivada(dto, principal.getName());
 
-        } catch (ConteudoImproprioException e) {
-            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/errors", e.getMessage());
-        } catch (Exception e) {
-            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/errors", "Não foi possível enviar a mensagem.");
-        }
+        // 1. Envia para o DESTINATÁRIO
+        messagingTemplate.convertAndSendToUser(dtoSalvo.getDestinatarioEmail(), "/queue/mensagens-privadas", dtoSalvo);
+
+        // 2. ✅ CRÍTICO: Envia o ECO de volta para o REMETENTE
+        messagingTemplate.convertAndSendToUser(dtoSalvo.getRemetenteEmail(), "/queue/mensagens-privadas", dtoSalvo);
     }
 
+    // Os métodos abaixo são REST (para Editar e Excluir)
     @RestController
     @RequestMapping("/api/chat/privado")
     public static class MensagemPrivadaRestController {
@@ -65,8 +61,10 @@ public class MensagemPrivadaController {
                                                 Principal principal) {
             try {
                 MensagemPrivadaSaidaDTO atualizada = mensagemPrivadaService.editarMensagemPrivada(id, novoConteudo, principal.getName());
-                messagingTemplate.convertAndSendToUser(atualizada.getDestinatarioEmail(), "/queue/usuario", atualizada);
-                messagingTemplate.convertAndSendToUser(atualizada.getRemetenteEmail(), "/queue/usuario", atualizada);
+
+                // Envia para o tópico do destinatário E do remetente
+                messagingTemplate.convertAndSendToUser(atualizada.getDestinatarioEmail(), "/queue/mensagens-privadas", atualizada);
+                messagingTemplate.convertAndSendToUser(atualizada.getRemetenteEmail(), "/queue/mensagens-privadas", atualizada);
 
                 return ResponseEntity.ok(atualizada);
             } catch (SecurityException e) {
@@ -82,15 +80,11 @@ public class MensagemPrivadaController {
             try {
                 MensagemPrivadaSaidaDTO mensagemExcluida = mensagemPrivadaService.excluirMensagemPrivada(id, principal.getName());
 
-                Map<String, Object> payload = Map.of(
-                        "tipo", "remocao",
-                        "id", id,
-                        "remetenteId", mensagemExcluida.getRemetenteId(),
-                        "destinatarioId", mensagemExcluida.getDestinatarioId()
-                );
+                Map<String, Object> payload = Map.of("tipo", "remocao", "id", id);
 
-                messagingTemplate.convertAndSendToUser(mensagemExcluida.getDestinatarioEmail(), "/queue/usuario", payload);
-                messagingTemplate.convertAndSendToUser(mensagemExcluida.getRemetenteEmail(), "/queue/usuario", payload);
+                // Envia para o tópico do destinatário E do remetente
+                messagingTemplate.convertAndSendToUser(mensagemExcluida.getDestinatarioEmail(), "/queue/mensagens-privadas", payload);
+                messagingTemplate.convertAndSendToUser(mensagemExcluida.getRemetenteEmail(), "/queue/mensagens-privadas", payload);
 
                 return ResponseEntity.ok().build();
             } catch (SecurityException e) {
@@ -99,6 +93,5 @@ public class MensagemPrivadaController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
             }
         }
-
     }
 }

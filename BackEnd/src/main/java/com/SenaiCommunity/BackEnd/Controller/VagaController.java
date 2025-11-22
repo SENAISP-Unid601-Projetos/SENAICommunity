@@ -18,19 +18,16 @@ public class VagaController {
     @Autowired
     private VagaService vagaService;
 
-    // Endpoint PÚBLICO para listar todas as vagas
     @GetMapping
     public ResponseEntity<List<VagaSaidaDTO>> listarVagas() {
         return ResponseEntity.ok(vagaService.listarTodas());
     }
 
-    // Endpoint RESTRITO para criar uma vaga
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
+    // ✅ Atualizado para incluir SUPERVISOR
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR', 'SUPERVISOR')")
     public ResponseEntity<VagaSaidaDTO> criarVaga(@RequestBody VagaEntradaDTO dto, Principal principal) {
         VagaSaidaDTO vagaCriada = vagaService.criar(dto, principal.getName());
         return ResponseEntity.status(201).body(vagaCriada);
     }
-
-    // Implemente também endpoints para GET por ID (público), PUT (restrito) e DELETE (restrito)
 }

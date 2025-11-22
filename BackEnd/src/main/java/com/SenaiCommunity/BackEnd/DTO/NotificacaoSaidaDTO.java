@@ -20,20 +20,13 @@ public class NotificacaoSaidaDTO {
     private boolean lida;
     private String tipo;
     private Long idReferencia;
-    private Long idReferenciaSecundaria;
 
-    // Método de conversão estático para facilitar a criação a partir da entidade
-    public static NotificacaoSaidaDTO fromEntity(Notificacao notificacao) {
-        return new NotificacaoSaidaDTO(
-                notificacao.getId(),
-                notificacao.getMensagem(),
-                notificacao.getDataCriacao(),
-                notificacao.isLida(),
-                notificacao.getTipo(),
-                notificacao.getIdReferencia(),
-                notificacao.getIdReferenciaSecundaria()
-        );
-    }
+    // --- CAMPOS ADICIONADOS ---
+    private Long remetenteId;
+    private String remetenteNome;
+    private String remetenteFotoUrl; // URL da foto de quem originou
+    // --- FIM DA ADIÇÃO ---
 
 
+    // (O método fromEntity() foi removido para simplificar, já que o Service usa o Builder)
 }

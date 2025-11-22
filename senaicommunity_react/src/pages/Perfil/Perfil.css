@@ -1,0 +1,825 @@
+/* senaicommunity_react/src/pages/Perfil/Perfil.css */
+
+/* Estilos para a página de perfil (perfil.css) */
+
+.profile-page {
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+/* Nova abordagem de layout para o cabeçalho */
+.profile-header {
+    display: flex;
+    flex-direction: column; /* Organiza banner e detalhes verticalmente */
+}
+
+.profile-banner {
+    width: 100%;
+    height: 200px; /* Altura do banner. Pode ajustar se precisar. */
+    background-image: url('/images/senai_facebook.png'); /* ✅ Caminho para a imagem */
+    background-size: cover; /* Faz a imagem cobrir todo o banner */
+    background-repeat: no-repeat; /* Evita que a imagem se repita */
+    background-position: center center; /* Centraliza a imagem */
+    background-color: #dc3545; /* Cor de fundo (fallback) */
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.profile-details {
+    display: flex;
+    align-items: flex-end;
+    padding: 0 2rem;
+    margin-top: -80px;
+    z-index: 2;
+    position: relative;
+}
+
+.profile-picture-container {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 5px solid var(--bg-secondary);
+    overflow: hidden;
+    flex-shrink: 0;
+    background-color: var(--bg-secondary);
+    box-shadow: var(--shadow);
+}
+
+.profile-picture-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: var(--bg-tertiary);
+    color: transparent; 
+}
+
+.profile-info-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-grow: 1;
+    margin-left: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+.profile-info h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.profile-info p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.profile-actions .btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+/* ============================================= */
+/* ✅ ESTILOS DE LAYOUT (CORRIGIDOS)             */
+/* ============================================= */
+
+.profile-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Espaço entre o card "Sobre" e a lista de "Postagens" */
+    padding: 2rem;
+}
+
+/* Estiliza o H3 do "Sobre" (que está no .widget-card) e o H3 do "Postagens" */
+.profile-body .widget-card h3,
+.profile-posts-container h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary); /* Garante a cor correta */
+}
+
+
+.profile-body #profile-bio {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+    line-height: 1.6;
+}
+
+.profile-metadata {
+    list-style: none;
+    padding: 0;
+}
+
+.profile-metadata li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.profile-metadata li .svg-inline--fa { 
+    width: 20px;
+    text-align: center;
+    color: var(--text-tertiary);
+}
+
+/* Container para o H3 "Postagens" e a lista */
+.profile-posts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espaço entre o título "Postagens" e o primeiro post */
+}
+
+/* A lista de posts */
+.feed-lista {
+    display: flex;
+    flex-direction: column;
+    /* O espaçamento virá do .post-card (do Principal.css) */
+}
+
+
+/* ============================================= */
+/* ✅ BLOCO DE RESPONSIVIDADE (ORIGINAL)         */
+/* ============================================= */
+@media (max-width: 768px) {
+    .profile-banner {
+        height: 150px;
+    }
+
+    .profile-details {
+        flex-direction: column;
+        align-items: center;
+        margin-top: -60px;
+        padding: 0 1rem; 
+    }
+
+    .profile-picture-container {
+        width: 120px;
+        height: 120px;
+        border-width: 4px;
+    }
+
+    .profile-info-actions {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        margin-left: 0;
+        padding-bottom: 1rem;
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    .profile-info {
+        text-align: center;
+    }
+
+    .profile-info h1 {
+        font-size: 1.5rem;
+    }
+
+    .profile-actions {
+         width: 100%; 
+         padding: 0 1rem;
+    }
+
+    .profile-actions .btn {
+         width: 100%;
+    }
+
+    /* Padding corrigido para o .profile-body na responsividade */
+    .profile-body {
+         padding: 1.5rem 1rem;
+         gap: 15px; /* Gap menor no mobile */
+    }
+}
+
+.profile-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Espaço entre o card "Sobre" e a lista de "Postagens" */
+    padding: 2rem;
+}
+
+.profile-posts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espaço entre o título "Postagens" e o primeiro post */
+}
+    
+.profile-posts-container h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Esta classe 'feed-lista' já é usada no seu Perfil.jsx */
+.feed-lista {
+    display: flex;
+    flex-direction: column;
+    /* O 'gap' entre os posts virá do 'margin-bottom' 
+      definido no '.post-card' do seu Principal.css 
+    */
+}
+
+/* ============================================= */
+/* ✅ ESTILOS PARA O NOVO 'PostagemItem'         */
+/* ============================================= */
+
+.post-card {
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    /* Remove o 'gap' que você não gostou, o card controla o espaço */
+    margin-bottom: 15px; 
+    overflow: hidden; /* Para o carrossel não vazar */
+}
+
+/* 2. O CABEÇALHO (FOTO + NOME + BOTÃO) */
+
+/* O link que agrupa a foto e o nome */
+.post-author-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none; /* Remove sublinhado do link */
+    color: inherit;
+}
+
+.post-author-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: var(--border-color);
+}
+
+.post-author-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.post-author-info strong {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.post-author-info span {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Botão de 3 pontos */
+.post-options-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+}
+.post-options-btn:hover {
+    background-color: var(--bg-tertiary);
+}
+
+
+/* 3. CONTEÚDO (TEXTO) */
+.post-content {
+    padding: 0 1.5rem 1rem 1.5rem;
+}
+.post-content p {
+    white-space: pre-wrap;
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* 4. CARROSSEL DE MÍDIA */
+.post-media-container {
+    position: relative; /* Para os botões e bolinhas */
+    background-color: var(--bg-tertiary);
+}
+
+.post-media-scroller {
+    display: flex;
+    overflow-x: auto; /* A mágica do "arrastar pro lado" */
+    scroll-snap-type: x mandatory; /* Para travar em cada foto */
+    scrollbar-width: none; /* Esconde scrollbar (Firefox) */
+    -ms-overflow-style: none; /* Esconde scrollbar (IE) */
+}
+.post-media-scroller::-webkit-scrollbar {
+    display: none; /* Esconde scrollbar (Chrome, Safari) */
+}
+
+.post-media-item {
+    flex: 0 0 100%; /* Cada item ocupa 100% da largura */
+    scroll-snap-align: start; /* Alinha no início */
+    max-height: 600px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-media-item img {
+    width: 100%;
+    height: auto; 
+    max-height: 600px;
+    object-fit: contain; /* 'contain' para ver a imagem inteira */
+    display: block; 
+}
+
+/* Botões de navegação do carrossel */
+.media-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+.media-nav-btn:hover {
+    opacity: 1;
+}
+.media-nav-btn.prev {
+    left: 10px;
+}
+.media-nav-btn.next {
+    right: 10px;
+}
+
+/* Bolinhas de navegação */
+.media-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+}
+.media-dots .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    transition: background-color 0.2s;
+}
+.media-dots .dot.active {
+    background-color: #fff;
+}
+
+
+/* 5. STATS E AÇÕES (CURTIR/COMENTAR) */
+.post-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
+}
+
+.post-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 botões */
+    
+}
+
+.post-actions button {
+    background: transparent;
+    border: none;
+
+    padding: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.post-actions button:hover {
+    background-color: var(--bg-tertiary);
+}
+.post-actions button.liked {
+    color: var(--accent-primary); /* Cor quando curtido */
+}
+
+/* ============================================= */
+/* ✅ ESTILOS ESPECÍFICOS PARA POSTS NO PERFIL   */
+/* (Não vai afetar o Feed)                     */
+/* ============================================= */
+
+/* 1. O CARD (O "CAMPO" QUE SEPARA CADA POST) */
+/* O Perfil.jsx usa <div className="post-card"> */
+.profile-page .post-card {
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    margin-bottom: 15px; 
+    overflow: hidden;
+}
+
+/* 2. O CABEÇALHO (FOTO + NOME + BOTÃO) */
+.profile-page .post-header {
+    display: flex;
+    justify-content: space-between; /* Joga o botão '...' para a direita */
+    align-items: center;
+    padding: 1rem 1.5rem; /* ✅ Este é o padding que faltava */
+}
+
+/* O link que agrupa a foto e o nome */
+.profile-page .post-author-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.profile-page .post-author-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: var(--border-color);
+}
+
+.profile-page .post-author-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-page .post-author-info strong {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.profile-page .post-author-info span {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Botão de 3 pontos */
+.profile-page .post-options-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+}
+.profile-page .post-options-btn:hover {
+    background-color: var(--bg-tertiary);
+}
+
+
+/* 3. CONTEÚDO (TEXTO) */
+.profile-page .post-content {
+    padding: 0 1.5rem 1rem 1.5rem;
+}
+.profile-page .post-content p {
+    white-space: pre-wrap;
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* 4. CARROSSEL DE MÍDIA */
+.profile-page .post-media-container {
+    position: relative;
+    background-color: var(--bg-tertiary);
+}
+
+.profile-page .post-media-scroller {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.profile-page .post-media-scroller::-webkit-scrollbar {
+    display: none;
+}
+
+.profile-page .post-media-item {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    max-height: 600px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-page .post-media-item img {
+    width: 100%;
+    height: auto; 
+    max-height: 600px;
+    object-fit: contain;
+    display: block; 
+}
+
+.profile-page .media-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.profile-page .media-nav-btn.prev { left: 10px; }
+.profile-page .media-nav-btn.next { right: 10px; }
+
+.profile-page .media-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+}
+.profile-page .media-dots .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+.profile-page .media-dots .dot.active {
+    background-color: #fff;
+}
+
+
+/* 5. STATS E AÇÕES (CURTIR/COMENTAR) */
+.profile-page .post-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding: 0.75rem 1.5rem;
+    /* Remove a linha branca APENAS no perfil */
+    border-bottom: none; 
+}
+
+.profile-page .post-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Remove a linha branca APENAS no perfil */
+    border-top: none; 
+}
+
+.profile-page .post-actions button {
+    background: transparent;
+    border: none;
+    padding: 1.25rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+.profile-page .post-actions button:hover {
+    background-color: var(--bg-tertiary);
+}
+.profile-page .post-actions button.liked {
+    color: var(--accent-primary);
+}
+
+/* 6. ESTILOS DE COMENTÁRIO (para não quebrar) */
+.profile-page .comment-section {
+    border-top: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+}
+.profile-page .comment-form {
+     display: flex;
+     gap: 10px;
+     margin-bottom: 10px;
+}
+.profile-page .comment-author-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.profile-page .comment-input-wrapper {
+    flex: 1;
+    display: flex;
+    background-color: var(--bg-tertiary);
+    border-radius: 20px;
+    padding: 0 10px 0 15px;
+}
+.profile-page .comment-input-wrapper input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    padding: 10px 0;
+}
+.profile-page .comment-input-wrapper button {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    cursor: pointer;
+    padding: 0 10px;
+}
+.profile-page .cancel-reply-btn {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+.profile-page .comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.profile-page .comment-container {
+    display: flex;
+    gap: 10px;
+}
+.profile-page .comment-content {
+    flex: 1;
+}
+.profile-page .comment-bubble {
+    background-color: var(--bg-tertiary);
+    border-radius: 15px;
+    padding: 12px 12px;
+    width: fit-content;
+}
+.profile-page .comment-author-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+.profile-page .comment-text {
+    margin: 4px 0 0;
+    color: var(--text-primary);
+}
+.profile-page .comment-actions {
+    display: flex;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    padding-left: 10px;
+}
+.profile-page .comment-action-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+}
+.profile-page .comment-action-btn.liked {
+    color: var(--accent-primary);
+}
+.profile-page .comment-view-replies {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+.profile-actions-other {
+    display: flex;
+    gap: 0.75rem; /* 12px gap */
+}
+
+/* Define um estilo base para todos os botões na área de ações,
+  seja o "Editar Perfil" ou os botões de "Conectar" / "Conversar".
+*/
+.profile-actions .btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none; /* Para o <Link> (botão Responder) */
+    font-size: 0.875rem; /* Tamanho de fonte padrão */
+}
+
+/* Botão Secundário (Pendente, Amigos, Conversar) */
+.profile-actions .btn-secondary {
+    background-color: var(--bg-quaternary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+.profile-actions .btn-secondary:hover:not(:disabled) {
+    background-color: var(--bg-tertiary);
+}
+
+/* Botão Desabilitado (Pendente, Amigos) */
+.profile-actions .btn:disabled {
+    background-color: var(--button-disabled);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Responsividade para os novos botões */
+@media (max-width: 768px) {
+    .profile-actions-other {
+         width: 100%;
+         display: grid;
+         grid-template-columns: 1fr 1fr; /* Divide os botões em 2 colunas no mobile */
+    }
+}
+
+/* Garante que os botões fiquem um ao lado do outro */
+.profile-actions {
+    display: flex;
+    gap: 10px; /* Espaço entre o botão de Chat e Conectar */
+    align-items: center;
+    margin-top: 15px;
+}
+
+/* Estilo do botão de Chat */
+.btn-profile-chat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--bg-secondary); /* Fundo cinza escuro/claro do tema */
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-profile-chat:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary); /* Fica azul no hover */
+    transform: translateY(-2px);
+}
+
+/* Ajuste para telas pequenas (celular) */
+@media (max-width: 768px) {
+    .profile-actions {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .btn-profile-chat {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+}

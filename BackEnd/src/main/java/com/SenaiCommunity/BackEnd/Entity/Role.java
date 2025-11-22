@@ -1,6 +1,5 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,12 +15,12 @@ public class Role {
 
     private String nome;
 
-
     public enum Values {
 
         ADMIN(1L),
         PROFESSOR(2L),
-        ALUNO( 3L);
+        ALUNO(3L),
+        SUPERVISOR(4L); // ✅ Adicionado
 
         long roleId;
 
@@ -29,5 +28,8 @@ public class Role {
             this.roleId = roleID;
         }
 
+        public long getRoleId() {
+            return roleId;
+        }
     }
 }

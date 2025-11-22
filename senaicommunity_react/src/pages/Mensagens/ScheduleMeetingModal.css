@@ -1,0 +1,18 @@
+/* senaicommunity_react/src/pages/Mensagens/ScheduleMeetingModal.css */
+
+.schedule-meeting-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.meeting-title-input,
+.meeting-datetime-input {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}

@@ -1,0 +1,1186 @@
+/* All the content from the new principal.css file goes here. */
+/* This includes styles for .post-creator-expanded, .notification-menu, etc. */
+
+:root {
+  /* Dark Theme Default */
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-quaternary: #30363d;
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+  --accent-primary: #58a6ff;
+  --accent-secondary: #1f6feb;
+  --highlight: #f78166;
+  --online: #3fb950;
+  --danger: #f85149;
+  --success: #238636;
+  --border-color: #30363d;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --card-radius: 8px;
+  --transition: all 0.3s ease;
+  --button-disabled: #30363d;
+  --background-hover: rgba(139, 148, 158, 0.1);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f0f2f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0f2f5;
+  --bg-quaternary: #e4e6eb;
+  --text-primary: #1c1e21;
+  --text-secondary: #65676b;
+  --text-tertiary: #8d949e;
+  --accent-primary: #1877f2;
+  --highlight: #fa383e;
+  --online: #31a24c;
+  --danger: #fa383e;
+  --success: #31a24c;
+  --border-color: #dddfe2;
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --button-disabled: #e4e6eb;
+  --background-hover: rgba(29, 33, 41, 0.08);
+}
+
+.container {
+  display: grid;
+  /* ✅ REVERTIDO: Layout de 3 colunas padrão */
+  grid-template-columns: 280px 1fr 300px;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ✅ REVERTIDO: Estilos da sidebar esquerda e direita */
+.sidebar,
+.right-sidebar {
+  position: sticky;
+  top: 74px; /* Altura do topbar */
+  height: calc(100vh - 84px);
+  overflow-y: auto;
+}
+
+/* --- Componentes da Sidebar Esquerda --- */
+.user-info {
+  background-color: var(--bg-secondary);
+  border-radius: var(--card-radius);
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  margin-bottom: 1rem;
+}
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  position: relative;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.status {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-secondary);
+}
+.status.online {
+  background-color: var(--online);
+}
+.user-info h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+.user-title {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+.user-stats {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+.stat strong {
+  display: block;
+  font-size: 1.25rem;
+  color: var(--accent-primary);
+}
+.stat span {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.menu {
+  background-color: var(--bg-secondary);
+  border-radius: var(--card-radius);
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+.menu a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: 6px;
+  position: relative;
+}
+.menu a.active,
+.menu a:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--accent-primary);
+}
+.menu a .badge {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* --- Conteúdo Principal (Centro) --- */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* * ✅ CORREÇÃO LINHA BRANCA (INÍCIO)
+ * Adicionando estilos para o separador que está no MainContent.jsx
+*/
+.feed-separator {
+  margin: 0.5rem 0; /* Ajusta o espaçamento */
+  padding: 0;
+  height: 1px; /* Define uma altura */
+}
+.feed-separator hr {
+  border: none; /* Remove a borda padrão do browser (a linha branca) */
+  height: 1px;
+  background-color: var(--border-color); /* Usa a cor da borda do tema */
+}
+/* ✅ CORREÇÃO LINHA BRANCA (FIM) */
+
+.post-creator-expanded {
+  display: none;
+}
+.post-creator-simple {
+  display: block;
+}
+
+.post-creator {
+  background-color: var(--bg-secondary);
+  border-radius: var(--card-radius);
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+.post-creator-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+.avatar-small img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+.post-creator-trigger input {
+  flex-grow: 1;
+  background-color: var(--bg-tertiary);
+  border: none;
+  border-radius: 20px;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.editor-header {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+}
+.editor-textarea {
+  width: 100%;
+  min-height: 120px;
+  background-color: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  padding: 0;
+  margin-top: 1rem;
+}
+.editor-textarea:focus {
+  outline: none;
+}
+.post-editor-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+.editor-actions .cancel-btn {
+  background: var(--bg-quaternary);
+  color: var(--text-primary);
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.editor-actions .publish-btn {
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.publish-btn:disabled {
+  background-color: var(--button-disabled);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+/* --- ✅ ESTILOS ATUALIZADOS (Upload e Miniaturas) --- */
+
+/* Esconde o input de arquivo original */
+.hidden-file-input {
+  display: none;
+}
+
+.file-upload-label {
+  display: inline-flex; /* Faz ele se comportar como um botão */
+  align-items: center;
+  gap: 0.5rem;
+
+  background-color: var(--bg-quaternary); /* Cor de botão */
+  color: var(--text-primary);
+  border: 1px solid var(--border-color); /* Borda SÓLIDA, não tracejada */
+  padding: 0.65rem 1rem; /* Padding pequeno para parecer um botão */
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: var(--transition);
+  margin-bottom: 1rem;
+
+  /* Garante que não tenha tamanho fixo */
+  height: auto;
+  min-height: 0;
+  width: auto;
+}
+
+.file-upload-label:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+}
+
+/* Contêiner das miniaturas */
+.selected-files-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 1rem;
+  padding: 10px;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--bg-tertiary);
+}
+
+/* Item individual da miniatura */
+.file-preview-item {
+  position: relative;
+  width: 100px; /* Tamanho fixo pequeno */
+  height: 100px; /* Tamanho fixo pequeno */
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.file-preview-item img,
+.file-preview-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Botão de remover */
+.file-preview-item .remove-file-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+  z-index: 2;
+}
+
+.file-preview-item .remove-file-btn:hover {
+  background-color: var(--danger);
+}
+
+/* --- Fim dos Estilos Atualizados --- */
+
+.posts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.post {
+  background-color: var(--bg-secondary);
+  border-radius: var(--card-radius);
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.post-author {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.post-icon img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+.post-info h2 {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.post-info span {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* ✅ CORREÇÃO DA QUEBRA DE LINHA DO POST */
+.post-text {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  overflow-wrap: break-word; /* Força a quebra de palavras longas */
+  word-wrap: break-word; /* Suporte para navegadores mais antigos */
+  word-break: break-all; /* Garante a quebra em todos os casos */
+}
+
+/* ✅ ESTILOS DO CARROSSEL DE MÍDIA (CORRIGIDO) */
+.post-media-carousel {
+  position: relative;
+  width: 100%;
+  /* ❌ REMOVIDO: max-width: 550px; */
+  /* ❌ REMOVIDO: height: 450px; (Este era o problema) */
+
+  /* ✅ ADICIONADO: Define a proporção para 16:9 (widescreen) */
+  aspect-ratio: 16 / 9;
+
+  margin: 1rem 0; /* Usa a largura total, sem 'auto' */
+  overflow: hidden;
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  /* ✅ ADICIONADO: Fundo preto para o 'letterboxing' (barras pretas) */
+  background-color: #000;
+}
+
+.carousel-inner {
+  display: flex; /* Coloca os itens lado a lado */
+  height: 100%;
+  transition: transform 0.5s ease-in-out; /* Animação de transição */
+}
+
+.carousel-item {
+  min-width: 100%; /* Cada item ocupa 100% da largura do carousel-inner */
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Impede que os itens encolham */
+}
+
+.carousel-item img,
+.carousel-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* ✅ 'contain' para mostrar a imagem inteira sem cortar */
+  display: block;
+  /* ❌ REMOVIDO: border-radius: var(--card-radius); (O container já tem) */
+}
+
+.carousel-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente */
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  z-index: 10; /* Para ficar acima da imagem */
+  border-radius: 50%; /* Botões redondos */
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.carousel-button:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.carousel-button.prev {
+  left: 10px;
+}
+
+.carousel-button.next {
+  right: 10px;
+}
+
+.carousel-indicators {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  z-index: 10;
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease, width 0.3s ease;
+}
+
+.indicator-dot.active {
+  background-color: var(--accent-primary); /* Ponto ativo mais visível */
+  /* ✅ Deixei os pontos do mesmo tamanho para um visual mais limpo */
+  /* width: 12px; */
+  /* height: 12px; */
+}
+/* ✅ ESTILOS DO CARROSSEL DE MÍDIA (FIM) */
+
+.post-actions {
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.75rem;
+  
+}
+.post-actions button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+  flex: 1;
+  justify-content: center;
+}
+.post-actions button:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* * =================================================================
+ * ✅✅✅ CORREÇÃO FORÇADA (EFEITO AZUL) ✅✅✅
+ * Remove o 'outline' azul de foco em TODOS os botões
+ * =================================================================
+*/
+button:focus,
+button:focus-visible,
+.post-actions button:focus,
+.post-actions button:focus-visible,
+.comment-action-btn:focus,
+.comment-action-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+/* ================================================================= */
+
+
+/* --- Widgets da Direita (RESTAURADOS) --- */
+.right-sidebar .widget-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.widget-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.see-all {
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+.follow-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.follow-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.follow-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+.follow-avatar img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.follow-info h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.follow-info span {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.follow-btn {
+  background: transparent;
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.follow-btn:hover {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+/* --- Menu de Notificações --- */
+.notification-menu {
+  display: none;
+  position: absolute;
+  top: 55px;
+  right: 0;
+  width: 380px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow);
+  z-index: 1001;
+}
+/* ... (resto do seu CSS) ... */
+
+@media (max-width: 1200px) {
+  .container {
+    /* ✅ REVERTIDO: Mantém 3 colunas, mas esconde a da direita */
+    grid-template-columns: 280px 1fr;
+  }
+  .right-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    padding: 0.5rem;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 60px;
+    height: calc(100% - 60px);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 999;
+    background-color: var(--bg-primary);
+  }
+
+  .sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  /* 7. ADICIONA O ESTILO DO OVERLAY (FUNDO ESCURO) */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998; /* Abaixo do sidebar (que é 999) */
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+  }
+}
+/* * ============================================
+ * ✅ SEÇÃO DE COMENTÁRIOS COM DARK MODE CORRIGIDO
+ * ============================================
+*/
+.comment-section {
+  padding-top: 12px;
+  /* ATUALIZADO: Usa variável de borda */
+  border-top: 1px solid var(--border-color);
+  margin-top: 12px;
+}
+
+/* O formulário para escrever um novo comentário */
+.comment-form {
+  display: flex;
+  /* ✅ ATUALIZADO: Permite que o banner fique em cima */
+  flex-direction: column; 
+  align-items: center;
+  gap: 8px; /* Espaço entre o avatar e o input */
+  margin-bottom: 16px;
+}
+
+/* O input de texto (estilo pílula) */
+.comment-form input[type="text"] {
+  flex-grow: 1; /* Faz o input ocupar o espaço restante */
+  border: none;
+  /* ATUALIZADO: Usa variável de fundo */
+  background-color: var(--bg-tertiary);
+  /* ATUALIZADO: Usa variável de texto */
+  color: var(--text-primary);
+  border-radius: 20px; /* Bordas arredondadas */
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  outline: none; /* Remove a borda azul feia ao focar */
+  transition: box-shadow 0.2s ease;
+  width: 100%; /* ✅ Garante que o input use o espaço */
+}
+
+.comment-form input[type="text"]:focus {
+  /* ✅ CORREÇÃO AQUI: Trocado --highlight (vermelho) por --accent-primary (azul) */
+  box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+/* ✅ ESTILO DO BOTÃO DE ENVIAR ATUALIZADO */
+.comment-form .comment-submit-btn {
+  display: flex; /* Remove o 'display: none' */
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--accent-primary); /* Cor azul */
+  font-size: 1.1rem; /* Tamanho do ícone */
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0; /* Impede que o botão encolha */
+}
+
+.comment-form .comment-submit-btn:hover:not(:disabled) {
+  background-color: var(--background-hover);
+}
+
+.comment-form .comment-submit-btn:disabled {
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+/* A lista de comentários */
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Espaço entre cada comentário */
+}
+
+/* Um item de comentário individual (avatar + bolha) */
+.comment-item {
+  display: flex;
+  gap: 8px; /* Espaço entre avatar e bolha */
+}
+
+/* O avatar no comentário */
+.comment-item .avatar-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0; /* Impede que o avatar encolha */
+  margin-top: 2px;
+}
+
+.comment-item .avatar-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* O "corpo" do comentário (agrupa a bolha e as ações) */
+.comment-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alinha a bolha à esquerda */
+  width: 100%;
+}
+
+/* A "bolha" cinza que contém o texto */
+.comment-content {
+  /* ATUALIZADO: Usa variável de fundo */
+  background-color: var(--bg-tertiary);
+  border-radius: 18px; /* Arredondamento da bolha */
+  padding: 10px 14px;
+  max-width: 90%; /* Impede que a bolha fique muito larga */
+}
+
+.comment-content strong {
+  display: block; /* Faz o nome ficar em sua própria linha */
+  font-size: 0.85rem;
+  font-weight: 600;
+  /* ATUALIZADO: Usa variável de texto */
+  color: var(--text-primary);
+}
+
+.comment-content p {
+  font-size: 0.9rem;
+  /* ATUALIZADO: Usa variável de texto */
+  color: var(--text-primary);
+  margin: 2px 0 0 0;
+  padding: 0;
+  /* Permite que o texto quebre palavras longas */
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* Ações abaixo da bolha (data, curtir, responder) */
+.comment-actions-below {
+  padding: 4px 0 0 12px; /* Alinha com o texto da bolha */
+  /* ✅ CORREÇÃO: Usa cor de texto secundária */
+  color: var(--text-secondary);
+  font-size: 0.8rem; /* Tamanho da data */
+}
+
+/* ... (Todo o seu CSS existente) ... */
+
+/* =================================================
+ * ✅ NOVOS ESTILOS: Menu Dropdown de Postagem
+ * =================================================
+*/
+.post-header {
+  position: relative; /* Necessário para o dropdown */
+}
+
+.post-options-btn {
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 50%;
+  color: var(--text-secondary);
+}
+.post-options-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.post-options-dropdown {
+  position: absolute;
+  top: 40px; /* Posição abaixo do header */
+  right: 0;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow);
+  z-index: 10;
+  width: 200px;
+  overflow: hidden;
+}
+
+.post-options-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.post-options-dropdown button:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.post-options-dropdown button.danger {
+  color: var(--danger);
+}
+.post-options-dropdown button.danger:hover {
+  background-color: rgba(248, 81, 73, 0.1);
+}
+
+.post-editor-inline {
+  background-color: var(--bg-secondary);
+  border-radius: var(--card-radius);
+  padding: 1rem;
+  border: 1px solid var(--accent-primary); /* Destaque azul para modo de edição */
+  box-shadow: 0 0 0 3px var(--accent-primary-light);
+}
+
+.post-editor-inline .editor-textarea {
+  min-height: 80px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.edit-media-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 1rem;
+  padding: 10px;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--bg-tertiary);
+  min-height: 100px; /* Altura mínima para o dropzone */
+}
+
+.edit-media-item {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.edit-media-item img,
+.edit-media-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.remove-media-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+  z-index: 2;
+}
+
+.remove-media-btn:hover {
+  background-color: var(--danger);
+}
+
+.post-editor-footer .editor-actions-left {
+  flex-grow: 1;
+}
+
+.file-upload-label.small {
+  padding: 0.5rem 0.8rem;
+  font-size: 0.8rem;
+  margin-bottom: 0;
+}
+
+/* ============================================= */
+/* ✅ NOVOS ESTILOS: Curtidas e Respostas de Comentário */
+/* ============================================= */
+
+/* Banner "Respondendo a..." */
+.replying-to-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85em;
+  padding: 8px 12px;
+  background-color: var(--bg-secondary);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom: 1px solid var(--border-color-light);
+  color: var(--text-secondary);
+  width: 100%; /* Ocupa a largura total */
+}
+
+.replying-to-banner strong {
+  color: var(--text-primary);
+  margin-left: 4px;
+}
+
+.cancel-reply-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px;
+}
+.cancel-reply-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Ajusta o wrapper do input de comentário */
+.comment-form .comment-input-wrapper {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Remove a borda superior do input se o banner estiver visível */
+.replying-to-banner + .comment-input-wrapper .avatar-small {
+  border-top-left-radius: 0;
+}
+.replying-to-banner + .comment-input-wrapper input {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.replying-to-banner + .comment-input-wrapper .comment-submit-btn {
+  border-top-right-radius: 0;
+}
+
+
+/* Tag @username na resposta */
+.comment-content .reply-tag {
+  color: var(--accent-primary);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+/* Botões "Curtir" e "Responder" abaixo do comentário */
+.comment-actions-below {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espaçamento entre os links */
+  margin-top: 4px;
+  padding-left: 12px; /* Alinha com a bolha */
+}
+
+.comment-action-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 1em; /* Herda o tamanho do pai */
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.comment-action-btn:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+/* Cor do botão de like do comentário quando curtido */
+.comment-action-btn.liked {
+  color: var(--accent-primary);
+  font-weight: 700;
+}
+
+.comment-action-btn .svg-inline--fa {
+  margin-right: 4px;
+}
+
+/*
+ * =================================================================
+ * ✅✅✅ LÓGICA DE INDENTAÇÃO CORRIGIDA (ESTILO INSTAGRAM) ✅✅✅
+ * =================================================================
+*/
+
+
+
+
+/* Botão "Ver respostas" / "Ocultar respostas" */
+.comment-view-replies {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-top: 4px;
+  padding: 4px;
+  align-self: flex-start; /* Alinha o botão à esquerda */
+}
+
+.comment-view-replies:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+.post-author-link,
+.post-author-link:hover {
+  text-decoration: none; /* Remove o sublinhado */
+  color: inherit;      /* Faz o texto herdar a cor normal (preto/branco) */
+}
+/* Adiciona espaçamento e estilo para a contagem de conexões */
+.profile-connections {
+  margin-top: 8px;
+  font-size: 0.9em;
+  color: var(--text-secondary); /* Usa a cor secundária do texto */
+}
+
+.profile-connections strong {
+  color: var(--text-primary); /* Deixa o número com a cor principal */
+  font-weight: 600;
+}
+
+/* Remove o estilo de link (cor azul e sublinhado) */
+.profile-connections-link,
+.profile-connections-link:hover {
+  text-decoration: none; /* Remove o sublinhado */
+  color: inherit;      /* Herda a cor do .profile-connections */
+}
+
+/* Lista de amigos */
+.lista-amigos-online {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.amigo-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.amigo-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.no-friends {
+    padding: 10px;
+    text-align: center;
+    color: #8b949e;
+    font-size: 0.9rem;
+}
+
+/* Avatar e Status */
+.avatar-wrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+.avatar-mini {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* --- BOLINHA VERDE --- */
+.status-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background-color: #3fb950; /* Verde Github */
+    border: 2px solid #0d1117; /* Cor de fundo para "cortar" a foto */
+    border-radius: 50%;
+}
+
+.amigo-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.amigo-nome {
+    font-weight: 600;
+    font-size: 0.9rem;
+    /* MUDANÇA AQUI: Força a cor principal do tema */
+    color: var(--text-primary) !important; 
+    line-height: 1.2;
+    margin-bottom: 2px;
+    display: block; /* Garante que ocupe a linha */
+}
+
+.amigo-status-texto {
+    font-size: 0.75rem;
+    /* Texto secundário mais claro para o status */
+    color: var(--text-secondary); 
+}
+
+/* Opcional: Se estiver online, pinta o texto "Online" de verde */
+.amigo-item:has(.status-dot.online) .amigo-status-texto {
+    color: var(--online, #3fb950);
+}

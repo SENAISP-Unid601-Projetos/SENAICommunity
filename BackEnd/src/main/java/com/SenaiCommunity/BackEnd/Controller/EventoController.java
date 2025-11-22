@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize; // ✅ Importante
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +23,8 @@ public class EventoController {
 
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     @ResponseStatus(HttpStatus.CREATED)
+    // ✅ Adicionada permissão para SUPERVISOR
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR', 'SUPERVISOR')")
     public EventoSaidaDTO criarEvento(
             @RequestPart("evento") EventoEntradaDTO eventoDTO,
             @RequestPart(name = "imagem", required = false) MultipartFile imagem) {
@@ -29,7 +32,6 @@ public class EventoController {
         return eventoService.criarEventoComImagem(eventoDTO, imagem);
     }
 
-    // ... outros endpoints ...
     @GetMapping
     public List<EventoSaidaDTO> listarTodos() {
         return eventoService.listarTodos();
@@ -46,6 +48,8 @@ public class EventoController {
     }
 
     @DeleteMapping("/{id}")
+    // ✅ Opcional: Restringir quem pode deletar
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         try {
             eventoService.deletar(id);

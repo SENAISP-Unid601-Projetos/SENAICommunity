@@ -1,13 +1,14 @@
 package com.SenaiCommunity.BackEnd.Service;
 
+import com.SenaiCommunity.BackEnd.DTO.AmigoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioAtualizacaoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioBuscaDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;
 import com.SenaiCommunity.BackEnd.Entity.Amizade;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
-import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.AmizadeRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
+// import org.springframework.beans.factory.annotation.Value; // 🗑️ Removida importação não utilizada
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,6 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+// 🗑️ Removidas importações de java.nio.file.Files, java.nio.file.Path, java.nio.file.Paths
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,18 +37,13 @@ public class UsuarioService {
     @Autowired
     private UserStatusService userStatusService;
 
+    // ✅ NOVO: Injeção do serviço Cloudinary
     @Autowired
-    private ArquivoMidiaService midiaService;
+    private ArquivoMidiaService arquivoMidiaService;
 
-    @Autowired
-    private FiltroProfanidadeService filtroProfanidade;
-
-
-    public UsuarioSaidaDTO buscarUsuarioPorId(Long id) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o ID: " + id));
-        return new UsuarioSaidaDTO(usuario);
-    }
+    // 🗑️ REMOVIDO: Propriedade não é mais necessária para Cloudinary
+    // @Value("${file.upload-dir}")
+    // private String uploadDir;
 
     /**
      * método público para buscar usuário por email.
@@ -69,11 +66,6 @@ public class UsuarioService {
      * Atualiza os dados do usuário logado.
      */
     public UsuarioSaidaDTO atualizarUsuarioLogado(Authentication authentication, UsuarioAtualizacaoDTO dto) {
-        if (filtroProfanidade.contemProfanidade(dto.getNome()) ||
-                filtroProfanidade.contemProfanidade(dto.getBio())) {
-            throw new ConteudoImproprioException("Seus dados de perfil contêm texto não permitido.");
-        }
-
         Usuario usuario = getUsuarioFromAuthentication(authentication);
 
         if (StringUtils.hasText(dto.getNome())) {
@@ -93,25 +85,61 @@ public class UsuarioService {
         return new UsuarioSaidaDTO(usuarioAtualizado);
     }
 
+    /**
+     * ✅ ATUALIZADO: Lógica para fazer upload no Cloudinary.
+     */
     public UsuarioSaidaDTO atualizarFotoPerfil(Authentication authentication, MultipartFile foto) throws IOException {
         if (foto == null || foto.isEmpty()) {
             throw new IllegalArgumentException("Arquivo de foto não pode ser vazio.");
         }
 
         Usuario usuario = getUsuarioFromAuthentication(authentication);
-        String urlCloudinary = midiaService.upload(foto);
-        usuario.setFotoPerfil(urlCloudinary);
+
+        // 1. Opcional: Deletar a foto antiga no Cloudinary (se for uma URL)
+        // Isso evita que fotos antigas permaneçam no Cloudinary
+        if (usuario.getFotoPerfil() != null && usuario.getFotoPerfil().startsWith("http")) {
+            try {
+                arquivoMidiaService.deletar(usuario.getFotoPerfil());
+            } catch (Exception e) {
+                // Logar o erro, mas não bloquear o novo upload.
+                System.err.println("Aviso: Falha ao deletar foto antiga no Cloudinary: " + e.getMessage());
+            }
+        }
+
+        // 2. Fazer upload para o Cloudinary e obter a URL segura
+        String urlFoto = arquivoMidiaService.upload(foto);
+
+        // 3. Salvar a URL completa do Cloudinary na entidade Usuario
+        usuario.setFotoPerfil(urlFoto);
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
         return new UsuarioSaidaDTO(usuarioAtualizado);
     }
 
     /**
-     * Deleta a conta do usuário logado.
+     * ✅ ATUALIZADO: Adicionada lógica para deletar a foto do Cloudinary.
      */
     public void deletarUsuarioLogado(Authentication authentication) {
         Usuario usuario = getUsuarioFromAuthentication(authentication);
+
+        // Opcional: Deletar a foto do Cloudinary ao deletar o usuário
+        if (usuario.getFotoPerfil() != null && usuario.getFotoPerfil().startsWith("http")) {
+            try {
+                arquivoMidiaService.deletar(usuario.getFotoPerfil());
+            } catch (IOException e) {
+                System.err.println("Aviso: Falha ao deletar foto do Cloudinary durante a exclusão do usuário: " + e.getMessage());
+            }
+        }
+
         usuarioRepository.deleteById(usuario.getId());
+    }
+
+    public UsuarioSaidaDTO buscarUsuarioPorId(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o ID: " + id));
+
+        // Reutiliza o mesmo DTO de saídtoBuscaDTOtoBuscaDTOa
+        return new UsuarioSaidaDTO(usuario);
     }
 
     /**
@@ -126,6 +154,23 @@ public class UsuarioService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o email do token: " + email));
     }
 
+    /**
+     * 🗑️ REMOVIDO: Método obsoleto que salvava foto no disco local.
+     */
+    // private String salvarFoto(MultipartFile foto) throws IOException {
+    //     String nomeArquivo = System.currentTimeMillis() + "_" + StringUtils.cleanPath(foto.getOriginalFilename());
+    //
+    //     // Garante que o diretório de upload exista
+    //     Path diretorioUpload = Paths.get(uploadDir);
+    //     Files.createDirectories(diretorioUpload);
+    //
+    //     Path caminhoDoArquivo = diretorioUpload.resolve(nomeArquivo);
+    //     foto.transferTo(caminhoDoArquivo);
+    //
+    //     // Retorna APENAS o nome do arquivo.
+    //     // O restante da URL será montado no frontend ou no DTO.
+    //     return nomeArquivo;
+    // }
 
     /**
      * Busca usuários por nome e determina o status de amizade com o usuário logado.
@@ -141,22 +186,25 @@ public class UsuarioService {
     }
 
     /**
-     * Converte uma entidade Usuario para UsuarioBuscaDTO, incluindo o status de amizade.
+     * ✅ ATUALIZADO: Converte uma entidade Usuario para UsuarioBuscaDTO, incluindo o status de amizade.
      */
     private UsuarioBuscaDTO toBuscaDTO(Usuario usuario, Usuario usuarioLogado) {
         UsuarioBuscaDTO.StatusAmizadeRelacao status = determinarStatusAmizade(usuario, usuarioLogado);
 
+        // 1. Verifica se a foto de perfil existe e não está em branco
         String urlFoto = usuario.getFotoPerfil() != null && !usuario.getFotoPerfil().isBlank()
-                ? usuario.getFotoPerfil()
-                : "/images/default-avatar.png";
+                ? usuario.getFotoPerfil() // 2. Se existir, usa a foto (ex: Cloudinary)
+                : "/images/default-avatar.png"; // 3. Se for nula, USA UMA FOTO PADRÃO
 
+        // 4. Cria o DTO com a 'urlFoto' (que agora nunca é nula)
         return new UsuarioBuscaDTO(
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
-                urlFoto,
+                urlFoto, // Este valor NUNCA será 'null'
                 status,
-                userStatusService.isOnline(usuario.getEmail())
+                userStatusService.isOnline(usuario.getEmail()),
+                usuario.getTipoUsuario()
         );
     }
 

@@ -15,6 +15,10 @@ public class UsuarioBuscaDTO {
     private String fotoPerfil;
     private StatusAmizadeRelacao statusAmizade;
     private boolean online;
+
+    // ✅ NOVO CAMPO ADICIONADO
+    private String tipoUsuario; // Ex: "ALUNO" ou "PROFESSOR"
+
     // Enum para representar o status da relação de amizade
     public enum StatusAmizadeRelacao {
         AMIGOS,

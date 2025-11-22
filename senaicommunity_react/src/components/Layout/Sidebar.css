@@ -1,0 +1,114 @@
+/* src/components/Layout/Sidebar.css */
+
+.sidebar {
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-bottom: 1rem;
+    box-sizing: border-box;
+    padding-top: 1rem;
+}
+
+/* --- NOVO: Estilo para o Link que envolve o card --- */
+.user-info-link {
+    text-decoration: none; /* Remove o sublinhado padrão de links */
+    color: inherit; /* Herda a cor do texto em vez de usar azul de link */
+    display: block; /* Faz o link ocupar a largura correta */
+}
+
+/* Remove sublinhado também no hover (ao passar o mouse) */
+.user-info-link:hover {
+    text-decoration: none;
+}
+
+/* User Info Card */
+.user-info-card, .user-info { /* Adicionei .user-info para garantir compatibilidade */
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.user-info-card:hover, .user-info:hover {
+    background-color: var(--bg-hover);
+    /* Garantia extra de que não haverá borda ou linha indesejada */
+    border-color: var(--border-color); 
+    text-decoration: none; 
+}
+
+.avatar { position: relative; width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 1rem; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.status { position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--bg-secondary); }
+.status.online { background-color: var(--online); }
+.status.away { background-color: var(--away); }
+.status.offline { background-color: var(--text-tertiary); }
+
+/* Nome do Usuário */
+.user-info-card h2, .user-info h2 { 
+    font-size: 1.25rem; 
+    margin-bottom: 0.25rem; 
+    color: white; /* ✅ FORÇADO PARA BRANCO */
+    text-decoration: none; /* Garante sem sublinhado */
+}
+
+.user-title { color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem; }
+
+/* Stats (Conexões/Projetos) */
+.user-stats { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; }
+.stat strong { display: block; font-size: 1.25rem; color: var(--accent-primary); }
+.stat span { font-size: 0.75rem; color: var(--text-secondary); }
+
+/* Menu Card */
+.menu {
+    background-color: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+}
+.menu a {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem; color: var(--text-primary); text-decoration: none;
+    border-radius: 6px; transition: var(--transition); position: relative;
+}
+.menu a.active, .menu a:hover {
+    background-color: var(--bg-tertiary); color: var(--accent-primary);
+}
+.menu a svg { width: 20px; text-align: center; }
+.menu a .badge {
+    position: static; transform: none; margin-left: auto;
+    background-color: var(--danger); color: white; border-radius: 10px;
+    padding: 0.1rem 0.5rem; font-size: 0.7rem; font-weight: bold;
+}
+
+/* Ajuste para o StatsCard dentro da Sidebar (caso tenha adicionado no passo anterior) */
+.sidebar-stats-wrapper {
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.sidebar .stats-card-container {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: none;
+    padding: 10px 5px;
+    box-shadow: none;
+}
+
+.sidebar .stat-number {
+    font-size: 1.1rem;
+    color: var(--text-primary); 
+}
+
+.sidebar .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary); 
+}

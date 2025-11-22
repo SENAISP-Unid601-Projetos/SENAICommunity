@@ -41,19 +41,53 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilita o CORS
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // ==========================================================
+                        // ✅ Permite todas as requisições "pre-flight" OPTIONS (CORS)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // ==========================================================
+
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/autenticacao/login/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/autenticacao/login**").permitAll()
-                        .requestMatchers("/auth/**", "/cadastro/**", "/ws/**", "/login**", "/oauth2/**").permitAll()
-                        .requestMatchers("/images/**").permitAll()
+
+                        // Autenticação e Cadastro (inclui o novo endpoint de supervisor)
+                        .requestMatchers(HttpMethod.POST, "/autenticacao/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/autenticacao/login/google").permitAll()
+                        .requestMatchers("/cadastro/**").permitAll()
+                        .requestMatchers("/auth/**", "/login**", "/oauth2/**").permitAll()
+
+                        // Projetos (Mantendo público conforme original, ajuste se necessário)
+                        .requestMatchers(HttpMethod.POST, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/projetos/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/projetos/**").permitAll()
+
+                        // Vagas - GET é público, POST agora exige autenticação (verificado no Controller)
+                        .requestMatchers(HttpMethod.GET, "/api/vagas/**").permitAll()
+                        // REMOVIDO: .requestMatchers(HttpMethod.POST, "/api/vagas/**").permitAll()
+
+                        // Eventos - GET é público, POST agora exige autenticação (verificado no Controller)
+                        .requestMatchers(HttpMethod.GET, "/api/eventos/**").permitAll()
+                        // REMOVIDO: .requestMatchers(HttpMethod.POST, "/api/eventos/**").permitAll()
+
+                        // Outros endpoints públicos
+                        .requestMatchers(HttpMethod.POST, "/curtidas/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/alunos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/professores/**").permitAll()
+
+                        // WebSockets e Arquivos
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/images/**", "/api/arquivos/**").permitAll()
+
+                        // Swagger UI
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+
+                        // Qualquer outra requisição deve ser autenticada
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(
@@ -66,7 +100,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://127.0.0.1:5501", "http://localhost:3000", "http://127.0.0.1:5502"));
+
+        configuration.setAllowedOrigins(List.of(
+                "http://127.0.0.1:5500",
+                "http://127.0.0.1:5501",
+                "http://localhost:3000",
+                "http://127.0.0.1:5502",
+                "http://localhost:5173"
+        ));
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

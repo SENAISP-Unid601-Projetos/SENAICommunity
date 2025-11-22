@@ -23,7 +23,6 @@ public abstract class Usuario {
     @Column(unique = true)
     private String email;
     private String senha;
-    @Lob
     private String fotoPerfil;
     private LocalDate dataNascimento;
     private String bio;

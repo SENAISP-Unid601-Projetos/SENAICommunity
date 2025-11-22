@@ -1,0 +1,149 @@
+/* src/pages/Mensagens/EditarMensagemModal.css */
+/* (CRIE ESTE NOVO ARQUIVO) */
+
+/* Overlay (fundo escuro) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+}
+
+/* Conteúdo do Modal */
+.modal-content.edit-message-modal {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Para os cantos arredondados */
+    animation: slideUp 0.3s ease;
+}
+
+/* Cabeçalho */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.close-modal-btn:hover {
+    background-color: var(--bg-elevation-hover);
+    color: var(--text-primary);
+}
+
+/* Corpo */
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-body textarea {
+    width: 100%;
+    box-sizing: border-box; /* Garante que o padding não estoure */
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-family: inherit; /* Usa a mesma fonte do app */
+    resize: vertical; /* Permite redimensionar verticalmente */
+    min-height: 100px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-body textarea:focus {
+    outline: none;
+    border-color: var(--brand-color);
+    box-shadow: 0 0 0 3px var(--brand-color-a11y);
+}
+
+
+/* Rodapé */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 1rem 1.5rem;
+    background-color: var(--bg-tertiary);
+    border-top: 1px solid var(--border-color-light);
+}
+
+.modal-footer button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.modal-footer .btn-cancel {
+    background-color: var(--bg-elevation-3);
+    color: var(--text-secondary);
+}
+
+.modal-footer .btn-cancel:hover {
+    background-color: var(--bg-elevation-hover);
+    color: var(--text-primary);
+}
+
+.modal-footer .btn-save {
+    background-color: var(--brand-color);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-footer .btn-save:hover {
+    background-color: var(--brand-color-hover);
+}
+
+.modal-footer .btn-save:disabled {
+    background-color: var(--button-disabled);
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px) scale(0.95); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}

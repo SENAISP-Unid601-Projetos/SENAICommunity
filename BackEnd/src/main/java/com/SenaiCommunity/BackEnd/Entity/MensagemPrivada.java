@@ -10,29 +10,26 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
+@Builder
 public class MensagemPrivada {
-
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // ✅ CRÍTICO PARA O AUTO_INCREMENT NO MYSQL
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "remetente_id")
     private Usuario remetente;
 
     @ManyToOne
+    @JoinColumn(name = "destinatario_id")
     private Usuario destinatario;
 
+    @Column(columnDefinition = "TEXT")
     private String conteudo;
 
-    private LocalDateTime dataEnvio = LocalDateTime.now();
+    private LocalDateTime dataEnvio;
 
-    @Transient // não persistido diretamente no banco
-    private String remetenteUsername;
-
-    @Column(nullable = false)
-    private boolean lida = false;
+    private LocalDateTime dataEdicao;
 }

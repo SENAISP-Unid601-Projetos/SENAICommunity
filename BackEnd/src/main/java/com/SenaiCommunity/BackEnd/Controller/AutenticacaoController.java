@@ -75,23 +75,29 @@ public class AutenticacaoController {
         }
 
         try {
-            // 1. Autenticar
+            // 1. Tenta Autenticar via Spring Security
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha())
             );
 
+            // 2. Carrega os detalhes do usuário
             UserDetails userDetails = userDetailsService.loadUserByUsername(dto.getEmail());
 
-            // Pegando o id
+            // 3. Pega o ID
             Long id = ((UsuarioDetailsImpl) userDetails).getId();
 
-            // Gerar token com ID como claim personalizada
+            // 4. Gera token
             String token = jwtUtil.gerarToken(userDetails, id);
 
-            // 4. Retornar token no body
             return ResponseEntity.ok(new TokenDTO(token));
+
+        } catch (org.springframework.security.authentication.BadCredentialsException e) {
+            // Senha ou email errados
+            return ResponseEntity.status(401).body("Credenciais inválidas (Senha incorreta)");
         } catch (Exception e) {
-            return ResponseEntity.status(401).body("Credenciais inválidas");
+            // OUTROS ERROS (Aqui está o problema do Supervisor)
+            e.printStackTrace(); // ✅ Isso mostrará o erro no terminal do Java
+            return ResponseEntity.status(500).body("Erro interno ao logar: " + e.getMessage());
         }
     }
 

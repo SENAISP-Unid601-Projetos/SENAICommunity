@@ -29,56 +29,89 @@ public class NotificacaoService {
     private SimpMessagingTemplate messagingTemplate;
 
     /**
-     * MÉTODO DE CONVERSÃO MODIFICADO E MAIS SEGURO.
-     * Ele agora verifica se os campos são nulos antes de usá-los.
+     * MÉTODO DE CONVERSÃO COM A CORREÇÃO DEFINITIVA
      */
     private NotificacaoSaidaDTO toDTO(Notificacao notificacao) {
+        String remetenteNome = null;
+        Long remetenteId = null;
+        String remetenteFotoUrl = null;
+
+        if (notificacao.getRemetente() != null) {
+            remetenteId = notificacao.getRemetente().getId();
+            remetenteNome = notificacao.getRemetente().getNome();
+
+            // Pega o caminho da foto (seja "123.png" ou "/alunoPictures/foto.jpg")
+            String fotoPath = notificacao.getRemetente().getFotoPerfil(); // Usa o getter correto
+
+            if (fotoPath != null && !fotoPath.isBlank()) {
+
+                // **********************************
+                // 🚀 CORREÇÃO APLICADA AQUI
+                // **********************************
+
+                // Caso 1: O path JÁ é um caminho completo (ex: /alunoPictures/foto.jpg)
+                // (Vindo do MensagemPrivadaService)
+                // NÃO FAÇA NADA. Use o caminho como está.
+                if (fotoPath.startsWith("/")) {
+                    remetenteFotoUrl = fotoPath;
+                }
+                // Caso 2: O path é SÓ um nome de arquivo (ex: 123.png)
+                // (Vindo do CurtidaService, como vimos na imagem que FUNCIONOU)
+                // Adicione o prefixo da API.
+                else {
+                    remetenteFotoUrl = "/api/arquivos/" + fotoPath;
+                }
+            }
+        }
+
         return NotificacaoSaidaDTO.builder()
                 .id(notificacao.getId())
                 .mensagem(notificacao.getMensagem())
                 .dataCriacao(notificacao.getDataCriacao())
                 .lida(notificacao.isLida())
-                // Verifica se o tipo é nulo, se for, define como "GERAL" por padrão.
                 .tipo(notificacao.getTipo() != null ? notificacao.getTipo() : "GERAL")
-                .idReferencia(notificacao.getIdReferencia()) // Long pode ser nulo, então não há problema aqui.
-                .idReferenciaSecundaria(notificacao.getIdReferenciaSecundaria())
+                .idReferencia(notificacao.getIdReferencia())
+                .remetenteId(remetenteId)
+                .remetenteNome(remetenteNome)
+                .remetenteFotoUrl(remetenteFotoUrl) // Agora envia a URL correta para AMBOS
                 .build();
     }
 
-    @Transactional
-    public void criarNotificacao(Usuario destinatario, String mensagem, String tipo, Long idReferencia) {
-        // Agora chama o método de 5 parâmetros com 'null'
-        criarNotificacao(destinatario, mensagem, tipo, idReferencia, null);
-    }
+    // ... (O RESTANTE DO SEU CÓDIGO - criarNotificacao, etc. - ESTÁ CORRETO)
+    // ... (NÃO PRECISA MUDAR MAIS NADA NESTE ARQUIVO)
 
     @Transactional
-    public void criarNotificacao(Usuario destinatario, String mensagem, String tipo, Long idReferencia, Long idReferenciaSecundaria) {
+    public void criarNotificacao(Usuario destinatario, Usuario remetente, String mensagem, String tipo, Long idReferencia) {
+        // ... (seu código aqui, está correto)
         Notificacao notificacao = Notificacao.builder()
                 .destinatario(destinatario)
+                .remetente(remetente)
                 .mensagem(mensagem)
                 .dataCriacao(LocalDateTime.now())
                 .tipo(tipo)
-                .idReferencia(idReferencia) // Ex: PostID
-                .idReferenciaSecundaria(idReferenciaSecundaria) // Ex: CommentID
+                .idReferencia(idReferencia)
+                .lida(false)
                 .build();
 
         Notificacao notificacaoSalva = notificacaoRepository.save(notificacao);
         NotificacaoSaidaDTO dto = toDTO(notificacaoSalva);
-        String destination = "/user/" + destinatario.getEmail() + "/queue/notifications";
-        messagingTemplate.convertAndSend(destination, dto);
+        messagingTemplate.convertAndSendToUser(
+                destinatario.getEmail(),
+                "/queue/notifications",
+                dto
+        );
     }
 
-    // Sobrecarga para notificações gerais, que não quebrarão mais.
     public void criarNotificacao(Usuario destinatario, String mensagem) {
-        criarNotificacao(destinatario, mensagem, "GERAL", null);
+        // ... (seu código aqui, está correto)
+        criarNotificacao(destinatario, null, mensagem, "GERAL", null);
     }
 
     public List<NotificacaoSaidaDTO> buscarPorDestinatario(String emailDestinatario) {
+        // ... (seu código aqui, está correto)
         Usuario destinatario = usuarioRepository.findByEmail(emailDestinatario)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
-
         List<Notificacao> notificacoes = notificacaoRepository.findByDestinatarioOrderByDataCriacaoDesc(destinatario);
-
         return notificacoes.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
@@ -86,28 +119,25 @@ public class NotificacaoService {
 
     @Transactional
     public void marcarComoLida(Long notificacaoId, String emailUsuarioLogado) {
+        // ... (seu código aqui, está correto)
         Notificacao notificacao = notificacaoRepository.findById(notificacaoId)
                 .orElseThrow(() -> new EntityNotFoundException("Notificação não encontrada."));
-
         if (!notificacao.getDestinatario().getEmail().equals(emailUsuarioLogado)) {
             throw new SecurityException("Acesso negado. Você não pode alterar esta notificação.");
         }
-
         notificacao.setLida(true);
         notificacaoRepository.save(notificacao);
     }
 
     @Transactional
     public void marcarTodasComoLidas(String emailUsuarioLogado) {
+        // ... (seu código aqui, está correto)
         Usuario destinatario = usuarioRepository.findByEmail(emailUsuarioLogado)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o email: " + emailUsuarioLogado));
-
-        // Usa o novo método do repositório
         List<Notificacao> notificacoesNaoLidas = notificacaoRepository.findByDestinatarioAndLidaIsFalse(destinatario);
-
         if (!notificacoesNaoLidas.isEmpty()) {
             for (Notificacao notificacao : notificacoesNaoLidas) {
-                notificacao.setLida(true); // O campo 'lida' existe na sua entidade
+                notificacao.setLida(true);
             }
             notificacaoRepository.saveAll(notificacoesNaoLidas);
         }

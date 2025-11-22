@@ -30,6 +30,12 @@ public class Projeto {
     private Integer maxMembros = 50; // Limite de membros no grupo
     private Boolean grupoPrivado = false; // Se true, apenas por convite
 
+    // ✅ NOVO CAMPO ADICIONADO
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "projeto_links", joinColumns = @JoinColumn(name = "projeto_id"))
+    @Column(name = "link")
+    private List<String> linksUteis;
+
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL)
     private List<MensagemGrupo> mensagens;
 

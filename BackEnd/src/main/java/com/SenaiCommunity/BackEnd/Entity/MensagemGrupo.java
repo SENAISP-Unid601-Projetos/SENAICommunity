@@ -1,36 +1,42 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
+@Builder
 public class MensagemGrupo {
-
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // ✅ CRÍTICO PARA O AUTO_INCREMENT NO MYSQL
     private Long id;
 
     @ManyToOne
-    private Usuario autor;
-
-    @ManyToOne
+    @JoinColumn(name = "projeto_id")
+    @JsonBackReference
     private Projeto projeto;
 
+    @ManyToOne
+    @JoinColumn(name = "autor_id")
+    private Usuario autor; // Pode ser nulo para mensagens de sistema
+
+    @Column(columnDefinition = "TEXT")
     private String conteudo;
 
-    private LocalDateTime dataEnvio = LocalDateTime.now();
+    private LocalDateTime dataEnvio;
 
-    @Transient // não persistido diretamente no banco
-    private String autorUsername;
+    private LocalDateTime dataEdicao;
+
+    // Método de conveniência para verificar o autor (usado nos services)
+    public String getAutorUsername() {
+        return (this.autor != null) ? this.autor.getEmail() : null;
+    }
 }
-

@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/postagem")
@@ -29,18 +30,28 @@ public class PostagemController {
     private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/upload-mensagem")
-    public ResponseEntity<PostagemSaidaDTO> uploadComMensagem(
-            @RequestPart("postagem") PostagemEntradaDTO dto,
-            @RequestPart(value = "arquivos", required = false) List<MultipartFile> arquivos,
-            Principal principal) throws IOException {
+    public ResponseEntity<?> uploadComMensagem( // ✅ Alterado para ResponseEntity<?>
+                                                @RequestPart("postagem") PostagemEntradaDTO dto,
+                                                @RequestPart(value = "arquivos", required = false) List<MultipartFile> arquivos,
+                                                Principal principal) { // ✅ Removido 'throws IOException'
 
-        PostagemSaidaDTO postagemCriada = postagemService.criarPostagem(principal.getName(), dto, arquivos);
+        // ✅ Bloco try-catch adicionado
+        try {
+            PostagemSaidaDTO postagemCriada = postagemService.criarPostagem(principal.getName(), dto, arquivos);
 
-        // Garantir que os comentários venham ordenados (destacados primeiro, depois por data)
-        postagemCriada = postagemService.ordenarComentarios(postagemCriada);
+            // Garantir que os comentários venham ordenados (destacados primeiro, depois por data)
+            postagemCriada = postagemService.ordenarComentarios(postagemCriada);
 
-        messagingTemplate.convertAndSend("/topic/publico", postagemCriada);
-        return ResponseEntity.ok(postagemCriada);
+            messagingTemplate.convertAndSend("/topic/publico", postagemCriada);
+            return ResponseEntity.ok(postagemCriada);
+
+        } catch (RuntimeException e) {
+            // Pega a exceção que o PostagemService lança (ex: falha no upload do Cloudinary)
+            // e retorna uma mensagem de erro clara para o frontend
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao criar postagem (provável falha no upload): " + e.getMessage());
+        }
     }
 
     @PutMapping(path = "/{id}", consumes = "multipart/form-data")
@@ -77,6 +88,20 @@ public class PostagemController {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<PostagemSaidaDTO>> buscarPostagensPorUsuario(@PathVariable Long usuarioId) {
+        // 1. Pede ao service (que você não enviou, mas sei que existe)
+        //    para buscar as postagens usando o novo método do repositório.
+        List<PostagemSaidaDTO> postagens = postagemService.buscarPostagensPorUsuario(usuarioId);
+
+        // 2. É uma boa prática garantir que os comentários de CADA postagem
+        //    também venham ordenados, assim como você faz nos outros endpoints.
+        List<PostagemSaidaDTO> postagensOrdenadas = postagens.stream()
+                .map(postagemService::ordenarComentarios)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(postagensOrdenadas);
     }
 
     @DeleteMapping("/{id}")

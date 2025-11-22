@@ -2,15 +2,25 @@ package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.ProjetoDTO;
 import com.SenaiCommunity.BackEnd.Entity.ProjetoMembro;
-import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
+import com.SenaiCommunity.BackEnd.Entity.Usuario;
+import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import com.SenaiCommunity.BackEnd.Service.ProjetoService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.core.io.Resource; // Não é mais necessário
+// import org.springframework.core.io.UrlResource; // Não é mais necessário
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+// import java.nio.file.Files; // Não é mais necessário
+// import java.nio.file.Path; // Não é mais necessário
+// import java.nio.file.Paths; // Não é mais necessário
+import java.security.Principal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +31,12 @@ public class ProjetoController {
     @Autowired
     private ProjetoService projetoService;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    // ❌ UPLOAD_DIR E ENDPOINT /imagens REMOVIDOS
+    // private static final String UPLOAD_DIR = "uploads/projeto-pictures/";
+
     @GetMapping
     public ResponseEntity<List<ProjetoDTO>> listarTodos() {
         List<ProjetoDTO> lista = projetoService.listarTodos();
@@ -29,10 +45,30 @@ public class ProjetoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProjetoDTO> buscarPorId(@PathVariable Long id) {
-        ProjetoDTO dto = projetoService.buscarPorId(id);
-        return ResponseEntity.ok(dto);
+        try {
+            ProjetoDTO dto = projetoService.buscarPorId(id);
+            return ResponseEntity.ok(dto);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
+    @GetMapping("/meus-projetos")
+    public ResponseEntity<List<ProjetoDTO>> listarMeusProjetos(Principal principal) {
+        if (principal == null || principal.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try {
+            List<ProjetoDTO> projetos = projetoService.listarMeusProjetos(principal.getName());
+            return ResponseEntity.ok(projetos);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(List.of());
+        } catch (Exception e) {
+            System.err.println("[ERROR] Erro ao listar meus projetos: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> criar(
@@ -43,109 +79,145 @@ public class ProjetoController {
             @RequestParam Long autorId,
             @RequestParam(required = false) List<Long> professorIds,
             @RequestParam(required = false) List<Long> alunoIds,
+            @RequestParam(required = false) List<String> linksUteis,
             @RequestPart(required = false) MultipartFile foto) {
         try {
-            if (foto != null && !foto.isEmpty()) {
-                System.out.println("[DEBUG] Recebendo upload de imagem: " + foto.getOriginalFilename());
-            }
-
             ProjetoDTO dto = new ProjetoDTO();
             dto.setTitulo(titulo);
             dto.setDescricao(descricao);
             dto.setMaxMembros(maxMembros);
             dto.setGrupoPrivado(grupoPrivado);
             dto.setAutorId(autorId);
-            dto.setProfessorIds(professorIds);
-            dto.setAlunoIds(alunoIds);
-
+            dto.setProfessorIds(professorIds != null ? professorIds : Collections.emptyList());
+            dto.setAlunoIds(alunoIds != null ? alunoIds : Collections.emptyList());
+            dto.setLinksUteis(linksUteis != null ? linksUteis : Collections.emptyList());
 
             ProjetoDTO salvo = projetoService.salvar(dto, foto);
-
-            return ResponseEntity.ok(Map.of(
-                    "message", "Projeto criado com sucesso! Convites enviados automaticamente para professores e alunos.",
-                    "projeto", salvo
-            ));
-        }catch (ConteudoImproprioException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
 
         } catch (Exception e) {
             System.err.println("[ERROR] Erro ao criar projeto: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.badRequest().body("Erro ao criar projeto: " + e.getMessage());
+            // Retorna a mensagem de erro do service (ex: "Upload de vídeos bloqueado")
+            return ResponseEntity.badRequest().body(Map.of("message", "Erro ao criar projeto: " + e.getMessage()));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProjetoDTO> atualizar(@PathVariable Long id, @RequestBody ProjetoDTO dto) {
-        dto.setId(id);
-        // Esta chamada passa 'null' para a foto, o que é correto para
-        // uma atualização que não altera a imagem.
-        ProjetoDTO atualizado = projetoService.salvar(dto, null);
-        return ResponseEntity.ok(atualizado);
+    public ResponseEntity<?> atualizar(
+            @PathVariable Long id,
+            @RequestBody ProjetoDTO dto,
+            Principal principal) {
+        if (principal == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        try {
+            Usuario admin = usuarioRepository.findByEmail(principal.getName())
+                    .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+            dto.setId(id);
+            ProjetoDTO atualizado = projetoService.salvar(dto, null); // Atualiza sem foto
+            return ResponseEntity.ok(atualizado);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            System.err.println("[ERROR] Erro ao atualizar projeto " + id + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("message", "Erro ao atualizar projeto: " + e.getMessage()));
+        }
     }
 
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletar(@PathVariable Long id, Principal principal) {
+        if (principal == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        try {
+            Usuario admin = usuarioRepository.findByEmail(principal.getName())
+                    .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+            projetoService.deletar(id, admin.getId());
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            System.err.println("[ERROR] Erro ao deletar projeto " + id + ": " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("message", "Erro interno ao deletar projeto."));
+        }
+    }
+
+
+    // --- Endpoints de Convite ---
+    // (Sem alterações)
     @PostMapping("/{projetoId}/convites")
     public ResponseEntity<?> enviarConvite(
             @PathVariable Long projetoId,
             @RequestParam Long usuarioConvidadoId,
-            @RequestParam Long usuarioConvidadorId) {
+            Principal principal) {
+        if (principal == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         try {
-            if (usuarioConvidadoId <= 0 || usuarioConvidadorId <= 0) {
-                return ResponseEntity.badRequest().body("IDs devem ser números positivos");
-            }
-
-            projetoService.enviarConvite(projetoId, usuarioConvidadoId, usuarioConvidadorId);
+            Usuario convidador = usuarioRepository.findByEmail(principal.getName())
+                    .orElseThrow(() -> new EntityNotFoundException("Usuário convidador não encontrado"));
+            projetoService.enviarConvite(projetoId, usuarioConvidadoId, convidador.getId());
             return ResponseEntity.ok(Map.of("message", "Convite enviado com sucesso!"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (EntityNotFoundException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+            System.err.println("[ERROR] Erro ao enviar convite: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("message", "Erro interno ao enviar convite."));
         }
     }
 
     @PostMapping("/convites/{conviteId}/aceitar")
-    public ResponseEntity<?> aceitarConvite(
-            @PathVariable Long conviteId,
-            @RequestParam Long usuarioId) {
+    public ResponseEntity<?> aceitarConvite(@PathVariable Long conviteId, Principal principal) {
+        if (principal == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         try {
-            projetoService.aceitarConvite(conviteId, usuarioId);
-            return ResponseEntity.ok(Map.of("message", "Convite aceito com sucesso! Você agora faz parte do grupo."));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Usuario usuario = usuarioRepository.findByEmail(principal.getName())
+                    .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+            projetoService.aceitarConvite(conviteId, usuario.getId());
+            return ResponseEntity.ok(Map.of("message", "Convite aceito com sucesso!"));
+        } catch (EntityNotFoundException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+            System.err.println("[ERROR] Erro ao aceitar convite: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("message", "Erro interno ao aceitar convite."));
         }
     }
 
-    @PostMapping("/convites/{conviteId}/recusar")
-    public ResponseEntity<?> recusarConvite(
-            @PathVariable Long conviteId,
-            @RequestParam Long usuarioId) {
+    @DeleteMapping("/convites/{conviteId}/recusar")
+    public ResponseEntity<?> recusarOuCancelarConvite(@PathVariable Long conviteId, Principal principal) {
+        if (principal == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         try {
-            projetoService.recusarConvite(conviteId, usuarioId);
-            return ResponseEntity.ok(Map.of("message", "Convite recusado com sucesso."));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Usuario usuario = usuarioRepository.findByEmail(principal.getName())
+                    .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+            projetoService.recusarConvite(conviteId, usuario.getId());
+            return ResponseEntity.ok(Map.of("message", "Ação concluída com sucesso."));
+        } catch (EntityNotFoundException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+            System.err.println("[ERROR] Erro ao recusar/cancelar convite: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("message", "Erro interno ao processar convite."));
         }
     }
 
+    // --- Endpoints de Membros ---
+    // (Sem alterações)
     @DeleteMapping("/{projetoId}/membros/{membroId}")
     public ResponseEntity<?> expulsarMembro(
             @PathVariable Long projetoId,
             @PathVariable Long membroId,
-            @RequestParam Long adminId) {
+            Principal principal) {
+        if (principal == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         try {
-            projetoService.expulsarMembro(projetoId, membroId, adminId);
-            return ResponseEntity.ok(Map.of("message", "Membro expulso do grupo com sucesso!"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Usuario admin = usuarioRepository.findByEmail(principal.getName())
+                    .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+            projetoService.expulsarMembro(projetoId, membroId, admin.getId());
+            return ResponseEntity.ok(Map.of("message", "Membro expulso com sucesso!"));
+        } catch (EntityNotFoundException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+            System.err.println("[ERROR] Erro ao expulsar membro: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("message", "Erro interno ao expulsar membro."));
         }
     }
 
@@ -154,56 +226,30 @@ public class ProjetoController {
             @PathVariable Long projetoId,
             @PathVariable Long membroId,
             @RequestParam String role,
-            @RequestParam Long adminId) {
+            Principal principal) {
+        if (principal == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         try {
             ProjetoMembro.RoleMembro novaRole;
             try {
                 novaRole = ProjetoMembro.RoleMembro.valueOf(role.toUpperCase());
             } catch (IllegalArgumentException e) {
-                return ResponseEntity.badRequest().body("Role inválida. Use: ADMIN, MODERADOR ou MEMBRO");
+                return ResponseEntity.badRequest().body(Map.of("message", "Role inválida. Use: ADMIN, MODERADOR ou MEMBRO"));
             }
-
-            projetoService.alterarPermissao(projetoId, membroId, novaRole, adminId);
+            Usuario admin = usuarioRepository.findByEmail(principal.getName())
+                    .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+            projetoService.alterarPermissao(projetoId, membroId, novaRole, admin.getId());
             return ResponseEntity.ok(Map.of("message", "Permissão alterada com sucesso!"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (EntityNotFoundException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+            System.err.println("[ERROR] Erro ao alterar permissão: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("message", "Erro interno ao alterar permissão."));
         }
     }
 
-    @PutMapping("/{projetoId}/info")
-    public ResponseEntity<?> atualizarInfoGrupo(
-            @PathVariable Long projetoId,
-            @RequestParam(required = false) String titulo,
-            @RequestParam(required = false) String descricao,
-            @RequestParam(required = false) String imagemUrl,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) Integer maxMembros,
-            @RequestParam(required = false) Boolean grupoPrivado,
-            @RequestParam Long adminId) {
-        try {
-            projetoService.atualizarInfoGrupo(projetoId, titulo, descricao, imagemUrl, status, maxMembros, grupoPrivado, adminId);
-            return ResponseEntity.ok(Map.of("message", "Informações do grupo atualizadas com sucesso!"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
-        }
+    @GetMapping("/participando/contagem/{usuarioId}")
+    public ResponseEntity<Long> contarProjetos(@PathVariable Long usuarioId) {
+        long count = projetoService.contarProjetosParticipando(usuarioId);
+        return ResponseEntity.ok(count);
     }
-
-    @DeleteMapping("/{projetoId}/info")
-    public ResponseEntity<?> deletarProjeto(
-            @PathVariable Long projetoId,
-            @RequestParam Long adminId) {
-        try {
-            projetoService.deletar(projetoId, adminId);
-            return ResponseEntity.ok(Map.of("message", "Projeto deletado com sucesso! Todos os membros foram removidos."));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
-        }
-    }
-
 }

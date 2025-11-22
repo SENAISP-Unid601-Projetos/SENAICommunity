@@ -1,0 +1,368 @@
+/* src/components/Layout/Topbar.css (COMPLETO E ATUALIZADO) */
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem; /* Reduzido padding lateral */
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky; /* Mantém no topo */
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra mais sutil */
+    height: 70px; /* Altura fixa para cálculo em outros lugares */
+    box-sizing: border-box;
+}
+
+.header-left { display: flex; align-items: center; gap: 1rem; }
+
+/* Link do logo */
+.logo-link { text-decoration: none; }
+
+.logo {
+    font-size: 1.4rem; /* Pouco menor */
+    font-weight: 700;
+    color: var(--text-primary); /* Cor base */
+    white-space: nowrap; /* Impede quebra de linha */
+    margin: 0; /* ✅ CORREÇÃO: Remove margem do h1 para alinhar com o hamburger */
+}
+.logo .highlight { color: var(--highlight); } /* Cor SENAI */
+.logo span:not(.highlight) { color: var(--accent-primary); } /* Cor Community */
+
+
+.search { position: relative; flex: 1; /* Ocupa mais espaço */ max-width: 450px; /* Limita largura máxima */ margin: 0 1rem; /* Adiciona margem */ }
+.search svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+.search input {
+    width: 100%;
+    padding: 0.65rem 1rem 0.65rem 2.75rem; /* Ajuste padding */
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color); /* Adiciona borda sutil */
+    border-radius: 8px; /* Menos arredondado */
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+.search input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+}
+
+/* Wrapper para os ícones da direita e menu de usuário */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Gap padrão (será sobrescrito no mobile) */
+}
+
+.nav-icons { display: flex; align-items: center; gap: 0.75rem; /* Aumenta gap */ }
+
+/* Estilo base para todos os ícones da NAV, incluindo o de tema */
+.nav-icon, .theme-toggle-button {
+    position: relative;
+    padding: 0.75rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-secondary);
+    display: flex; /* Para centralizar o ícone */
+    align-items: center;
+    justify-content: center;
+    width: 40px; /* Tamanho fixo */
+    height: 40px; /* Tamanho fixo */
+    box-sizing: border-box;
+}
+.nav-icon:hover, .theme-toggle-button:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary); /* Muda cor no hover */
+}
+.nav-icon svg, .theme-toggle-button svg { font-size: 1.1rem; /* Tamanho do ícone */ }
+
+.badge {
+    position: absolute;
+    top: 4px; /* Ajuste posição */
+    right: 4px; /* Ajuste posição */
+    background-color: var(--danger);
+    color: white;
+    border-radius: 50%;
+    width: 18px; /* Pouco maior */
+    height: 18px; /* Pouco maior */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem; /* Maior */
+    font-weight: 500; /* Normal */
+    border: 1px solid var(--bg-secondary); /* Borda para destacar */
+}
+
+/* --- User Dropdown --- */
+.user-dropdown { 
+    position: relative; 
+    margin-left: 0; /* Margem removida */
+}
+
+.user {
+    display: flex; align-items: center; gap: 0.75rem; /* Aumenta gap */
+    padding: 0.5rem 0.75rem; /* Ajuste padding */
+    border-radius: 20px; cursor: pointer; transition: var(--transition);
+    border: 1px solid transparent; /* Para efeito de hover */
+}
+.user:hover { background-color: var(--bg-tertiary); border-color: var(--border-color); }
+
+.profile-pic { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+.profile-pic img { width: 100%; height: 100%; object-fit: cover; }
+
+.username-display {
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap; /* Impede quebra de nome */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px; /* Limita largura do nome */
+}
+
+.dropdown-arrow {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+}
+.dropdown-arrow.open {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    display: none; /* Escondido por padrão */
+    position: absolute; top: calc(100% + 10px); /* Abaixo do botão com espaço */
+    right: 0; width: 220px; /* Mais largo */
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px; /* Menos arredondado */
+    padding: 0.5rem 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1001; /* Acima de outros elementos */
+    opacity: 0; /* Para animação */
+    transform: translateY(-10px); /* Para animação */
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.dropdown-menu.show {
+    display: block; /* Mostra o menu */
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.dropdown-menu a {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1.25rem; /* Mais padding */
+    color: var(--text-secondary); /* Cor secundária por padrão */
+    text-decoration: none; transition: var(--transition);
+    font-size: 0.9rem;
+}
+.dropdown-menu a svg { width: 16px; text-align: center; } /* Tamanho ícone dropdown */
+.dropdown-menu a:hover { background-color: var(--bg-tertiary); color: var(--text-primary); }
+.dropdown-menu a.danger { color: var(--danger); }
+.dropdown-menu a.danger:hover { background-color: rgba(248, 81, 73, 0.1); } /* Fundo vermelho suave */
+
+
+/* =================================================================== */
+/* === INÍCIO - ESTILOS DE NOTIFICAÇÃO (MELHORADOS) === */
+/* =================================================================== */
+
+.notifications-container {
+    position: relative;
+    cursor: pointer;
+}
+
+.notifications-dropdown {
+    position: absolute;
+    top: 60px; /* Ajuste conforme a altura da sua topbar + folga */
+    right: 0;
+    width: 380px; /* Largura aumentada para caber foto e texto */
+    max-height: 400px; /* Limita a altura */
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+}
+
+.notifications-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0; /* Impede que o header encolha */
+}
+
+.notifications-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.notifications-list {
+    overflow-y: auto;
+    flex-grow: 1; /* Faz a lista ocupar o espaço disponível */
+}
+
+/* --- O Item de Notificação Individual --- */
+.notification-item {
+    display: flex;
+    align-items: flex-start; /* Alinha ao topo (melhor que 'center' para textos longos) */
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color-light); /* Cor de borda mais suave */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    position: relative; /* Para o indicador "não lido" */
+}
+
+.notification-item:hover {
+    background-color: var(--bg-tertiary); /* Fundo um pouco mais escuro no hover */
+}
+
+.notification-item:last-child {
+    border-bottom: none; /* Remove a borda do último item */
+}
+
+/* --- A Foto do Remetente --- */
+.notification-sender-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+    object-fit: cover;
+    flex-shrink: 0; /* Impede que a imagem encolha */
+    background-color: var(--bg-tertiary); /* Cor de fundo caso a imagem falhe */
+}
+
+/* --- O Conteúdo (Texto e Data) --- */
+.notification-content {
+    flex-grow: 1;
+    /* Evita que o texto vaze para a área do "ponto azul" */
+    /* Ajuste a largura se o indicador for muito largo */
+    width: calc(100% - 70px);
+}
+
+.notification-text {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary); /* Cor mais suave para a mensagem */
+    line-height: 1.4;
+    word-wrap: break-word; /* Quebra de linha */
+}
+
+/* --- O Nome em negrito --- */
+.notification-text strong {
+    font-weight: 600;
+    color: var(--text-primary); /* Cor principal para o nome */
+}
+
+.notification-time {
+    font-size: 0.75rem;
+    color: var(--text-tertiary); /* Cor mais sutil para a data */
+    margin-top: 4px;
+}
+
+/* --- Indicador de Não Lido (Ponto Azul) --- */
+.unread-indicator {
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-primary); /* Azul */
+    border-radius: 50%;
+    margin-left: 10px;
+    align-self: center; /* Centraliza o ponto verticalmente */
+    flex-shrink: 0;
+}
+
+/* --- Estilo para o item "não lido" (fundo sutil) --- */
+.notification-item.unread {
+    /* Define uma variável de cor no seu :root se preferir */
+    background-color: rgba(88, 166, 255, 0.05);
+}
+.notification-item.unread:hover {
+    background-color: rgba(88, 166, 255, 0.1); /* Um pouco mais forte no hover */
+}
+
+
+.no-notifications {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* ================================================================= */
+/* === FIM - NOVOS ESTILOS DE NOTIFICAÇÃO === */
+/* ================================================================= */
+
+
+/* --- Estilos do Hamburger (do passo anterior) --- */
+.hamburger-btn {
+    display: none; /* Escondido no desktop */
+    font-size: 1.1rem;
+    padding: 0.75rem;
+    /* Reutiliza estilos do .nav-icon */
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+.hamburger-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+
+/* --- RESPONSIVIDADE (COM MODIFICAÇÕES) --- */
+@media (max-width: 768px) {
+    .topbar { padding: 0.5rem 1rem; }
+    
+    .hamburger-btn {
+        display: flex; /* Mostra o hamburger */
+    }
+
+    .search { display: none; } 
+    .username-display { display: none; } 
+    .user { padding: 0.5rem; } 
+    .nav-icons { gap: 0.25rem; } 
+
+    /* Define o gap do novo wrapper da direita */
+    .header-right {
+        gap: 0.25rem;
+    }
+
+    /* Esconde os ícones marcados */
+    .nav-icon.hide-on-mobile {
+        display: none;
+    }
+
+    .notifications-dropdown {
+        width: 320px; 
+        top: 60px; 
+    }
+}
+.notification-message-preview {
+  font-style: italic;
+  color: var(--text-color-secondary);
+  margin-left: 4px;
+  /* Garante que a prévia quebre a linha corretamente */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limita a 2 linhas */
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+/* Ajusta o texto da notificação de mensagem para ficar em coluna */
+.notification-item:has(.notification-message-preview) .notification-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}

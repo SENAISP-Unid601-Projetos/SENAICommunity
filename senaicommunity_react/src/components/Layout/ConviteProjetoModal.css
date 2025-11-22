@@ -1,0 +1,194 @@
+/* src/components/Layout/ConviteProjetoModal.css (NOVO E MELHORADO) */
+
+/* Reutilizando estilos globais do modal-overlay */
+.modal-overlay.convite-modal-overlay {
+    z-index: 1050; /* Garante que fique no topo */
+    backdrop-filter: blur(4px);
+}
+
+.convite-modal-content {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    width: 90%;
+    max-width: 450px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    /* Animação de entrada */
+    transform: scale(0.95) translateY(10px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-overlay.visible .convite-modal-content {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+/* --- Botão de Fechar (X) --- */
+.convite-modal-close-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: var(--transition);
+}
+.convite-modal-close-btn:hover {
+    background-color: var(--bg-quaternary);
+    color: var(--text-primary);
+    transform: rotate(90deg);
+}
+
+/* --- Cabeçalho e Foto do Remetente (Melhoria Visual) --- */
+.convite-modal-header {
+    padding: 2rem 2rem 1.5rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--bg-tertiary); /* Fundo claro para contraste */
+    border-bottom: 1px solid var(--border-color);
+}
+
+.convite-remetente-foto {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    /* Borda destacada */
+    border: 3px solid var(--accent-primary);
+    box-shadow: 0 0 0 5px var(--bg-secondary); /* Borda falsa para destacar na borda do modal */
+}
+
+.convite-title {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+}
+.convite-title .highlight-text {
+    font-weight: 700;
+    color: var(--highlight); /* Cor destaque (SENAI) */
+}
+
+/* --- Corpo do Modal --- */
+.convite-modal-body {
+    padding: 1.5rem 2rem;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.convite-modal-body .icon-container {
+    color: var(--accent-primary); /* Azul */
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+    animation: bounceIn 0.8s ease-out;
+}
+
+.convite-modal-body p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.convite-projeto-nome {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    margin: 0.5rem 0 1rem 0;
+}
+
+.convite-error {
+    color: var(--danger);
+    background-color: var(--danger-color-light);
+    border: 1px solid var(--danger);
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+/* --- Rodapé e Ações --- */
+.convite-modal-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    background-color: var(--bg-primary); /* Fundo escuro para os botões */
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.btn-convite {
+    flex: 1;
+    padding: 0.8rem 1.4rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-convite:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-convite.btn-recusar {
+    background-color: var(--bg-quaternary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+.btn-convite.btn-recusar:hover:not(:disabled) {
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-convite.btn-aceitar {
+    background-color: var(--success);
+    color: white;
+}
+.btn-convite.btn-aceitar:hover:not(:disabled) {
+    background-color: #269c40; /* Verde mais escuro */
+}
+
+/* Animação para o ícone */
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.1); }
+  75% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+    .convite-modal-content {
+        padding: 0;
+    }
+    .convite-modal-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+    .convite-modal-header {
+        padding: 1.5rem 1rem 1rem 1rem;
+    }
+}

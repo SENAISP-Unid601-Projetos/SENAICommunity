@@ -1,0 +1,58 @@
+.ia-conversation-container {
+    background-color: var(--background-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+}
+
+.ia-conversation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.ia-conversation-header p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.ia-conversation-header button {
+    background: none;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: 5px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.ia-conversation-log {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color-light);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ia-log-message {
+    font-size: 0.9rem;
+}
+
+.ia-log-message strong {
+    color: var(--text-primary);
+    margin-right: 0.5rem;
+}
+
+.ia-log-message p {
+    margin: 0;
+    display: inline;
+    color: var(--text-secondary);
+}
+
+.ia-log-message.ia strong {
+    color: var(--success-color);
+}

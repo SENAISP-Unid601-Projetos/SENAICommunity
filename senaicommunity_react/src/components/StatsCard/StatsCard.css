@@ -1,0 +1,39 @@
+.stats-card-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: var(--bg-secondary); /* Usa a cor do seu tema */
+    padding: 15px;
+    border-radius: 12px;
+    margin: 15px 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.stat-number {
+    font-size: 1.2rem;
+    color: var(--text-primary); /* Cor principal do texto (branco no dark mode) */
+    font-weight: bold;
+}
+
+/* Linha divisória vertical */
+.stat-divider {
+    width: 1px;
+    height: 30px;
+    background-color: var(--border-color);
+    opacity: 0.5;
+}

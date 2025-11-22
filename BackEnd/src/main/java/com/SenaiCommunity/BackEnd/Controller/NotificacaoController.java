@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/notificacoes")
-@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR') or hasRole('ADMIN')")
+@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR')")
 public class NotificacaoController {
 
     @Autowired
