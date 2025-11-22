@@ -44,12 +44,20 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
                 String authHeader = authorization.get(0);
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     String token = authHeader.substring(7);
-                    if (jwtUtil.validarToken(token)) {
-                        String email = jwtUtil.getEmailDoToken(token);
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                        accessor.setUser(authentication);
+
+                    // ✅ MUDANÇA AQUI: Try-Catch para evitar UsernameNotFoundException travar o socket
+                    try {
+                        if (jwtUtil.validarToken(token)) {
+                            String email = jwtUtil.getEmailDoToken(token);
+                            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                            UsernamePasswordAuthenticationToken authentication =
+                                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                            accessor.setUser(authentication);
+                        }
+                    } catch (Exception e) {
+                        // Loga o erro mas não quebra a execução.
+                        // O usuário ficará como 'null' e o WebSocketSecurityConfig vai rejeitar a conexão graciosamente se necessário.
+                        System.out.println("Erro na autenticação do WebSocket: " + e.getMessage());
                     }
                 }
             }

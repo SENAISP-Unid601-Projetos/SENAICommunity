@@ -11,8 +11,15 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
     @Override
     protected void configureInbound(MessageSecurityMetadataSourceRegistry messages) {
         messages
-                .simpTypeMatchers(SimpMessageType.CONNECT).permitAll()
+                // ✅ ADICIONE DISCONNECT e UNSUBSCRIBE AQUI
+                .simpTypeMatchers(
+                        SimpMessageType.CONNECT,
+                        SimpMessageType.DISCONNECT,
+                        SimpMessageType.UNSUBSCRIBE,
+                        SimpMessageType.HEARTBEAT
+                ).permitAll()
                 .simpDestMatchers("/app/**").authenticated()
+                .simpDestMatchers("/user/**", "/topic/**", "/queue/**").authenticated() // É bom proteger as subscrições também
                 .anyMessage().authenticated();
     }
 
