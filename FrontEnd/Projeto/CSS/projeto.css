@@ -252,6 +252,7 @@
 
 /* --- FILTROS --- */
 .projetos-filters select {
+    
     /* 1. Remove o estilo padrão feio do navegador */
     appearance: none;
     -webkit-appearance: none;
@@ -306,7 +307,9 @@
     color: var(--text-primary);
     padding: 10px;
 }
-.search-projetos { flex-grow: 1; position: relative; min-width: 250px; }
+.search-projetos { gap: 1.5rem;          /* Aumentado de 1rem para 1.5rem (Separa os itens) */
+    margin-bottom: 1.5rem; /* Aumentado para afastar dos cards abaixo */
+    flex-wrap: wrap; flex-grow: 1; position: relative; min-width: 250px; }
 .search-projetos input {
     width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem;
     background: var(--bg-secondary); border: 1px solid var(--border-color);
@@ -675,9 +678,13 @@
     .projetos-header { flex-direction: column; align-items: stretch; text-align: center; padding: 1.5rem; }
     .btn-new-project { justify-content: center; width: 100%; margin-top: 0.5rem; }
     
-    .projetos-filters { flex-direction: column; }
-    .search-projetos, .projetos-filters select { width: 100%; }
-
+   .projetos-filters { 
+        flex-direction: column; 
+        gap: 1.2rem; /* Espaço vertical claro entre input e select no celular */
+    }
+    .search-projetos, .projetos-filters select { 
+        width: 100%; 
+    }
     /* Grid vira 1 coluna */
     .projetos-grid { grid-template-columns: 1fr; gap: 1rem; }
 }
@@ -711,4 +718,544 @@
     background: rgba(16, 185, 129, 0.2); 
     color: #34d399; 
     border: 1px solid rgba(16, 185, 129, 0.3); 
+}
+
+/* =================================================================
+   CORREÇÃO DEFINITIVA DOS MODAIS NO MOBILE
+   (Adicione isto no FINAL do arquivo projeto.css)
+================================================================= */
+
+/* Estilo da área de edição de foto */
+.profile-pic-editor {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.profile-pic-editor img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--bg-tertiary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Sobreposição de "Alterar Foto" */
+.pic-editor-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: white;
+    font-size: 0.8rem;
+    pointer-events: none; /* Permite clicar na imagem */
+}
+
+.profile-pic-editor label:hover .pic-editor-overlay {
+    opacity: 1;
+}
+
+/* --- REGRAS ESPECÍFICAS PARA MOBILE (Max 768px) --- */
+@media (max-width: 768px) {
+    
+    /* Força o modal a caber na tela e ter scroll interno */
+    .modal-content {
+        width: 95% !important;      
+        max-width: 95% !important;
+        max-height: 85vh !important; /* Deixa espaço para margens */
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Impede que o container todo role */
+    }
+
+    /* Cabeçalho Fixo no topo */
+    .modal-header {
+        padding: 1rem;
+        flex-shrink: 0; 
+        position: sticky;
+        top: 0;
+        background: var(--bg-secondary);
+        z-index: 10;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    /* Corpo com Scroll (Onde estão os inputs) */
+    /* IMPORTANTE: Isso faz o formulário rolar dentro do modal */
+    #edit-profile-form, 
+    .modal-body {
+        padding: 1rem;
+        overflow-y: auto !important; 
+        flex-grow: 1;     
+        max-height: calc(85vh - 130px); /* Subtrai header e footer aprox */
+    }
+
+    /* Rodapé Fixo embaixo */
+    .modal-footer {
+        padding: 1rem;
+        flex-shrink: 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* Botão Grande para facilitar o toque */
+    .modal-footer button {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    /* Ajuste da foto no mobile */
+    .profile-pic-editor img {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* =================================================================
+   MELHORIA DO BOTÃO CANCELAR (MODAL)
+================================================================= */
+
+#cancel-edit-profile-btn {
+    background-color: transparent;      /* Remove o fundo cinza padrão */
+    border: 1px solid var(--border-color); /* Borda sutil */
+    color: var(--text-secondary);       /* Texto cinza claro */
+    padding: 0.4rem 1rem;               /* Espaçamento interno */
+    border-radius: 6px;                 /* Bordas arredondadas */
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    /* Garante alinhamento vertical do texto */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Efeito ao passar o mouse (fica mais claro) */
+#cancel-edit-profile-btn:hover {
+    color: var(--text-primary);        /* Texto fica branco */
+    border-color: var(--text-secondary); /* Borda fica mais visível */
+    background-color: rgba(255, 255, 255, 0.05); /* Fundo leve */
+}
+
+/* Ajuste específico para não ficar colado no mobile */
+@media (max-width: 768px) {
+    #cancel-edit-profile-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* =================================================================
+   EFEITOS DE CARREGAMENTO (SPINNER) - PADRÃO BUSCAR_AMIGOS
+================================================================= */
+
+/* Container para grids com loading */
+.projetos-grid-container {
+    position: relative;
+    min-height: 200px;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(88, 166, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--accent-primary);
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Estados de Carregamento */
+.results-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    z-index: 10;
+    text-align: center;
+    padding: 2rem;
+}
+
+.results-loading p {
+    color: var(--text-secondary);
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+
+/* Estados Vazios */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+    margin-top: 0.5rem;
+}
+
+/* Loading para botões */
+.btn.loading {
+    color: transparent !important;
+    position: relative;
+    pointer-events: none;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    border-top-color: currentColor;
+    animation: spin 1s ease infinite;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Loading para elementos de perfil */
+.user-info-loading, .topbar-user-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+    z-index: 5;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.user-info.loaded .user-info-loading,
+.user.loaded .topbar-user-loading {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* =================================================================
+   RESPONSIVIDADE PARA LOADING
+================================================================= */
+@media (max-width: 768px) {
+    .results-loading {
+        padding: 1.5rem;
+    }
+    
+    .loading-spinner {
+        width: 32px;
+        height: 32px;
+        border-width: 3px;
+    }
+    
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+    
+    .empty-state i {
+        font-size: 2.5rem;
+    }
+}
+
+/* =================================================================
+   ESTILO DO MODAL DE DETALHES (PREVIEW DO PROJETO)
+================================================================= */
+
+/* 1. Layout Geral do Preview */
+.project-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* 2. Imagem de Capa (Maior e mais destacada) */
+.preview-image {
+    width: 100%;
+    height: 220px !important; /* Força altura fixa elegante */
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    margin-bottom: 0.5rem !important;
+}
+
+/* 3. Cabeçalho (Título e Status) */
+.preview-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.preview-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin: 0;
+}
+
+/* Badge de Status maior */
+.preview-header .projeto-status {
+    align-self: flex-start;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+}
+
+/* 4. Seções de Texto (Descrição, Info, etc) */
+.preview-section h4 {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+    border-left: 3px solid var(--accent-primary); /* Detalhe visual na esquerda */
+    padding-left: 10px;
+}
+
+.preview-section p {
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+/* 5. Grid de Informações (Transforma a lista em caixinhas) */
+.preview-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 colunas */
+    gap: 1rem;
+}
+
+.info-item {
+    background: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.info-item strong {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.info-item span {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* 6. Tecnologias e Membros */
+.preview-tags, .preview-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.preview-tags .tech-tag {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.preview-members img {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--bg-secondary);
+}
+
+.no-tech, .no-members {
+    color: var(--text-tertiary);
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* --- AJUSTES MOBILE ESPECÍFICOS (Melhoria do Modal) --- */
+@media (max-width: 768px) {
+    /* Garante que o modal use bem a tela do celular */
+    .modal-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        max-height: 90vh !important;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+        overflow-y: auto; /* Scroll suave no conteúdo */
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        
+        /* Botões lado a lado */
+        display: flex;
+        gap: 1rem;
+    }
+
+    .modal-footer button {
+        flex: 1; /* Botões ocupam 50% cada */
+        height: 48px; /* Altura boa para toque */
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Botão Fechar mais discreto (Ghost Button) */
+    .modal-footer .btn-secondary {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+}
+
+/* 1. Correção do Spinner do Menu Superior (Estava deslocado) */
+.topbar-user-loading .loading-spinner {
+    width: 20px;       /* Menor para caber na bolinha */
+    height: 20px;
+    border-width: 2px; /* Borda mais fina */
+    margin-bottom: 0;  /* REMOVE A MARGEM que empurrava pra cima */
+}
+
+/* 2. Correção da Lista de Amigos (Estava "flutuando" errado) */
+.friend-list {
+    position: relative; /* Cria o contexto para o loader */
+    min-height: 120px;  /* Garante altura mínima para o loading caber */
+}
+
+/* Força o loader da lista de amigos a se comportar como bloco normal, não overlay absoluto */
+.friend-list .results-loading {
+    position: absolute !important; /* Fixa dentro do pai (.friend-list) */
+    inset: 0;                      /* Ocupa todo o espaço do pai */
+    background: var(--bg-secondary);
+    border: none;                  /* Remove borda extra se houver conflito */
+    padding: 1rem;
+    z-index: 5;
+    
+    /* Garante centralização */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ajusta o tamanho do spinner dentro da lista de amigos */
+.friend-list .loading-spinner {
+    width: 24px;
+    height: 24px;
+    border-width: 3px;
+    margin-bottom: 0.5rem; /* Margem menor que a padrão */
+}
+
+@media (max-width: 768px) {
+    
+    /* Esconde a barra de pesquisa do topo para dar espaço aos ícones */
+    .topbar .search {
+        display: none !important; 
+    }
+
+    /* Garante que o container de ícones tenha espaço e alinhamento */
+    .nav-icons {
+        display: flex !important;
+        gap: 10px;
+        margin-right: 5px;
+        margin-left: auto; /* Empurra para a direita */
+    }
+
+    /* Força o ícone de notificação a aparecer */
+    #notifications-icon {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        color: var(--text-primary);
+    }
+
+    /* Ajuste do Dropdown de Usuário para o toque */
+    .user-dropdown {
+        margin-left: 5px;
+        position: relative; /* Importante para o menu sair daqui */
+    }
+
+    /* Aumenta a área de toque da foto de perfil */
+    .user-dropdown .user {
+        padding: 5px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent; /* Remove flash azul no Android */
+    }
+
+    /* Posicionamento fixo e seguro do menu dropdown */
+    .dropdown-menu {
+        position: fixed; /* Fixado na tela */
+        top: 70px;       /* Abaixo do header */
+        right: 10px;     /* Canto direito */
+        width: 220px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        border-radius: 12px;
+        display: none; /* Começa escondido */
+        z-index: 9999;
+    }
+
+    /* Aumenta botões do menu para facilitar o toque */
+    .dropdown-menu a {
+        padding: 14px 16px;
+        font-size: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .dropdown-menu a:last-child { border-bottom: none; }
 }

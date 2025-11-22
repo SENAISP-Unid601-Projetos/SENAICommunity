@@ -766,3 +766,106 @@
     height: 20px;
     border-width: 2px;
 }
+
+/* =================================================================
+   CORREÇÃO DEFINITIVA DOS MODAIS NO MOBILE
+   (Adicione isto no FINAL do arquivo projeto.css)
+================================================================= */
+
+/* Estilo da área de edição de foto */
+.profile-pic-editor {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.profile-pic-editor img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--bg-tertiary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Sobreposição de "Alterar Foto" */
+.pic-editor-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: white;
+    font-size: 0.8rem;
+    pointer-events: none; /* Permite clicar na imagem */
+}
+
+.profile-pic-editor label:hover .pic-editor-overlay {
+    opacity: 1;
+}
+
+/* --- REGRAS ESPECÍFICAS PARA MOBILE (Max 768px) --- */
+@media (max-width: 768px) {
+    
+    /* Força o modal a caber na tela e ter scroll interno */
+    .modal-content {
+        width: 95% !important;      
+        max-width: 95% !important;
+        max-height: 85vh !important; /* Deixa espaço para margens */
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Impede que o container todo role */
+    }
+
+    /* Cabeçalho Fixo no topo */
+    .modal-header {
+        padding: 1rem;
+        flex-shrink: 0; 
+        position: sticky;
+        top: 0;
+        background: var(--bg-secondary);
+        z-index: 10;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    /* Corpo com Scroll (Onde estão os inputs) */
+    /* IMPORTANTE: Isso faz o formulário rolar dentro do modal */
+    #edit-profile-form, 
+    .modal-body {
+        padding: 1rem;
+        overflow-y: auto !important; 
+        flex-grow: 1;     
+        max-height: calc(85vh - 130px); /* Subtrai header e footer aprox */
+    }
+
+    /* Rodapé Fixo embaixo */
+    .modal-footer {
+        padding: 1rem;
+        flex-shrink: 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* Botão Grande para facilitar o toque */
+    .modal-footer button {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    /* Ajuste da foto no mobile */
+    .profile-pic-editor img {
+        width: 100px;
+        height: 100px;
+    }
+}

@@ -243,29 +243,151 @@
         </main>
     </div>
 
-    <!-- Modais (mantidos do original) -->
-    <div id="media-viewer-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center;">
-        <!-- ... conteúdo do modal ... -->
+  <div id="edit-post-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Editar Publicação</h3>
+        </div>
+        <form id="edit-post-form">
+            <input type="hidden" id="edit-post-id">
+            
+            <textarea id="edit-post-textarea" placeholder="Edite sua publicação..."></textarea>
+            
+            <div class="form-group-files" id="existing-media-section" style="display: none;">
+                <label class="file-label">Mídias Atuais (marque para remover)</label>
+                <div id="edit-existing-media-container"></div>
+            </div>
+
+            <div class="form-group-files">
+                <label for="edit-post-files" class="file-label" style="cursor: pointer;">
+                    <i class="fas fa-plus-circle"></i> Adicionar Novas Mídias
+                </label>
+                <input type="file" id="edit-post-files" multiple accept="image/*,video/*" style="display:none;">
+                <div id="edit-file-preview-container"></div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" id="cancel-edit-post-btn" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <div id="edit-comment-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Comentário</h3>
+            </div>
+            <form id="edit-comment-form">
+                <input type="hidden" id="edit-comment-id">
+                <textarea id="edit-comment-textarea" placeholder="Edite seu comentário..."></textarea>
+                <div class="modal-footer">
+                    <button type="button" id="cancel-edit-comment-btn" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para visualização de mídias em carrossel -->
+    <div id="media-viewer-modal" class="modal-overlay" style="display: none;">
+        <div class="media-viewer-content">
+            <div class="media-viewer-header">
+                <button class="media-viewer-close" id="media-viewer-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="media-carousel">
+                <button class="carousel-btn carousel-prev" id="carousel-prev">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="carousel-container" id="carousel-container">
+                    <!-- As mídias serão inseridas aqui via JavaScript -->
+                </div>
+                <button class="carousel-btn carousel-next" id="carousel-next">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="carousel-indicators" id="carousel-indicators">
+                <!-- Os indicadores serão inseridos aqui via JavaScript -->
+            </div>
+        </div>
     </div>
 
     <div id="edit-profile-modal" class="modal-overlay" style="display: none;">
-        <!-- ... conteúdo do modal ... -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Perfil</h3>
+            </div>
+            <form id="edit-profile-form">
+                <div class="profile-pic-editor">
+                    <label for="edit-profile-pic-input">
+                        <img src="https://via.placeholder.com/100" alt="Foto de Perfil" id="edit-profile-pic-preview">
+                        <div class="pic-editor-overlay">
+                            <i class="fas fa-camera"></i>
+                            <span>Alterar Foto</span>
+                        </div>
+                    </label>
+                    <input type="file" id="edit-profile-pic-input" accept="image/*" style="display: none;">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-profile-name">Nome Completo</label>
+                    <input type="text" id="edit-profile-name">
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-bio">Bio</label>
+                    <textarea id="edit-profile-bio" rows="3" placeholder="Fale um pouco sobre você..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-dob">Data de Nascimento</label>
+                    <input type="date" id="edit-profile-dob">
+                </div>
+
+                <hr class="form-divider">
+
+                <div class="form-group">
+                    <label for="edit-profile-password">Nova Senha (deixe em branco para não alterar)</label>
+                    <input type="password" id="edit-profile-password">
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-password-confirm">Confirmar Nova Senha</label>
+                    <input type="password" id="edit-profile-password-confirm">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-edit-profile-btn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div id="delete-account-modal" class="modal-overlay" style="display: none;">
-        <!-- ... conteúdo do modal ... -->
-    </div>
-
-    <div id="edit-post-modal" class="modal-overlay" style="display: none;">
-        <!-- ... conteúdo do modal ... -->
-    </div>
-
-    <div id="edit-comment-modal" class="modal-overlay" style="display: none;">
-        <!-- ... conteúdo do modal ... -->
-    </div>
-
-    <div id="project-modal" class="modal-overlay" style="display: none;">
-        <!-- ... conteúdo do modal ... -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Excluir Conta</h3>
+            </div>
+            <form id="delete-account-form">
+                <p class="warning-text">
+                    <strong>Atenção!</strong> Esta ação é irreversível. Todos os seus dados, posts e comentários serão
+                    permanentemente apagados.
+                </p>
+                <div class="form-group">
+                    <label for="delete-confirm-password">Para confirmar, digite sua senha atual:</label>
+                    <input type="password" id="delete-confirm-password" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-delete-account-btn">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Excluir Minha Conta Permanentemente</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

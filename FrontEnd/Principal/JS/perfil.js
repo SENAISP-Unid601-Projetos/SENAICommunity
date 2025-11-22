@@ -22,6 +22,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- ELEMENTOS DO DOM ---
   const elements = {
+    // Elementos de Loading (NOVOS)
+    userInfo: document.querySelector('.sidebar .user-info'),
+    topbarUser: document.querySelector('.user-dropdown .user'),
+    userInfoLoading: document.getElementById("user-info-loading"),
+    topbarUserLoading: document.getElementById("topbar-user-loading"),
+
+    // Perfil
     profileName: document.getElementById("profile-name"),
     profileTitle: document.getElementById("profile-title"),
     profilePicImg: document.getElementById("profile-pic-img"),
@@ -63,6 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sidebar: document.getElementById("sidebar"),
     mobileOverlay: document.getElementById("mobile-overlay"),
     sidebarClose: document.getElementById("sidebar-close"),
+    profileMobileMenuToggle: document.getElementById("profile-mobile-menu-toggle"),
     
     // Modais
     editProfileModal: document.getElementById("edit-profile-modal"),
@@ -82,6 +90,19 @@ document.addEventListener("DOMContentLoaded", () => {
     carouselNext: document.getElementById('carousel-next'),
     mediaViewerClose: document.getElementById('media-viewer-close'),
   };
+
+  // --- FUNÇÕES DE LOADING (IGUAL PROJETO.JS) ---
+  function setProfileLoading(isLoading) {
+    if (elements.userInfo && elements.topbarUser) {
+        if (isLoading) {
+            elements.userInfo.classList.remove('loaded');
+            elements.topbarUser.classList.remove('loaded');
+        } else {
+            elements.userInfo.classList.add('loaded');
+            elements.topbarUser.classList.add('loaded');
+        }
+    }
+  }
 
   // --- FUNÇÕES DE TEMA (CLARO/ESCURO) ---
   function setInitialTheme() {
@@ -258,23 +279,34 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- FUNÇÕES DE RESPONSIVIDADE MOBILE ---
   function setupMobileMenu() {
     if (elements.mobileMenuToggle && elements.sidebar && elements.mobileOverlay && elements.sidebarClose) {
-      elements.mobileMenuToggle.addEventListener('click', toggleMobileMenu);
-      elements.sidebarClose.addEventListener('click', toggleMobileMenu);
-      elements.mobileOverlay.addEventListener('click', toggleMobileMenu);
+        const toggleMenu = () => {
+            elements.sidebar.classList.toggle('active');
+            elements.mobileOverlay.classList.toggle('active');
+            document.body.style.overflow = elements.sidebar.classList.contains('active') ? 'hidden' : '';
+        };
+
+        elements.mobileMenuToggle.onclick = toggleMenu;
+        elements.sidebarClose.onclick = toggleMenu;
+        elements.mobileOverlay.onclick = toggleMenu;
     }
   }
 
-  function toggleMobileMenu() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('mobile-overlay');
-
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
-
-    if (sidebar.classList.contains('active')) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+  function setupProfileMobileMenu() {
+    // Menu de 3 pontos no topo do perfil mobile
+    if (elements.profileMobileMenuToggle) {
+      elements.profileMobileMenuToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const urlParams = new URLSearchParams(window.location.search);
+        const profileUserId = urlParams.get("id");
+        const isMyProfile = !profileUserId || (currentUser && profileUserId == currentUser.id);
+        
+        if (isMyProfile && typeof window.openEditProfileModal === 'function') {
+          window.openEditProfileModal();
+        } else {
+            // Se não for meu perfil, poderia abrir opções de reportar/bloquear
+            alert("Opções do perfil");
+        }
+      });
     }
   }
 
@@ -313,21 +345,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function setupProfileMobileMenu() {
-    const profileMobileMenuToggle = document.getElementById("profile-mobile-menu-toggle");
-    if (profileMobileMenuToggle) {
-      profileMobileMenuToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        // Aqui você pode adicionar um menu de contexto específico do perfil
-        // Por enquanto, vamos apenas abrir o menu de edição se for o próprio perfil
-        const urlParams = new URLSearchParams(window.location.search);
-        const profileUserId = urlParams.get("id");
-        const isMyProfile = !profileUserId || profileUserId == currentUser.id;
-        
-        if (isMyProfile && typeof window.openEditProfileModal === 'function') {
-          window.openEditProfileModal();
-        }
-      });
+  function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+
+    if (sidebar.classList.contains('active')) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
   }
 
@@ -339,14 +367,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
 
+    // 1. INICIA O LOADING
+    setProfileLoading(true);
+    setupMobileMenu();
+    setupProfileMobileMenu();
+    setupMobileAccountActions();
+
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const profileUserId = urlParams.get("id");
 
+      // Carrega "Eu"
       const meResponse = await axios.get(`${backendUrl}/usuarios/me`);
       currentUser = meResponse.data;
       window.currentUser = currentUser;
 
+      // Carrega Perfil Alvo
       let fetchUrl = (profileUserId && profileUserId != currentUser.id) 
           ? `${backendUrl}/usuarios/${profileUserId}` 
           : `${backendUrl}/usuarios/me`;
@@ -354,41 +390,41 @@ document.addEventListener("DOMContentLoaded", () => {
       const profileResponse = await axios.get(fetchUrl);
       profileUser = profileResponse.data; 
 
+      // Atualiza UI
       updateUIWithUserData(currentUser); 
       populateProfileData(profileUser); 
       
-      // Configura botões e abas
       configureProfileActions(profileUserId ? profileUserId == currentUser.id : true);
       setupTabNavigation();
 
-      // Busca dados para as abas
-      fetchUserPosts(profileUser.id);
-      fetchProfileFriends(profileUser.id);
-      fetchProfileProjects(profileUser.id);
+      // Carrega Dados Assincronamente
+      await Promise.all([
+          fetchUserPosts(profileUser.id),
+          fetchProfileFriends(profileUser.id),
+          fetchProfileProjects(profileUser.id),
+          fetchFriends(),
+          fetchInitialOnlineFriends(),
+          fetchUserProjectsCount(),
+          fetchNotifications()
+      ]);
 
-      // Inicializa funcionalidades globais
+      // Inicializa Funcionalidades
       connectWebSocket(); 
       setupEventListeners();
       setupCarouselModalEvents();
       setInitialTheme();
-      
-      // Setup responsividade mobile
-      setupMobileMenu();
-      setupMobileAccountActions();
-      setupProfileMobileMenu();
-      
-      // Busca dados globais
-      await fetchFriends();
-      await fetchInitialOnlineFriends();
-      atualizarStatusDeAmigosNaUI();
-      fetchNotifications();
       fetchAndUpdateUnreadCount();
-      fetchUserProjectsCount();
+      
+      // 2. FINALIZA O LOADING
+      setTimeout(() => {
+          setProfileLoading(false);
+      }, 800);
 
     } catch (error) {
       console.error("ERRO NO PERFIL:", error);
+      setProfileLoading(false); // Garante que o loading saia mesmo com erro
       if (error.response && error.response.status === 404) {
-          document.querySelector('.main-content').innerHTML = '<h1 style="text-align: center; margin-top: 2rem;">Usuário não encontrado</h1>';
+          document.querySelector('.profile-page').innerHTML = '<div class="empty-state" style="padding:4rem;"><h1>Usuário não encontrado</h1></div>';
       } else if (error.response && error.response.status === 401) {
           localStorage.removeItem('token');
           window.location.href = 'login.html';
@@ -1357,12 +1393,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Modal de editar perfil
-    if (elements.editProfileBtn) {
-      elements.editProfileBtn.addEventListener("click", openEditProfileModal);
+    const editProfileBtn = document.getElementById("edit-profile-btn");
+    if (editProfileBtn) {
+      editProfileBtn.addEventListener("click", openEditProfileModal);
     }
     
-    if (elements.deleteAccountBtn) {
-      elements.deleteAccountBtn.addEventListener("click", openDeleteAccountModal);
+    const deleteAccountBtn = document.getElementById("delete-account-btn");
+    if (deleteAccountBtn) {
+      deleteAccountBtn.addEventListener("click", openDeleteAccountModal);
     }
     
     // Cancelar edição
