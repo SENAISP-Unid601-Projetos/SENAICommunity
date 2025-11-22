@@ -1,8 +1,7 @@
-// src/pages/Mensagens/Mensagens.jsx (CORRIGIDO)
+// src/pages/Mensagens/Mensagens.jsx (CORRIGIDO FINAL - V2)
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
 import axios from 'axios';
-// ✅ Importação corrigida para .jsx
 import Topbar from '../../components/Layout/Topbar.jsx'; 
 import Sidebar from '../../components/Layout/Sidebar.jsx';
 import Swal from 'sweetalert2';
@@ -16,7 +15,6 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { coldarkDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { useLocation, useNavigate } from 'react-router-dom';
-// ✅ Importação corrigida para .jsx
 import { useWebSocket } from '../../contexts/WebSocketContext.jsx'; 
 import { MentionsInput, Mention } from 'react-mentions';
 import './mentions-style.css';
@@ -29,19 +27,12 @@ import ScheduleMeetingModal from './ScheduleMeetingModal.jsx';
 import SidekickModal from './SidekickModal.jsx';
 import IaConversationDisplay from './IaConversationDisplay.jsx';
 
-// Função helper de imagem (apontando para o avatar padrão)
+// Função helper de imagem
 const getCorrectUserImageUrl = (url, fallbackId) => {
-    const defaultAvatar = 'http://localhost:8080/images/default-avatar.png'; //
-    
-    if (!url) {
-        return defaultAvatar; 
-    }
-    if (url.startsWith('http')) {
-        return url;
-    }
-    if (url.startsWith('/api/arquivos/') || url.startsWith('/images/')) {
-        return `http://localhost:8080${url}`;
-    }
+    const defaultAvatar = 'http://localhost:8080/images/default-avatar.png';
+    if (!url) return defaultAvatar; 
+    if (url.startsWith('http')) return url;
+    if (url.startsWith('/api/arquivos/') || url.startsWith('/images/')) return `http://localhost:8080${url}`;
     return `http://localhost:8080/api/arquivos/${url}`;
 };
 
@@ -57,15 +48,15 @@ const ConversationListItem = ({ conversa, ativa, onClick }) => (
                 className="avatar"
                 alt="avatar"
                 onError={(e) => {
-                e.target.onerror = null; 
-                if (conversa.tipo === 'grupo') {
-                    e.target.src = `https://placehold.co/50/30363d/8b949e?text=${conversa.nome.substring(0, 2)}`;
-                } else {
-                    e.target.src = 'http://localhost:8080/images/default-avatar.png';
-                }
-            }}
-        />
-        {conversa.online && <span className="online-indicator"></span>}
+                    e.target.onerror = null; 
+                    if (conversa.tipo === 'grupo') {
+                        e.target.src = `https://placehold.co/50/30363d/8b949e?text=${conversa.nome.substring(0, 2)}`;
+                    } else {
+                        e.target.src = 'http://localhost:8080/images/default-avatar.png';
+                    }
+                }}
+            />
+            {conversa.online && <span className="online-indicator"></span>}
         </div>
         <div className="convo-info">
             <div className="convo-title">{conversa.nome}</div>
@@ -74,15 +65,15 @@ const ConversationListItem = ({ conversa, ativa, onClick }) => (
     </div>
 );
 
-
 // --- COMPONENTE MessageBubble ---
 const MessageBubble = ({ mensagem, isMe, currentUser, onDeleteClick, onEditClick, onReactClick, onReplyClick, onMarkAsSolution, onVote, onConfirm, onDecline, reactions }) => {
-    // ... (Componente sem alterações, já estava correto) ...
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
     const emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
     useEffect(() => {
+        if (!menuOpen) return;
+
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setMenuOpen(false);
@@ -90,7 +81,7 @@ const MessageBubble = ({ mensagem, isMe, currentUser, onDeleteClick, onEditClick
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    }, [menuOpen]);
     
     const hasBeenEdited = mensagem.dataEdicao && new Date(mensagem.dataEnvio).getTime() !== new Date(mensagem.dataEdicao).getTime();
     const aggregatedReactions = (reactions || []).reduce((acc, emoji) => {
@@ -98,10 +89,12 @@ const MessageBubble = ({ mensagem, isMe, currentUser, onDeleteClick, onEditClick
         if (found) { found.count++; } else { acc.push({ emoji, count: 1 }); }
         return acc;
     }, []);
+
     const handleReact = (emoji) => {
         onReactClick(mensagem, emoji);
         setMenuOpen(false);
     };
+
     const isGrupo = mensagem.tipo === 'grupo';
     const showAuthorInfo = isGrupo && !isMe; 
     const authorPhoto = showAuthorInfo 
@@ -145,43 +138,32 @@ const MessageBubble = ({ mensagem, isMe, currentUser, onDeleteClick, onEditClick
                 );
             }
         }
+        
         const pollRegex = /\[poll\](.+)/;
         const pollMatch = mensagem.conteudo.match(pollRegex);
-
         if (pollMatch) {
             try {
                 const pollData = JSON.parse(pollMatch[1]);
                 return <PollDisplay pollData={pollData} onVote={(optionIndex) => onVote(mensagem, optionIndex)} />;
-            } catch (error) {
-                console.error("Erro ao parsear enquete:", error);
-                return <p className="message-text">Erro ao exibir enquete.</p>;
-            }
+            } catch (error) { return <p className="message-text">Erro ao exibir enquete.</p>; }
         }
 
         const meetingRegex = /\[meeting\](.+)/;
         const meetingMatch = mensagem.conteudo.match(meetingRegex);
-
         if (meetingMatch) {
             try {
                 const meetingData = JSON.parse(meetingMatch[1]);
                 return <MeetingDisplay meetingData={meetingData} onConfirm={() => onConfirm(mensagem, currentUser.nome)} onDecline={() => onDecline(mensagem, currentUser.nome)} />;
-            } catch (error) {
-                console.error("Erro ao parsear reunião:", error);
-                return <p className="message-text">Erro ao exibir reunião.</p>;
-            }
+            } catch (error) { return <p className="message-text">Erro ao exibir reunião.</p>; }
         }
 
         const iaConversationRegex = /\[ia-conversation\](.+)/;
         const iaMatch = mensagem.conteudo.match(iaConversationRegex);
-
         if (iaMatch) {
             try {
                 const conversationData = JSON.parse(iaMatch[1]);
                 return <IaConversationDisplay conversationData={conversationData} authorName={mensagem.nomeAutor} />;
-            } catch (error) {
-                console.error("Erro ao parsear conversa da IA:", error);
-                return <p className="message-text">Erro ao exibir conversa da IA.</p>;
-            }
+            } catch (error) { return <p className="message-text">Erro ao exibir conversa da IA.</p>; }
         }
 
         return <p className="message-text">{mensagem.conteudo}</p>;
@@ -201,7 +183,10 @@ const MessageBubble = ({ mensagem, isMe, currentUser, onDeleteClick, onEditClick
             />
         )}
         <div className="message-bubble">
-            <div className="message-menu-trigger" onClick={() => setMenuOpen(prev => !prev)}>
+            <div className="message-menu-trigger" onClick={(e) => {
+                e.stopPropagation(); 
+                setMenuOpen(prev => !prev);
+            }}>
                 <FontAwesomeIcon icon={faEllipsisV} />
             </div>
             {menuOpen && (
@@ -281,7 +266,6 @@ const MeetingDisplay = ({ meetingData, onConfirm, onDecline }) => {
 
 const PollDisplay = ({ pollData, onVote }) => {
     const totalVotes = pollData.options.reduce((acc, opt) => acc + opt.votes, 0);
-
     return (
         <div className="poll-display">
             <h4>{pollData.question}</h4>
@@ -311,19 +295,12 @@ const groupMessagesByDate = (messages) => {
         const today = new Date();
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
-
         let dayKey;
-        if (date.toDateString() === today.toDateString()) {
-            dayKey = 'Hoje';
-        } else if (date.toDateString() === yesterday.toDateString()) {
-            dayKey = 'Ontem';
-        } else {
-            dayKey = date.toLocaleDateString('pt-BR');
-        }
+        if (date.toDateString() === today.toDateString()) { dayKey = 'Hoje'; }
+        else if (date.toDateString() === yesterday.toDateString()) { dayKey = 'Ontem'; }
+        else { dayKey = date.toLocaleDateString('pt-BR'); }
 
-        if (!groups[dayKey]) {
-            groups[dayKey] = [];
-        }
+        if (!groups[dayKey]) { groups[dayKey] = []; }
         groups[dayKey].push(message);
     });
     return groups;
@@ -339,10 +316,8 @@ const ReplyPreviewBubble = ({ message }) => {
     );
 };
 
-
 // --- COMPONENTE PRINCIPAL DA PÁGINA ---
 const Mensagens = ({ onLogout }) => {
-    // ... (estados não mudam)
     const [conversas, setConversas] = useState([]);
     const [conversaAtiva, setConversaAtiva] = useState(null); 
     const [mensagens, setMensagens] = useState([]);
@@ -354,19 +329,27 @@ const Mensagens = ({ onLogout }) => {
     const [messageToEdit, setMessageToEdit] = useState(null);
     const [isInfoSidebarOpen, setIsInfoSidebarOpen] = useState(false);
     const [replyingTo, setReplyingTo] = useState(null);
-    const [mensagensPage, setMensagensPage] = useState(0);
+    
+    // ✅ NOME CORRETO DA VARIÁVEL DE ESTADO
+    const [mensagensPage, setMensagensPage] = useState(0); 
+    
     const [hasMoreMensagens, setHasMoreMensagens] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    
+    // Modais
     const [isCodeSnippetModalOpen, setIsCodeSnippetModalOpen] = useState(false);
     const [isPollModalOpen, setIsPollModalOpen] = useState(false);
     const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] = useState(false);
     const [isSidekickModalOpen, setIsSidekickModalOpen] = useState(false);
 
-
     const { stompClient, isConnected } = useWebSocket(); 
     const messagesEndRef = useRef(null);
-    const fileInputRef = useRef(null);
     const messagesContainerRef = useRef(null);
+    const fileInputRef = useRef(null);
+    
+    // Referência para controlar o scroll
+    const previousScrollHeightRef = useRef(0);
+
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -379,7 +362,7 @@ const Mensagens = ({ onLogout }) => {
 
     const mentionData = useMemo(() => {
         return conversaAtiva?.membros?.map(membro => ({
-            id: String(membro.id), // ✅ Converte ID para string para evitar erros
+            id: String(membro.id), 
             display: membro.nome,
         })) || [];
     }, [conversaAtiva]);
@@ -388,46 +371,38 @@ const Mensagens = ({ onLogout }) => {
         return mensagens.find(msg => msg.isSolution);
     }, [mensagens]);
 
-    // ... (fetchConversas - Sem alterações, já estava correta) ...
     const fetchConversas = useCallback(async () => {
         setLoadingConversas(true);
         try {
-            const projetosRes = await axios.get('http://localhost:8080/projetos/meus-projetos'); //
+            const projetosRes = await axios.get('http://localhost:8080/projetos/meus-projetos');
             const conversasGrupos = projetosRes.data.map(proj => ({
                 id: proj.id, 
                 nome: proj.titulo,
                 tipo: 'grupo',
-                avatar: proj.imagemUrl 
-                    ? proj.imagemUrl 
-                    : `https://placehold.co/50/30363d/8b949e?text=${proj.titulo.substring(0, 2)}`,
+                avatar: proj.imagemUrl || `https://placehold.co/50/30363d/8b949e?text=${proj.titulo.substring(0, 2)}`,
                 ultimaMensagem: 'Chat do projeto', 
             }));
-            const amigosRes = await axios.get('http://localhost:8080/api/amizades/'); //
+            const amigosRes = await axios.get('http://localhost:8080/api/amizades/');
             const validAmigos = amigosRes.data.filter(amigo => amigo && amigo.idUsuario);
-            const conversasDMs = validAmigos.map(amigo => {
-                const avatarUrl = getCorrectUserImageUrl(amigo.fotoPerfil, amigo.idUsuario);
-                return {
-                    id: amigo.idUsuario, 
-                    nome: amigo.nome,
-                    tipo: 'dm',
-                    avatar: avatarUrl, 
-                    ultimaMensagem: 'Conversa privada', 
-                };
-            });
+            const conversasDMs = validAmigos.map(amigo => ({
+                id: amigo.idUsuario, 
+                nome: amigo.nome,
+                tipo: 'dm',
+                avatar: getCorrectUserImageUrl(amigo.fotoPerfil, amigo.idUsuario), 
+                ultimaMensagem: 'Conversa privada', 
+            }));
             const todasConversas = [...conversasGrupos, ...conversasDMs];
             setConversas(todasConversas);
             return todasConversas; 
         } catch (error) {
             console.error("Erro ao buscar conversas:", error);
-            const status = (error && typeof error === 'object' && 'response' in error && error.response) ? error.response.status : null;
-            if (status === 401) { onLogout(); }
+            if (error.response?.status === 401) onLogout();
             return [];
         } finally {
             setLoadingConversas(false); 
         }
     }, [onLogout]);
 
-    // ... (selecionarConversa - Sem alterações, já estava correta) ...
     const selecionarConversa = useCallback(async (conversa, user, atualizarUrl = true) => {
         if (!conversa) return;
         setConversaAtiva(conversa);
@@ -437,11 +412,13 @@ const Mensagens = ({ onLogout }) => {
         setHasMoreMensagens(true);
         setIsEditModalOpen(false);
         setMessageToEdit(null);
+        
         if (atualizarUrl) {
             const params = new URLSearchParams();
             params.set(conversa.tipo === 'grupo' ? 'grupo' : 'dm', conversa.id);
             navigate(`/mensagens?${params.toString()}`, { replace: true });
         }
+
         try {
             let endpoint = '';
             let conversaAtualizada = { ...conversa };
@@ -456,23 +433,21 @@ const Mensagens = ({ onLogout }) => {
                         membros: projetoRes.data.membros,
                     };
                     setConversaAtiva(conversaAtualizada);
-                } catch (err) {
-                    console.error("Erro ao buscar detalhes do grupo:", err);
-                }
+                } catch (err) { console.error("Erro detalhes grupo:", err); }
             } else {
-                if (!user) { throw new Error("Dados do usuário ainda carregando."); }
                 endpoint = `http://localhost:8080/api/chat/privado/${user.id}/${conversa.id}`;
             }
 
             const mensagensRes = await axios.get(endpoint);
-            const msgsFormatadas = mensagensRes.data.map((msg) => ({
-                ...msg,
-                tipo: conversa.tipo,
-            }));
+            const msgsFormatadas = mensagensRes.data.map((msg) => ({ ...msg, tipo: conversa.tipo }));
             setMensagens(msgsFormatadas);
+            
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView();
+            }, 100);
+
         } catch (error) {
             console.error("Erro ao buscar mensagens:", error);
-            Swal.fire('Erro', 'Não foi possível carregar as mensagens.', 'error');
             setConversaAtiva(null); 
             navigate('/mensagens', { replace: true });
         } finally {
@@ -480,54 +455,51 @@ const Mensagens = ({ onLogout }) => {
         }
     }, [navigate]);
 
-    // ... (useEffect Inicial, useEffect Scroll - Sem alterações) ...
     useEffect(() => {
         document.title = 'Senai Community | Mensagens';
         const token = localStorage.getItem('authToken');
         if (!token) { onLogout(); return; }
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
         const fetchInitialData = async () => {
             try {
-                const userRes = await axios.get('http://localhost:8080/usuarios/me'); //
+                const userRes = await axios.get('http://localhost:8080/usuarios/me');
                 const userData = userRes.data; 
                 setCurrentUser(userData); 
                 const todasConversas = await fetchConversas(); 
+                
                 const params = new URLSearchParams(location.search);
                 const grupoIdQuery = params.get('grupo');
                 const dmIdQuery = params.get('dm');
                 let chatParaAbrir = null;
+
                 if (grupoIdQuery && todasConversas.length > 0) {
-                    const idNumerico = parseInt(grupoIdQuery, 10);
-                    chatParaAbrir = todasConversas.find((c) => c.id === idNumerico && c.tipo === 'grupo');
+                    const id = parseInt(grupoIdQuery, 10);
+                    chatParaAbrir = todasConversas.find((c) => c.id === id && c.tipo === 'grupo');
                 } else if (dmIdQuery && todasConversas.length > 0) {
-                    const idNumerico = parseInt(dmIdQuery, 10);
-                    chatParaAbrir = todasConversas.find((c) => c.id === idNumerico && c.tipo === 'dm');
+                    const id = parseInt(dmIdQuery, 10);
+                    chatParaAbrir = todasConversas.find((c) => c.id === id && c.tipo === 'dm');
                 }
+
                 if (chatParaAbrir) {
                     selecionarConversa(chatParaAbrir, userData, false);
-                } else if (grupoIdQuery || dmIdQuery) {
-                    console.warn("Chat da URL não encontrado na lista de conversas.");
-                    navigate('/mensagens', { replace: true }); 
                 }
             } catch (error) {
-                console.error("Erro ao buscar dados iniciais:", error);
                 if (error.response?.status === 401) onLogout();
             }
         };
         fetchInitialData();
-    }, [onLogout, location.search, fetchConversas, navigate, selecionarConversa]);
-
-    useEffect(() => {
-        if (!isEditModalOpen) {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }
-    }, [mensagens, isEditModalOpen]);
+    }, [onLogout, location.search, fetchConversas, selecionarConversa]);
 
     const loadMoreMessages = useCallback(async () => {
         if (loadingMensagens || !hasMoreMensagens) return;
 
         setLoadingMensagens(true);
-        const nextPage = mensagensPage + 1;
+        const nextPage = mensagensPage + 1; // ✅ Aqui usa mensagensPage (correto)
+
+        if (messagesContainerRef.current) {
+            previousScrollHeightRef.current = messagesContainerRef.current.scrollHeight;
+        }
 
         try {
             let endpoint = '';
@@ -543,8 +515,17 @@ const Mensagens = ({ onLogout }) => {
             if (novasMensagens.length === 0) {
                 setHasMoreMensagens(false);
             } else {
-                setMensagens(prev => [...novasMensagens, ...prev]);
-                setMensagensPage(nextPage);
+                setMensagens(prev => {
+                    const existingIds = new Set(prev.map(m => m.id));
+                    const filtered = novasMensagens.filter(m => !existingIds.has(m.id));
+
+                    if (filtered.length === 0) {
+                        setHasMoreMensagens(false);
+                        return prev;
+                    }
+                    return [...filtered, ...prev];
+                });
+                setMensagensPage(nextPage); // ✅ Aqui usa setMensagensPage (correto)
             }
         } catch (error) {
             console.error("Erro ao carregar mais mensagens:", error);
@@ -553,21 +534,29 @@ const Mensagens = ({ onLogout }) => {
         }
     }, [loadingMensagens, hasMoreMensagens, mensagensPage, conversaAtiva, currentUser]);
 
+    // ✅ EFEITO PARA RESTAURAR SCROLL AO SUBIR (CORRIGIDO AGORA)
+    useLayoutEffect(() => {
+        // ✅ CORREÇÃO: mensagensPage agora está escrito corretamente em todo lugar
+        if (messagesContainerRef.current && previousScrollHeightRef.current > 0 && mensagensPage > 0) {
+            const newScrollHeight = messagesContainerRef.current.scrollHeight;
+            const heightDifference = newScrollHeight - previousScrollHeightRef.current;
+            messagesContainerRef.current.scrollTop = heightDifference;
+            previousScrollHeightRef.current = 0;
+        }
+    }, [mensagens, mensagensPage]); 
+
     useEffect(() => {
         const handleScroll = () => {
             if (messagesContainerRef.current && messagesContainerRef.current.scrollTop === 0) {
                 loadMoreMessages();
             }
         };
-
         const container = messagesContainerRef.current;
         container?.addEventListener('scroll', handleScroll);
-
         return () => container?.removeEventListener('scroll', handleScroll);
     }, [loadMoreMessages]);
 
 
-    // ... (useEffect WebSocket - Sem alterações) ...
     useEffect(() => {
         if (isConnected && stompClient && conversaAtiva && currentUser) {
             const topicToSubscribe = conversaAtiva.tipo === 'grupo'
@@ -576,6 +565,7 @@ const Mensagens = ({ onLogout }) => {
 
             const subscription = stompClient.subscribe(topicToSubscribe, (message) => {
                 const payload = JSON.parse(message.body);
+                
                 const isForActiveChat = (() => {
                     if (conversaAtiva.tipo === 'grupo') {
                         return payload.grupoId === conversaAtiva.id;
@@ -586,22 +576,18 @@ const Mensagens = ({ onLogout }) => {
                         return isDMMessage || payload.tipo === 'remocao';
                     }
                 })();
-                if (payload.tipo === 'notificacao_mencao') {
-                    if (payload.mencionadoId === currentUser.id) {
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: 'info',
-                            title: `Você foi mencionado em #${payload.nomeGrupo}`,
-                            showConfirmButton: false,
-                            timer: 5000,
-                            timerProgressBar: true,
-                        });
-                    }
+
+                if (payload.tipo === 'notificacao_mencao' && payload.mencionadoId === currentUser.id) {
+                     Swal.fire({
+                        toast: true, position: 'top-end', icon: 'info',
+                        title: `Mencionado em #${payload.nomeGrupo}`,
+                        showConfirmButton: false, timer: 5000, timerProgressBar: true,
+                    });
                     return;
                 }
 
                 if (!isForActiveChat) return;
+
                 if (payload.tipo === 'remocao') {
                     setMensagens((prev) => prev.filter(m => m.id !== payload.id));
                 } else {
@@ -614,92 +600,48 @@ const Mensagens = ({ onLogout }) => {
                             return [...prev, messageWithContext];
                         }
                     });
+                    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
                 }
             });
-            return () => {
-                subscription.unsubscribe();
-            };
+            return () => subscription.unsubscribe();
         }
     }, [isConnected, stompClient, conversaAtiva, currentUser]);
 
-
-    // --- FUNÇÕES DE AÇÃO ---
-
-    // ✅✅✅ INÍCIO DA CORREÇÃO (O Erro do Vídeo) ✅✅✅
     const handleEnviarMensagem = async (e) => {
         e.preventDefault();
         if (!novaMensagem.trim() || !conversaAtiva || !currentUser || !stompClient || !isConnected) return;
-
-        // A lógica do endpoint estava errada para grupos.
+        
         const endpoint = conversaAtiva.tipo === 'grupo'
-            ? `/app/grupo/${conversaAtiva.id}` // CORRETO
-            : `/app/chat/privado/${conversaAtiva.id}`; // CORRETO
+            ? `/app/grupo/${conversaAtiva.id}`
+            : `/app/chat/privado/${conversaAtiva.id}`;
 
-        const baseMessage = {
-            conteudo: novaMensagem,
-            replyToId: replyingTo ? replyingTo.id : null,
-        };
-
-        let mensagemParaEnviar;
-        if (conversaAtiva.tipo === 'grupo') {
-            mensagemParaEnviar = { ...baseMessage };
-        } else {
-            mensagemParaEnviar = { ...baseMessage, destinatarioId: conversaAtiva.id };
-        }
+        const baseMessage = { conteudo: novaMensagem, replyToId: replyingTo ? replyingTo.id : null };
+        const mensagemParaEnviar = conversaAtiva.tipo === 'grupo' ? { ...baseMessage } : { ...baseMessage, destinatarioId: conversaAtiva.id };
 
         setNovaMensagem('');
         setReplyingTo(null);
-
-        // DEBUGGING (Como você pediu)
-        console.log("Enviando mensagem para o destino:", endpoint);
-        console.log("Payload:", JSON.stringify(mensagemParaEnviar));
         
         try {
-            stompClient.publish({
-                destination: endpoint,
-                body: JSON.stringify(mensagemParaEnviar),
-            });
+            stompClient.publish({ destination: endpoint, body: JSON.stringify(mensagemParaEnviar) });
         } catch (error) {
-             console.error("Erro ao publicar mensagem via WebSocket:", error);
+             console.error("Erro WebSocket:", error);
              Swal.fire('Erro', 'Falha ao enviar mensagem.', 'error');
              setNovaMensagem(mensagemParaEnviar.conteudo); 
         }
     };
-    // ✅✅✅ FIM DA CORREÇÃO ✅✅✅
 
-    // ... (handleDeleteMessage - Sem alterações, já usava a lógica mista correta) ...
     const handleDeleteMessage = async (mensagem) => {
         const result = await Swal.fire({
-            title: 'Excluir mensagem?',
-            text: "Esta ação não pode ser desfeita.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sim, excluir!',
-            cancelButtonText: 'Cancelar'
+            title: 'Excluir mensagem?', text: "Esta ação não pode ser desfeita.",
+            icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sim, excluir!'
         });
         if (result.isConfirmed) {
             if (conversaAtiva.tipo === 'grupo') {
-                if (!stompClient || !isConnected) {
-                     Swal.fire('Erro', 'Não conectado ao chat. Tente novamente.', 'error');
-                     return;
-                }
-                try {
-                    const url = `/app/grupo/${mensagem.id}/excluir`; //
-                    stompClient.publish({ destination: url });
-                } catch (error) {
-                    console.error("Erro ao excluir mensagem (Grupo) via WebSocket:", error);
-                    Swal.fire('Erro', 'Não foi possível excluir a mensagem.', 'error');
-                }
+                if (!stompClient || !isConnected) return Swal.fire('Erro', 'Sem conexão.', 'error');
+                stompClient.publish({ destination: `/app/grupo/${mensagem.id}/excluir` });
             } else {
-                try {
-                    const url = `http://localhost:8080/api/chat/privado/${mensagem.id}`; //
-                    await axios.delete(url);
-                } catch (error) {
-                    console.error("Erro ao excluir mensagem (DM) via REST:", error);
-                    Swal.fire('Erro', 'Não foi possível excluir a mensagem.', 'error');
-                }
+                try { await axios.delete(`http://localhost:8080/api/chat/privado/${mensagem.id}`); } 
+                catch (error) { Swal.fire('Erro', 'Não foi possível excluir.', 'error'); }
             }
         }
     };
@@ -707,92 +649,29 @@ const Mensagens = ({ onLogout }) => {
     const handleUpload = async (file) => {
         const formData = new FormData();
         formData.append('file', file);
-
         try {
-            const response = await axios.post('http://localhost:8080/api/arquivos/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            const fileUrl = response.data;
+            const response = await axios.post('http://localhost:8080/api/arquivos/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
             const messageType = file.type.startsWith('image/') ? 'imagem' : 'arquivo';
-            const messageContent = `[${messageType}](${fileUrl})`;
-
-            const endpoint = conversaAtiva.tipo === 'grupo'
-                ? `/app/grupo/${conversaAtiva.id}`
-                : `/app/chat/privado/${conversaAtiva.id}`;
-
-            const mensagemParaEnviar = conversaAtiva.tipo === 'grupo'
-                ? { conteudo: messageContent }
-                : { conteudo: messageContent, destinatarioId: conversaAtiva.id };
-
-            stompClient.publish({
-                destination: endpoint,
-                body: JSON.stringify(mensagemParaEnviar),
-            });
-
-        } catch (error) {
-            console.error('Erro ao fazer upload do arquivo:', error);
-            Swal.fire('Erro', 'Não foi possível enviar o arquivo.', 'error');
-        }
+            const messageContent = `[${messageType}](${response.data})`;
+            const endpoint = conversaAtiva.tipo === 'grupo' ? `/app/grupo/${conversaAtiva.id}` : `/app/chat/privado/${conversaAtiva.id}`;
+            const msg = conversaAtiva.tipo === 'grupo' ? { conteudo: messageContent } : { conteudo: messageContent, destinatarioId: conversaAtiva.id };
+            stompClient.publish({ destination: endpoint, body: JSON.stringify(msg) });
+        } catch (e) { Swal.fire('Erro', 'Upload falhou.', 'error'); }
     };
 
-    const handleFileSelect = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            handleUpload(file);
-        }
-    };
+    const handleFileSelect = (event) => { if (event.target.files[0]) handleUpload(event.target.files[0]); };
+    const handleReplyToMessage = (mensagem) => { setReplyingTo(mensagem); };
 
-    const handleReplyToMessage = (mensagem) => {
-        setReplyingTo(mensagem);
-    };
-
-    const handleSendMeeting = (title, dateTime) => {
-        const meetingData = {
-            title,
-            dateTime,
-            attendees: [],
-        };
-        const messageContent = `[meeting]${JSON.stringify(meetingData)}`;
-
-        const endpoint = conversaAtiva.tipo === 'grupo'
-            ? `/app/grupo/${conversaAtiva.id}`
-            : `/app/chat/privado/${conversaAtiva.id}`;
-
-        const mensagemParaEnviar = conversaAtiva.tipo === 'grupo'
-            ? { conteudo: messageContent }
-            : { conteudo: messageContent, destinatarioId: conversaAtiva.id };
-
-        stompClient.publish({
-            destination: endpoint,
-            body: JSON.stringify(mensagemParaEnviar),
-        });
-    };
-
-    const handleSendIaConversation = (conversationLog) => {
-        const messageContent = `[ia-conversation]${JSON.stringify(conversationLog)}`;
-
-        const endpoint = conversaAtiva.tipo === 'grupo'
-            ? `/app/grupo/${conversaAtiva.id}`
-            : `/app/chat/privado/${conversaAtiva.id}`;
-
-        const mensagemParaEnviar = conversaAtiva.tipo === 'grupo'
-            ? { conteudo: messageContent }
-            : { conteudo: messageContent, destinatarioId: conversaAtiva.id };
-
-        stompClient.publish({
-            destination: endpoint,
-            body: JSON.stringify(mensagemParaEnviar),
-        });
+    const handleSendMeeting = (title, dateTime) => { 
+        const msg = { conteudo: `[meeting]${JSON.stringify({title, dateTime, attendees:[]})}` };
+        if(conversaAtiva.tipo !== 'grupo') msg.destinatarioId = conversaAtiva.id;
+        const end = conversaAtiva.tipo === 'grupo' ? `/app/grupo/${conversaAtiva.id}` : `/app/chat/privado/${conversaAtiva.id}`;
+        stompClient.publish({ destination: end, body: JSON.stringify(msg) });
     };
 
     const handleConfirmMeeting = (mensagem, userName) => {
-        const meetingRegex = /\[meeting\](.+)/;
-        const meetingMatch = mensagem.conteudo.match(meetingRegex);
+        const meetingMatch = mensagem.conteudo.match(/\[meeting\](.+)/);
         if (!meetingMatch) return;
-
         try {
             const meetingData = JSON.parse(meetingMatch[1]);
             if (!meetingData.attendees.includes(userName)) {
@@ -800,147 +679,68 @@ const Mensagens = ({ onLogout }) => {
                 const updatedContent = `[meeting]${JSON.stringify(meetingData)}`;
                 handleSaveEdit(mensagem, updatedContent);
             }
-        } catch (e) {
-            console.error("Erro ao confirmar presença:", e);
-        }
+        } catch (e) { console.error(e); }
     };
 
     const handleDeclineMeeting = (mensagem, userName) => {
-        const meetingRegex = /\[meeting\](.+)/;
-        const meetingMatch = mensagem.conteudo.match(meetingRegex);
+        const meetingMatch = mensagem.conteudo.match(/\[meeting\](.+)/);
         if (!meetingMatch) return;
-
         try {
             const meetingData = JSON.parse(meetingMatch[1]);
             if (meetingData.attendees.includes(userName)) {
-                meetingData.attendees = meetingData.attendees.filter(attendee => attendee !== userName);
+                meetingData.attendees = meetingData.attendees.filter(a => a !== userName);
                 const updatedContent = `[meeting]${JSON.stringify(meetingData)}`;
                 handleSaveEdit(mensagem, updatedContent);
             }
-        } catch (e) {
-            console.error("Erro ao recusar presença:", e);
-        }
+        } catch (e) { console.error(e); }
     };
 
-    const handleVote = async (mensagem, optionIndex) => {
-        try {
-            await axios.post(`http://localhost:8080/api/chat/mensagens/${mensagem.id}/vote/${optionIndex}`);
-        } catch (error) {
-            console.error("Erro ao votar:", error);
-            Swal.fire('Erro', 'Não foi possível registrar seu voto.', 'error');
-        }
-    };
-
+    const handleVote = async (mensagem, optionIndex) => { try { await axios.post(`http://localhost:8080/api/chat/mensagens/${mensagem.id}/vote/${optionIndex}`); } catch(e){} };
+    
     const handleSendPoll = (question, options) => {
-        const pollData = {
-            question,
-            options: options.map(opt => ({ option: opt, votes: 0 })),
-        };
-        const messageContent = `[poll]${JSON.stringify(pollData)}`;
-
-        const endpoint = conversaAtiva.tipo === 'grupo'
-            ? `/app/grupo/${conversaAtiva.id}`
-            : `/app/chat/privado/${conversaAtiva.id}`;
-
-        const mensagemParaEnviar = conversaAtiva.tipo === 'grupo'
-            ? { conteudo: messageContent }
-            : { conteudo: messageContent, destinatarioId: conversaAtiva.id };
-
-        stompClient.publish({
-            destination: endpoint,
-            body: JSON.stringify(mensagemParaEnviar),
-        });
+        const msg = { conteudo: `[poll]${JSON.stringify({question, options: options.map(o=>({option:o, votes:0}))})}` };
+        if(conversaAtiva.tipo !== 'grupo') msg.destinatarioId = conversaAtiva.id;
+        const end = conversaAtiva.tipo === 'grupo' ? `/app/grupo/${conversaAtiva.id}` : `/app/chat/privado/${conversaAtiva.id}`;
+        stompClient.publish({ destination: end, body: JSON.stringify(msg) });
     };
 
     const handleMarkAsSolution = async (mensagem) => {
-        try {
-            await axios.post(`http://localhost:8080/api/chat/mensagens/${mensagem.id}/marcar-solucao`);
-            // Atualizar o estado localmente para refletir a mudança
-            setMensagens(prev => prev.map(m =>
-                m.id === mensagem.id ? { ...m, isSolution: true } : m
-            ));
-        } catch (error) {
-            console.error("Erro ao marcar como solução:", error);
-            Swal.fire('Erro', 'Não foi possível marcar a mensagem como solução.', 'error');
-        }
+         try { await axios.post(`http://localhost:8080/api/chat/mensagens/${mensagem.id}/marcar-solucao`); setMensagens(p => p.map(m => m.id === mensagem.id ? { ...m, isSolution: true } : m)); } catch (e) {}
     };
 
     const handleSendCodeSnippet = (code, language) => {
-        const messageContent = `\`\`\`${language}\n${code}\n\`\`\``;
-        const endpoint = conversaAtiva.tipo === 'grupo'
-            ? `/app/grupo/${conversaAtiva.id}`
-            : `/app/chat/privado/${conversaAtiva.id}`;
-
-        const mensagemParaEnviar = conversaAtiva.tipo === 'grupo'
-            ? { conteudo: messageContent }
-            : { conteudo: messageContent, destinatarioId: conversaAtiva.id };
-
-        stompClient.publish({
-            destination: endpoint,
-            body: JSON.stringify(mensagemParaEnviar),
-        });
+        const msg = { conteudo: `\`\`\`${language}\n${code}\n\`\`\`` };
+        if(conversaAtiva.tipo !== 'grupo') msg.destinatarioId = conversaAtiva.id;
+        const end = conversaAtiva.tipo === 'grupo' ? `/app/grupo/${conversaAtiva.id}` : `/app/chat/privado/${conversaAtiva.id}`;
+        stompClient.publish({ destination: end, body: JSON.stringify(msg) });
     };
 
-    const handleOpenEditModal = (mensagem) => {
-        setMessageToEdit(mensagem);
-        setIsEditModalOpen(true);
+    const handleSendIaConversation = (log) => {
+         const msg = { conteudo: `[ia-conversation]${JSON.stringify(log)}` };
+         if(conversaAtiva.tipo !== 'grupo') msg.destinatarioId = conversaAtiva.id;
+         const end = conversaAtiva.tipo === 'grupo' ? `/app/grupo/${conversaAtiva.id}` : `/app/chat/privado/${conversaAtiva.id}`;
+         stompClient.publish({ destination: end, body: JSON.stringify(msg) });
     };
 
-    // ... (handleSaveEdit - Sem alterações, já usava a lógica mista correta) ...
+    const handleOpenEditModal = (mensagem) => { setMessageToEdit(mensagem); setIsEditModalOpen(true); };
+
     const handleSaveEdit = async (mensagem, novoConteudo) => {
         if (conversaAtiva.tipo === 'grupo') {
-            // GRUPO: Usa WebSocket
-            const url = `/app/grupo/${mensagem.id}/editar`; //
-            if (!stompClient || !isConnected) {
-                Swal.fire('Erro', 'Não conectado ao chat. Tente novamente.', 'error');
-                throw new Error("Cliente STOMP não conectado");
-            }
-            try {
-                stompClient.publish({
-                    destination: url,
-                    body: novoConteudo, 
-                });
-            } catch (error) {
-                console.error("Erro ao editar mensagem (Grupo) via WebSocket:", error);
-                Swal.fire('Erro', 'Não foi possível salvar a edição.', 'error');
-                throw error; 
-            }
+            try { stompClient.publish({ destination: `/app/grupo/${mensagem.id}/editar`, body: novoConteudo }); } catch (e) { Swal.fire('Erro', 'Falha ao editar.', 'error'); }
         } else {
-            // DM: Usa REST (axios)
-            try {
-                const url = `http://localhost:8080/api/chat/privado/${mensagem.id}`; //
-                await axios.put(url, { conteudo: novoConteudo });
-            } catch (error) {
-                 console.error("Erro ao editar mensagem (DM) via REST:", error);
-                 const errorMsg = error.response?.data?.message || 'Não foi possível salvar a edição.';
-                 Swal.fire('Erro', errorMsg, 'error');
-                 throw error;
-            }
+            try { await axios.put(`http://localhost:8080/api/chat/privado/${mensagem.id}`, { conteudo: novoConteudo }); } catch (e) { Swal.fire('Erro', 'Falha ao editar.', 'error'); }
         }
     };
 
     const handleSendReaction = (mensagem, emoji) => {
-        // ... (Nenhuma alteração aqui) ...
-        console.log(`Reagindo com ${emoji} à mensagem ID ${mensagem.id}`);
-        setMensagens(prev => prev.map(m => 
-            m.id === mensagem.id 
-                ? { ...m, reactions: [...(m.reactions || []), emoji] }
-                : m
-        ));
+        setMensagens(prev => prev.map(m => m.id === mensagem.id ? { ...m, reactions: [...(m.reactions || []), emoji] } : m));
     };
 
-    const handleVoltarParaLista = () => {
-        setConversaAtiva(null);
-        navigate('/mensagens', { replace: true }); 
-    };
-
-    const toggleInfoSidebar = () => {
-        setIsInfoSidebarOpen(prev => !prev);
-    };
+    const handleVoltarParaLista = () => { setConversaAtiva(null); navigate('/mensagens', { replace: true }); };
+    const toggleInfoSidebar = () => { setIsInfoSidebarOpen(prev => !prev); };
 
     return (
         <div className="layout-mensagens">
-            {/* ... (Renderização - Sem alterações) ... */}
             <Topbar onLogout={onLogout} currentUser={currentUser} />
             <div className={`container container-chat ${isInfoSidebarOpen ? 'sidebar-info-open' : ''}`}>
                 <Sidebar currentUser={currentUser}/>
@@ -952,16 +752,9 @@ const Mensagens = ({ onLogout }) => {
                     </div>
                     <div className="conversations-list">
                         {loadingConversas ? <p className="loading-state"><FontAwesomeIcon icon={faSpinner} spin /> Carregando...</p> :
-                            conversas.length > 0 ? (
-                                conversas.map(c => (
-                                    <ConversationListItem
-                                        key={`${c.tipo}-${c.id}`}
-                                        conversa={c}
-                                        ativa={conversaAtiva?.id === c.id && conversaAtiva?.tipo === c.tipo}
-                                        onClick={() => selecionarConversa(c, currentUser)}
-                                    />
-                                ))
-                            ) : <p className="empty-state">Nenhuma conversa encontrada.</p>
+                            conversas.length > 0 ? conversas.map(c => (
+                                <ConversationListItem key={`${c.tipo}-${c.id}`} conversa={c} ativa={conversaAtiva?.id === c.id && conversaAtiva?.tipo === c.tipo} onClick={() => selecionarConversa(c, currentUser)} />
+                            )) : <p className="empty-state">Nenhuma conversa encontrada.</p>
                         }
                     </div>
                 </aside>
@@ -969,54 +762,25 @@ const Mensagens = ({ onLogout }) => {
                    {conversaAtiva ? (
                         <div className="chat-active-card">
                             <header className="chat-header-area">
-                                <button className="chat-back-btn" onClick={handleVoltarParaLista}>
-                                    <FontAwesomeIcon icon={faArrowLeft} />
-                                </button>
+                                <button className="chat-back-btn" onClick={handleVoltarParaLista}><FontAwesomeIcon icon={faArrowLeft} /></button>
                                 <div className="chat-header-info">
-                                    <img 
-                                        src={conversaAtiva.avatar} 
-                                        className="avatar" 
-                                        alt="avatar" 
-                                        onError={(e) => { 
-                                            e.target.onerror = null; 
-                                            if (conversaAtiva.tipo === 'grupo') {
-                                                e.target.src = `https://placehold.co/50/30363d/8b949e?text=${conversaAtiva.nome.substring(0, 2)}`;
-                                            } else {
-                                                e.target.src = 'http://localhost:8080/images/default-avatar.png';
-                                            }
-                                        }}
-                                    />
+                                    <img src={conversaAtiva.avatar} className="avatar" alt="avatar" onError={(e) => { e.target.onerror = null; e.target.src = 'http://localhost:8080/images/default-avatar.png'; }} />
                                     <div className="chat-header-details">
-                                    <h3>{conversaAtiva.nome}</h3>
-                                     {conversaAtiva.online && <span className="status-indicator online">Online</span>}
+                                        <h3>{conversaAtiva.nome}</h3>
+                                        {conversaAtiva.online && <span className="status-indicator online">Online</span>}
                                     </div>
                                 </div>
                                 {solutionMessage && (
                                     <div className="solution-link-container">
-                                        <a href={`#message-${solutionMessage.id}`} className="solution-link">
-                                            <FontAwesomeIcon icon={faCheckCircle} /> Ver Solução
-                                        </a>
+                                        <a href={`#message-${solutionMessage.id}`} className="solution-link"><FontAwesomeIcon icon={faCheckCircle} /> Ver Solução</a>
                                     </div>
                                 )}
                                 <div className="chat-header-actions">
                                     <div className="search-bar">
-                                        <input
-                                            type="text"
-                                            placeholder="Buscar na conversa..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                        />
-                                        {searchTerm ? (
-                                            <button onClick={() => setSearchTerm('')} className="clear-search-btn">
-                                                <FontAwesomeIcon icon={faTimes} />
-                                            </button>
-                                        ) : (
-                                            <FontAwesomeIcon icon={faSearch} />
-                                        )}
+                                        <input type="text" placeholder="Buscar..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                                        {searchTerm ? <button onClick={() => setSearchTerm('')} className="clear-search-btn"><FontAwesomeIcon icon={faTimes} /></button> : <FontAwesomeIcon icon={faSearch} />}
                                     </div>
-                                    <button className="chat-options-btn" onClick={() => setIsSidekickModalOpen(true)} aria-label="Abrir assistente IA">
-                                        <FontAwesomeIcon icon={faRobot} />
-                                    </button>
+                                    <button className="chat-options-btn" onClick={() => setIsSidekickModalOpen(true)}><FontAwesomeIcon icon={faRobot} /></button>
                                     <button className="chat-options-btn" onClick={toggleInfoSidebar}><FontAwesomeIcon icon={faEllipsisV} /></button>
                                 </div>
                             </header>
@@ -1025,9 +789,7 @@ const Mensagens = ({ onLogout }) => {
                                     filteredMessages.length > 0 ? (
                                         Object.entries(groupMessagesByDate(filteredMessages)).map(([date, messagesOnDate]) => (
                                             <React.Fragment key={date}>
-                                                <div className="date-separator">
-                                                    <span>{date}</span>
-                                                </div>
+                                                <div className="date-separator"><span>{date}</span></div>
                                                 {messagesOnDate.map((msg, index) => (
                                                     <MessageBubble
                                                         key={msg.id || index}
@@ -1037,152 +799,54 @@ const Mensagens = ({ onLogout }) => {
                                                         onDeleteClick={handleDeleteMessage}
                                                         onEditClick={handleOpenEditModal}
                                                         onReplyClick={handleReplyToMessage}
-                                                         onMarkAsSolution={handleMarkAsSolution}
+                                                        onMarkAsSolution={handleMarkAsSolution}
                                                         onReactClick={handleSendReaction}
-                                                         onVote={handleVote}
-                                                         onConfirm={handleConfirmMeeting}
-                                                         onDecline={handleDeclineMeeting}
+                                                        onVote={handleVote}
+                                                        onConfirm={handleConfirmMeeting}
+                                                        onDecline={handleDeclineMeeting}
                                                         reactions={msg.reactions || []}
                                                     />
                                                 ))}
                                             </React.Fragment>
                                         ))
-                                    ) : (
-                                        <p className="empty-state">Ainda não há mensagens. Diga oi!</p>
-                                    )
+                                    ) : <p className="empty-state">Ainda não há mensagens.</p>
                                 }
                                 <div ref={messagesEndRef} />
                             </div>
                             <div className="chat-input-wrapper">
                                 {replyingTo && (
                                     <div className="reply-preview">
-                                        <div className="reply-info">
-                                            <strong>Respondendo a {replyingTo.nomeAutor}</strong>
-                                            <p>{replyingTo.conteudo}</p>
-                                        </div>
-                                        <button onClick={() => setReplyingTo(null)} className="cancel-reply-btn">
-                                            <FontAwesomeIcon icon={faTimes} />
-                                        </button>
+                                        <div className="reply-info"><strong>Respondendo a {replyingTo.nomeAutor}</strong><p>{replyingTo.conteudo}</p></div>
+                                        <button onClick={() => setReplyingTo(null)} className="cancel-reply-btn"><FontAwesomeIcon icon={faTimes} /></button>
                                     </div>
                                 )}
                                 <form className="chat-input-area" onSubmit={handleEnviarMensagem}>
-                                    <input
-                                        type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleFileSelect}
-                                    style={{ display: 'none' }}
-                                    accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
-                                />
-                                <button
-                                    type="button"
-                                    className="chat-attach-btn"
-                                    onClick={() => fileInputRef.current.click()}
-                                    disabled={!isConnected}
-                                >
-                                    <FontAwesomeIcon icon={faPaperclip} />
-                                </button>
-                                <button
-                                    type="button"
-                                    className="chat-attach-btn"
-                                    onClick={() => setIsCodeSnippetModalOpen(true)}
-                                    disabled={!isConnected}
-                                    aria-label="Enviar snippet de código"
-                                >
-                                    <FontAwesomeIcon icon={faCode} />
-                                </button>
-                                <button
-                                    type="button"
-                                    className="chat-attach-btn"
-                                    onClick={() => setIsPollModalOpen(true)}
-                                    disabled={!isConnected}
-                                    aria-label="Criar enquete"
-                                >
-                                    <FontAwesomeIcon icon={faPoll} />
-                                </button>
-                                <button
-                                    type="button"
-                                    className="chat-attach-btn"
-                                    onClick={() => setIsScheduleMeetingModalOpen(true)}
-                                    disabled={!isConnected}
-                                    aria-label="Agendar reunião"
-                                >
-                                    <FontAwesomeIcon icon={faCalendarAlt} />
-                                </button>
-                                <MentionsInput
-                                    value={novaMensagem || ''} // ✅ Garante que nunca seja undefined
-                                    onChange={(event, newValue) => setNovaMensagem(newValue)} // ✅ Usa o newValue direto
-                                    placeholder="Digite uma mensagem..."
-                                    disabled={!isConnected}
-                                    className="mentions-input"
-                                >
-                                    <Mention
-                                        trigger="@"
-                                        markup="@[__display__](__id__)" // ✅ Define o padrão explicitamente
-                                        data={mentionData}
-                                        className="mention"
-                                    />
-                                </MentionsInput>
-                                <button type="submit" disabled={!novaMensagem.trim() || !isConnected}><FontAwesomeIcon icon={faPaperPlane} /></button>
+                                    <input type="file" ref={fileInputRef} onChange={handleFileSelect} style={{ display: 'none' }} />
+                                    <button type="button" className="chat-attach-btn" onClick={() => fileInputRef.current.click()} disabled={!isConnected}><FontAwesomeIcon icon={faPaperclip} /></button>
+                                    <button type="button" className="chat-attach-btn" onClick={() => setIsCodeSnippetModalOpen(true)} disabled={!isConnected}><FontAwesomeIcon icon={faCode} /></button>
+                                    <button type="button" className="chat-attach-btn" onClick={() => setIsPollModalOpen(true)} disabled={!isConnected}><FontAwesomeIcon icon={faPoll} /></button>
+                                    <button type="button" className="chat-attach-btn" onClick={() => setIsScheduleMeetingModalOpen(true)} disabled={!isConnected}><FontAwesomeIcon icon={faCalendarAlt} /></button>
+                                    <MentionsInput value={novaMensagem || ''} onChange={(event, newValue) => setNovaMensagem(newValue)} placeholder="Digite uma mensagem..." disabled={!isConnected} className="mentions-input">
+                                        <Mention trigger="@" markup="@[__display__](__id__)" data={mentionData} className="mention" />
+                                    </MentionsInput>
+                                    <button type="submit" disabled={!novaMensagem.trim() || !isConnected}><FontAwesomeIcon icon={faPaperPlane} /></button>
                                  </form>
                             </div>
                         </div>
                    ) : (
                        <div className="empty-chat-view">
-                           <svg width="150" height="150" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{opacity: 0.3, marginBottom: '1.5rem', color: 'var(--text-tertiary)'}}>
-                                <path d="M16.8 13.4147C17.411 13.4147 17.957 13.1417 18.441 12.6577C18.925 12.1737 19.199 11.6277 19.199 11.0157C19.199 10.4037 18.925 9.85873 18.441 9.37373C17.957 8.88973 17.411 8.61573 16.8 8.61573H7.199C6.588 8.61573 6.042 8.88973 5.558 9.37373C5.074 9.85873 4.799 10.4037 4.799 11.0157C4.799 11.6277 5.074 12.1737 5.558 12.6577C6.042 13.1417 6.588 13.4147 7.199 13.4147H16.8Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M12 17.0147H7.199C6.588 17.0147 6.042 16.7417 5.558 16.2577C5.074 15.7737 4.799 15.2277 4.799 14.6157C4.799 14.0037 5.074 13.4587 5.558 12.9737C6.042 12.4897 6.588 12.2157 7.199 12.2157H12" stroke="currentColor" strokeWidth="1.D5" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M21.6 11.0147V16.6147C21.6 18.3117 20.916 19.5097 19.548 20.2087C18.18 20.9077 16.584 21.0147 14.76 20.5287L11.7 19.6417C8.748 18.8417 5.999 18.8417 3 19.6417L1.8 19.9867C1.487 20.0767 1.156 20.0207 0.88 19.8317C0.604 19.6427 0.466 19.3497 0.466 18.9527V6.01473C0.466 4.31773 1.15 3.11973 2.518 2.42073C3.886 1.72173 5.482 1.61473 7.306 2.10073L10.366 2.98773C13.318 3.78773 16.067 3.78773 19.019 2.98773L20.219 2.64273C20.532 2.55273 20.863 2.59973 21.139 2.78873C21.415 2.97773 21.553 3.27073 21.553 3.66773L21.6 11.0147Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                           </svg>
                            <h3>Selecione uma conversa</h3>
-                           <p>Escolha um amigo ou grupo para começar a conversar.</p>
                        </div>
                    )}
                 </main>
-                {isInfoSidebarOpen && conversaAtiva && (
-                    <InfoSidebar
-                        conversa={conversaAtiva}
-                        onClose={toggleInfoSidebar} />
-                )}
+                {isInfoSidebarOpen && conversaAtiva && <InfoSidebar conversa={conversaAtiva} onClose={toggleInfoSidebar} />}
             </div>
 
-            {isEditModalOpen && messageToEdit && (
-                <EditarMensagemModal
-                    mensagem={messageToEdit}
-                    onSave={handleSaveEdit}
-                    onClose={() => {
-                        setIsEditModalOpen(false);
-                        setMessageToEdit(null);
-                    }}
-                />
-            )}
-
-            {isCodeSnippetModalOpen && (
-                <CodeSnippetModal
-                    onSave={handleSendCodeSnippet}
-                    onClose={() => setIsCodeSnippetModalOpen(false)}
-                />
-            )}
-
-            {isPollModalOpen && (
-                <PollModal
-                    onSave={handleSendPoll}
-                    onClose={() => setIsPollModalOpen(false)}
-                />
-            )}
-
-            {isScheduleMeetingModalOpen && (
-                <ScheduleMeetingModal
-                    onSave={handleSendMeeting}
-                    onClose={() => setIsScheduleMeetingModalOpen(false)}
-                />
-            )}
-
-            {isSidekickModalOpen && (
-                <SidekickModal
-                    onSave={handleSendIaConversation}
-                    onClose={() => setIsSidekickModalOpen(false)}
-                />
-            )}
+            {isEditModalOpen && messageToEdit && <EditarMensagemModal mensagem={messageToEdit} onSave={handleSaveEdit} onClose={() => { setIsEditModalOpen(false); setMessageToEdit(null); }} />}
+            {isCodeSnippetModalOpen && <CodeSnippetModal onSave={handleSendCodeSnippet} onClose={() => setIsCodeSnippetModalOpen(false)} />}
+            {isPollModalOpen && <PollModal onSave={handleSendPoll} onClose={() => setIsPollModalOpen(false)} />}
+            {isScheduleMeetingModalOpen && <ScheduleMeetingModal onSave={handleSendMeeting} onClose={() => setIsScheduleMeetingModalOpen(false)} />}
+            {isSidekickModalOpen && <SidekickModal onSave={handleSendIaConversation} onClose={() => setIsSidekickModalOpen(false)} />}
         </div>
     );
 };
