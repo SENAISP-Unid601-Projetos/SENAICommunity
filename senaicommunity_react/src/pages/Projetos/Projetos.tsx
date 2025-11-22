@@ -1,4 +1,4 @@
-// src/pages/Projetos/Projetos.tsx (CORRIGIDO E ATUALIZADO)
+// src/pages/Projetos/Projetos.tsx (ATUALIZADO COM ROTA PARA CHAT GIGANTE)
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
@@ -16,7 +16,7 @@ import {
 import debounce from 'lodash/debounce'; 
 import { useNavigate } from 'react-router-dom';
 
-// ... (Interfaces de Tipos: Membro, Projeto, Usuario, etc. - Sem alterações) ...
+// ... (Interfaces de Tipos - Mantidas iguais) ...
 interface Membro {
     id: any;
     usuarioId: any;
@@ -72,7 +72,7 @@ interface ProjetoDetalheModalProps {
 interface ProjetosPageProps {
     onLogout: () => void;
 }
-// ... (Função getCorrectUserImageUrl - Sem alterações) ...
+
 const getCorrectUserImageUrl = (url: string | null | undefined, fallbackId: any): string => {
     const defaultAvatar = `https://i.pravatar.cc/40?u=${fallbackId || 'default'}`;
     if (!url) { return defaultAvatar; }
@@ -85,7 +85,6 @@ const getCorrectUserImageUrl = (url: string | null | undefined, fallbackId: any)
 
 // --- COMPONENTE ProjetoCard ---
 const ProjetoCard: React.FC<ProjetoCardProps> = ({ projeto, onVerDetalhes }) => {
-    // ... (Sem alterações aqui) ...
     const imageUrl = projeto.imagemUrl
         ? projeto.imagemUrl 
         : 'https://placehold.co/600x400/161b22/8b949e?text=Projeto';
@@ -122,7 +121,6 @@ const ProjetoCard: React.FC<ProjetoCardProps> = ({ projeto, onVerDetalhes }) => 
 
 // --- COMPONENTE MODAL DE NOVO PROJETO ---
 const NovoProjetoModal: React.FC<NovoProjetoModalProps> = ({ isOpen, onClose, onProjectCreated }) => {
-    // ... (Sem alterações aqui, continua usando a lógica de preview e getCorrectUserImageUrl) ...
     const [titulo, setTitulo] = useState('');
     const [descricao, setDescricao] = useState('');
     const [foto, setFoto] = useState<File | null>(null); 
@@ -254,7 +252,6 @@ const NovoProjetoModal: React.FC<NovoProjetoModalProps> = ({ isOpen, onClose, on
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body">
-                        {/* ... (form groups: titulo, descricao) ... */}
                         <div className="form-group">
                             <label htmlFor="proj-titulo">Título do Projeto</label>
                             <input type="text" id="proj-titulo" value={titulo} onChange={e => setTitulo(e.target.value)} required />
@@ -263,7 +260,6 @@ const NovoProjetoModal: React.FC<NovoProjetoModalProps> = ({ isOpen, onClose, on
                             <label htmlFor="proj-descricao">Descrição</label>
                             <textarea id="proj-descricao" rows={3} value={descricao} onChange={e => setDescricao(e.target.value)} required></textarea>
                         </div>
-                        {/* ... (form group: foto preview) ... */}
                         <div className="form-group">
                             <label htmlFor="proj-foto">Foto de Capa (Opcional)</label>
                             {preview ? (
@@ -277,7 +273,6 @@ const NovoProjetoModal: React.FC<NovoProjetoModalProps> = ({ isOpen, onClose, on
                                 <input type="file" id="proj-foto" accept="image/*" onChange={handleFotoChange} />
                             )}
                         </div>
-                        {/* ... (form group: links) ... */}
                         <div className="form-group">
                             <label>Links Úteis (Opcional, máx 3)</label>
                             {links.map((link, index) => (
@@ -289,7 +284,6 @@ const NovoProjetoModal: React.FC<NovoProjetoModalProps> = ({ isOpen, onClose, on
                             ))}
                             {links.length < 3 && (<button type="button" className="btn-add-link" onClick={addLinkInput}><FontAwesomeIcon icon={faPlus} /> Adicionar outro link</button>)}
                         </div>
-                        {/* ... (form group: participantes) ... */}
                         <div className="form-group">
                             <label htmlFor="proj-participantes">Adicionar Participantes (Opcional)</label>
                             <div className="participantes-pills-container">
@@ -332,7 +326,6 @@ const NovoProjetoModal: React.FC<NovoProjetoModalProps> = ({ isOpen, onClose, on
 
 // --- COMPONENTE MODAL DE DETALHES DO PROJETO ---
 const ProjetoDetalheModal: React.FC<ProjetoDetalheModalProps> = ({ projeto, currentUser, onClose, onGoToChat, onProjetoAtualizado, onProjetoExcluido }) => {
-    // ... (Sem alterações aqui, continua usando a lógica de preview e getCorrectUserImageUrl) ...
     const [searchTermParticipante, setSearchTermParticipante] = useState('');
     const [buscaResultados, setBuscaResultados] = useState<Usuario[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -420,7 +413,6 @@ const ProjetoDetalheModal: React.FC<ProjetoDetalheModalProps> = ({ projeto, curr
     return (
         <div className="modal-overlay visible" onClick={onClose}>
             <div className="modal-content modal-detalhe" onClick={e => e.stopPropagation()}>
-                {/* ... (header, body, lista de membros, etc. - Sem alterações) ... */}
                 <div className="modal-header detalhe-header" style={{ backgroundImage: `url('${imageUrl}')` }}>
                     <div className="header-overlay">
                         <h2>{projeto.titulo}</h2>
@@ -428,7 +420,6 @@ const ProjetoDetalheModal: React.FC<ProjetoDetalheModalProps> = ({ projeto, curr
                     </div>
                 </div>
                 <div className="modal-body detalhe-body">
-                    {/* ... (info grid) ... */}
                     <div className="detalhe-info-grid">
                         <div className="detalhe-info-item">
                             <FontAwesomeIcon icon={faInfoCircle} />
@@ -439,7 +430,6 @@ const ProjetoDetalheModal: React.FC<ProjetoDetalheModalProps> = ({ projeto, curr
                             <div> <strong>Criado em</strong> <p>{new Date(projeto.dataCriacao).toLocaleDateString('pt-BR')}</p> </div>
                         </div>
                     </div>
-                    {/* ... (membros lista) ... */}
                     <h3><FontAwesomeIcon icon={faUserFriends} /> Membros ({projeto.membros?.length || 0})</h3>
                     <div className="detalhe-membros-lista">
                         {projeto.membros?.map(membro => (
@@ -452,7 +442,6 @@ const ProjetoDetalheModal: React.FC<ProjetoDetalheModalProps> = ({ projeto, curr
                             </div>
                         ))}
                     </div>
-                    {/* ... (links lista) ... */}
                     {projeto.linksUteis && projeto.linksUteis.length > 0 && (
                         <>
                             <h3><FontAwesomeIcon icon={faLink} /> Links Úteis</h3>
@@ -466,7 +455,6 @@ const ProjetoDetalheModal: React.FC<ProjetoDetalheModalProps> = ({ projeto, curr
                             </div>
                         </>
                     )}
-                    {/* ... (admin section) ... */}
                     {isAutor && (
                         <>
                             <h3 className="admin-section-title"><FontAwesomeIcon icon={faUserShield} /> Gerenciamento (Admin)</h3>
@@ -538,7 +526,6 @@ const Projetos: React.FC<ProjetosPageProps> = ({ onLogout }) => {
     const [projetoSelecionado, setProjetoSelecionado] = useState<Projeto | null>(null); 
     const navigate = useNavigate();
 
-    // ✅✅✅ INÍCIO DA CORREÇÃO (Request 2 - Privacidade) ✅✅✅
     const fetchAllData = useCallback(async () => {
         setLoading(true);
         const token = localStorage.getItem('authToken');
@@ -547,8 +534,7 @@ const Projetos: React.FC<ProjetosPageProps> = ({ onLogout }) => {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             const [userRes, projetosRes] = await Promise.all([
                  axios.get('http://localhost:8080/usuarios/me'),
-                 // Busca apenas os projetos do usuário logado
-                 axios.get('http://localhost:8080/projetos/meus-projetos') //
+                 axios.get('http://localhost:8080/projetos/meus-projetos')
             ]);
             setCurrentUser(userRes.data);
             if (Array.isArray(projetosRes.data)) {
@@ -561,34 +547,32 @@ const Projetos: React.FC<ProjetosPageProps> = ({ onLogout }) => {
              if ((error as any).response?.status === 401 || (error as any).response?.status === 403) { onLogout(); }
         } finally { setLoading(false); }
     }, [onLogout]);
-    // ✅✅✅ FIM DA CORREÇÃO ✅✅✅
 
     useEffect(() => {
         document.title = 'Senai Community | Projetos';
         fetchAllData();
     }, [fetchAllData]);
 
-    // ... (handlers handleProjectCreated, GoToChat, Excluido, Atualizado - Sem alterações) ...
     const handleProjectCreated = (novoProjeto: Projeto) => {
         setProjetos(prevProjetos => [novoProjeto, ...prevProjetos]);
     };
+
+    // ✅✅✅ ATENÇÃO: AQUI FOI FEITA A MUDANÇA DA ROTA PARA O CHAT GIGANTE ✅✅✅
     const handleGoToChat = (projetoId: any) => {
         setProjetoSelecionado(null);
-        navigate(`/mensagens?grupo=${projetoId}`);
+        navigate(`/projeto/${projetoId}/chat`); // Redireciona para a nova tela dedicada
     };
+
     const handleProjetoExcluido = (projetoId: any) => {
         setProjetos(prev => prev.filter(p => p.id !== projetoId));
         setProjetoSelecionado(null);
     };
     const handleProjetoAtualizado = async (projetoId: any) => {
         try {
-            // Re-busca os /meus-projetos para garantir que a lista está 100% correta
-            // (embora buscar por ID também funcione, isso é mais seguro se o status de membro mudou)
             const projetosRes = await axios.get('http://localhost:8080/projetos/meus-projetos');
             if (Array.isArray(projetosRes.data)) {
                  setProjetos(projetosRes.data.sort((a: Projeto, b: Projeto) => new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime()));
             }
-            // Atualiza o modal de detalhes
             const projetoAtualizado = projetosRes.data.find((p: Projeto) => p.id === projetoId);
             setProjetoSelecionado(projetoAtualizado || null);
             
@@ -608,7 +592,6 @@ const Projetos: React.FC<ProjetosPageProps> = ({ onLogout }) => {
 
     return (
         <div>
-            {/* ... (Renderização - Sem alterações) ... */}
             <Topbar 
                 onLogout={onLogout} 
                 currentUser={currentUser} 
@@ -688,4 +671,4 @@ const Projetos: React.FC<ProjetosPageProps> = ({ onLogout }) => {
     );
 };
 
-export default Projetos;    
+export default Projetos;

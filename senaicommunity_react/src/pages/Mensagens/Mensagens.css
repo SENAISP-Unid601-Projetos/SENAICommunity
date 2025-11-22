@@ -14,6 +14,7 @@
     display: grid;
     grid-template-columns: 280px 340px 1fr;
     grid-template-rows: 1fr;
+    position: relative;
     transition: grid-template-columns 0.3s ease-in-out;
     gap: 0;
     flex-grow: 1;
@@ -25,9 +26,7 @@
     box-sizing: border-box;
 }
 
-.container-chat.sidebar-info-open {
-    grid-template-columns: 280px 1fr 320px;
-}
+
 
 
 /* Sidebar Principal (da Esquerda) - Controlada pelo .container-chat */
@@ -1014,3 +1013,31 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.container-chat.sidebar-info-open > :last-child {
+    position: absolute; /* Flutua sobre o conteúdo */
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 320px; /* Largura da barra */
+    background-color: var(--bg-secondary); /* Cor de fundo para não ficar transparente */
+    border-left: 1px solid var(--border-color);
+    z-index: 100; /* Garante que fique acima do chat */
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2); /* Sombra para destacar */
+    overflow-y: auto; /* Permite rolar se a lista de membros for grande */
+    animation: slideIn 0.3s ease-out; /* Efeito suave de entrada */
+}
+
+/* Animação bonitinha de deslizar */
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* Responsividade: No mobile, ocupa a tela toda */
+@media (max-width: 768px) {
+    .container-chat.sidebar-info-open > :last-child {
+        width: 100%;
+    }
+}
+

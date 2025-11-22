@@ -1,0 +1,363 @@
+/* src/pages/ProjetoChat/ProjetoChat.css */
+
+/* --- LAYOUT E CORES (TEMA DA SUA APLICAÇÃO) --- */
+.discord-layout {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #0d1117; /* --bg-primary */
+    color: #f0f6fc; /* --text-primary */
+    font-family: 'Inter', sans-serif;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100; /* ✅ REDUZIDO: Agora o Popup (Z-index 1060) aparece na frente! */
+}
+
+/* 1. MAIN CHAT AREA (Esquerda e Centro) */
+.discord-chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #0d1117; /* --bg-primary */
+    min-width: 0;
+    border-right: 1px solid #30363d; /* --bg-quaternary */
+}
+
+.chat-header {
+    height: 60px;
+    border-bottom: 1px solid #30363d; /* --bg-quaternary */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background-color: #161b22; /* --bg-secondary */
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.back-btn-header {
+    background: none;
+    border: none;
+    color: #8b949e; /* --text-secondary */
+    cursor: pointer;
+    font-size: 18px;
+    transition: color 0.2s;
+}
+.back-btn-header:hover { color: #58a6ff; /* --accent-primary (Azul) */ }
+
+.header-project-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #30363d;
+}
+
+.header-info h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #f0f6fc; /* --text-primary */
+}
+
+.header-topic {
+    font-size: 12px;
+    color: #8b949e; /* --text-secondary */
+    display: block;
+}
+
+/* BOTÕES DO HEADER */
+.header-actions { margin-left: auto; display: flex; gap: 10px; }
+.header-btn {
+    background: none; border: none; color: #8b949e;
+    cursor: pointer; font-size: 18px; padding: 8px;
+    transition: color 0.2s;
+}
+.header-btn:hover { color: #FFD700; /* Amarelo no hover */ }
+.header-btn.danger:hover { color: #da3633; /* Vermelho para excluir */ }
+
+/* MENSAGENS */
+.chat-messages-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.discord-message-row {
+    padding: 4px 20px;
+    margin-top: 10px;
+    display: flex;
+    position: relative;
+}
+.discord-message-row:hover { background-color: #161b22; /* --bg-secondary */ }
+
+.discord-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    margin-right: 16px;
+    margin-top: 2px;
+    cursor: pointer;
+    object-fit: cover;
+    border: 1px solid #30363d;
+}
+
+.discord-message-content { flex: 1; min-width: 0; }
+
+.message-header { display: flex; align-items: center; margin-bottom: 4px; }
+.message-username { font-weight: 600; font-size: 15px; margin-right: 8px; cursor: pointer; color: #f0f6fc; }
+.message-timestamp { font-size: 11px; color: #6e7681; /* --text-tertiary */ }
+
+.discord-msg-text {
+    color: #c9d1d9;
+    font-size: 15px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+/* ESTILO DAS BOLHAS (AMARELO E AZUL) */
+/* Minhas mensagens (Azul) */
+.discord-message-row.me .discord-msg-text {
+    color: #fff;
+}
+/* Nome em Dourado para mim, ou Azul para outros */
+.message-username.me-user { color: #FFD700 !important; /* Amarelo */ }
+.message-username.other-user { color: #58a6ff !important; /* Azul */ }
+
+
+.discord-msg-img {
+    max-width: 100%;
+    max-height: 350px;
+    border-radius: 8px;
+    margin-top: 8px;
+    border: 1px solid #30363d;
+}
+
+/* INPUT AREA */
+.chat-input-container { padding: 0 20px 24px; flex-shrink: 0; }
+.discord-input-wrapper {
+    background-color: #161b22; /* --bg-secondary */
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    padding: 12px;
+    border: 1px solid #30363d; /* --bg-quaternary */
+}
+
+.input-btn {
+    background: none; border: none; padding: 0 12px 0 0;
+    cursor: pointer; color: #8b949e; height: 24px; margin-top: 2px;
+}
+.input-btn:hover { color: #FFD700; /* Amarelo */ }
+
+.discord-mentions {
+    flex: 1;
+    color: #f0f6fc;
+    min-width: 0;
+}
+.discord-mentions textarea {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #f0f6fc !important;
+    font-size: 15px;
+    line-height: 1.4;
+    min-height: 24px;
+    resize: none;
+    white-space: pre-wrap !important;
+    overflow-wrap: break-word !important;
+}
+
+.input-actions { display: flex; gap: 12px; margin-left: 12px; margin-top: 2px; }
+.input-icon-btn {
+    background: none; border: none; color: #8b949e;
+    cursor: pointer; font-size: 18px;
+}
+.input-icon-btn:hover { color: #f0f6fc; }
+.input-icon-btn.send { color: #58a6ff; /* Azul */ }
+.input-icon-btn.send:hover { color: #1f6feb; }
+.input-icon-btn.recording { color: #da3633; animation: pulse 1s infinite; }
+
+/* 2. MEMBERS SIDEBAR (Direita) */
+.discord-members-sidebar {
+    width: 260px;
+    background-color: #161b22; /* --bg-secondary */
+    flex-shrink: 0;
+    padding: 20px 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #30363d;
+}
+
+.members-category {
+    font-weight: bold; font-size: 12px; color: #8b949e;
+    margin-bottom: 10px; text-transform: uppercase; padding-left: 8px;
+}
+
+.discord-member-item {
+    display: flex; align-items: center; padding: 8px;
+    border-radius: 4px; cursor: pointer; margin-bottom: 2px;
+}
+.discord-member-item:hover { background-color: #21262d; /* --bg-tertiary */ }
+
+.avatar-wrapper { position: relative; margin-right: 10px; }
+.avatar-wrapper img { 
+    width: 36px; height: 36px; border-radius: 50%; object-fit: cover; 
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+}
+.status-dot {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background-color: #238636; /* Verde Git */
+    border: 3px solid #161b22;
+}
+
+.member-info { display: flex; flex-direction: column; overflow: hidden; }
+.member-name { font-weight: 500; color: #c9d1d9; font-size: 14px; }
+.owner-crown { color: #FFD700; font-size: 12px; margin-left: 4px; }
+
+/* FOOTER DA SIDEBAR DIREITA */
+.sidebar-footer {
+    margin-top: auto; 
+    padding-top: 20px;
+    border-top: 1px solid #30363d;
+    text-align: center;
+}
+
+.delete-project-btn {
+    background-color: #21262d; /* Fundo discreto */
+    color: #da3633; /* Texto Vermelho */
+    border: 1px solid #30363d;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.delete-project-btn:hover {
+    background-color: #da3633;
+    color: white;
+    border-color: #da3633;
+}
+
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+/* src/pages/ProjetoChat/ProjetoChat.css */
+
+/* ... (MANTENHA O CSS BÁSICO DE LAYOUT E CORES DO TEMA ESCURO QUE JÁ CRIAMOS) ... */
+
+/* --- NOVO: HEADER INFO MELHORADO --- */
+.header-info-wrapper {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.header-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-subtitle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #8b949e;
+    margin-top: 2px;
+}
+
+/* STATUS BADGES */
+.status-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-badge.planning {
+    background-color: rgba(255, 215, 0, 0.15);
+    color: #FFD700;
+    border: 1px solid #FFD700;
+}
+
+.status-badge.doing {
+    background-color: rgba(88, 166, 255, 0.15);
+    color: #58a6ff;
+    border: 1px solid #58a6ff;
+}
+
+.status-badge.done {
+    background-color: rgba(46, 160, 67, 0.15);
+    color: #3fb950;
+    border: 1px solid #3fb950;
+}
+
+/* ONLINE COUNTER */
+.online-counter {
+    color: #3fb950; /* Verde Online */
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.online-dot {
+    font-size: 8px;
+}
+
+.separator {
+    color: #30363d;
+}
+
+/* PAINEL DE DETALHES (EXPANSÍVEL) */
+.project-details-panel {
+    background-color: #161b22;
+    padding: 15px 20px;
+    border-bottom: 1px solid #30363d;
+    font-size: 14px;
+    color: #c9d1d9;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- EMOJI PICKER --- */
+.emoji-picker-container {
+    position: absolute;
+    bottom: 80px; /* Acima do input */
+    right: 280px; /* Alinhado à esquerda da sidebar de membros */
+    z-index: 1000;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+/* Ajuste no input actions para acomodar o botão de emoji */
+.input-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: 10px;
+    align-items: center;
+}
+
+/* ... (MANTENHA O RESTO DO CSS DE MENSAGENS, INPUT E SIDEBAR DIREITA) ... */
