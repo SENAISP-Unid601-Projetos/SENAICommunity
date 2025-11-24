@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -20,6 +21,11 @@ public class VagaSaidaDTO {
     private LocalDateTime dataPublicacao;
     private String autorNome;
 
+    // Novos campos de saída
+    private String salario;
+    private List<String> requisitos;
+    private List<String> beneficios;
+
     public VagaSaidaDTO(Vaga vaga) {
         this.id = vaga.getId();
         this.titulo = vaga.getTitulo();
@@ -30,5 +36,10 @@ public class VagaSaidaDTO {
         this.tipoContratacao = vaga.getTipoContratacao();
         this.dataPublicacao = vaga.getDataPublicacao();
         this.autorNome = vaga.getAutor().getNome();
+
+        // Mapeando os novos campos
+        this.salario = vaga.getSalario();
+        this.requisitos = vaga.getRequisitos();
+        this.beneficios = vaga.getBeneficios();
     }
 }

@@ -31,6 +31,7 @@ public class VagaService {
     @Transactional
     public VagaSaidaDTO criar(VagaEntradaDTO dto, String autorEmail) {
 
+        // Validação de conteúdo impróprio (mantida)
         if (filtroProfanidade.contemProfanidade(dto.getTitulo()) ||
                 filtroProfanidade.contemProfanidade(dto.getDescricao()) ||
                 filtroProfanidade.contemProfanidade(dto.getEmpresa())) {
@@ -47,6 +48,20 @@ public class VagaService {
         vaga.setLocalizacao(dto.getLocalizacao());
         vaga.setNivel(dto.getNivel());
         vaga.setTipoContratacao(dto.getTipoContratacao());
+
+        // --- NOVOS CAMPOS ADICIONADOS AQUI ---
+        vaga.setSalario(dto.getSalario());
+
+        // Verifica se a lista não é nula antes de setar para evitar NullPointerException
+        if (dto.getRequisitos() != null) {
+            vaga.setRequisitos(dto.getRequisitos());
+        }
+
+        if (dto.getBeneficios() != null) {
+            vaga.setBeneficios(dto.getBeneficios());
+        }
+        // -------------------------------------
+
         vaga.setDataPublicacao(LocalDateTime.now());
         vaga.setAutor(autor);
 
@@ -59,6 +74,4 @@ public class VagaService {
                 .map(VagaSaidaDTO::new)
                 .collect(Collectors.toList());
     }
-
-    // Adicione outros métodos como atualizar, deletar, etc. conforme a necessidade
 }

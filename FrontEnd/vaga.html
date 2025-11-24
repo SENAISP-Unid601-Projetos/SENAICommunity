@@ -98,17 +98,22 @@
     </nav>
       
       <div class="online-friends">
-    <h3 class="widget-title">Amigos Online</h3>
-    <div class="friend-list" id="online-friends-list">
-        <p class="empty-state">Carregando...</p>
-    </div>
-</div>
+        <h3 class="widget-title">Amigos Online</h3>
+        <div class="friend-list" id="online-friends-list">
+            <p class="empty-state">Carregando...</p>
+        </div>
+      </div>
     </aside>
 
     <main class="main-content">
       <div class="vagas-header">
-        <h1>Encontre sua Próxima Oportunidade</h1>
-        <p>Explore vagas de estágio e emprego em empresas de tecnologia parceiras do SENAI.</p>
+        <div class="header-content">
+            <h1>Encontre sua Próxima Oportunidade</h1>
+            <p>Explore vagas de estágio e emprego em empresas de tecnologia parceiras do SENAI.</p>
+        </div>
+        <button id="btn-publicar-vaga" class="criar-vaga-btn" style="display: none;">
+            <i class="fas fa-plus-circle"></i> Publicar Vaga
+        </button>
       </div>
 
       <div class="filters-container">
@@ -148,28 +153,7 @@
       <div class="job-alerts-card">
         <h3><i class="fas fa-bell"></i> Crie um Alerta de Vaga</h3>
         <p>Receba notificações sobre novas vagas que combinam com seu perfil.</p>
-        <button class="create-alert-btn" style="display: none;">Criar Alerta</button>
-      </div>
-      
-      <div class="featured-companies">
-        <div class="section-header">
-          <h3><i class="far fa-building"></i> Empresas em Destaque</h3>
-          <a href="#" class="see-all">Ver todas</a>
-        </div>
-        <div class="company-list">
-          <div class="company-item">
-            <img src="https://placehold.co/40x40/58a6ff/ffffff?text=T" alt="Tech Solutions">
-            <span>Tech Solutions Inc.</span>
-          </div>
-          <div class="company-item">
-            <img src="https://placehold.co/40x40/f78166/ffffff?text=I" alt="Inova Dev">
-            <span>Inova Dev</span>
-          </div>
-          <div class="company-item">
-            <img src="https://placehold.co/40x40/3fb950/ffffff?text=C" alt="Code Masters">
-            <span>Code Masters</span>
-          </div>
-        </div>
+        <button class="create-alert-btn">Criar Alerta</button>
       </div>
     </aside>
   </div>
@@ -263,11 +247,28 @@
                       <label for="vaga-empresa">Empresa</label>
                       <input type="text" id="vaga-empresa" required placeholder="Ex: Tech Solutions Inc.">
                   </div>
+
+                  <div class="form-group">
+                      <label for="vaga-salario">Salário / Bolsa (Opcional)</label>
+                      <input type="text" id="vaga-salario" placeholder="Ex: R$ 2.500,00 ou A combinar">
+                  </div>
+
                   <div class="form-group">
                       <label for="vaga-descricao">Descrição da Vaga</label>
-                      <textarea id="vaga-descricao" rows="5" required placeholder="Fale sobre a vaga, requisitos..."></textarea>
+                      <textarea id="vaga-descricao" rows="4" required placeholder="Fale sobre a vaga..."></textarea>
                   </div>
                   
+                  <div class="form-group-row" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                      <div class="form-group" style="flex: 1; min-width: 250px;">
+                          <label for="vaga-requisitos">Requisitos (Um por linha)</label>
+                          <textarea id="vaga-requisitos" rows="4" placeholder="Java&#10;Spring Boot&#10;Inglês Intermediário"></textarea>
+                      </div>
+                      <div class="form-group" style="flex: 1; min-width: 250px;">
+                          <label for="vaga-beneficios">Benefícios (Um por linha)</label>
+                          <textarea id="vaga-beneficios" rows="4" placeholder="Vale Refeição&#10;Home Office&#10;Gympass"></textarea>
+                      </div>
+                  </div>
+
                   <div class="form-group-row" style="display: flex; gap: 1rem;">
                       <div class="form-group" style="flex: 1;">
                           <label for="vaga-nivel">Nível</label>
@@ -303,7 +304,98 @@
           </form>
       </div>
   </div>
-  <div id="edit-profile-modal" class="modal-overlay" style="display: none;">
+
+  <div id="vaga-details-modal" class="vaga-details-modal">
+    <div class="vaga-details-content">
+      <div class="vaga-details-header">
+        <button class="vaga-details-close" id="close-vaga-details-btn">&times;</button>
+        <div class="vaga-details-company">
+          <div class="vaga-details-company-logo">
+            <img id="details-company-logo" src="" alt="Logo da Empresa">
+          </div>
+          <div class="vaga-details-company-info">
+            <h1 id="details-vaga-titulo">Título da Vaga</h1>
+            <h2 id="details-vaga-empresa">Nome da Empresa</h2>
+          </div>
+        </div>
+        <div class="vaga-details-meta">
+          <div class="meta-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span id="details-vaga-localizacao">Local</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-chart-line"></i>
+            <span id="details-vaga-nivel">Nível</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-briefcase"></i>
+            <span id="details-vaga-tipo">Tipo</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-clock"></i>
+            <span id="details-vaga-data">Data</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="vaga-details-body">
+        <div class="vaga-details-section">
+          <h3>Descrição da Vaga</h3>
+          <div class="vaga-description-content" id="details-vaga-descricao">
+            </div>
+        </div>
+        
+        <div class="vaga-details-section">
+          <h3>Detalhes da Vaga</h3>
+          <div class="vaga-details-grid">
+            <div class="detail-card">
+              <h4>Nível</h4>
+              <p id="details-card-nivel">-</p>
+            </div>
+            <div class="detail-card">
+              <h4>Tipo</h4>
+              <p id="details-card-tipo">-</p>
+            </div>
+            <div class="detail-card">
+              <h4>Localização</h4>
+              <p id="details-card-localizacao">-</p>
+            </div>
+            <div class="detail-card">
+              <h4>Salário</h4>
+              <p id="details-card-salario">-</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="vaga-details-section">
+          <h3>Requisitos</h3>
+          <ul class="requirements-list" id="details-vaga-requisitos">
+            </ul>
+        </div>
+        
+        <div class="vaga-details-section">
+          <h3>Benefícios</h3>
+          <div class="benefits-grid" id="details-vaga-beneficios">
+            </div>
+        </div>
+      </div>
+      
+      <div class="vaga-details-footer">
+        <div class="vaga-publish-info">
+          Publicado por <strong id="details-vaga-autor">Autor</strong> em 
+          <span id="details-vaga-data-completa">Data</span>
+        </div>
+        <div class="vaga-details-actions">
+          <button class="btn-secondary" id="save-vaga-details-btn">
+            <i class="far fa-bookmark"></i> Salvar Vaga
+          </button>
+          <a href="#" class="btn-contact" id="contact-vaga-btn" target="_blank">
+            <i class="fas fa-paper-plane"></i> Entrar em Contato
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
   
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
