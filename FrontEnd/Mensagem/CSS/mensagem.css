@@ -116,13 +116,26 @@
 }
 
 .convo-card {
-    display: flex; align-items: center; gap: 1rem;
-    border-radius: var(--card-radius);
+    display: flex; 
+    align-items: center; 
+    gap: 1rem;
+    border-radius: var(--card-radius); /* Você pode mudar para 0 se quiser um visual mais "lista" */
     padding: 0.9rem;
     cursor: pointer;
     transition: background .17s;
-    border: 1.5px solid transparent;
+    
+    /* MANTENHA A BORDA TRANSPARENTE ORIGINAL (para o hover/selected funcionar) */
+    border: 1.5px solid transparent; 
+    
+    /* ADICIONE ISTO: Cria a linha divisória usando a cor inteligente do sistema */
+    border-bottom: 1px solid var(--border-color);
+    
     position: relative;
+}
+
+/* ADICIONE ISTO NO FINAL DO ARQUIVO: Remove a linha do último card para ficar mais bonito */
+.convo-card:last-child {
+    border-bottom: 1.5px solid transparent; /* Volta a ser transparente no último */
 }
 .convo-card.selected, .convo-card:hover {
     background: var(--bg-tertiary);
@@ -212,8 +225,8 @@
 }
 
 .message-block {
-    display: flex; flex-direction: column;
-    align-items: flex-start; max-width: 75%;
+    min-width: 0; 
+    width: 75%; /* Garante uso do espaço disponível */
 }
 .message-group.me .message-block { align-items: flex-end; }
 
@@ -223,7 +236,11 @@
 }
 .message-author-header strong { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
 .message-author-header span { font-size: 0.75rem; color: var(--text-secondary); }
-
+.message-group.me .message-author-header {
+    flex-direction: row;       /* Ordem: Você primeiro, Horário depois */
+    justify-content: flex-end; /* Empurra tudo para o canto direito */
+    width: 97%;               /* Garante que ocupe a largura para o justify funcionar */
+}
 /* -----------------------------------------------------------
    WRAPPER & BOLHA DA MENSAGEM (CORREÇÃO DE LAYOUT)
    ----------------------------------------------------------- */
@@ -436,9 +453,24 @@
     .btn-action { width: 36px; height: 36px; }
 }
 
-/* Variaveis de cor (Garantia) */
-:root, [data-theme="dark"] {
-    --danger-color: #ff4545;
-    --danger-color-rgb: 255, 69, 69;
-    --accent-primary-rgb: 88, 166, 255;
+:root[data-theme="light"] .message-group.outro .message-content,
+body[data-theme="light"] .message-group.outro .message-content {
+    background-color: #ffffff !important;   /* Fundo branco puro */
+    border: 1px solid #d1d9e0 !important;   /* Borda cinza visível */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); /* Sombra suave */
+    color: #1f2328 !important;              /* Texto escuro */
+}
+
+/* 3. Ajuste na quebra de linha (Geral) */
+.message-content {
+    /* Regras para quebrar palavras longas sem estourar */
+    word-break: break-word !important;      /* Compatibilidade */
+    word-wrap: break-word !important;       /* Compatibilidade antiga */
+    overflow-wrap: break-word !important;   /* Padrão moderno */
+    
+    /* Mantém os parágrafos que a pessoa deu enter */
+    white-space: pre-wrap !important;
+    
+    /* Garante que não ultrapasse a largura */
+    max-width: 100%;
 }
