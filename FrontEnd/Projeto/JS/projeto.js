@@ -1,5 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    // Função utilitária para mostrar/ocultar modais
+function toggleModal(modalId, show) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        if (show) {
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('visible'), 10);
+        } else {
+            modal.classList.remove('visible');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+    }
+}
+
     // --- GERENCIADOR DE PERFIL ---
     const ProfileManager = {
         elements: {
@@ -22,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             cancelEditBtn: document.getElementById('cancel-edit-profile-btn'),
             cancelDeleteBtn: document.getElementById('cancel-delete-account-btn')
+            
         },
 
         init() {
@@ -315,7 +330,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 modalOverlay: document.getElementById("novo-projeto-modal"),
                 openModalBtn: document.getElementById("btn-new-project"),
-                closeModalBtn: document.querySelector(".modal-content .close-modal-btn"),
+                closeModalBtn: document.querySelector("#novo-projeto-modal .close-modal-btn"),
                 form: document.getElementById("novo-projeto-form"),
                 projTituloInput: document.getElementById("proj-titulo"),
                 projDescricaoInput: document.getElementById("proj-descricao"),
@@ -323,9 +338,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 projCategoriaInput: document.getElementById("proj-categoria"),
                 projTecnologiasInput: document.getElementById("proj-tecnologias"),
                 projPrivacidadeInput: document.getElementById("proj-privacidade"),
-
-                modalUserAvatar: document.getElementById("modal-user-avatar"),
-                modalUserName: document.getElementById("modal-user-name"),
 
                 connectionsCount: document.getElementById("connections-count"),
                 projectsCount: document.getElementById("projects-count"),
@@ -974,16 +986,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             handlers: {
                 openModal() {
-                    if (currentUser && this.elements.modalUserName && this.elements.modalUserAvatar) {
-                        this.elements.modalUserName.textContent = currentUser.nome;
-                        const avatarUrl = this.getMemberAvatarUrl(currentUser);
-                        this.elements.modalUserAvatar.src = avatarUrl;
-                    }
-                    this.elements.modalOverlay?.classList.add("visible");
+                    toggleModal('novo-projeto-modal', true);
                 },
 
                 closeModal() {
-                    this.elements.modalOverlay?.classList.remove("visible");
+                    toggleModal('novo-projeto-modal', false);
                 },
 
                 async handleFormSubmit(e) {
@@ -1085,12 +1092,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const { openModalBtn, closeModalBtn, modalOverlay, form, searchInput, categoryFilter } =
                     this.elements;
 
+                // CORREÇÃO: Configurar o evento de clique para abrir o modal
                 if (openModalBtn) {
-                    openModalBtn.addEventListener("click", this.handlers.openModal.bind(this));
+                    openModalBtn.addEventListener("click", () => this.handlers.openModal());
                 }
 
                 if (closeModalBtn) {
-                    closeModalBtn.addEventListener("click", this.handlers.closeModal.bind(this));
+                    closeModalBtn.addEventListener("click", () => this.handlers.closeModal());
                 }
 
                 if (form) {

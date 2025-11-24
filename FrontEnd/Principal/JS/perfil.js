@@ -91,13 +91,14 @@ document.addEventListener("DOMContentLoaded", () => {
     mediaViewerClose: document.getElementById('media-viewer-close'),
   };
 
-  // --- FUNÇÕES DE LOADING (IGUAL PROJETO.JS) ---
+
   function setProfileLoading(isLoading) {
     if (elements.userInfo && elements.topbarUser) {
         if (isLoading) {
             elements.userInfo.classList.remove('loaded');
             elements.topbarUser.classList.remove('loaded');
         } else {
+            // Adiciona a classe 'loaded' para esconder o spinner via CSS
             elements.userInfo.classList.add('loaded');
             elements.topbarUser.classList.add('loaded');
         }
@@ -277,12 +278,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- FUNÇÕES DE RESPONSIVIDADE MOBILE ---
-  function setupMobileMenu() {
+ function setupMobileMenu() {
     if (elements.mobileMenuToggle && elements.sidebar && elements.mobileOverlay && elements.sidebarClose) {
         const toggleMenu = () => {
             elements.sidebar.classList.toggle('active');
             elements.mobileOverlay.classList.toggle('active');
-            document.body.style.overflow = elements.sidebar.classList.contains('active') ? 'hidden' : '';
+            
+            // Trava o scroll do corpo quando o menu está aberto
+            if (elements.sidebar.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
         };
 
         elements.mobileMenuToggle.onclick = toggleMenu;
