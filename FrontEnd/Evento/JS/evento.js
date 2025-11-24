@@ -1,13 +1,61 @@
-// evento.js - Código completo e funcional
+// evento.js - Código completo e funcional (Versão Final)
 document.addEventListener('DOMContentLoaded', () => {
   // Aguardar a inicialização global do principal.js
   if (!window.currentUser) {
-    document.addEventListener('globalScriptsLoaded', initEventos);
+    document.addEventListener('globalScriptsLoaded', () => {
+      initEventos();
+      initResponsiveFeatures(); // Inicia funcionalidades mobile
+    });
   } else {
     initEventos();
+    initResponsiveFeatures(); // Inicia funcionalidades mobile
   }
 });
 
+// --- FUNÇÃO: Gerencia a Responsividade (Menu Mobile) ---
+function initResponsiveFeatures() {
+  const elements = {
+      mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+      sidebar: document.getElementById('sidebar'),
+      sidebarClose: document.getElementById('sidebar-close'),
+      mobileOverlay: document.getElementById('mobile-overlay')
+  };
+
+  function toggleMobileMenu() {
+      if(elements.sidebar) {
+          elements.sidebar.classList.toggle('active');
+          
+          if(elements.mobileOverlay) {
+              elements.mobileOverlay.classList.toggle('active');
+          }
+          
+          document.body.style.overflow = elements.sidebar.classList.contains('active') ? 'hidden' : '';
+      }
+  }
+
+  if (elements.mobileMenuBtn) elements.mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+  if (elements.sidebarClose) elements.sidebarClose.addEventListener('click', toggleMobileMenu);
+  if (elements.mobileOverlay) elements.mobileOverlay.addEventListener('click', toggleMobileMenu);
+
+  const menuLinks = document.querySelectorAll('.menu a');
+  menuLinks.forEach(link => {
+      link.addEventListener('click', () => {
+          if (window.innerWidth <= 1024 && elements.sidebar.classList.contains('active')) {
+              toggleMobileMenu();
+          }
+      });
+  });
+
+  window.addEventListener('resize', () => {
+      if (window.innerWidth > 1024 && elements.sidebar) {
+          elements.sidebar.classList.remove('active');
+          if(elements.mobileOverlay) elements.mobileOverlay.classList.remove('active');
+          document.body.style.overflow = '';
+      }
+  });
+}
+
+// --- FUNÇÃO PRINCIPAL DE EVENTOS ---
 async function initEventos() {
   const eventosGrid = document.querySelector('.eventos-grid');
   const meusEventosLista = document.getElementById('meus-eventos-lista');
@@ -20,8 +68,12 @@ async function initEventos() {
   const eventoIdInput = document.getElementById('evento-id');
   const eventoTituloInput = document.getElementById('evento-titulo');
   const eventoDescricaoInput = document.getElementById('evento-descricao');
+  
+  // Inputs de Data e Hora
   const eventoDataInput = document.getElementById('evento-data');
-  const eventoHoraInput = document.getElementById('evento-hora');
+  const eventoHoraInicioInput = document.getElementById('evento-hora-inicio');
+  const eventoHoraFimInput = document.getElementById('evento-hora-fim');
+  
   const eventoLocalInput = document.getElementById('evento-local');
   const eventoFormatoSelect = document.getElementById('evento-formato');
   const eventoCategoriaSelect = document.getElementById('evento-categoria');
@@ -36,6 +88,7 @@ async function initEventos() {
   // Inicialização
   async function init() {
     await checkUserRole();
+    updateSidebarUserInfo(); // Sidebar do usuário
     await loadEventos();
     setupEventListeners();
   }
@@ -45,7 +98,6 @@ async function initEventos() {
     try {
       isAdmin = window.currentUser && window.currentUser.tipoUsuario === 'ADMIN';
       
-      // Mostrar botão de criar evento se for admin
       if (isAdmin) {
         const criarEventoBtn = document.createElement('button');
         criarEventoBtn.className = 'criar-evento-btn';
@@ -53,7 +105,9 @@ async function initEventos() {
         criarEventoBtn.addEventListener('click', () => openEventoModal());
         
         const eventosHeader = document.querySelector('.eventos-header');
-        eventosHeader.appendChild(criarEventoBtn);
+        if (eventosHeader) {
+            eventosHeader.appendChild(criarEventoBtn);
+        }
       }
     } catch (error) {
       console.error('Erro ao verificar role do usuário:', error);
@@ -66,10 +120,7 @@ async function initEventos() {
     try {
       const response = await axios.get(`${window.backendUrl}/api/eventos`);
       eventos = response.data;
-      
-      // Carregar eventos com interesse do usuário
       await loadEventosInteressados();
-      
       renderEventos();
       updateMeusEventos();
     } catch (error) {
@@ -93,6 +144,7 @@ async function initEventos() {
 
   // Renderizar eventos no grid
   function renderEventos() {
+    if (!eventosGrid) return;
     eventosGrid.innerHTML = '';
     
     if (eventos.length === 0) {
@@ -118,9 +170,21 @@ async function initEventos() {
     card.className = 'evento-card';
     card.dataset.id = evento.id;
 
-    const dataEvento = new Date(evento.data);
-    const dia = dataEvento.getDate();
-    const mes = dataEvento.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+    // CORREÇÃO DE FUSO HORÁRIO E DATA
+    // Parse manual da data para evitar UTC shift (Bug das 21h)
+    let dia = '--', mes = '---';
+    if(evento.data) {
+        const [anoStr, mesStr, diaStr] = evento.data.split('-');
+        const dataObj = new Date(anoStr, mesStr - 1, diaStr);
+        dia = diaStr;
+        mes = dataObj.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+    }
+
+    // FORMATAÇÃO DE HORÁRIOS
+    // Pega HH:mm (5 chars) ignorando segundos
+    const horaInicio = evento.horaInicio ? evento.horaInicio.substring(0, 5) : '--:--';
+    const horaFim = evento.horaFim ? evento.horaFim.substring(0, 5) : '--:--';
+
     const isInteressado = eventosInteressados.includes(evento.id);
 
     let adminActions = '';
@@ -148,7 +212,11 @@ async function initEventos() {
       <div class="evento-conteudo">
         <span class="evento-categoria">${evento.categoria}</span>
         <h2 class="evento-titulo">${evento.nome}</h2>
-        <div class="evento-detalhe"><i class="fas fa-clock"></i> ${formatarHora(dataEvento)}</div>
+        
+        <div class="evento-detalhe">
+             <i class="fas fa-clock"></i> ${horaInicio} - ${horaFim}
+        </div>
+        
         <div class="evento-detalhe"><i class="fas fa-map-marker-alt"></i> ${evento.local} (${evento.formato})</div>
         ${!isAdmin ? `
           <button class="rsvp-btn ${isInteressado ? 'confirmed' : ''}" onclick="toggleInteresse(${evento.id})">
@@ -162,13 +230,9 @@ async function initEventos() {
     return card;
   }
 
-  // Formatar hora
-  function formatarHora(data) {
-    return data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  }
-
   // Atualizar lista "Meus Eventos"
   function updateMeusEventos() {
+    if (!meusEventosLista) return;
     meusEventosLista.innerHTML = '';
     
     const eventosConfirmados = eventos.filter(evento => 
@@ -181,9 +245,14 @@ async function initEventos() {
     }
 
     eventosConfirmados.forEach(evento => {
-      const dataEvento = new Date(evento.data);
-      const dia = dataEvento.getDate();
-      const mes = dataEvento.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+      // Parse manual da data para o sidebar também
+      let dia = '--', mes = '---';
+      if(evento.data) {
+        const [anoStr, mesStr, diaStr] = evento.data.split('-');
+        const dataObj = new Date(anoStr, mesStr - 1, diaStr);
+        dia = diaStr;
+        mes = dataObj.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+      }
       
       const item = document.createElement('div');
       item.className = 'evento-confirmado-item';
@@ -220,80 +289,103 @@ async function initEventos() {
     }
   }
 
-  // Abrir modal para criar evento
+  // Abrir modal para criar/editar evento
   function openEventoModal(evento = null) {
     const modalTitulo = document.getElementById('evento-modal-titulo');
-    
+    const previewContainer = document.getElementById('preview-container');
+    const previewImg = document.getElementById('evento-imagem-preview');
+
+    // 1. LIMPEZA DO INPUT DE ARQUIVO (Correção InvalidStateError)
+    if(eventoImagemInput) eventoImagemInput.value = '';
+
     if (evento) {
+      // --- MODO EDIÇÃO ---
       modalTitulo.textContent = 'Editar Evento';
       eventoIdInput.value = evento.id;
       eventoTituloInput.value = evento.nome;
-      eventoDescricaoInput.value = evento.descricao || '';
-      eventoDataInput.value = formatDateTimeForInput(evento.data);
-      eventoHoraInput.value = evento.hora || '';
+      if(eventoDescricaoInput) eventoDescricaoInput.value = evento.descricao || '';
+      
+      // Data vem como YYYY-MM-DD do backend
+      eventoDataInput.value = evento.data; 
+      
+      // Horários (Pega HH:mm do HH:mm:ss)
+      eventoHoraInicioInput.value = evento.horaInicio ? evento.horaInicio.substring(0, 5) : '';
+      eventoHoraFimInput.value = evento.horaFim ? evento.horaFim.substring(0, 5) : '';
+      
       eventoLocalInput.value = evento.local;
-      eventoFormatoSelect.value = evento.formato;
+      eventoFormatoSelect.value = evento.formato; 
       eventoCategoriaSelect.value = evento.categoria;
-      eventoImagemInput.value = evento.imagemCapaUrl || '';
+
+      // 2. PREVIEW DA IMAGEM
+      if (evento.imagemCapaUrl && previewContainer && previewImg) {
+          previewImg.src = evento.imagemCapaUrl;
+          previewContainer.style.display = 'block';
+      } else if (previewContainer) {
+          previewContainer.style.display = 'none';
+      }
+
     } else {
+      // --- MODO CRIAÇÃO ---
       modalTitulo.textContent = 'Criar Evento';
       eventoForm.reset();
       eventoIdInput.value = '';
+      
+      // Reseta preview
+      if (previewContainer) previewContainer.style.display = 'none';
+      if (previewImg) previewImg.src = '';
     }
     
     eventoModal.style.display = 'flex';
   }
 
-  // Formatar data para input datetime-local
-  function formatDateTimeForInput(dateTimeString) {
-    const date = new Date(dateTimeString);
-    return date.toISOString().slice(0, 16);
-  }
-
-  // Salvar evento (criar ou editar)
+  // SALVAR EVENTO (Create ou Update)
   async function saveEvento() {
+    // 1. Coleta e Normaliza os dados
+    const normalizeEnum = (valor) => valor ? valor.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
+
     const eventoData = {
       nome: eventoTituloInput.value,
+      descricao: eventoDescricaoInput.value, // <--- ADICIONADO AQUI
       data: eventoDataInput.value,
+      horaInicio: eventoHoraInicioInput.value.length === 5 ? eventoHoraInicioInput.value + ':00' : eventoHoraInicioInput.value,
+      horaFim: eventoHoraFimInput.value.length === 5 ? eventoHoraFimInput.value + ':00' : eventoHoraFimInput.value,
       local: eventoLocalInput.value,
-      formato: eventoFormatoSelect.value,
-      categoria: eventoCategoriaSelect.value
+      formato: normalizeEnum(eventoFormatoSelect.value),
+      categoria: normalizeEnum(eventoCategoriaSelect.value)
     };
-
-    if (eventoDescricaoInput.value) {
-      eventoData.descricao = eventoDescricaoInput.value;
+    
+    // Validação básica (Adicionei descrição se for obrigatória no banco)
+    if (!eventoData.nome || !eventoData.data || !eventoData.horaInicio || !eventoData.horaFim || !eventoData.descricao) {
+        showNotification('Preencha todos os campos obrigatórios, incluindo a descrição.', 'info');
+        return;
     }
 
-    if (eventoHoraInput.value) {
-      eventoData.hora = eventoHoraInput.value;
-    }
+    const formData = new FormData();
+    formData.append('evento', new Blob([JSON.stringify(eventoData)], { type: 'application/json' }));
 
-    if (eventoImagemInput.value) {
-      eventoData.imagemCapaUrl = eventoImagemInput.value;
+    if (eventoImagemInput.files && eventoImagemInput.files[0]) {
+      formData.append('imagem', eventoImagemInput.files[0]);
     }
 
     try {
       showLoading();
-      
       if (eventoIdInput.value) {
-        // Editar evento existente
-        await axios.put(`${window.backendUrl}/api/eventos/${eventoIdInput.value}`, eventoData);
-        showNotification('Evento atualizado com sucesso!', 'success');
+        await axios.put(`${window.backendUrl}/api/eventos/${eventoIdInput.value}`, formData);
+        showNotification('Evento atualizado!', 'success');
       } else {
-        // Criar novo evento
-        await axios.post(`${window.backendUrl}/api/eventos`, eventoData);
-        showNotification('Evento criado com sucesso!', 'success');
+        await axios.post(`${window.backendUrl}/api/eventos`, formData);
+        showNotification('Evento criado!', 'success');
       }
-      
       eventoModal.style.display = 'none';
       await loadEventos();
     } catch (error) {
-      console.error('Erro ao salvar evento:', error);
-      showNotification('Erro ao salvar evento', 'error');
+      console.error(error);
+      const msg = error.response?.data?.message || 'Erro ao salvar.';
+      showNotification(msg, 'error');
     } finally {
       hideLoading();
     }
-  }
+}
 
   // Excluir evento
   async function deleteEvento(eventoId) {
@@ -323,7 +415,13 @@ async function initEventos() {
     const hoje = new Date();
     
     let filteredEventos = eventos.filter(evento => {
-      const dataEvento = new Date(evento.data);
+      // Parse manual para filtro também
+      let dataEvento = new Date();
+      if(evento.data) {
+          const [ano, mes, dia] = evento.data.split('-');
+          dataEvento = new Date(ano, mes - 1, dia);
+      }
+
       const hojeInicioDoDia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
       
       const periodoMatch = periodo === 'proximos' ? 
@@ -343,14 +441,16 @@ async function initEventos() {
       const dataB = new Date(b.data);
       
       if (periodo === 'proximos') {
-        return dataA - dataB; // Mais próximos primeiro
+        return dataA - dataB; 
       } else {
-        return dataB - dataA; // Mais recentes primeiro
+        return dataB - dataA; 
       }
     });
 
-    // Renderizar eventos filtrados
+    // Renderizar
+    if (!eventosGrid) return;
     eventosGrid.innerHTML = '';
+    
     if (filteredEventos.length === 0) {
       eventosGrid.innerHTML = `
         <div class="no-events" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
@@ -388,30 +488,32 @@ async function initEventos() {
     document.getElementById('filter-periodo').addEventListener('change', applyFilters);
     document.getElementById('filter-formato').addEventListener('change', applyFilters);
     document.getElementById('filter-categoria').addEventListener('change', applyFilters);
-    searchInput.addEventListener('input', applyFilters);
+    if(searchInput) searchInput.addEventListener('input', applyFilters);
 
     // Modal
-    salvarEventoBtn.addEventListener('click', saveEvento);
-    cancelarEventoBtn.addEventListener('click', () => {
+    if(salvarEventoBtn) salvarEventoBtn.addEventListener('click', saveEvento);
+    if(cancelarEventoBtn) cancelarEventoBtn.addEventListener('click', () => {
       eventoModal.style.display = 'none';
     });
 
     // Fechar modal ao clicar fora
-    eventoModal.addEventListener('click', (e) => {
-      if (e.target === eventoModal) {
-        eventoModal.style.display = 'none';
-      }
-    });
+    if(eventoModal) {
+        eventoModal.addEventListener('click', (e) => {
+        if (e.target === eventoModal) {
+            eventoModal.style.display = 'none';
+        }
+        });
+    }
 
     // Fechar modal com ESC
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && eventoModal && eventoModal.style.display === 'flex') {
         eventoModal.style.display = 'none';
       }
     });
   }
 
-  // Funções globais para os botões
+  // Funções globais para os botões (onClick no HTML)
   window.editEvento = (eventoId) => {
     const evento = eventos.find(e => e.id === eventoId);
     if (evento) {
@@ -425,4 +527,24 @@ async function initEventos() {
 
   // Inicializar
   init();
+}
+
+// --- FUNÇÃO AUXILIAR: Sidebar do Usuário ---
+function updateSidebarUserInfo() {
+    if (window.currentUser) {
+        const sidebarName = document.getElementById('sidebar-user-name');
+        const sidebarTitle = document.getElementById('sidebar-user-title');
+        const sidebarImg = document.getElementById('sidebar-user-img');
+        
+        if(sidebarName) sidebarName.textContent = window.currentUser.nome;
+        if(sidebarTitle) sidebarTitle.textContent = window.currentUser.cargo || 'Membro'; 
+        
+        if(sidebarImg && window.currentUser.fotoPerfil) {
+             if(typeof window.getAvatarUrl === 'function') {
+                 sidebarImg.src = window.getAvatarUrl(window.currentUser.fotoPerfil);
+             } else {
+                 sidebarImg.src = window.currentUser.fotoPerfil;
+             }
+        }
+    }
 }

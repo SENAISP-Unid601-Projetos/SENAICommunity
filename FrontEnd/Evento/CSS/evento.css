@@ -147,6 +147,7 @@
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   width: fit-content;
+  padding-left: 0;
 }
 
 .evento-titulo {
@@ -587,5 +588,132 @@
   .modal-header,
   .modal-footer {
     padding: 1rem;
+  }
+}
+
+:root {
+  --sidebar-width: 300px; /* Largura padrão da sidebar */
+  --header-height: 60px;
+}
+
+/* Overlay para fundo escuro no mobile */
+.mobile-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 998; opacity: 0; visibility: hidden;
+  transition: 0.3s; backdrop-filter: blur(2px);
+}
+.mobile-overlay.active { opacity: 1; visibility: visible; }
+
+/* Botão Fechar Sidebar (Mobile) */
+.sidebar-close {
+  display: none; 
+  position: absolute; top: 15px; right: 15px;
+  background: none; border: none; color: var(--text-secondary);
+  font-size: 1.5rem; cursor: pointer; z-index: 1001;
+}
+
+/* Ajuste do Container Principal */
+.container {
+  display: flex;
+  min-height: calc(100vh - var(--header-height));
+  position: relative;
+  gap: 1.5rem; /* Espaço entre colunas */
+}
+
+/* Sidebar Esquerda (Padrão Desktop) */
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  height: calc(100vh - var(--header-height));
+  position: sticky;
+  top: var(--header-height);
+  overflow-y: auto;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 1.5rem 0; /* Remove padding lateral excessivo */
+  min-width: 0;
+}
+
+/* Sidebar Direita (Meus Eventos) */
+.right-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  padding-top: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* --- MOBILE E TABLET (Max 1024px) --- */
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column; /* Empilha tudo */
+    padding: 0;
+    gap: 0;
+  }
+
+  /* Sidebar vira Menu Gaveta */
+  .sidebar {
+    position: fixed; top: 0; left: 0;
+    height: 100vh;
+    width: 85%; max-width: 320px;
+    transform: translateX(-100%); /* Escondido */
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+    z-index: 1000;
+    border-right: none;
+  }
+  .sidebar.active { transform: translateX(0); }
+
+  .sidebar-close { display: block; }
+
+  /* Ajuste do conteúdo principal */
+  .main-content {
+    padding: 1rem;
+    width: 100%;
+  }
+
+  /* Sidebar Direita vai para baixo do conteúdo */
+  .right-sidebar {
+    width: 100%;
+    padding: 1rem;
+    order: 3; /* Garante que fique no final */
+  }
+
+  .meus-eventos-card {
+    margin-bottom: 2rem;
+  }
+  
+  /* Ajustes nos Filtros */
+  .filters-container {
+    flex-direction: column;
+  }
+  
+  .filters-container select {
+    width: 100%;
+  }
+}
+
+/* --- MOBILE PEQUENO (Max 600px) --- */
+@media (max-width: 600px) {
+  .eventos-header h1 { font-size: 1.5rem; }
+  
+  /* Grid de Eventos vira 1 coluna */
+  .eventos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Ajuste no Header (Logo e Busca) */
+  .topbar {
+    padding: 0 1rem;
+  }
+  
+  .search {
+    display: none; /* Opcional: Esconder busca no mobile se ocupar mto espaço */
   }
 }
