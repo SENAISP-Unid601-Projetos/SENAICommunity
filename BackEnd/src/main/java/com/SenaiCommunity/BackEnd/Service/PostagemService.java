@@ -193,6 +193,17 @@ public class PostagemService {
         return toDTO(postagem); // A mágica acontece no método de conversão toDTO
     }
 
+    @Transactional(readOnly = true)
+    public List<PostagemSaidaDTO> buscarPostagensPorUsuario(Long usuarioId) {
+        // Busca as postagens do autor específico, ordenadas da mais recente para a mais antiga
+        List<Postagem> posts = postagemRepository.findByAutorIdOrderByDataPostagemDesc(usuarioId);
+
+        // Converte a lista de entidades para DTOs usando seu método toDTO existente
+        return posts.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     // Lógica de conversão Entidade -> DTO de Saída
     // Em PostagemService.java
 

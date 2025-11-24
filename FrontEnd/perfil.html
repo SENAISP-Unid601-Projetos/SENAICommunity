@@ -137,20 +137,7 @@
                     <span class="menu-text">Minhas Conexões</span>
                 </a>
 
-                <!-- Mobile-only menu items -->
-                <div class="menu-divider mobile-only"></div>
-                <a href="#" class="menu-item mobile-only" id="mobile-edit-btn">
-                    <i class="fas fa-user-edit"></i>
-                    <span class="menu-text">Editar Perfil</span>
-                </a>
-                <a href="#" class="menu-item mobile-only dangerous-action" id="mobile-delete-btn">
-                    <i class="fas fa-user-slash"></i>
-                    <span class="menu-text">Excluir Conta</span>
-                </a>
-                <a href="#" class="menu-item mobile-only" id="mobile-logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span class="menu-text">Sair</span>
-                </a>
+                
             </nav>
 
             <div class="sidebar-widget">
@@ -167,11 +154,9 @@
         </aside>
 
         <main class="main-content">
+            <!-- Header Mobile -->
             <div class="page-header-mobile">
                 <h1 class="page-title-mobile">Perfil</h1>
-                <button class="mobile-menu-btn" id="profile-mobile-menu-toggle">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
             </div>
 
             <div class="profile-page">
@@ -198,7 +183,7 @@
                 </div>
 
                 <div class="profile-body">
-                    <div class="widget-card">
+                    <div class="widget-card info-card">
                         <h3>Sobre</h3>
                         <p id="profile-bio">Carregando bio...</p>
                         <ul class="profile-metadata">
@@ -222,12 +207,10 @@
                     </button>
                 </div>
 
-                <div id="tab-posts" class="tab-content active">
-                    <div class="posts-container" style="margin-top: 1.5rem;">
-                        <!-- Posts serão carregados via JS -->
-                    </div>
-                </div>
-
+               <div id="tab-posts" class="tab-content active">
+    <div id="profile-posts-container" style="margin-top: 1.5rem;">
+        </div>
+</div>
                 <div id="tab-friends" class="tab-content" style="display: none;">
                     <div class="friends-grid" id="profile-friends-list">
                         <p class="empty-state">Carregando amigos...</p>
@@ -243,40 +226,41 @@
         </main>
     </div>
 
-  <div id="edit-post-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Editar Publicação</h3>
-        </div>
-        <form id="edit-post-form">
-            <input type="hidden" id="edit-post-id">
-            
-            <textarea id="edit-post-textarea" placeholder="Edite sua publicação..."></textarea>
-            
-            <div class="form-group-files" id="existing-media-section" style="display: none;">
-                <label class="file-label">Mídias Atuais (marque para remover)</label>
-                <div id="edit-existing-media-container"></div>
+    <!-- Modais (mantidos do código original) -->
+    <div id="edit-post-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Publicação</h3>
             </div>
+            <form id="edit-post-form">
+                <input type="hidden" id="edit-post-id">
+                
+                <textarea id="edit-post-textarea" placeholder="Edite sua publicação..."></textarea>
+                
+                <div class="form-group-files" id="existing-media-section" style="display: none;">
+                    <label class="file-label">Mídias Atuais (marque para remover)</label>
+                    <div id="edit-existing-media-container"></div>
+                </div>
 
-            <div class="form-group-files">
-                <label for="edit-post-files" class="file-label" style="cursor: pointer;">
-                    <i class="fas fa-plus-circle"></i> Adicionar Novas Mídias
-                </label>
-                <input type="file" id="edit-post-files" multiple accept="image/*,video/*" style="display:none;">
-                <div id="edit-file-preview-container"></div>
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" id="cancel-edit-post-btn" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Salvar
-                </button>
-            </div>
-        </form>
+                <div class="form-group-files">
+                    <label for="edit-post-files" class="file-label" style="cursor: pointer;">
+                        <i class="fas fa-plus-circle"></i> Adicionar Novas Mídias
+                    </label>
+                    <input type="file" id="edit-post-files" multiple accept="image/*,video/*" style="display:none;">
+                    <div id="edit-file-preview-container"></div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" id="cancel-edit-post-btn" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
     <div id="edit-comment-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
@@ -387,6 +371,37 @@
                     <button type="submit" class="btn btn-danger">Excluir Minha Conta Permanentemente</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal de Projeto -->
+    <div id="project-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="project-modal-title">Detalhes do Projeto</h3>
+            </div>
+            <div class="modal-body">
+                <img id="project-modal-img" src="" alt="Imagem do Projeto" style="width:100%; border-radius:8px; margin-bottom:1rem;">
+                <p id="project-modal-description"></p>
+                <div class="project-details">
+                    <p><strong>Categoria:</strong> <span id="project-modal-category"></span></p>
+                    <p><strong>Status:</strong> <span id="project-modal-status"></span></p>
+                    <p><strong>Data de Criação:</strong> <span id="project-modal-date"></span></p>
+                    <div class="technologies">
+                        <strong>Tecnologias:</strong>
+                        <div id="project-modal-technologies" class="tech-tags"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" id="project-modal-link" class="btn btn-primary" target="_blank" style="display:none;">
+                    <i class="fas fa-external-link-alt"></i> Ver Projeto
+                </a>
+                <a href="#" id="project-modal-full-link" class="btn btn-secondary">
+                    <i class="fas fa-info-circle"></i> Ver Detalhes Completos
+                </a>
+                <button type="button" class="btn btn-secondary" onclick="window.closeProjectModal()">Fechar</button>
+            </div>
         </div>
     </div>
 

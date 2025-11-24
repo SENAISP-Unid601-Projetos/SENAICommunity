@@ -16,7 +16,7 @@
 
     <header class="topbar">
         <div class="header-left">
-            <div class="menu-toggle">
+            <div class="menu-toggle mobile-only">
                 <i class="fas fa-bars"></i>
             </div>
             <a href="/projeto.html" class="back-btn" data-tooltip="Voltar">
@@ -43,12 +43,37 @@
         </nav>
     </header>
 
+    <!-- Mobile Header (apenas para mobile) -->
+    <div class="mobile-header mobile-only">
+        <div class="mobile-project-info">
+            <h3 id="mobile-project-name">Carregando...</h3>
+            <span class="online-indicator">
+                <span class="status-dot"></span>
+                <span id="mobile-online-count">0 online</span>
+            </span>
+        </div>
+        <div class="mobile-chat-actions">
+            <button class="action-btn" id="mobile-attach-file-btn" data-tooltip="Anexar arquivo">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            <button class="action-btn" id="mobile-solicitacoes-btn" data-tooltip="Solicitações" style="display: none;">
+                <i class="fas fa-user-clock"></i>
+            </button>
+        </div>
+    </div>
+
     <div class="project-container">
+        <!-- Overlay para mobile -->
+        <div class="mobile-overlay" id="mobile-overlay"></div>
+
         <!-- Sidebar com membros do projeto -->
-        <aside class="members-sidebar">
-            <div class="members-header">
+        <aside class="members-sidebar" id="members-sidebar">
+            <div class="sidebar-header">
                 <h3>Membros do Projeto</h3>
                 <span class="members-count" id="members-count">0</span>
+                <button class="sidebar-close mobile-only" id="sidebar-close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
             <div class="search-box">
@@ -97,7 +122,7 @@
 
         <!-- Área principal de chat -->
         <main class="chat-area">
-            <div class="chat-header">
+            <div class="chat-header desktop-only">
                 <div class="chat-info">
                     <h3 id="chat-project-name">Carregando...</h3>
                     <span class="online-indicator">
@@ -108,9 +133,6 @@
                 <div class="chat-actions">
                     <button class="action-btn" id="attach-file-btn" data-tooltip="Anexar arquivo">
                         <i class="fas fa-paperclip"></i>
-                    </button>
-                    <button class="action-btn" id="search-chat-btn" data-tooltip="Buscar no chat">
-                        <i class="fas fa-search"></i>
                     </button>
                     <button class="action-btn" id="solicitacoes-btn" data-tooltip="Solicitações de entrada" style="display: none;">
                         <i class="fas fa-user-clock"></i>
@@ -139,7 +161,7 @@
         </main>
     </div>
 
-    <!-- Modal de informações do projeto -->
+      <!-- Modal de informações do projeto -->
     <div id="project-info-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">

@@ -16,7 +16,6 @@ import org.springframework.security.core.Authentication;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -41,15 +40,9 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarUsuarioPorId(@PathVariable Long id) {
-        return usuarioRepository.findById(id)
-                .map(usuario -> ResponseEntity.ok(Map.of(
-                        "id", usuario.getId(),
-                        "nome", usuario.getNome(),
-                        "fotoPerfil", usuario.getFotoPerfil() != null ? usuario.getFotoPerfil() : "",
-                        "email", usuario.getEmail() // Opcional, cuidadcom privacidade
-                )))
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<UsuarioSaidaDTO> buscarUsuarioPorId(@PathVariable Long id) {
+        UsuarioSaidaDTO usuario = usuarioService.buscarUsuarioPorId(id);
+        return ResponseEntity.ok(usuario);
     }
 
     @PutMapping("/me")
@@ -64,7 +57,6 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    // NOVO ENDPOINT PARA A FOTO
     @PutMapping("/me/foto")
     public ResponseEntity<UsuarioSaidaDTO> atualizarMinhaFoto(@RequestPart("foto") MultipartFile foto, Authentication authentication) throws IOException {
         UsuarioSaidaDTO usuarioAtualizado = usuarioService.atualizarFotoPerfil(authentication, foto);

@@ -79,6 +79,13 @@ public class PostagemController {
         }
     }
 
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<PostagemSaidaDTO>> buscarPostagensPorUsuario(@PathVariable Long usuarioId) {
+        // Você precisará criar este método no seu PostagemService
+        List<PostagemSaidaDTO> postagens = postagemService.buscarPostagensPorUsuario(usuarioId);
+        return ResponseEntity.ok(postagens);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> excluirPostagem(@PathVariable Long id, Principal principal) {
         try {
