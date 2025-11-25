@@ -139,9 +139,9 @@ function formatMessageContent(text) {
 
     // Se for longo, retorna com a classe de corte e botão INLINE
     return `
-        <span class="message-text-body text-clamped">${safeText}</span>
-        <button class="read-more-btn" onclick="toggleMessageReadMore(this)">Ler mais</button>
-    `;
+    <div class="message-text-body text-clamped">${safeText}</div>
+    <button class="read-more-btn" onclick="toggleMessageReadMore(this)">Ler mais</button>
+`;
 }
 
   // --- RESPONSIVIDADE ---

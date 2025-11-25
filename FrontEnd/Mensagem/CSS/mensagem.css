@@ -334,7 +334,7 @@ body {
 .message-author-header strong { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
 .message-author-header span { font-size: 0.65rem; color: var(--text-secondary); }
 
-/* --- A BOLHA DA MENSAGEM --- */
+
 .message-content {
     padding: 0.5rem 0.75rem;
     border-radius: 16px;
@@ -349,7 +349,12 @@ body {
     white-space: pre-wrap;
     
     max-width: 100%;
-    display: inline-block;
+    
+    /* CORREÇÃO AQUI: */
+    display: inline-flex;       /* Muda para Flex para ajustar a altura automaticamente */
+    flex-direction: column;     /* Coloca texto em cima e botão embaixo */
+    align-items: flex-start;    /* Alinha tudo à esquerda */
+    
     position: relative;
     border: 1px solid transparent;
     z-index: 1;
