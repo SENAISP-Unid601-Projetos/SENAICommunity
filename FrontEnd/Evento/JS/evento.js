@@ -1,14 +1,14 @@
-// evento.js - Código completo e funcional (Versão Final)
+// evento.js - Código completo e funcional com Modal de Detalhes
 document.addEventListener('DOMContentLoaded', () => {
   // Aguardar a inicialização global do principal.js
   if (!window.currentUser) {
     document.addEventListener('globalScriptsLoaded', () => {
       initEventos();
-      initResponsiveFeatures(); // Inicia funcionalidades mobile
+      initResponsiveFeatures();
     });
   } else {
     initEventos();
-    initResponsiveFeatures(); // Inicia funcionalidades mobile
+    initResponsiveFeatures();
   }
 });
 
@@ -62,25 +62,29 @@ async function initEventos() {
   const searchInput = document.getElementById('search-input');
   const loadingOverlay = document.getElementById('loading-overlay');
   
-  // Elementos do modal
+  // Elementos do modal de criação/edição
   const eventoModal = document.getElementById('evento-modal');
   const eventoForm = document.getElementById('evento-form');
   const eventoIdInput = document.getElementById('evento-id');
   const eventoTituloInput = document.getElementById('evento-titulo');
   const eventoDescricaoInput = document.getElementById('evento-descricao');
-  
-  // Inputs de Data e Hora
   const eventoDataInput = document.getElementById('evento-data');
   const eventoHoraInicioInput = document.getElementById('evento-hora-inicio');
   const eventoHoraFimInput = document.getElementById('evento-hora-fim');
-  
   const eventoLocalInput = document.getElementById('evento-local');
   const eventoFormatoSelect = document.getElementById('evento-formato');
   const eventoCategoriaSelect = document.getElementById('evento-categoria');
   const eventoImagemInput = document.getElementById('evento-imagem');
   const salvarEventoBtn = document.getElementById('salvar-evento-btn');
-  const cancelarEventoBtn = document.getElementById('cancelar-evento-btn');
+  const cancelEventoBtn = document.getElementById('cancel-evento-btn');
   
+  // Elementos do modal de detalhes
+  const eventoDetailsModal = document.getElementById('evento-details-modal');
+  const closeEventoDetailsBtn = document.getElementById('close-evento-details-btn');
+  const saveEventoDetailsBtn = document.getElementById('save-evento-details-btn');
+  const rsvpEventoDetailsBtn = document.getElementById('rsvp-evento-details-btn');
+  const contactEventoBtn = document.getElementById('contact-evento-btn');
+
   let eventos = [];
   let eventosInteressados = [];
   let isAdmin = false;
@@ -88,7 +92,7 @@ async function initEventos() {
   // Inicialização
   async function init() {
     await checkUserRole();
-    updateSidebarUserInfo(); // Sidebar do usuário
+    updateSidebarUserInfo();
     await loadEventos();
     setupEventListeners();
   }
@@ -170,8 +174,7 @@ async function initEventos() {
     card.className = 'evento-card';
     card.dataset.id = evento.id;
 
-    // CORREÇÃO DE FUSO HORÁRIO E DATA
-    // Parse manual da data para evitar UTC shift (Bug das 21h)
+    // Parse manual da data para evitar UTC shift
     let dia = '--', mes = '---';
     if(evento.data) {
         const [anoStr, mesStr, diaStr] = evento.data.split('-');
@@ -180,8 +183,7 @@ async function initEventos() {
         mes = dataObj.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
     }
 
-    // FORMATAÇÃO DE HORÁRIOS
-    // Pega HH:mm (5 chars) ignorando segundos
+    // Formatação de horários
     const horaInicio = evento.horaInicio ? evento.horaInicio.substring(0, 5) : '--:--';
     const horaFim = evento.horaFim ? evento.horaFim.substring(0, 5) : '--:--';
 
@@ -227,6 +229,15 @@ async function initEventos() {
       </div>
     `;
 
+    // Tornar o card clicável para abrir o modal de detalhes
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', (e) => {
+      // Não abrir modal se clicar nos botões de admin ou RSVP
+      if (!e.target.closest('.evento-admin-actions') && !e.target.closest('.rsvp-btn')) {
+        openEventoDetailsModal(evento);
+      }
+    });
+
     return card;
   }
 
@@ -267,6 +278,202 @@ async function initEventos() {
     });
   }
 
+  // --- FUNÇÕES DO MODAL DE DETALHES ---
+
+  // Abrir modal de detalhes do evento
+  function openEventoDetailsModal(evento) {
+    // Mapeamento de meses
+    const meses = {
+      '01': 'JAN', '02': 'FEV', '03': 'MAR', '04': 'ABR', '05': 'MAI', '06': 'JUN',
+      '07': 'JUL', '08': 'AGO', '09': 'SET', '10': 'OUT', '11': 'NOV', '12': 'DEZ'
+    };
+
+    // Parse da data
+    let dia = '--', mes = '---', dataFormatada = '--/--/----';
+    if(evento.data) {
+      const [anoStr, mesStr, diaStr] = evento.data.split('-');
+      const dataObj = new Date(anoStr, mesStr - 1, diaStr);
+      dia = diaStr;
+      mes = meses[mesStr] || '---';
+      dataFormatada = dataObj.toLocaleDateString('pt-BR', { 
+        day: '2-digit', 
+        month: 'long', 
+        year: 'numeric' 
+      });
+    }
+
+    // Horários
+    const horaInicio = evento.horaInicio ? evento.horaInicio.substring(0, 5) : '--:--';
+    const horaFim = evento.horaFim ? evento.horaFim.substring(0, 5) : '--:--';
+
+    // Preencher dados do modal
+    document.getElementById('details-evento-day').textContent = dia;
+    document.getElementById('details-evento-month').textContent = mes;
+    document.getElementById('details-evento-categoria').textContent = evento.categoria;
+    document.getElementById('details-evento-titulo').textContent = evento.nome;
+    document.getElementById('details-evento-empresa').textContent = 'SENAI Community';
+    document.getElementById('details-evento-data').textContent = dataFormatada;
+    document.getElementById('details-evento-horario').textContent = `${horaInicio} - ${horaFim}`;
+    document.getElementById('details-evento-local').textContent = evento.local;
+    document.getElementById('details-evento-formato').textContent = evento.formato;
+    
+    // Descrição
+    const descricaoElement = document.getElementById('details-evento-descricao');
+    descricaoElement.textContent = evento.descricao || 'Este evento oferece uma oportunidade única de aprendizado e networking para profissionais e estudantes da área.';
+
+    // Imagem
+    const imageElement = document.getElementById('details-evento-image');
+    imageElement.style.backgroundImage = `url('${evento.imagemCapaUrl || 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'}')`;
+
+    // Gerar tópicos baseados na categoria
+    generateEventoTopics(evento);
+    
+    // Gerar público-alvo
+    generatePublicoAlvo(evento);
+    
+    // Organizador
+    document.getElementById('details-evento-organizador-nome').textContent = 'Equipe SENAI';
+    document.getElementById('details-evento-organizador-email').textContent = 'eventos@senai.com';
+    
+    // Estatísticas
+    document.getElementById('details-evento-interessados').textContent = evento.numeroInteressados || '0';
+
+    // Configurar botões de ação
+    const isInteressado = eventosInteressados.includes(evento.id);
+    setupActionButtons(evento.id, isInteressado);
+
+    // Mostrar modal
+    eventoDetailsModal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Fechar modal de detalhes
+  function closeEventoDetailsModal() {
+    eventoDetailsModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+
+  // Gerar tópicos do evento
+  function generateEventoTopics(evento) {
+    const topicsList = document.getElementById('details-evento-topics');
+    topicsList.innerHTML = '';
+
+    const topicsBase = {
+      'Tecnologia': [
+        'Desenvolvimento de aplicações modernas',
+        'Tendências do mercado tech',
+        'Ferramentas e frameworks atualizados',
+        'Boas práticas de programação',
+        'Networking com profissionais'
+      ],
+      'Carreira': [
+        'Oportunidades de crescimento',
+        'Desenvolvimento de soft skills',
+        'Networking estratégico',
+        'Preparação para o mercado',
+        'Mentoria e orientação'
+      ],
+      'Inovação': [
+        'Metodologias ágeis e criativas',
+        'Cases de sucesso',
+        'Ferramentas de inovação',
+        'Mindset empreendedor',
+        'Tendências do futuro'
+      ],
+      'Competição': [
+        'Desafios práticos',
+        'Avaliação de especialistas',
+        'Premiações e reconhecimento',
+        'Networking competitivo',
+        'Desenvolvimento técnico'
+      ]
+    };
+
+    const topics = topicsBase[evento.categoria] || [
+      'Aprendizado prático',
+      'Networking profissional',
+      'Desenvolvimento de skills',
+      'Oportunidades de carreira',
+      'Experiência enriquecedora'
+    ];
+
+    topics.forEach(topic => {
+      const li = document.createElement('li');
+      li.textContent = topic;
+      topicsList.appendChild(li);
+    });
+  }
+
+  // Gerar público-alvo
+  function generatePublicoAlvo(evento) {
+    const publicoElement = document.getElementById('details-evento-publico');
+    publicoElement.innerHTML = '';
+
+    const publicoBase = {
+      'Tecnologia': ['Desenvolvedores', 'Estudantes de TI', 'Product Managers', 'UX/UI Designers'],
+      'Carreira': ['Profissionais Júnior', 'Estudantes', 'Career Changers', 'Líderes'],
+      'Inovação': ['Empreendedores', 'Innovators', 'Gestores', 'Design Thinkers'],
+      'Competição': ['Competidores', 'Estudantes', 'Profissionais', 'Hackers']
+    };
+
+    const publico = publicoBase[evento.categoria] || ['Profissionais', 'Estudantes', 'Interessados'];
+
+    publico.forEach(item => {
+      const tag = document.createElement('span');
+      tag.className = 'publico-alvo-tag';
+      tag.textContent = item;
+      publicoElement.appendChild(tag);
+    });
+  }
+
+  // Configurar botões de ação
+  function setupActionButtons(eventoId, isInteressado) {
+    // Botão de lembrete
+    if (rsvpEventoDetailsBtn) {
+      if (isInteressado) {
+        rsvpEventoDetailsBtn.innerHTML = '<i class="fas fa-check"></i> Lembrete Ativo';
+        rsvpEventoDetailsBtn.classList.add('confirmed');
+      } else {
+        rsvpEventoDetailsBtn.innerHTML = '<i class="fas fa-calendar-plus"></i> Definir Lembrete';
+        rsvpEventoDetailsBtn.classList.remove('confirmed');
+      }
+      
+      // Remover event listeners anteriores
+      rsvpEventoDetailsBtn.replaceWith(rsvpEventoDetailsBtn.cloneNode(true));
+      const newRsvpBtn = document.getElementById('rsvp-evento-details-btn');
+      
+      newRsvpBtn.addEventListener('click', () => {
+        toggleInteresse(eventoId);
+        closeEventoDetailsModal();
+      });
+    }
+
+    // Botão salvar
+    if (saveEventoDetailsBtn) {
+      saveEventoDetailsBtn.replaceWith(saveEventoDetailsBtn.cloneNode(true));
+      const newSaveBtn = document.getElementById('save-evento-details-btn');
+      
+      newSaveBtn.addEventListener('click', () => {
+        handleSaveEvento(eventoId);
+      });
+    }
+
+    // Botão de contato
+    if (contactEventoBtn) {
+      contactEventoBtn.href = `mailto:eventos@senai.com?subject=Dúvida sobre: ${document.getElementById('details-evento-titulo').textContent}`;
+    }
+  }
+
+  // Salvar evento (favoritar)
+  function handleSaveEvento(eventoId) {
+    showNotification('Evento salvo nos seus favoritos!', 'success');
+    if (saveEventoDetailsBtn) {
+      saveEventoDetailsBtn.innerHTML = '<i class="fas fa-bookmark"></i> Salvo';
+      saveEventoDetailsBtn.classList.add('saved');
+      saveEventoDetailsBtn.disabled = true;
+    }
+  }
+
   // Alternar interesse em evento
   async function toggleInteresse(eventoId) {
     try {
@@ -295,11 +502,11 @@ async function initEventos() {
     const previewContainer = document.getElementById('preview-container');
     const previewImg = document.getElementById('evento-imagem-preview');
 
-    // 1. LIMPEZA DO INPUT DE ARQUIVO (Correção InvalidStateError)
+    // Limpeza do input de arquivo
     if(eventoImagemInput) eventoImagemInput.value = '';
 
     if (evento) {
-      // --- MODO EDIÇÃO ---
+      // Modo edição
       modalTitulo.textContent = 'Editar Evento';
       eventoIdInput.value = evento.id;
       eventoTituloInput.value = evento.nome;
@@ -308,7 +515,7 @@ async function initEventos() {
       // Data vem como YYYY-MM-DD do backend
       eventoDataInput.value = evento.data; 
       
-      // Horários (Pega HH:mm do HH:mm:ss)
+      // Horários
       eventoHoraInicioInput.value = evento.horaInicio ? evento.horaInicio.substring(0, 5) : '';
       eventoHoraFimInput.value = evento.horaFim ? evento.horaFim.substring(0, 5) : '';
       
@@ -316,7 +523,7 @@ async function initEventos() {
       eventoFormatoSelect.value = evento.formato; 
       eventoCategoriaSelect.value = evento.categoria;
 
-      // 2. PREVIEW DA IMAGEM
+      // Preview da imagem
       if (evento.imagemCapaUrl && previewContainer && previewImg) {
           previewImg.src = evento.imagemCapaUrl;
           previewContainer.style.display = 'block';
@@ -325,7 +532,7 @@ async function initEventos() {
       }
 
     } else {
-      // --- MODO CRIAÇÃO ---
+      // Modo criação
       modalTitulo.textContent = 'Criar Evento';
       eventoForm.reset();
       eventoIdInput.value = '';
@@ -340,12 +547,12 @@ async function initEventos() {
 
   // SALVAR EVENTO (Create ou Update)
   async function saveEvento() {
-    // 1. Coleta e Normaliza os dados
+    // Coleta e Normaliza os dados
     const normalizeEnum = (valor) => valor ? valor.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : '';
 
     const eventoData = {
       nome: eventoTituloInput.value,
-      descricao: eventoDescricaoInput.value, // <--- ADICIONADO AQUI
+      descricao: eventoDescricaoInput.value,
       data: eventoDataInput.value,
       horaInicio: eventoHoraInicioInput.value.length === 5 ? eventoHoraInicioInput.value + ':00' : eventoHoraInicioInput.value,
       horaFim: eventoHoraFimInput.value.length === 5 ? eventoHoraFimInput.value + ':00' : eventoHoraFimInput.value,
@@ -354,7 +561,7 @@ async function initEventos() {
       categoria: normalizeEnum(eventoCategoriaSelect.value)
     };
     
-    // Validação básica (Adicionei descrição se for obrigatória no banco)
+    // Validação básica
     if (!eventoData.nome || !eventoData.data || !eventoData.horaInicio || !eventoData.horaFim || !eventoData.descricao) {
         showNotification('Preencha todos os campos obrigatórios, incluindo a descrição.', 'info');
         return;
@@ -385,7 +592,7 @@ async function initEventos() {
     } finally {
       hideLoading();
     }
-}
+  }
 
   // Excluir evento
   async function deleteEvento(eventoId) {
@@ -490,9 +697,9 @@ async function initEventos() {
     document.getElementById('filter-categoria').addEventListener('change', applyFilters);
     if(searchInput) searchInput.addEventListener('input', applyFilters);
 
-    // Modal
+    // Modal de criação/edição
     if(salvarEventoBtn) salvarEventoBtn.addEventListener('click', saveEvento);
-    if(cancelarEventoBtn) cancelarEventoBtn.addEventListener('click', () => {
+    if(cancelEventoBtn) cancelEventoBtn.addEventListener('click', () => {
       eventoModal.style.display = 'none';
     });
 
@@ -505,10 +712,28 @@ async function initEventos() {
         });
     }
 
-    // Fechar modal com ESC
+    // Modal de detalhes
+    if (closeEventoDetailsBtn) {
+      closeEventoDetailsBtn.addEventListener('click', closeEventoDetailsModal);
+    }
+
+    if (eventoDetailsModal) {
+      eventoDetailsModal.addEventListener('click', (e) => {
+        if (e.target === eventoDetailsModal) {
+          closeEventoDetailsModal();
+        }
+      });
+    }
+
+    // Fechar modais com ESC
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && eventoModal && eventoModal.style.display === 'flex') {
-        eventoModal.style.display = 'none';
+      if (e.key === 'Escape') {
+        if (eventoModal && eventoModal.style.display === 'flex') {
+          eventoModal.style.display = 'none';
+        }
+        if (eventoDetailsModal && eventoDetailsModal.style.display === 'block') {
+          closeEventoDetailsModal();
+        }
       }
     });
   }
