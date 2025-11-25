@@ -542,7 +542,7 @@ body {
 
 .chat-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Garante que os itens se espalhem */
   align-items: center;
   padding: 1rem 1.5rem;
   background-color: var(--bg-secondary);
@@ -574,6 +574,38 @@ body {
 .chat-actions {
   display: flex;
   gap: 0.5rem;
+  margin-left: auto; /* Força o container de botões para a extrema direita */
+  align-items: center;
+}
+
+.chat-info {
+    flex-grow: 1; /* Ocupa o espaço disponível */
+    max-width: fit-content; /* Mas tenta manter a largura do conteúdo */
+}
+
+
+.chat-header {
+    display: flex !important;
+    flex-direction: row !important; /* Força direção horizontal */
+    justify-content: space-between !important; /* Separa os itens */
+    align-items: center !important; /* Centraliza verticalmente */
+    width: 100%;
+}
+
+/* O container de informações (Título e Online) ocupa o espaço sobrando */
+.chat-info {
+    flex: 1; 
+    display: flex;
+    flex-direction: column; /* Título em cima, status embaixo */
+    justify-content: center;
+}
+
+/* Os botões de ação são forçados para a direita */
+.chat-actions {
+    display: flex !important;
+    align-items: center;
+    gap: 0.75rem; /* Espaço entre os ícones */
+    margin-left: auto !important; /* O SEGREDO: Empurra tudo para a direita */
 }
 
 .action-btn {
@@ -636,14 +668,15 @@ body {
 .message-content {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.2rem;
   max-width: 100%;
   min-width: 0;
   position: relative;
+  align-items: flex-start; /* Importante para balões de terceiros */
 }
 
 .message.own .message-content {
-  align-items: flex-end;
+  align-items: flex-end; /* Importante para balões do usuário */
 }
 
 .message-header {
@@ -664,20 +697,27 @@ body {
 }
 
 .message-bubble {
-  padding: 0.5rem 0.75rem;
-  border-radius: 16px;
+  padding: 0.6rem 0.85rem; /* Padding ligeiramente mais justo */
+  border-radius: 18px;
+  border-top-left-radius: 4px; /* Ponta sutil para mensagens recebidas */
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
-  font-size: 0.875rem;
-  line-height: 1.3;
+  font-size: 0.9rem; /* Leitura melhor */
+  line-height: 1.4;
+  
+  /* A MÁGICA PARA REMOVER ESPAÇO EXTRA: */
+  width: fit-content;      /* Ocupa apenas o espaço necessário */
+  max-width: 100%;         /* Não ultrapassa o container */
+  
   word-wrap: break-word;
-  overflow-wrap: break-word;
-  max-width: 100%;
-  word-break: break-word;
-  white-space: pre-wrap;
-  display: inline-block;
-  position: relative;
-  border: 1px solid transparent;
+  word-break: break-word;  /* Quebra palavras longas se necessário */
+  white-space: pre-wrap;   /* Mantém quebras de linha */
+  
+  display: flex;           /* Flex para alinhar texto e botão se necessário */
+  flex-direction: column;  /* Stack vertical dentro do balão */
+  gap: 0.5rem;
+  
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Sombra sutil */
 }
 
 [data-theme="light"] .message-bubble {
@@ -689,6 +729,8 @@ body {
 .message.own .message-bubble {
   background-color: var(--accent-primary);
   color: white;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 4px; /* Ponta sutil para mensagens enviadas */
   border: none;
 }
 
@@ -1957,27 +1999,60 @@ html::-webkit-scrollbar-thumb:hover,
     position: relative;
 }
 
-.truncated-content {
-    display: inline;
-}
-
 .full-content {
     display: none;
 }
 
 .show-more-btn {
-    background: none;
-    border: none;
-    color: var(--accent-primary);
-    cursor: pointer;
-    font-size: 0.8rem;
-    margin-left: 0.25rem;
-    text-decoration: underline;
-    transition: var(--transition);
+  background-color: rgba(0, 0, 0, 0.2); /* Fundo translúcido escuro */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: inherit; /* Herda a cor do texto do balão */
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px; /* Formato de pílula */
+  margin-top: 4px;
+  align-self: flex-start; /* Alinha à esquerda dentro do balão */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
 }
 
 .show-more-btn:hover {
-    color: var(--accent-secondary);
+  background-color: rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Ajuste específico para o botão dentro das mensagens do PRÓPRIO usuário */
+.message.own .show-more-btn {
+  background-color: rgba(255, 255, 255, 0.2); /* Fundo translúcido branco */
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.message.own .show-more-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Ícone dentro do botão */
+.show-more-btn i {
+  font-size: 0.7rem;
+  transition: transform 0.3s ease;
+}
+
+/* Classe para girar o ícone quando expandido (via JS) */
+.show-more-btn.expanded i {
+  transform: rotate(180deg);
+}
+
+/* Efeito de texto cortado (Opcional: gradiente sutil) */
+.truncated-content {
+  display: block;
+  mask-image: linear-gradient(180deg, black 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, black 60%, transparent 100%);
 }
 
 /* =================================================================
@@ -2219,4 +2294,267 @@ html::-webkit-scrollbar-thumb:hover,
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
     white-space: nowrap;
+}
+
+/* =================================================================
+   CORREÇÕES DE RESPONSIVIDADE MOBILE 
+================================================================= */
+
+@media (max-width: 768px) {
+
+  
+    /* Garante que o fundo escuro centralize o conteúdo */
+    .modal-overlay {
+        align-items: center !important; /* Centraliza Verticalmente */
+        justify-content: center !important; /* Centraliza Horizontalmente */
+        padding: 1rem; /* Margem de segurança nas bordas da tela */
+    }
+
+    /* A caixa do modal em si */
+    .modal-content {
+        margin: 0 !important; /* Remove margens que empurram para o topo */
+        width: 100% !important; 
+        max-width: 380px !important; /* Largura ideal para leitura no mobile */
+        max-height: 85vh !important; /* Altura máxima de 85% da tela */
+        
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        border-radius: 12px; /* Bordas um pouco mais arredondadas */
+    }
+
+    /* Garante que o conteúdo interno tenha scroll se for muito grande */
+    .modal-body {
+        overflow-y: auto;
+        padding-right: 5px; /* Espaço para não cobrir o scroll */
+        max-height: calc(85vh - 60px); /* Subtrai o tamanho do header do modal */
+    }
+
+    /* Ajuste específico para o modal de solicitações não ficar 'magro' demais */
+    #solicitacoes-modal .modal-content {
+        width: 95% !important;
+    }
+
+    /* --- 1. CABEÇALHO (TOPBAR) --- */
+    
+    /* Esconde a info central do projeto no header (já aparece na mobile-header) */
+    .topbar .project-info {
+        display: none !important;
+    }
+
+    /* Ajusta a Logo para não quebrar */
+    .logo {
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 160px; /* Limita largura para não bater nos ícones */
+    }
+
+    /* Ajusta espaçamento dos ícones */
+    .nav-icons {
+        gap: 0.25rem;
+    }
+    
+    .nav-icon, .theme-toggle {
+        padding: 0.4rem;
+        width: 32px;
+        height: 32px;
+    }
+
+    /* --- 2. MODAIS (Configuração, Info e Solicitações) --- */
+    
+    /* Centraliza e ajusta tamanho do container do modal */
+    .modal-content {
+        width: 95% !important; /* Ocupa quase toda largura */
+        max-width: none !important;
+        margin: 10px auto;
+        max-height: 85vh; /* Altura máxima de 85% da tela */
+        display: flex;
+        flex-direction: column;
+        padding: 1rem !important;
+    }
+
+    /* Permite scroll dentro do corpo do modal se for muito grande */
+    .modal-body {
+        overflow-y: auto;
+        padding-right: 5px; /* Espaço para scrollbar */
+    }
+
+    /* Ajuste específico para o Modal de Configurações */
+    .file-input-wrapper {
+        flex-direction: column; /* Foto em cima, botão embaixo */
+        align-items: center;
+        text-align: center;
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse; /* Botões empilhados */
+        gap: 10px;
+    }
+
+    .modal-footer .btn {
+        width: 100%; /* Botão largura total */
+        margin: 0;
+    }
+
+    /* --- 3. MODAL DE SOLICITAÇÕES (Que não aparecia ou quebrava) --- */
+    
+    .solicitacao-item {
+        flex-direction: column; /* Stack vertical */
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .solicitacao-user {
+        width: 100%;
+    }
+
+    .solicitacao-actions {
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 5px;
+    }
+
+    .solicitacao-actions .btn {
+        flex: 1; /* Botões dividem o espaço igualmente */
+    }
+
+    /* --- 4. EMOJI PICKER (Fugindo da tela) --- */
+    
+    .emoji-picker {
+        position: fixed !important;
+        /* Centraliza na tela */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        bottom: 80px !important; /* Acima do input */
+        width: 90% !important; /* Largura responsiva */
+        max-width: 320px;
+        top: auto !important; /* Ignora cálculo de Top do JS */
+        z-index: 3000;
+    }
+
+    .emoji-grid {
+        grid-template-columns: repeat(6, 1fr); /* Menos colunas no mobile */
+        max-height: 200px;
+    }
+}
+
+/* Regras para Celular (Tela pequena) */
+@media (max-width: 768px) {
+    /* Esconde o Header do Desktop com força total */
+    .chat-header, 
+    .desktop-only {
+        display: none !important;
+    }
+
+    /* Garante que o Header Mobile apareça corretamente */
+    .mobile-header {
+        display: flex !important;
+        width: 100%;
+        position: sticky;
+        top: 60px; /* Ajuste conforme a altura da sua topbar */
+        z-index: 990;
+    }
+}
+
+/* Regras para PC/Desktop (Tela grande) */
+@media (min-width: 769px) {
+    /* Esconde o Header Mobile com força total */
+    .mobile-header,
+    .mobile-only {
+        display: none !important;
+    }
+    
+    /* Garante que o Header Desktop apareça */
+    .chat-header {
+        display: flex !important;
+    }
+}
+
+@media (max-width: 768px) {
+  
+    /* 1. CONFIGURAÇÃO DO OVERLAY (FUNDO ESCURO) */
+    .modal-overlay {
+        /* REMOVIDO: display: flex !important; (Isso causava o bug) */
+        /* O JavaScript já define display: flex ao abrir. Nós só alinhamos: */
+        
+        align-items: center !important;     /* Centraliza Verticalmente */
+        justify-content: center !important; /* Centraliza Horizontalmente */
+        padding: 1rem !important;           /* Espaço de respiro nas bordas */
+        z-index: 9999 !important;           /* Garante que fique acima de tudo */
+    }
+
+    /* 2. A CAIXA BRANCA DO MODAL */
+    .modal-content {
+        margin: 0 !important;          /* Remove margens antigas */
+        position: relative !important; /* Reseta posicionamentos fixos */
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+        
+        width: 100% !important;        /* Ocupa a largura disponível */
+        max-width: 380px !important;   /* Tamanho ideal para celular */
+        max-height: 85vh !important;   /* Altura máxima segura */
+        
+        display: flex !important;
+        flex-direction: column !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+    }
+
+    /* 3. SCROLL INTERNO (CASO O CONTEÚDO SEJA GRANDE) */
+    .modal-body {
+        overflow-y: auto !important;
+        max-height: calc(85vh - 130px) !important; 
+        padding-right: 5px; 
+    }
+
+    /* 4. AJUSTE PARA O MODAL DE SOLICITAÇÕES */
+    #solicitacoes-modal .modal-content,
+    #project-settings-modal .modal-content {
+        width: 100% !important;
+    }
+
+    /* 5. FIX PARA O TEXTAREA DE EDIÇÃO */
+    #edit-message-content {
+        min-height: 100px;
+        max-height: 200px;
+    }
+    
+    /* 6. EMOJI PICKER CENTRALIZADO NO MOBILE */
+    .emoji-picker {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        bottom: auto !important;
+        width: 90% !important;
+        max-width: 300px !important;
+        z-index: 10000 !important;
+    }
+}
+
+/* Estilo para o botão de adicionar membro na sidebar */
+.action-icon-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--accent-primary); /* Azul destaque */
+    width: 30px;
+    height: 30px;
+    border-radius: 50%; /* Redondo */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+}
+
+.action-icon-btn:hover {
+    background-color: var(--accent-primary);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 8px rgba(88, 166, 255, 0.4);
 }

@@ -70,10 +70,17 @@
         <aside class="members-sidebar" id="members-sidebar">
             <div class="sidebar-header">
                 <h3>Membros do Projeto</h3>
-                <span class="members-count" id="members-count">0</span>
-                <button class="sidebar-close mobile-only" id="sidebar-close">
-                    <i class="fas fa-times"></i>
-                </button>
+               <div class="sidebar-actions" style="display: flex; align-items: center; gap: 10px;">
+            <button id="add-member-btn" class="action-icon-btn" style="display: none;" title="Adicionar Membro">
+                <i class="fas fa-user-plus"></i>
+            </button>
+            
+            <span class="members-count" id="members-count">0</span>
+            
+            <button class="sidebar-close mobile-only" id="sidebar-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
             </div>
 
             <div class="search-box">

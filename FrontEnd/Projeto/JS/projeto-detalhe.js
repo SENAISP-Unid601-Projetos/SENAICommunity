@@ -158,9 +158,9 @@ function checkUserRole() {
     }
 
     // NOVO: Atualizar botão mobile de solicitações
-    if (mobileSolicitacoesBtn) {
+  if (mobileSolicitacoesBtn) {
+        // No CSS mobile-header usa flex, então inline-flex ou flex funciona bem
         mobileSolicitacoesBtn.style.display = isAdminOrModerator ? 'inline-flex' : 'none';
-        console.log(`[DEBUG] Mobile solicitações button display: ${mobileSolicitacoesBtn.style.display}`);
     }
 
     // CORREÇÃO: Mostrar botão de sair para membros (não admin)
@@ -755,63 +755,72 @@ function setButtonLoading(button, isLoading) {
 function processMessageContent(content) {
     if (!content) return '';
 
-    // CORREÇÃO: Substituir quebras de linha por <br> e sanitizar conteúdo
+    // Sanitizar conteúdo e manter quebras de linha
     let processedContent = content
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/\n/g, '<br>');
 
-    // CORREÇÃO: Compactar mensagens muito longas com limite menor
-    const maxLength = 200; // Reduzido para melhor visualização
+    // Limite de caracteres para truncar
+    const maxLength = 350; // Aumentei um pouco para não cortar mensagens médias
+    
     if (content.length > maxLength) {
-        const truncatedContent = content.substring(0, maxLength);
-        const truncatedWithBreaks = truncatedContent
+        // Criar versão curta
+        const truncatedText = content.substring(0, maxLength);
+        const truncatedWithBreaks = truncatedText
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/\n/g, '<br>');
 
-        const fullContent = processedContent;
-
         return `
-            <div class="message-truncated">
-                <div class="truncated-content">${truncatedWithBreaks}</div>
-                <button type="button" class="show-more-btn" onclick="expandMessage(this)">Ver mais</button>
-                <div class="full-content" style="display: none;">${fullContent}</div>
+            <div class="message-text-wrapper">
+                <span class="truncated-content">${truncatedWithBreaks}...</span>
+                <span class="full-content" style="display: none;">${processedContent}</span>
+                
+                <button type="button" class="show-more-btn" onclick="expandMessage(this)">
+                    <span>Ver mais</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
             </div>
         `;
     }
 
+    // Retorna conteúdo normal se for pequeno
     return processedContent;
 }
 
 // CORREÇÃO: Função para expandir/recolher mensagem
 function expandMessage(button) {
-    const messageContainer = button.parentElement;
-    const truncatedContent = messageContainer.querySelector('.truncated-content');
-    const fullContent = messageContainer.querySelector('.full-content');
+    // Encontrar o wrapper pai
+    const wrapper = button.parentElement;
+    const truncatedContent = wrapper.querySelector('.truncated-content');
+    const fullContent = wrapper.querySelector('.full-content');
+    const btnText = button.querySelector('span');
+    const btnIcon = button.querySelector('i');
 
     if (truncatedContent && fullContent) {
         if (truncatedContent.style.display !== 'none') {
-            // Expandir
+            // AÇÃO: EXPANDIR
             truncatedContent.style.display = 'none';
-            fullContent.style.display = 'block';
-            button.textContent = 'Ver menos';
+            fullContent.style.display = 'inline'; // ou block
+            fullContent.style.animation = 'fadeIn 0.3s ease';
+            
+            // Atualizar botão
+            btnText.textContent = 'Ver menos';
+            button.classList.add('expanded'); // Para girar o ícone via CSS
         } else {
-            // Recolher
-            truncatedContent.style.display = 'inline';
+            // AÇÃO: RECOLHER
+            truncatedContent.style.display = 'inline'; // ou block
             fullContent.style.display = 'none';
-            button.textContent = 'Ver mais';
+            
+            // Atualizar botão
+            btnText.textContent = 'Ver mais';
+            button.classList.remove('expanded');
         }
-
-        // CORREÇÃO: Ajustar layout após expandir/recolher
-        setTimeout(() => {
-            scrollToBottom();
-        }, 100);
     }
 }
-
 // Renderizar mensagens
 function renderMessages() {
     const messagesContainer = document.getElementById('messages-container');
@@ -1683,6 +1692,16 @@ async function changeMemberRole(memberId) {
 
 // Configurar ouvintes de eventos
 function setupEventListeners() {
+    // Listener para o botão de solicitações MOBILE
+    const mobileSolicitacoesBtn = document.getElementById('mobile-solicitacoes-btn');
+        if (mobileSolicitacoesBtn) {
+            mobileSolicitacoesBtn.addEventListener('click', function(e) {
+                e.preventDefault(); // Previne comportamentos padrão
+                console.log("Abrindo solicitações mobile...");
+                openSolicitacoesModal();
+            });
+        }
+
     // Envio de mensagem
     const messageInput = document.getElementById('message-input');
     const sendBtn = document.getElementById('send-btn');
@@ -2278,20 +2297,19 @@ function openSolicitacoesModal() {
     modalOverlay.style.display = 'flex';
 
     modalOverlay.innerHTML = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Solicitações de Entrada</h3>
-                <button class="close-modal" id="close-solicitacoes-modal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="solicitacoes-list" class="solicitacoes-list">
-                    <p class="empty-state">Carregando solicitações...</p>
-                </div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Solicitações de Entrada</h3>
+            <button class="close-modal" id="close-solicitacoes-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body"> <div id="solicitacoes-list" class="solicitacoes-list">
+                <p class="empty-state">Carregando solicitações...</p>
             </div>
         </div>
-    `;
+    </div>
+`;
 
     document.body.appendChild(modalOverlay);
 

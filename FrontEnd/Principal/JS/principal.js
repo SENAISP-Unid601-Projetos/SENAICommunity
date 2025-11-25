@@ -33,8 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-
-
 // =================================================================
 // LÓGICA GLOBAL (Executa em TODAS as páginas)
 // =================================================================
@@ -478,66 +476,68 @@ function createNotificationElement(notification) {
         }
         return item;
     }
-    async function checkAndHighlightComment() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const postId = urlParams.get('postId');
-        const hash = window.location.hash; // Pega o #comment-123
 
-        // Só continua se tiver um postId na URL
-        if (!postId) return; 
+async function checkAndHighlightComment() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('postId');
+    const hash = window.location.hash; // Pega o #comment-123
 
-        let commentId = null;
-        if (hash && hash.startsWith('#comment-')) {
-            commentId = hash.substring(1); // "comment-123"
-        }
+    // Só continua se tiver um postId na URL
+    if (!postId) return; 
 
-        // 1. Encontrar o Post
-        let postElement = document.getElementById(`post-${postId}`);
-        let attempts = 0;
+    let commentId = null;
+    if (hash && hash.startsWith('#comment-')) {
+        commentId = hash.substring(1); // "comment-123"
+    }
 
-        // Tenta encontrar o post por até 5 segundos (esperando o fetch das postagens)
-        while (!postElement && attempts < 25) {
-            await new Promise(resolve => setTimeout(resolve, 200));
-            postElement = document.getElementById(`post-${postId}`);
-            attempts++;
-        }
+    // 1. Encontrar o Post
+    let postElement = document.getElementById(`post-${postId}`);
+    let attempts = 0;
 
-        if (!postElement) {
-            console.warn(`Post ${postId} não encontrado para destacar.`);
-            return;
-        }
+    // Tenta encontrar o post por até 5 segundos (esperando o fetch das postagens)
+    while (!postElement && attempts < 25) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        postElement = document.getElementById(`post-${postId}`);
+        attempts++;
+    }
 
-        // 2. Rolar até o Post e Abrir os Comentários
-        postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        const commentsSection = postElement.querySelector('.comments-section');
-        if (commentsSection && commentsSection.style.display === 'none') {
-            // Clica no botão de comentários (usando a função global)
-            window.toggleComments(postId);
-            // Espera a UI atualizar
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
+    if (!postElement) {
+        console.warn(`Post ${postId} não encontrado para destacar.`);
+        return;
+    }
 
-        // 3. Se houver um commentId, encontrar e destacar o comentário
-        if (commentId) {
-            const commentElement = document.getElementById(commentId);
-            if (commentElement) {
-                // Rola até o comentário
-                commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                // Adiciona a classe de "flash"
-                commentElement.classList.add('highlight-flash');
-                
-                // Remove a classe após a animação
-                setTimeout(() => {
-                    commentElement.classList.remove('highlight-flash');
-                }, 2000); // 2 segundos
-            } else {
-                console.warn(`Comentário ${commentId} não encontrado no post ${postId}.`);
-            }
+    // 2. Rolar até o Post e Abrir os Comentários
+    postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    const commentsSection = postElement.querySelector('.comments-section');
+    if (commentsSection && commentsSection.style.display === 'none') {
+        // Clica no botão de comentários (usando a função global)
+        window.toggleComments(postId);
+        // Espera a UI atualizar
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    // 3. Se houver um commentId, encontrar e destacar o comentário
+    if (commentId) {
+        const commentElement = document.getElementById(commentId);
+        if (commentElement) {
+            // Rola até o comentário
+            commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Adiciona a classe de "flash"
+            commentElement.classList.add('highlight-flash');
+            
+            // Remove a classe após a animação
+            setTimeout(() => {
+                commentElement.classList.remove('highlight-flash');
+            }, 2000); // 2 segundos
+        } else {
+            console.warn(`Comentário ${commentId} não encontrado no post ${postId}.`);
         }
     }
-    // Função para mostrar/ocultar respostas aninhadas
+}
+
+// Função para mostrar/ocultar respostas aninhadas
 window.toggleReplies = (buttonElement, commentId) => {
     const repliesContainer = document.getElementById(`replies-for-${commentId}`);
     if (!repliesContainer) return;
@@ -820,6 +820,136 @@ function setupGlobalEventListeners() {
 // =================================================================
 // Inicia a lógica global em TODAS as páginas
 document.addEventListener("DOMContentLoaded", initGlobal);
+
+// =================================================================
+// LÓGICA DE INTERAÇÃO COM POSTS (GLOBAL - FEED E PERFIL)
+// =================================================================
+// Estas funções precisam estar disponíveis em qualquer página que exiba posts
+
+// Funções de Ação (Janelas e Menus)
+window.openPostMenu = (postId) => {
+    closeAllMenus();
+    const menu = document.getElementById(`post-menu-${postId}`);
+    if (menu) menu.style.display = "block";
+};
+
+window.openCommentMenu = (commentId) => {
+    closeAllMenus();
+    const menu = document.getElementById(`comment-menu-${commentId}`);
+    if (menu) menu.style.display = "block";
+};
+
+window.toggleComments = (postId) => {
+    const cs = document.getElementById(`comments-section-${postId}`);
+    if (cs) cs.style.display = cs.style.display === "block" ? "none" : "block";
+};
+
+window.toggleReplyForm = (commentId) => {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    if (form) form.style.display = form.style.display === "flex" ? "none" : "flex";
+};
+
+window.sendComment = (postId, parentId = null) => {
+    const inputId = parentId ?
+        `reply-input-${parentId}` :
+        `comment-input-${postId}`;
+    const input = document.getElementById(inputId);
+    
+    if (!input) return;
+
+    const content = input.value.trim();
+    if (window.stompClient?.connected && content) {
+        window.stompClient.send(
+            `/app/postagem/${postId}/comentar`, {},
+            JSON.stringify({
+                conteudo: content,
+                parentId: parentId
+            })
+        );
+        input.value = "";
+        if (parentId) {
+            const replyForm = document.getElementById(`reply-form-${parentId}`);
+            if (replyForm) replyForm.style.display = "none";
+        }
+    } else {
+        window.showNotification("Erro: Conexão perdida ou comentário vazio.", "error");
+    }
+};
+
+window.toggleLike = async (event, postagemId, comentarioId = null) => {
+    const btn = event.currentTarget;
+    const isPost = comentarioId === null;
+    const countId = isPost ?
+        `like-count-post-${postagemId}` :
+        `like-count-comment-${comentarioId}`;
+    const countSpan = document.getElementById(countId);
+    
+    // Fallback se o elemento não existir
+    if (!countSpan) return;
+
+    let count = parseInt(
+        countSpan.innerText.trim().replace(/<[^>]*>/g, ""),
+        10
+    );
+    if (isNaN(count)) count = 0;
+
+    // Atualização Otimista (UI primeiro)
+    btn.classList.toggle("liked");
+    const isLiked = btn.classList.contains("liked");
+    const newCount = isLiked ? count + 1 : count - 1;
+
+    if (isPost) countSpan.textContent = newCount;
+    else countSpan.innerHTML = `<i class="fas fa-heart"></i> ${newCount}`;
+
+    try {
+        await axios.post(`${window.backendUrl}/curtidas/toggle`, {
+            postagemId,
+            comentarioId,
+        });
+    } catch (error) {
+        window.showNotification("Erro ao processar curtida.", "error");
+        // Reverte em caso de erro
+        btn.classList.toggle("liked");
+        if (isPost) countSpan.textContent = count;
+        else countSpan.innerHTML = `<i class="fas fa-heart"></i> ${count}`;
+    }
+};
+
+window.deletePost = async (postId) => {
+    if (confirm("Tem certeza que deseja excluir esta postagem?")) {
+        try {
+            await axios.delete(`${window.backendUrl}/postagem/${postId}`);
+            window.showNotification("Postagem excluída.", "success");
+            
+            // Remove da tela imediatamente
+            const postElement = document.getElementById(`post-${postId}`);
+            if(postElement) postElement.remove();
+            
+        } catch (error) {
+            window.showNotification("Erro ao excluir postagem.", "error");
+        }
+    }
+};
+
+window.deleteComment = async (commentId) => {
+    if (confirm("Tem certeza que deseja excluir este comentário?")) {
+        try {
+            await axios.delete(`${window.backendUrl}/comentarios/${commentId}`);
+            window.showNotification("Comentário excluído.", "success");
+            // A atualização visual virá via WebSocket geralmente, mas podemos forçar recarregamento se necessário
+        } catch (error) {
+            window.showNotification("Erro ao excluir comentário.", "error");
+        }
+    }
+};
+
+window.highlightComment = async (commentId) => {
+    try {
+        await axios.put(`${window.backendUrl}/comentarios/${commentId}/destacar`);
+    } catch (error) {
+        window.showNotification("Erro ao destacar.", "error");
+    }
+};
 
 // =================================================================
 // LÓGICA ESPECIALIZADA (Só executa se estiver na página principal)
@@ -1449,103 +1579,7 @@ async function fetchAndReplacePost(postId) {
     }
   }
 
-  // Funções de Ação (Janelas)
-  window.openPostMenu = (postId) => {
-    closeAllMenus();
-    document.getElementById(`post-menu-${postId}`).style.display = "block";
-  };
-  window.openCommentMenu = (commentId) => {
-    closeAllMenus();
-    document.getElementById(`comment-menu-${commentId}`).style.display =
-      "block";
-  };
-  window.toggleComments = (postId) => {
-    const cs = document.getElementById(`comments-section-${postId}`);
-    cs.style.display = cs.style.display === "block" ? "none" : "block";
-  };
-  window.toggleReplyForm = (commentId) => {
-    const form = document.getElementById(`reply-form-${commentId}`);
-    form.style.display = form.style.display === "flex" ? "none" : "flex";
-  };
-  window.sendComment = (postId, parentId = null) => {
-    const inputId = parentId
-      ? `reply-input-${parentId}`
-      : `comment-input-${postId}`;
-    const input = document.getElementById(inputId);
-    const content = input.value.trim();
-    if (stompClient?.connected && content) {
-      stompClient.send(
-        `/app/postagem/${postId}/comentar`,
-        {},
-        JSON.stringify({ conteudo: content, parentId: parentId })
-      );
-      input.value = "";
-      if (parentId)
-        document.getElementById(`reply-form-${parentId}`).style.display =
-          "none";
-    }
-  };
-  window.toggleLike = async (event, postagemId, comentarioId = null) => {
-    const btn = event.currentTarget;
-    const isPost = comentarioId === null;
-    const countId = isPost
-      ? `like-count-post-${postagemId}`
-      : `like-count-comment-${comentarioId}`;
-    const countSpan = document.getElementById(countId);
-    let count = parseInt(
-      countSpan.innerText.trim().replace(/<[^>]*>/g, ""),
-      10
-    );
-    if (isNaN(count)) count = 0;
-
-    btn.classList.toggle("liked");
-    const isLiked = btn.classList.contains("liked");
-    const newCount = isLiked ? count + 1 : count - 1;
-
-    if (isPost) countSpan.textContent = newCount;
-    else countSpan.innerHTML = `<i class="fas fa-heart"></i> ${newCount}`;
-
-    try {
-      await axios.post(`${backendUrl}/curtidas/toggle`, {
-        postagemId,
-        comentarioId,
-      });
-    } catch (error) {
-      showNotification("Erro ao processar curtida.", "error");
-      btn.classList.toggle("liked");
-      if (isPost) countSpan.textContent = count;
-      else countSpan.innerHTML = `<i class="fas fa-heart"></i> ${count}`;
-    }
-  };
-  window.deletePost = async (postId) => {
-    if (confirm("Tem certeza?")) {
-      try {
-        await axios.delete(`${backendUrl}/postagem/${postId}`);
-        showNotification("Postagem excluída.", "success");
-      } catch (error) {
-        showNotification("Erro ao excluir postagem.", "error");
-      }
-    }
-  };
-  window.deleteComment = async (commentId) => {
-    if (confirm("Tem certeza?")) {
-      try {
-        await axios.delete(`${backendUrl}/comentarios/${commentId}`);
-        showNotification("Comentário excluído.", "success");
-      } catch (error) {
-        showNotification("Erro ao excluir comentário.", "error");
-      }
-    }
-  };
-  window.highlightComment = async (commentId) => {
-    try {
-      await axios.put(`${backendUrl}/comentarios/${commentId}/destacar`);
-    } catch (error) {
-      showNotification("Erro ao destacar.", "error");
-    }
-  };
-
-  // Funções de Modal (Edição)
+  // Funções de Modal (Edição) - ESPECÍFICAS DO FEED
   window.openEditPostModal = async (postId) => {
     //
     const existingMediaContainer = document.getElementById(
@@ -1586,18 +1620,21 @@ async function fetchAndReplacePost(postId) {
       showNotification("Erro ao carregar postagem.", "error");
     }
   };
+  
   window.openEditCommentModal = (commentId, content) => {
     //
     feedElements.editCommentIdInput.value = commentId;
     feedElements.editCommentTextarea.value = content;
     feedElements.editCommentModal.style.display = "flex";
   };
+  
   function closeAndResetEditCommentModal() {
     //
     feedElements.editCommentModal.style.display = "none";
     feedElements.editCommentIdInput.value = "";
     feedElements.editCommentTextarea.value = "";
   }
+  
   function updateFilePreview() {
     //
     feedElements.filePreviewContainer.innerHTML = "";
@@ -1621,6 +1658,7 @@ async function fetchAndReplacePost(postId) {
       feedElements.filePreviewContainer.appendChild(item);
     });
   }
+  
   function updateEditFilePreview() {
     //
     feedElements.editFilePreviewContainer.innerHTML = "";
@@ -1642,6 +1680,7 @@ async function fetchAndReplacePost(postId) {
       feedElements.editFilePreviewContainer.appendChild(item);
     });
   }
+  
   function filterPosts() {
     //
     const searchTerm = searchInput.value.toLowerCase();
