@@ -42,6 +42,9 @@ public class EventoService {
         evento.setLocal(dto.getLocal());
         evento.setFormato(dto.getFormato());
         evento.setCategoria(dto.getCategoria());
+        evento.setHoraInicio(dto.getHoraInicio()); // NOVO
+        evento.setHoraFim(dto.getHoraFim());
+        evento.setDescricao(dto.getDescricao());
         return evento;
     }
 
@@ -53,6 +56,9 @@ public class EventoService {
         dto.setLocal(evento.getLocal());
         dto.setFormato(evento.getFormato());
         dto.setCategoria(evento.getCategoria());
+        dto.setHoraInicio(evento.getHoraInicio()); // NOVO
+        dto.setHoraFim(evento.getHoraFim());
+        dto.setDescricao(evento.getDescricao());
 
         if (evento.getImagemCapa() != null) {
             dto.setImagemCapaUrl(evento.getImagemCapa());
@@ -91,6 +97,9 @@ public class EventoService {
         evento.setLocal(dto.getLocal());
         evento.setFormato(dto.getFormato());
         evento.setCategoria(dto.getCategoria());
+        evento.setHoraInicio(dto.getHoraInicio());
+        evento.setHoraFim(dto.getHoraFim());
+        evento.setDescricao(dto.getDescricao());
 
         // Se enviou nova imagem, substitui a antiga
         if (imagem != null && !imagem.isEmpty()) {
