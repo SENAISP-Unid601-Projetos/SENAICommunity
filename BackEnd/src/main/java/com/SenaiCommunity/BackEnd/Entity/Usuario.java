@@ -25,6 +25,8 @@ public abstract class Usuario {
     private String senha;
     @Lob
     private String fotoPerfil;
+    @Lob
+    private String fotoFundo;
     private LocalDate dataNascimento;
     private String bio;
 

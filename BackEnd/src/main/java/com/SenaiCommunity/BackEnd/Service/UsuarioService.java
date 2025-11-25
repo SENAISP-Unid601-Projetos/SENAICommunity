@@ -10,6 +10,7 @@ import com.SenaiCommunity.BackEnd.Repository.AmizadeRepository;
 import com.SenaiCommunity.BackEnd.Repository.ProjetoMembroRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,11 +46,20 @@ public class UsuarioService {
     @Autowired
     private ProjetoMembroRepository projetoMembroRepository;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     private UsuarioSaidaDTO criarDTOComContagem(Usuario usuario) {
         UsuarioSaidaDTO dto = new UsuarioSaidaDTO(usuario);
         long qtdProjetos = projetoMembroRepository.countByUsuarioId(usuario.getId());
         dto.setTotalProjetos(qtdProjetos);
         return dto;
+    }
+
+    public void notificarAtualizacaoPerfil(Usuario usuario) {
+        UsuarioSaidaDTO dto = criarDTOComContagem(usuario);
+        // Envia para o tópico específico deste usuário
+        messagingTemplate.convertAndSend("/topic/perfil/" + usuario.getId(), dto);
     }
 
     public UsuarioSaidaDTO buscarUsuarioPorId(Long id) {
@@ -106,6 +116,7 @@ public class UsuarioService {
         }
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+        notificarAtualizacaoPerfil(usuarioAtualizado);
         return criarDTOComContagem(usuarioAtualizado);
     }
 
@@ -119,8 +130,36 @@ public class UsuarioService {
         usuario.setFotoPerfil(urlCloudinary);
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+        notificarAtualizacaoPerfil(usuarioAtualizado);
         return criarDTOComContagem(usuarioAtualizado);
 
+    }
+
+    public UsuarioSaidaDTO atualizarFotoFundo(Authentication authentication, MultipartFile foto) throws IOException {
+        if (foto == null || foto.isEmpty()) {
+            throw new IllegalArgumentException("Arquivo de fundo não pode ser vazio.");
+        }
+
+        Usuario usuario = getUsuarioFromAuthentication(authentication);
+
+        // Upload para o Cloudinary usando seu serviço existente
+        String urlCloudinary = midiaService.upload(foto);
+
+        // Se já tiver um fundo antigo (que não seja o padrão local), deletar do Cloudinary
+        String oldFundo = usuario.getFotoFundo();
+        if (oldFundo != null && oldFundo.contains("cloudinary")) {
+            try {
+                midiaService.deletar(oldFundo);
+            } catch (Exception e) {
+                System.err.println("Erro ao deletar fundo antigo: " + e.getMessage());
+            }
+        }
+
+        usuario.setFotoFundo(urlCloudinary);
+
+        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+        notificarAtualizacaoPerfil(usuarioAtualizado);
+        return criarDTOComContagem(usuarioAtualizado);
     }
 
     /**

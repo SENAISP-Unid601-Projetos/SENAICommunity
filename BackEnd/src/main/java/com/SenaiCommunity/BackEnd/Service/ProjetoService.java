@@ -55,6 +55,8 @@ public class ProjetoService {
     @Autowired
     private SolicitacaoEntradaRepository solicitacaoEntradaRepository;
 
+    @Autowired
+    private UsuarioService usuarioService; // 1. INJEÇÃO NECESSÁRIA
 
 
     // Método auxiliar para notificar atualizações em tempo real
@@ -139,6 +141,7 @@ public class ProjetoService {
         String mensagem = String.format("%s saiu do projeto '%s'.", membro.getUsuario().getNome(), projeto.getTitulo());
         notificacaoService.criarNotificacao(projeto.getAutor(), mensagem, "MEMBRO_SAIU", projeto.getId());
 
+        usuarioService.notificarAtualizacaoPerfil(membro.getUsuario());
         notificarAtualizacaoProjeto(projetoId, "membros_atualizados");
     }
 
@@ -201,7 +204,7 @@ public class ProjetoService {
 
         String mensagem = String.format("Sua solicitação para entrar no projeto '%s' foi aprovada!", projeto.getTitulo());
         notificacaoService.criarNotificacao(solicitacao.getUsuarioSolicitante(), mensagem, "SOLICITACAO_ACEITA", projeto.getId());
-
+        usuarioService.notificarAtualizacaoPerfil(novoMembro.getUsuario());
         notificarAtualizacaoProjeto(projeto.getId(), "membros_atualizados");
     }
 
@@ -289,6 +292,7 @@ public class ProjetoService {
         String mensagem = String.format("%s entrou no projeto '%s'.", usuario.getNome(), projeto.getTitulo());
         notificacaoService.criarNotificacao(projeto.getAutor(), mensagem, "MEMBRO_ADICIONADO", projeto.getId());
 
+        usuarioService.notificarAtualizacaoPerfil(usuario);
         notificarAtualizacaoProjeto(projetoId, "membros_atualizados");
     }
 
@@ -509,7 +513,7 @@ public class ProjetoService {
 
         String mensagem = String.format("Você foi removido do projeto '%s'.", projeto.getTitulo());
         notificacaoService.criarNotificacao(membro.getUsuario(), mensagem, "MEMBRO_REMOVIDO", projeto.getId());
-
+        usuarioService.notificarAtualizacaoPerfil(membro.getUsuario());
         notificarAtualizacaoProjeto(projetoId, "membros_atualizados");
     }
 

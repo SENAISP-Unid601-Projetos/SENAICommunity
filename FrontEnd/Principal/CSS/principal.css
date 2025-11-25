@@ -3182,3 +3182,58 @@ a.user-card-link:hover h4 {
     background-color: transparent;
 }
 
+/* --- Correção do Modal de Edição de Perfil no Mobile --- */
+@media (max-width: 768px) {
+  #edit-profile-modal .modal-content {
+    width: 95%;          /* Ocupa quase toda a largura da tela */
+    max-height: 85vh;    /* Limita a altura a 85% da tela */
+    overflow-y: auto;    /* Habilita a barra de rolagem interna */
+    padding: 1.25rem 1rem; /* Reduz o padding para ganhar espaço */
+    margin: auto;        /* Centraliza */
+  }
+
+  /* Ajusta a área da foto para não ficar gigante */
+  #edit-profile-modal .profile-pic-editor img {
+    width: 100px;
+    height: 100px;
+  }
+
+  /* Melhora os inputs para toque */
+  #edit-profile-modal .form-group input,
+  #edit-profile-modal .form-group textarea {
+    font-size: 16px; /* Evita que o iPhone dê zoom ao clicar */
+    padding: 0.8rem; /* Aumenta a área de toque */
+  }
+
+  /* Arruma os botões do rodapé */
+  #edit-profile-modal .modal-footer {
+    display: flex;
+    flex-direction: column; /* Empilha os botões verticalmente */
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;     /* Separação visual do conteúdo */
+  }
+
+  #edit-profile-modal .modal-footer .btn {
+    width: 100%;           /* Botão ocupa a largura total */
+    justify-content: center;
+    padding: 0.8rem;       /* Botão mais alto para facilitar o clique */
+    margin: 0;
+  }
+}
+
+/* Estilo para botão em estado de carregamento */
+.btn-loading {
+    cursor: not-allowed !important;
+    opacity: 0.7;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Espaço entre o ícone e o texto */
+}
+
+.btn-loading i.fa-spinner {
+    animation: fa-spin 1s infinite linear;
+}
+
