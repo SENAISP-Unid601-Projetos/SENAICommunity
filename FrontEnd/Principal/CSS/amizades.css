@@ -92,7 +92,7 @@
     /* Fixa a sidebar enquanto rola a página */
     position: sticky;
     top: var(--header-height);
-    height: calc(100vh - var(--header-height));
+    height: 100%;
     
     overflow-y: auto;
     flex-shrink: 0; /* Impede a sidebar de encolher */
@@ -239,6 +239,13 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.sidebar-widget {
+    /* margin-top: auto;  <-- REMOVA ESTA LINHA */
+    margin-top: 1rem; /* Adicione apenas um espaçamento pequeno se quiser */
 }
 
 .menu-item {
@@ -264,48 +271,49 @@
 .menu-item i { width: 24px; text-align: center; }
 
 /* =================================================================
-   WIDGET AMIGOS ONLINE (Estilo da Imagem)
-   Adicione ao final de amizades.css
+   WIDGET AMIGOS ONLINE (Correção de Alinhamento)
 ================================================================= */
 
 /* Container do Widget */
 .sidebar-widget .online-friends {
-    background: var(--bg-secondary); /* Fundo do card */
+    background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: none; /* Remove sombras externas para ficar flat como na imagem */
+    box-shadow: none;
 }
 
-/* Título "Amigos Online" */
+/* Título */
 .sidebar-widget .widget-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-secondary); /* Cor cinza */
+    color: var(--text-secondary);
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border-color); /* Linha fina separadora */
-    text-transform: none; /* Remove caixa alta se houver */
+    border-bottom: 1px solid var(--border-color);
+    text-transform: none;
 }
 
-/* Item da Lista (Cada amigo) */
+/* Item da Lista (Container Geral) */
 .sidebar-widget .friend-item {
     display: flex;
-    align-items: center;
-    justify-content: space-between; /* Empurra a bolinha para a ponta direita */
-    padding: 0.6rem 0; /* Espaçamento vertical entre os amigos */
+    align-items: center; /* Centraliza verticalmente TUDO na linha */
+    justify-content: space-between;
+    padding: 0.6rem 0;
     border-radius: 8px;
     transition: background-color 0.2s;
+    width: 100%;
 }
 
-/* Link (Agrupa Avatar + Nome) */
+/* Link (Avatar + Nome) */
 .sidebar-widget .friend-item-link {
     display: flex;
-    align-items: center;
-    gap: 12px; /* Distância entre a foto e o nome */
+    align-items: center; /* Centraliza Nome em relação ao Avatar */
+    gap: 12px;
     text-decoration: none;
-    flex-grow: 1; /* Ocupa todo o espaço até a bolinha */
-    min-width: 0; /* Evita que nomes longos quebrem o layout */
+    flex-grow: 1;
+    min-width: 0;
+    color: inherit; /* Garante que não fique azul/roxo de link padrão */
 }
 
 /* Avatar do Amigo */
@@ -314,36 +322,42 @@
     height: 36px;
     border-radius: 50%;
     overflow: hidden;
-    margin: 0; /* Remove margens antigas */
-    border: none; /* Remove bordas antigas */
+    margin: 0;
+    border: none;
+    flex-shrink: 0; /* Impede que o avatar amasse */
+    display: flex;  /* Remove espaços em branco fantasmas */
 }
 
 .sidebar-widget .friend-item .avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block; /* Essencial para alinhamento vertical exato */
 }
 
 /* Nome do Amigo */
 .sidebar-widget .friend-name {
     font-size: 0.95rem;
     font-weight: 500;
-    color: var(--text-primary); /* Branco/Claro */
+    color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin: 0;       /* Remove margens padrão de <p> ou <h3> */
+    line-height: 1.2; /* Altura de linha ajustada para centralizar */
+    padding-top: 1px; /* Ajuste óptico fino (opcional) */
 }
 
 /* Bolinha de Status (Lado Direito) */
 .sidebar-widget .friend-item .status.online {
-    position: static; /* Remove posicionamento absoluto antigo */
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background-color: #22c55e; /* Verde vibrante */
+    background-color: #22c55e;
     border: none;
-    margin-left: 10px; /* Afasta um pouco do nome */
-    flex-shrink: 0; /* Impede que a bolinha amasse */
+    margin-left: 10px;
+    flex-shrink: 0;
+    position: static; /* Garante que respeite o flexbox */
 }
 /* --- MAIN CONTENT --- */
 .main-content {
@@ -613,6 +627,7 @@
     border: 2px solid var(--bg-secondary);
     background-color: #238636; /* Verde */
 }
+
 
 /* 2. Identidade (Nome e Cargo) */
 .sidebar .user-identity {
