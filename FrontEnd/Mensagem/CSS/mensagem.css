@@ -458,6 +458,64 @@ body {
     background: var(--danger); color: white; animation: pulse 1.5s infinite;
 }
 
+/* --- LÓGICA DE MENSAGEM LONGA (LER MAIS) --- */
+/* --- LÓGICA DE MENSAGEM LONGA (LER MAIS) --- */
+
+.text-clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+    white-space: pre-wrap;
+    word-break: break-word; 
+    overflow-wrap: anywhere;
+    
+    /* Remove qualquer margem do texto que empurre o botão */
+    margin-bottom: 0 !important; 
+    padding-bottom: 0 !important;
+}
+
+.read-more-btn {
+    display: inline-block; /* Mudei de block para inline-block */
+    width: auto;
+    
+    /* REMOVI a margem negativa que estava causando problemas */
+    margin-top: 2px;       /* Pequeno espaçamento normal */
+    margin-bottom: 0;      /* Remove margem inferior */
+    margin-left: 0;
+    margin-right: 0;
+    
+    padding: 2px 0;        /* Padding vertical mínimo */
+    line-height: 1;        /* Remove altura extra dentro do botão */
+    font-size: 0.75rem;     
+    
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    opacity: 0.9;
+    
+    /* Remove posicionamento relativo que pode causar problemas */
+    position: static;
+    z-index: 2;
+    
+    /* Garante que o botão fique na mesma linha quando possível */
+    vertical-align: baseline;
+}
+
+.read-more-btn:hover {
+    text-decoration: underline;
+    opacity: 1;
+}
+
+/* Ajuste para MINHAS mensagens */
+.message-group.me .read-more-btn {
+    color: rgba(255, 255, 255, 0.95);
+}
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(248, 81, 73, 0); } 100% { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0);} }
 
@@ -530,3 +588,4 @@ body {
     border-top: 3px solid var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;
 }
 @keyframes spin { 100% { transform: rotate(360deg); } }
+

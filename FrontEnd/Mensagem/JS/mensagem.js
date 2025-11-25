@@ -1,6 +1,21 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 
+// --- FUNÇÃO GLOBAL PARA O BOTÃO "LER MAIS" ---
+window.toggleMessageReadMore = function(btn) {
+  const textSpan = btn.previousElementSibling;
+  
+  if (textSpan && textSpan.classList.contains('text-clamped')) {
+      // EXPANDIR
+      textSpan.classList.remove('text-clamped');
+      btn.textContent = 'Ler menos';
+  } else if (textSpan) {
+      // RECOLHER
+      textSpan.classList.add('text-clamped');
+      btn.textContent = 'Ler mais';
+  }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   // --- ELEMENTOS DO DOM ---
   const elements = {
@@ -8,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chatContainer: document.getElementById("chat-container"),
     conversationsList: document.getElementById("conversations-list"),
     chatHeader: document.getElementById("chat-header-area"),
-    chatHeaderContent: document.getElementById("chat-header-content"), // Certifique-se de ter este ID no HTML
+    chatHeaderContent: document.getElementById("chat-header-content"), 
     chatMessagesContainer: document.getElementById("chat-messages-area"),
     
     // Inputs
@@ -32,6 +47,21 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileOverlay: document.getElementById('mobile-overlay'),
     backToListBtn: document.getElementById('back-to-list-btn')
   };
+
+  // --- CORREÇÃO DO BOTÃO "EDITAR PERFIL" ---
+  // Substitui o botão original (que quebra o JS do principal.js) por um novo que redireciona
+  const editProfileBtnOld = document.getElementById("edit-profile-btn");
+  if (editProfileBtnOld) {
+      // Clona o botão para remover todos os EventListeners antigos (incluindo o que causa erro)
+      const editProfileBtnNew = editProfileBtnOld.cloneNode(true);
+      editProfileBtnOld.parentNode.replaceChild(editProfileBtnNew, editProfileBtnOld);
+      
+      // Adiciona o novo comportamento seguro: Redirecionar para o perfil
+      editProfileBtnNew.addEventListener("click", (e) => {
+          e.preventDefault();
+          window.location.href = "perfil.html"; // Leva para a página onde a edição funciona
+      });
+  }
 
   // --- ESTADO ---
   let conversas = [];
@@ -85,6 +115,34 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elements.addConvoModal.style.display === "flex") renderAvailableUsers();
     });
   });
+
+  // --- HELPER: FORMATAÇÃO DE TEXTO (LER MAIS) ---
+  function escapeHtml(text) {
+      if (!text) return "";
+      return text.replace(/[&<>"']/g, function(m) { 
+          return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]; 
+      });
+  }
+
+function formatMessageContent(text) {
+    const LIMITE_CARACTERES = 350; 
+    
+    if (!text) return "";
+    
+    // Escapa HTML para segurança e troca quebra de linha por <br>
+    let safeText = escapeHtml(text).replace(/\n/g, '<br>');
+
+    // Se for curto, retorna normal
+    if (text.length <= LIMITE_CARACTERES) {
+        return safeText;
+    }
+
+    // Se for longo, retorna com a classe de corte e botão INLINE
+    return `
+        <span class="message-text-body text-clamped">${safeText}</span>
+        <button class="read-more-btn" onclick="toggleMessageReadMore(this)">Ler mais</button>
+    `;
+}
 
   // --- RESPONSIVIDADE ---
   function setupResponsiveListeners() {
@@ -264,7 +322,7 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.messageInput.focus();
   }
 
-  // --- WEBSOCKET RECEIVER (CORRIGIDO PARA EDIÇÃO) ---
+  // --- WEBSOCKET RECEIVER ---
   function onMessageReceived(payload) {
     const msg = JSON.parse(payload.body);
 
@@ -279,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!chatMessages.has(cacheKey)) chatMessages.set(cacheKey, []);
     const messages = chatMessages.get(cacheKey);
 
-    // VERIFICA SE É EDIÇÃO (Já existe ID?)
+    // VERIFICA SE É EDIÇÃO
     const existingIndex = messages.findIndex(m => m.id === msg.id);
     if (existingIndex !== -1) {
         messages[existingIndex] = msg; // Atualiza
@@ -301,13 +359,13 @@ document.addEventListener("DOMContentLoaded", () => {
             unreadMessagesCount.set(otherUserId, convo.unreadCount);
         }
     } else {
-        fetchConversations(); // Nova conversa desconhecida
+        fetchConversations(); 
         return; 
     }
     conversas.unshift(convo);
     renderConversationsList();
 
-    // Se chat aberto, re-renderiza para mostrar msg nova ou editada
+    // Se chat aberto, re-renderiza
     if (activeConversation.usuarioId === otherUserId) {
         renderMessages(messages);
     }
@@ -385,9 +443,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const isMe = msg.remetenteId === currentUser.id;
       const time = new Date(msg.dataEnvio).toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
       
+      // LOGICA ALTERADA: Usar formatMessageContent para textos longos
       let contentHtml = isAudioUrl(msg.conteudo) 
           ? `<div class="audio-message"><audio controls src="${msg.conteudo}"></audio></div>`
-          : document.createElement('div').appendChild(document.createTextNode(msg.conteudo)).parentNode.innerHTML;
+          : formatMessageContent(msg.conteudo);
 
       // Botões (FORA DA BOLHA)
       const actionsHtml = isMe ? `
@@ -493,6 +552,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // --- REDIRECIONAMENTO PERFIL AO CLICAR NO NOME NA SIDEBAR ---
+    const sidebarHeader = document.querySelector('.sidebar-header');
+    if (sidebarHeader) {
+        sidebarHeader.style.cursor = 'pointer';
+        sidebarHeader.addEventListener('click', (e) => {
+            // Se clicar no botão de "add conversa", não redireciona
+            if (e.target.closest('button') || e.target.closest('.add-convo-btn')) return;
+            window.location.href = 'perfil.html';
+        });
+    }
+
     // CLIQUE NAS MENSAGENS (Toggle Ações + Handlers)
     if (elements.chatMessagesContainer) {
         elements.chatMessagesContainer.addEventListener("click", (e) => {
@@ -506,6 +576,9 @@ document.addEventListener("DOMContentLoaded", () => {
             // Clique na Bolha (Toggle)
             const bubble = e.target.closest(".message-content");
             if (bubble) {
+                // Se clicar em um link ou no botão 'Ler mais', não faz o toggle das ações
+                if(e.target.tagName === 'A' || e.target.classList.contains('read-more-btn')) return;
+
                 const group = bubble.closest(".message-group");
                 if (group && group.classList.contains("me")) {
                     // Fecha outros
@@ -575,7 +648,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function handleEditMessage(id) {
     const el = document.querySelector(`[data-message-id="${id}"] .message-content`);
     if(!el) return;
-    const oldTxt = el.textContent;
+    const oldTxt = el.textContent.replace('Ler mais', '').replace('Ler menos', '').trim(); // Limpa o texto do botão
     const newTxt = prompt("Editar mensagem:", oldTxt);
     if(newTxt && newTxt !== oldTxt) {
         try {
