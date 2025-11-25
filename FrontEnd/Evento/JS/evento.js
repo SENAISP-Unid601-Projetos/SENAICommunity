@@ -1,4 +1,4 @@
-// evento.js - Código completo e funcional com Modal de Detalhes
+// evento.js - Código completo com Correção do Modal e Tempo Real
 document.addEventListener('DOMContentLoaded', () => {
   // Aguardar a inicialização global do principal.js
   if (!window.currentUser) {
@@ -81,13 +81,13 @@ async function initEventos() {
   // Elementos do modal de detalhes
   const eventoDetailsModal = document.getElementById('evento-details-modal');
   const closeEventoDetailsBtn = document.getElementById('close-evento-details-btn');
-  const saveEventoDetailsBtn = document.getElementById('save-evento-details-btn');
-  const rsvpEventoDetailsBtn = document.getElementById('rsvp-evento-details-btn');
-  const contactEventoBtn = document.getElementById('contact-evento-btn');
+  // Nota: Removemos as referências const saveEventoDetailsBtn e rsvpEventoDetailsBtn daqui
+  // para buscá-las dinamicamente e evitar o erro de "null" ao reabrir o modal.
 
   let eventos = [];
   let eventosInteressados = [];
   let isAdmin = false;
+  let currentDetailsEventoId = null; // Rastreia qual evento está aberto no modal
 
   // Inicialização
   async function init() {
@@ -95,6 +95,7 @@ async function initEventos() {
     updateSidebarUserInfo();
     await loadEventos();
     setupEventListeners();
+    setupWebSocketListeners(); // Inicia escuta em tempo real
   }
 
   // Verificar se o usuário é admin
@@ -143,6 +144,46 @@ async function initEventos() {
     } catch (error) {
       console.error('Erro ao carregar eventos interessados:', error);
       eventosInteressados = [];
+    }
+  }
+
+  // --- WEB SOCKET (TEMPO REAL) ---
+  function setupWebSocketListeners() {
+    if (window.stompClient && window.stompClient.connected) {
+      subscribeToEvents();
+    }
+    document.addEventListener('webSocketConnected', () => {
+      subscribeToEvents();
+    });
+  }
+
+  function subscribeToEvents() {
+    if (!window.stompClient) return;
+    try {
+      window.stompClient.subscribe('/topic/eventos', (message) => {
+        const eventoAtualizado = JSON.parse(message.body);
+        handleRealTimeUpdate(eventoAtualizado);
+      });
+    } catch(e) {
+      console.warn("Não foi possível inscrever no tópico de eventos.");
+    }
+  }
+
+  function handleRealTimeUpdate(eventoAtualizado) {
+    // 1. Atualiza o objeto na lista local de eventos
+    const index = eventos.findIndex(e => e.id === eventoAtualizado.id);
+    if (index !== -1) {
+      eventos[index].numeroInteressados = eventoAtualizado.numeroInteressados;
+      
+      // 2. Se o modal deste evento estiver aberto, atualiza o número na tela
+      if (currentDetailsEventoId === eventoAtualizado.id) {
+        const contadorElement = document.getElementById('details-evento-interessados');
+        if (contadorElement) {
+          contadorElement.style.color = 'var(--accent-primary)'; // Efeito visual
+          contadorElement.textContent = eventoAtualizado.numeroInteressados;
+          setTimeout(() => { contadorElement.style.color = ''; }, 500);
+        }
+      }
     }
   }
 
@@ -221,7 +262,7 @@ async function initEventos() {
         
         <div class="evento-detalhe"><i class="fas fa-map-marker-alt"></i> ${evento.local} (${evento.formato})</div>
         ${!isAdmin ? `
-          <button class="rsvp-btn ${isInteressado ? 'confirmed' : ''}" onclick="toggleInteresse(${evento.id})">
+          <button class="rsvp-btn ${isInteressado ? 'confirmed' : ''}" onclick="event.stopPropagation(); window.toggleInteresse(${evento.id}, this)">
             <i class="fas ${isInteressado ? 'fa-check' : 'fa-calendar-plus'}"></i> 
             ${isInteressado ? 'Lembrete Ativo' : 'Definir Lembrete'}
           </button>
@@ -282,6 +323,8 @@ async function initEventos() {
 
   // Abrir modal de detalhes do evento
   function openEventoDetailsModal(evento) {
+    currentDetailsEventoId = evento.id; // Define qual evento está aberto
+
     // Mapeamento de meses
     const meses = {
       '01': 'JAN', '02': 'FEV', '03': 'MAR', '04': 'ABR', '05': 'MAI', '06': 'JUN',
@@ -324,16 +367,6 @@ async function initEventos() {
     // Imagem
     const imageElement = document.getElementById('details-evento-image');
     imageElement.style.backgroundImage = `url('${evento.imagemCapaUrl || 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'}')`;
-
-    // Gerar tópicos baseados na categoria
-    generateEventoTopics(evento);
-    
-    // Gerar público-alvo
-    generatePublicoAlvo(evento);
-    
-    // Organizador
-    document.getElementById('details-evento-organizador-nome').textContent = 'Equipe SENAI';
-    document.getElementById('details-evento-organizador-email').textContent = 'eventos@senai.com';
     
     // Estatísticas
     document.getElementById('details-evento-interessados').textContent = evento.numeroInteressados || '0';
@@ -351,148 +384,136 @@ async function initEventos() {
   function closeEventoDetailsModal() {
     eventoDetailsModal.style.display = 'none';
     document.body.style.overflow = 'auto';
+    currentDetailsEventoId = null; // Limpa ID
   }
 
-  // Gerar tópicos do evento
-  function generateEventoTopics(evento) {
-    const topicsList = document.getElementById('details-evento-topics');
-    topicsList.innerHTML = '';
-
-    const topicsBase = {
-      'Tecnologia': [
-        'Desenvolvimento de aplicações modernas',
-        'Tendências do mercado tech',
-        'Ferramentas e frameworks atualizados',
-        'Boas práticas de programação',
-        'Networking com profissionais'
-      ],
-      'Carreira': [
-        'Oportunidades de crescimento',
-        'Desenvolvimento de soft skills',
-        'Networking estratégico',
-        'Preparação para o mercado',
-        'Mentoria e orientação'
-      ],
-      'Inovação': [
-        'Metodologias ágeis e criativas',
-        'Cases de sucesso',
-        'Ferramentas de inovação',
-        'Mindset empreendedor',
-        'Tendências do futuro'
-      ],
-      'Competição': [
-        'Desafios práticos',
-        'Avaliação de especialistas',
-        'Premiações e reconhecimento',
-        'Networking competitivo',
-        'Desenvolvimento técnico'
-      ]
-    };
-
-    const topics = topicsBase[evento.categoria] || [
-      'Aprendizado prático',
-      'Networking profissional',
-      'Desenvolvimento de skills',
-      'Oportunidades de carreira',
-      'Experiência enriquecedora'
-    ];
-
-    topics.forEach(topic => {
-      const li = document.createElement('li');
-      li.textContent = topic;
-      topicsList.appendChild(li);
-    });
-  }
-
-  // Gerar público-alvo
-  function generatePublicoAlvo(evento) {
-    const publicoElement = document.getElementById('details-evento-publico');
-    publicoElement.innerHTML = '';
-
-    const publicoBase = {
-      'Tecnologia': ['Desenvolvedores', 'Estudantes de TI', 'Product Managers', 'UX/UI Designers'],
-      'Carreira': ['Profissionais Júnior', 'Estudantes', 'Career Changers', 'Líderes'],
-      'Inovação': ['Empreendedores', 'Innovators', 'Gestores', 'Design Thinkers'],
-      'Competição': ['Competidores', 'Estudantes', 'Profissionais', 'Hackers']
-    };
-
-    const publico = publicoBase[evento.categoria] || ['Profissionais', 'Estudantes', 'Interessados'];
-
-    publico.forEach(item => {
-      const tag = document.createElement('span');
-      tag.className = 'publico-alvo-tag';
-      tag.textContent = item;
-      publicoElement.appendChild(tag);
-    });
-  }
-
-  // Configurar botões de ação
+  // Configurar botões de ação (CORREÇÃO: Seleciona botões novos a cada vez)
   function setupActionButtons(eventoId, isInteressado) {
+    const rsvpBtn = document.getElementById('rsvp-evento-details-btn');
+    const saveBtn = document.getElementById('save-evento-details-btn');
+
     // Botão de lembrete
-    if (rsvpEventoDetailsBtn) {
-      if (isInteressado) {
-        rsvpEventoDetailsBtn.innerHTML = '<i class="fas fa-check"></i> Lembrete Ativo';
-        rsvpEventoDetailsBtn.classList.add('confirmed');
-      } else {
-        rsvpEventoDetailsBtn.innerHTML = '<i class="fas fa-calendar-plus"></i> Definir Lembrete';
-        rsvpEventoDetailsBtn.classList.remove('confirmed');
+    if (rsvpBtn) {
+      // Clona para remover listeners antigos e atualizar referência
+      const newRsvpBtn = rsvpBtn.cloneNode(true);
+      if (rsvpBtn.parentNode) {
+        rsvpBtn.parentNode.replaceChild(newRsvpBtn, rsvpBtn);
       }
       
-      // Remover event listeners anteriores
-      rsvpEventoDetailsBtn.replaceWith(rsvpEventoDetailsBtn.cloneNode(true));
-      const newRsvpBtn = document.getElementById('rsvp-evento-details-btn');
+      if (isInteressado) {
+        newRsvpBtn.innerHTML = '<i class="fas fa-check"></i> Lembrete Ativo';
+        newRsvpBtn.classList.add('confirmed');
+      } else {
+        newRsvpBtn.innerHTML = '<i class="fas fa-calendar-plus"></i> Definir Lembrete';
+        newRsvpBtn.classList.remove('confirmed');
+      }
       
-      newRsvpBtn.addEventListener('click', () => {
-        toggleInteresse(eventoId);
-        closeEventoDetailsModal();
+      newRsvpBtn.addEventListener('click', async () => {
+        await toggleInteresse(eventoId, newRsvpBtn);
+        // Atualiza o visual do botão após a ação
+        const updatedInterest = eventosInteressados.includes(eventoId);
+        if (updatedInterest) {
+            newRsvpBtn.innerHTML = '<i class="fas fa-check"></i> Lembrete Ativo';
+            newRsvpBtn.classList.add('confirmed');
+        } else {
+            newRsvpBtn.innerHTML = '<i class="fas fa-calendar-plus"></i> Definir Lembrete';
+            newRsvpBtn.classList.remove('confirmed');
+        }
+        // Não fechamos o modal automaticamente para permitir ver a mudança
       });
+
+      // Se for admin, esconde o botão de interesse
+      if (isAdmin) {
+        newRsvpBtn.style.display = 'none';
+      } else {
+        newRsvpBtn.style.display = 'inline-flex';
+      }
     }
 
     // Botão salvar
-    if (saveEventoDetailsBtn) {
-      saveEventoDetailsBtn.replaceWith(saveEventoDetailsBtn.cloneNode(true));
-      const newSaveBtn = document.getElementById('save-evento-details-btn');
+    if (saveBtn) {
+      const newSaveBtn = saveBtn.cloneNode(true);
+      if (saveBtn.parentNode) {
+        saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+      }
       
       newSaveBtn.addEventListener('click', () => {
         handleSaveEvento(eventoId);
       });
-    }
-
-    // Botão de contato
-    if (contactEventoBtn) {
-      contactEventoBtn.href = `mailto:eventos@senai.com?subject=Dúvida sobre: ${document.getElementById('details-evento-titulo').textContent}`;
     }
   }
 
   // Salvar evento (favoritar)
   function handleSaveEvento(eventoId) {
     showNotification('Evento salvo nos seus favoritos!', 'success');
-    if (saveEventoDetailsBtn) {
-      saveEventoDetailsBtn.innerHTML = '<i class="fas fa-bookmark"></i> Salvo';
-      saveEventoDetailsBtn.classList.add('saved');
-      saveEventoDetailsBtn.disabled = true;
+    const saveBtn = document.getElementById('save-evento-details-btn');
+    if (saveBtn) {
+      saveBtn.innerHTML = '<i class="fas fa-bookmark"></i> Salvo';
+      saveBtn.classList.add('saved');
+      saveBtn.disabled = true;
     }
   }
 
-  // Alternar interesse em evento
-  async function toggleInteresse(eventoId) {
+  // Alternar interesse em evento (COM ATUALIZAÇÃO OTIMISTA)
+  async function toggleInteresse(eventoId, btnElement) {
+    const originalContent = btnElement ? btnElement.innerHTML : '';
+    
+    if(btnElement) {
+        btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+        btnElement.disabled = true;
+    }
+
+    // 1. Atualização Otimista
+    const eventoIndex = eventos.findIndex(e => e.id === eventoId);
+    const isAdding = !eventosInteressados.includes(eventoId);
+    let previousCount = 0;
+
+    if (eventoIndex !== -1) {
+        previousCount = eventos[eventoIndex].numeroInteressados || 0;
+        let newCount = previousCount + (isAdding ? 1 : -1);
+        if (newCount < 0) newCount = 0;
+        eventos[eventoIndex].numeroInteressados = newCount;
+
+        // Atualiza contador no modal se estiver aberto
+        if (currentDetailsEventoId === eventoId) {
+            document.getElementById('details-evento-interessados').textContent = newCount;
+        }
+    }
+
     try {
-      const response = await axios.post(`${window.backendUrl}/api/eventos/${eventoId}/interesse`);
+      // 2. Requisição ao backend
+      await axios.post(`${window.backendUrl}/api/eventos/${eventoId}/interesse`);
       
-      const index = eventosInteressados.indexOf(eventoId);
-      if (index > -1) {
-        eventosInteressados.splice(index, 1);
-        showNotification('Lembrete removido', 'info');
-      } else {
+      // 3. Confirma alteração na lista local
+      if (isAdding) {
         eventosInteressados.push(eventoId);
         showNotification('Lembrete definido com sucesso!', 'success');
+      } else {
+        const index = eventosInteressados.indexOf(eventoId);
+        if (index > -1) {
+          eventosInteressados.splice(index, 1);
+          showNotification('Lembrete removido', 'info');
+        }
       }
       
+      // 4. Atualiza Grid e Sidebar
       renderEventos();
       updateMeusEventos();
+
     } catch (error) {
       console.error('Erro ao alternar interesse:', error);
       showNotification('Erro ao definir lembrete', 'error');
+      
+      // Reverte mudança em caso de erro
+      if (eventoIndex !== -1) {
+        eventos[eventoIndex].numeroInteressados = previousCount;
+        if (currentDetailsEventoId === eventoId) {
+            document.getElementById('details-evento-interessados').textContent = previousCount;
+        }
+      }
+      if(btnElement) btnElement.innerHTML = originalContent;
+    } finally {
+      if(btnElement) btnElement.disabled = false;
     }
   }
 
