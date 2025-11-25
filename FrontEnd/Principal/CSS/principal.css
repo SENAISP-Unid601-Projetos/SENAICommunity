@@ -3168,3 +3168,18 @@ a.user-card-link:hover h4 {
     border-width: 2px;
 }
 
+/* --- Estilo de Estado Vazio da Sidebar (Amigos Online) --- */
+.online-friends-empty-wrapper {
+    padding: 1rem; /* Espaçamento entre a borda do card e a caixa tracejada */
+}
+
+.online-friends-dashed-box {
+    border: 1px dashed var(--border-color); /* Borda tracejada */
+    border-radius: 6px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    background-color: transparent;
+}
+

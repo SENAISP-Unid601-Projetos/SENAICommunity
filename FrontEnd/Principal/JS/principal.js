@@ -354,14 +354,29 @@ async function fetchInitialOnlineFriends() {
 
 function atualizarStatusDeAmigosNaUI() {
     if (!globalElements.onlineFriendsList) return;
+    
     if (!friendsLoaded) {
-        globalElements.onlineFriendsList.innerHTML = '<p class="empty-state">Carregando...</p>';
+        // Mantém o loading como está
+        globalElements.onlineFriendsList.innerHTML = `
+            <div class="results-loading" style="padding: 1rem;">
+                <div class="loading-spinner"></div>
+                <p style="font-size: 0.8rem; margin-top: 0.5rem;">Carregando...</p>
+            </div>`;
         return;
     }
-    const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email)); //
+
+    const onlineFriends = userFriends.filter(friend => latestOnlineEmails.includes(friend.email));
     globalElements.onlineFriendsList.innerHTML = '';
+
     if (onlineFriends.length === 0) {
-        globalElements.onlineFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo online.</p>';
+        // --- AQUI ESTÁ A MUDANÇA PARA O ESTILO DA IMAGEM ---
+        globalElements.onlineFriendsList.innerHTML = `
+            <div class="online-friends-empty-wrapper">
+                <div class="online-friends-dashed-box">
+                    Nenhum amigo online.
+                </div>
+            </div>
+        `;
     } else {
         onlineFriends.forEach(friend => {
             const friendElement = document.createElement('div');
@@ -370,14 +385,14 @@ function atualizarStatusDeAmigosNaUI() {
             const friendAvatar = friend.fotoPerfil 
                 ? (friend.fotoPerfil.startsWith('http') 
                     ? friend.fotoPerfil 
-                    : `${backendUrl}/api/arquivos/${friend.fotoPerfil}`) 
-                : defaultAvatarUrl;
+                    : `${window.backendUrl}/api/arquivos/${friend.fotoPerfil}`) 
+                : window.defaultAvatarUrl;
             
             const friendId = friend.idUsuario; 
 
             friendElement.innerHTML = `
                 <a href="perfil.html?id=${friendId}" class="friend-item-link">
-                    <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${defaultAvatarUrl}';"></div>
+                    <div class="avatar"><img src="${friendAvatar}" alt="Avatar" onerror="this.src='${window.defaultAvatarUrl}';"></div>
                     <span class="friend-name">${friend.nome}</span>
                 </a>
                 <div class="status online"></div>
@@ -816,6 +831,282 @@ function setupGlobalEventListeners() {
 }
 
 // =================================================================
+// FUNÇÕES DE RENDERIZAÇÃO (GLOBAL)
+// =================================================================
+
+window.createCommentElement = (comment, post, allComments) => {
+    const commentAuthorName = comment.autor?.nome || comment.nomeAutor || "Usuário";
+    const commentAuthorAvatar = window.getAvatarUrl(comment.autor?.urlFotoPerfil || comment.urlFotoAutor);
+    const autorIdDoComentario = comment.autor?.id || comment.autorId;
+    const autorIdDoPost = post.autor?.id || post.autorId;
+    const isAuthor = window.currentUser && autorIdDoComentario == window.currentUser.id;
+    const isPostOwner = window.currentUser && autorIdDoPost == window.currentUser.id;
+    let optionsMenu = "";
+
+    if (isAuthor || isPostOwner) {
+        optionsMenu = `
+            <button class="comment-options-btn" onclick="event.stopPropagation(); window.openCommentMenu(${comment.id})">
+                <i class="fas fa-ellipsis-h"></i>
+            </button>
+            <div class="options-menu" id="comment-menu-${comment.id}" onclick="event.stopPropagation();">
+                ${isAuthor ? `<button onclick="window.openEditCommentModal(${comment.id}, '${comment.conteudo.replace(/'/g, "\\'")}')"><i class="fas fa-pen"></i> Editar</button>` : ""}
+                ${isAuthor || isPostOwner ? `<button class="danger" onclick="window.deleteComment(${comment.id})"><i class="fas fa-trash"></i> Excluir</button>` : ""}
+                ${isPostOwner ? `<button onclick="window.highlightComment(${comment.id})"><i class="fas fa-star"></i> ${comment.destacado ? "Remover Destaque" : "Destacar"}</button>` : ""}
+            </div>`;
+    }
+
+    let tagHtml = '';
+    if (comment.parentId && allComments) {
+        const parentComment = allComments.find(c => c.id === comment.parentId);
+        if (parentComment && parentComment.parentId) {
+            tagHtml = `<a href="perfil.html?id=${parentComment.autorId}" class="reply-tag">@${comment.replyingToName || 'Usuario'}</a>`;
+        }
+    }
+
+    return `
+            <div class="comment-container">
+                <div class="comment ${comment.destacado ? "destacado" : ""}" id="comment-${comment.id}">
+                    <div class="comment-avatar"><img src="${commentAuthorAvatar}" alt="Avatar"></div>
+                    <div class="comment-body">
+                        <span class="comment-author">${commentAuthorName}</span>
+                        <p class="comment-content">${tagHtml} ${comment.conteudo}</p>
+                    </div>
+                    ${optionsMenu}
+                </div>
+                <div class="comment-actions-footer">
+                    <button class="action-btn-like ${comment.curtidoPeloUsuario ? "liked" : ""}" onclick="window.toggleLike(event, ${post.id}, ${comment.id})">Curtir</button>
+                    <button class="action-btn-reply" onclick="window.toggleReplyForm(${comment.id})">Responder</button>
+                    <span class="like-count" id="like-count-comment-${comment.id}"><i class="fas fa-heart"></i> ${comment.totalCurtidas || 0}</span>
+                </div>
+                <div class="reply-form" id="reply-form-${comment.id}">
+                    <input type="text" id="reply-input-${comment.id}" placeholder="Escreva sua resposta..."><button onclick="window.sendComment(${post.id}, ${comment.id})"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>`;
+};
+
+window.renderCommentWithReplies = (comment, allComments, post, isAlreadyInReplyThread = false) => {
+    let commentHtml = window.createCommentElement(comment, post, allComments);
+    const replies = allComments
+        .filter((reply) => reply.parentId === comment.id)
+        .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao));
+
+    if (replies.length > 0 && !isAlreadyInReplyThread) {
+        const plural = replies.length > 1 ? 'respostas' : 'resposta';
+        commentHtml += `
+            <div class="view-replies-container">
+                <button class="btn-view-replies" onclick="window.toggleReplies(this, ${comment.id})">
+                    <i class="fas fa-comment-dots"></i> Ver ${replies.length} ${plural}
+                </button>
+            </div>
+            <div class="comment-replies" id="replies-for-${comment.id}" style="display: none;">`;
+        
+        replies.forEach((reply) => {
+            commentHtml += window.renderCommentWithReplies(reply, allComments, post, true);
+        });
+        commentHtml += `</div>`;
+    } else if (replies.length > 0 && isAlreadyInReplyThread) {
+        replies.forEach((reply) => {
+            commentHtml += window.renderCommentWithReplies(reply, allComments, post, true);
+        });
+    }
+    return commentHtml;
+};
+
+// =================================================================
+// LÓGICA DE MODAIS DE EDIÇÃO (GLOBAL)
+// =================================================================
+let selectedFilesForEdit = [];
+let urlsParaRemover = [];
+
+function updateEditFilePreview() {
+    const container = document.getElementById("edit-file-preview-container");
+    if(!container) return;
+    
+    container.innerHTML = "";
+    selectedFilesForEdit.forEach((file, index) => {
+        const item = document.createElement("div");
+        item.className = "file-preview-item";
+        const previewElement = document.createElement("img");
+        previewElement.src = URL.createObjectURL(file);
+        item.appendChild(previewElement);
+        
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "remove-file-btn";
+        removeBtn.innerHTML = "&times;";
+        removeBtn.onclick = () => {
+            selectedFilesForEdit.splice(index, 1);
+            updateEditFilePreview();
+        };
+        item.appendChild(removeBtn);
+        container.appendChild(item);
+    });
+}
+
+window.openEditPostModal = async (postId) => {
+    const modal = document.getElementById("edit-post-modal");
+    const existingMediaContainer = document.getElementById("edit-existing-media-container");
+    const idInput = document.getElementById("edit-post-id");
+    const textArea = document.getElementById("edit-post-textarea");
+    
+    if (!modal || !existingMediaContainer) return;
+    
+    selectedFilesForEdit = [];
+    urlsParaRemover = [];
+    updateEditFilePreview();
+    existingMediaContainer.innerHTML = "<div class='loading-spinner'></div>";
+    
+    modal.style.display = "flex";
+
+    try {
+        const response = await axios.get(`${window.backendUrl}/postagem/${postId}`);
+        const post = response.data;
+        
+        idInput.value = post.id;
+        textArea.value = post.conteudo;
+        existingMediaContainer.innerHTML = "";
+
+        if(post.urlsMidia) {
+            post.urlsMidia.forEach((url) => {
+                const item = document.createElement("div");
+                item.className = "existing-media-item";
+                
+                const fullUrl = url.startsWith('http') ? url : `${window.backendUrl}${url}`;
+                const preview = document.createElement("img");
+                preview.src = fullUrl;
+                
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.className = "remove-existing-media-checkbox";
+                checkbox.title = "Marque para remover esta imagem";
+                checkbox.onchange = (e) => {
+                    if (e.target.checked) {
+                        urlsParaRemover.push(url);
+                        item.style.opacity = "0.5";
+                        item.style.border = "2px solid red";
+                    } else {
+                        urlsParaRemover = urlsParaRemover.filter((u) => u !== url);
+                        item.style.opacity = "1";
+                        item.style.border = "none";
+                    }
+                };
+                
+                item.appendChild(preview);
+                item.appendChild(checkbox);
+                existingMediaContainer.appendChild(item);
+            });
+        }
+    } catch (error) {
+        window.showNotification("Erro ao carregar postagem.", "error");
+        modal.style.display = "none";
+    }
+};
+
+window.openEditCommentModal = (commentId, content) => {
+    const modal = document.getElementById("edit-comment-modal");
+    if(modal) {
+        document.getElementById("edit-comment-id").value = commentId;
+        document.getElementById("edit-comment-textarea").value = content;
+        modal.style.display = "flex";
+    }
+};
+
+// Configuração dos Listeners de Modal (Executa ao carregar a página)
+document.addEventListener("DOMContentLoaded", () => {
+    // Listener do Formulário de Edição de Post
+    const editPostForm = document.getElementById("edit-post-form");
+    if (editPostForm) {
+        // Remover listeners antigos clonando o elemento (opcional, mas seguro)
+        const newForm = editPostForm.cloneNode(true);
+        editPostForm.parentNode.replaceChild(newForm, editPostForm);
+        
+        newForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = newForm.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "Salvando...";
+
+            try {
+                const postId = document.getElementById("edit-post-id").value;
+                const postagemDTO = {
+                    conteudo: document.getElementById("edit-post-textarea").value,
+                    urlsParaRemover: urlsParaRemover,
+                };
+                
+                const formData = new FormData();
+                formData.append("postagem", new Blob([JSON.stringify(postagemDTO)], { type: "application/json" }));
+                selectedFilesForEdit.forEach((file) => formData.append("arquivos", file));
+
+                await axios.put(`${window.backendUrl}/postagem/${postId}`, formData);
+                
+                document.getElementById("edit-post-modal").style.display = "none";
+                window.showNotification("Postagem editada com sucesso.", "success");
+                
+                // Atualiza a postagem na tela sem recarregar
+                if(typeof window.fetchAndReplacePost === 'function') {
+                    window.fetchAndReplacePost(postId);
+                } else {
+                    window.location.reload();
+                }
+            } catch (error) {
+                window.showNotification("Erro ao editar postagem.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+        
+        // Listener do Input de Arquivo no Modal
+        const fileInput = document.getElementById("edit-post-files");
+        if(fileInput) {
+            fileInput.addEventListener("change", (event) => {
+                Array.from(event.target.files).forEach((file) => selectedFilesForEdit.push(file));
+                updateEditFilePreview();
+            });
+        }
+        
+        // Botão Cancelar
+        const cancelBtn = document.getElementById("cancel-edit-post-btn");
+        if(cancelBtn) {
+            cancelBtn.addEventListener("click", () => {
+                document.getElementById("edit-post-modal").style.display = "none";
+            });
+        }
+    }
+
+    // Listener do Formulário de Edição de Comentário
+    const editCommentForm = document.getElementById("edit-comment-form");
+    if(editCommentForm) {
+        editCommentForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const commentId = document.getElementById("edit-comment-id").value;
+            const content = document.getElementById("edit-comment-textarea").value;
+            try {
+                await axios.put(`${window.backendUrl}/comentarios/${commentId}`, 
+                    { conteudo: content },
+                    { headers: { "Content-Type": "application/json" } }
+                );
+                window.showNotification("Comentário editado.", "success");
+                document.getElementById("edit-comment-modal").style.display = "none";
+                // Recarrega a página ou o post para ver a mudança
+                const postElement = document.getElementById(`comment-${commentId}`).closest('.post');
+                if(postElement) {
+                    const postId = postElement.id.replace('post-', '');
+                    window.fetchAndReplacePost(postId);
+                }
+            } catch (error) {
+                window.showNotification("Erro ao editar comentário.", "error");
+            }
+        });
+        
+        document.getElementById("cancel-edit-comment-btn")?.addEventListener("click", () => {
+            document.getElementById("edit-comment-modal").style.display = "none";
+        });
+    }
+});
+
+// =================================================================
 // INICIALIZAÇÃO GLOBAL
 // =================================================================
 // Inicia a lógica global em TODAS as páginas
@@ -986,8 +1277,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   let selectedFilesForPost = [];
-  let selectedFilesForEdit = [];
-  let urlsParaRemover = [];
   const searchInput = document.getElementById("search-input");
 
   // --- FUNÇÕES DE CARROSSEL ---
@@ -1305,7 +1594,7 @@ function setupCarouselEventListeners(postElement, postId) {
     let commentsHtml = rootComments
       .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao))
       .map((comment) =>
-        renderCommentWithReplies(comment, post.comentarios, post)
+        window.renderCommentWithReplies(comment, post.comentarios, post)
       )
       .join("");
     let optionsMenu = "";
@@ -1364,117 +1653,6 @@ function setupCarouselEventListeners(postElement, postId) {
     }
     return postElement;
   }
-
-  function createCommentElement(comment, post, allComments) {
-        //
-        const commentAuthorName = comment.autor?.nome || comment.nomeAutor || "Usuário";
-        const commentAuthorAvatar = comment.urlFotoAutor ? (comment.urlFotoAutor.startsWith("http") ? comment.urlFotoAutor : `${backendUrl}${comment.urlFotoAutor}`) : defaultAvatarUrl;
-        const autorIdDoComentario = comment.autor?.id || comment.autorId;
-        const autorIdDoPost = post.autor?.id || post.autorId;
-        const isAuthor = currentUser && autorIdDoComentario == currentUser.id;
-        const isPostOwner = currentUser && autorIdDoPost == currentUser.id;
-        let optionsMenu = "";
-        
-        if (isAuthor || isPostOwner) {
-          optionsMenu = `
-                    <button class="comment-options-btn" onclick="event.stopPropagation(); window.openCommentMenu(${comment.id})">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                    <div class="options-menu" id="comment-menu-${comment.id}" onclick="event.stopPropagation();">
-                        ${isAuthor ? `<button onclick="window.openEditCommentModal(${comment.id}, '${comment.conteudo.replace(/'/g, "\\'")}')"><i class="fas fa-pen"></i> Editar</button>` : ""}
-                        ${isAuthor || isPostOwner ? `<button class="danger" onclick="window.deleteComment(${comment.id})"><i class="fas fa-trash"></i> Excluir</button>` : ""}
-                        ${isPostOwner ? `<button onclick="window.highlightComment(${comment.id})"><i class="fas fa-star"></i> ${comment.destacado ? "Remover Destaque" : "Destacar"}</button>` : ""}
-                    </div>`;
-        }
-
-        // --- ▼▼▼ LÓGICA DA TAG @USERNAME ATUALIZADA ▼▼▼ ---
-        let tagHtml = '';
-        // 1. Verificamos se é uma resposta (tem parentId) e se temos a lista de comentários
-        if (comment.parentId && allComments) {
-            // 2. Encontramos o comentário "pai"
-            const parentComment = allComments.find(c => c.id === comment.parentId);
-
-            // 3. Verificamos se o "pai" TAMBÉM é uma resposta (Nível 2+)
-            //    Se parentComment.parentId existir, significa que não é uma resposta ao comentário principal.
-            if (parentComment && parentComment.parentId) {
-                
-                // 4. Pegamos o ID DO AUTOR do comentário pai (do DTO do comentário pai)
-                const parentAuthorId = parentComment.autorId; 
-                
-                // 5. Criamos o link para o PERFIL desse autor
-                tagHtml = `<a href="perfil.html?id=${parentAuthorId}" class="reply-tag">@${comment.replyingToName}</a>`;
-            }
-        }
-        // --- ▲▲▲ FIM DA LÓGICA ATUALIZADA ▲▲▲ ---
-
-        return `
-                <div class="comment-container">
-                    <div class="comment ${comment.destacado ? "destacado" : ""}" id="comment-${comment.id}">
-                        <div class="comment-avatar"><img src="${commentAuthorAvatar}" alt="Avatar de ${commentAuthorName}"></div>
-                        <div class="comment-body">
-                            <span class="comment-author">${commentAuthorName}</span>
-                            <p class="comment-content">${tagHtml} ${comment.conteudo}</p>
-                        </div>
-                        ${optionsMenu}
-                    </div>
-                    <div class="comment-actions-footer">
-                        <button class="action-btn-like ${comment.curtidoPeloUsuario ? "liked" : ""}" onclick="window.toggleLike(event, ${post.id}, ${comment.id})">Curtir</button>
-                        <button class="action-btn-reply" onclick="window.toggleReplyForm(${comment.id})">Responder</button>
-                        <span class="like-count" id="like-count-comment-${comment.id}"><i class="fas fa-heart"></i> ${comment.totalCurtidas || 0}</span>
-                    </div>
-                    <div class="reply-form" id="reply-form-${comment.id}">
-                        <input type="text" id="reply-input-${comment.id}" placeholder="Escreva sua resposta..."><button onclick="window.sendComment(${post.id}, ${comment.id})"><i class="fas fa-paper-plane"></i></button>
-                    </div>
-                </div>`;
-    }
-
-// SUBSTITUA a função 'renderCommentWithReplies' inteira por esta:
-function renderCommentWithReplies(comment, allComments, post, isAlreadyInReplyThread = false) {
-    // 1. Cria o HTML para o comentário atual
-    let commentHtml = createCommentElement(comment, post, allComments); 
-
-    // 2. Encontra todas as respostas diretas a este comentário
-    const replies = allComments
-        .filter((reply) => reply.parentId === comment.id)
-        .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao));
-
-    // 3. Se este comentário tem respostas E é um comentário "principal" (não uma resposta de nível 2+)
-    if (replies.length > 0 && !isAlreadyInReplyThread) {
-        
-        // A. Adicionar o botão "Ver Respostas"
-        const plural = replies.length > 1 ? 'respostas' : 'resposta';
-        commentHtml += `
-            <div class="view-replies-container">
-                <button class="btn-view-replies" onclick="window.toggleReplies(this, ${comment.id})">
-                    <i class="fas fa-comment-dots"></i>
-                    Ver ${replies.length} ${plural}
-                </button>
-            </div>
-        `;
-
-        // B. Ocultar o contêiner de respostas por padrão
-        //    O 'display: flex' será adicionado pelo JS ao clicar
-        commentHtml += `<div class="comment-replies" id="replies-for-${comment.id}" style="display: none;">`;
-        
-        // C. Renderizar as respostas (lógica existente que achata a árvore)
-        replies.forEach((reply) => {
-            // Passa 'true' para que as sub-respostas sejam aninhadas
-            commentHtml += renderCommentWithReplies(reply, allComments, post, true); 
-        });
-        
-        commentHtml += `</div>`; // Fecha o container
-    
-    } else if (replies.length > 0 && isAlreadyInReplyThread) {
-        // 4. Se for uma resposta (Nível 2+) que TAMBÉM tem respostas (Nível 3+),
-        //    apenas continue a recursão. A lógica original já achatava isso.
-        replies.forEach((reply) => {
-            commentHtml += renderCommentWithReplies(reply, allComments, post, true);
-        });
-    }
-
-    // 5. Se não houver respostas (replies.length === 0), só retorna o commentHtml
-    return commentHtml;
-}
 
   function showPublicPost(post, prepend = false) {
     //
@@ -1579,62 +1757,6 @@ async function fetchAndReplacePost(postId) {
     }
   }
 
-  // Funções de Modal (Edição) - ESPECÍFICAS DO FEED
-  window.openEditPostModal = async (postId) => {
-    //
-    const existingMediaContainer = document.getElementById(
-      "edit-existing-media-container"
-    );
-    if (!feedElements.editPostModal || !existingMediaContainer) return;
-    selectedFilesForEdit = [];
-    urlsParaRemover = [];
-    updateEditFilePreview();
-    existingMediaContainer.innerHTML = "";
-    try {
-      const response = await axios.get(`${backendUrl}/postagem/${postId}`);
-      const post = response.data;
-      feedElements.editPostIdInput.value = post.id;
-      feedElements.editPostTextarea.value = post.conteudo;
-      post.urlsMidia.forEach((url) => {
-        const item = document.createElement("div");
-        item.className = "existing-media-item";
-        const preview = document.createElement("img");
-        preview.src = url;
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.onchange = (e) => {
-          if (e.target.checked) {
-            urlsParaRemover.push(url);
-            item.style.opacity = "0.5";
-          } else {
-            urlsParaRemover = urlsParaRemover.filter((u) => u !== url);
-            item.style.opacity = "1";
-          }
-        };
-        item.appendChild(preview);
-        item.appendChild(checkbox);
-        existingMediaContainer.appendChild(item);
-      });
-      feedElements.editPostModal.style.display = "flex";
-    } catch (error) {
-      showNotification("Erro ao carregar postagem.", "error");
-    }
-  };
-  
-  window.openEditCommentModal = (commentId, content) => {
-    //
-    feedElements.editCommentIdInput.value = commentId;
-    feedElements.editCommentTextarea.value = content;
-    feedElements.editCommentModal.style.display = "flex";
-  };
-  
-  function closeAndResetEditCommentModal() {
-    //
-    feedElements.editCommentModal.style.display = "none";
-    feedElements.editCommentIdInput.value = "";
-    feedElements.editCommentTextarea.value = "";
-  }
-  
   function updateFilePreview() {
     //
     feedElements.filePreviewContainer.innerHTML = "";
@@ -1656,28 +1778,6 @@ async function fetchAndReplacePost(postId) {
       };
       item.appendChild(removeBtn);
       feedElements.filePreviewContainer.appendChild(item);
-    });
-  }
-  
-  function updateEditFilePreview() {
-    //
-    feedElements.editFilePreviewContainer.innerHTML = "";
-    selectedFilesForEdit.forEach((file, index) => {
-      const item = document.createElement("div");
-      item.className = "file-preview-item";
-      const previewElement = document.createElement("img");
-      previewElement.src = URL.createObjectURL(file);
-      item.appendChild(previewElement);
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.className = "remove-file-btn";
-      removeBtn.innerHTML = "&times;";
-      removeBtn.onclick = () => {
-        selectedFilesForEdit.splice(index, 1);
-        updateEditFilePreview();
-      };
-      item.appendChild(removeBtn);
-      feedElements.editFilePreviewContainer.appendChild(item);
     });
   }
   
@@ -1743,77 +1843,6 @@ async function fetchAndReplacePost(postId) {
         }
     });
 
-    //
-    if (feedElements.editPostFileInput)
-      feedElements.editPostFileInput.addEventListener("change", (event) => {
-        Array.from(event.target.files).forEach((file) =>
-          selectedFilesForEdit.push(file)
-        );
-        updateEditFilePreview();
-      });
-    if (feedElements.editPostForm)
-      feedElements.editPostForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const btn = e.submitter;
-        btn.disabled = true;
-        btn.textContent = "Salvando...";
-        try {
-          const postId = feedElements.editPostIdInput.value;
-          const postagemDTO = {
-            conteudo: feedElements.editPostTextarea.value,
-            urlsParaRemover: urlsParaRemover,
-          };
-          const formData = new FormData();
-          formData.append(
-            "postagem",
-            new Blob([JSON.stringify(postagemDTO)], {
-              type: "application/json",
-            })
-          );
-          selectedFilesForEdit.forEach((file) =>
-            formData.append("arquivos", file)
-          );
-          await axios.put(`${backendUrl}/postagem/${postId}`, formData);
-          feedElements.editPostModal.style.display = "none";
-          showNotification("Postagem editada.", "success");
-        } catch (error) {
-         let errorMessage = "Erro ao editar.";
-                if (error.response && error.response.data && error.response.data.message) {
-                    errorMessage = error.response.data.message;
-                }
-                showNotification(errorMessage, "error");
-        } finally {
-          btn.disabled = false;
-          btn.textContent = "Salvar";
-        }
-      });
-    if (feedElements.cancelEditPostBtn)
-      feedElements.cancelEditPostBtn.addEventListener(
-        "click",
-        () => (feedElements.editPostModal.style.display = "none")
-      );
-    if (feedElements.editCommentForm)
-      feedElements.editCommentForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const commentId = feedElements.editCommentIdInput.value;
-        const content = feedElements.editCommentTextarea.value;
-        try {
-          await axios.put(
-            `${backendUrl}/comentarios/${commentId}`,
-            { conteudo: content },
-            { headers: { "Content-Type": "application/json" } }
-          );
-          showNotification("Comentário editado.", "success");
-          closeAndResetEditCommentModal();
-        } catch (error) {
-          showNotification("Não foi possível salvar.", "error");
-        }
-      });
-    if (feedElements.cancelEditCommentBtn)
-      feedElements.cancelEditCommentBtn.addEventListener(
-        "click",
-        closeAndResetEditCommentModal
-      );
     if (feedElements.postFileInput)
       feedElements.postFileInput.addEventListener("change", (event) => {
         selectedFilesForPost = Array.from(event.target.files);

@@ -2558,3 +2558,142 @@ html::-webkit-scrollbar-thumb:hover,
     transform: scale(1.1);
     box-shadow: 0 0 8px rgba(88, 166, 255, 0.4);
 }
+
+@media (max-width: 768px) {
+
+    /* 1. O Container Principal da Sidebar */
+    .members-sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important; /* Ocupa altura total da tela */
+        width: 85% !important;
+        max-width: 320px !important;
+        
+        /* Z-INDEX ALTÍSSIMO: Para ficar ACIMA da barra azul do topo */
+        z-index: 5000 !important; 
+        
+        background-color: var(--bg-secondary) !important;
+        
+        /* Lógica de layout para permitir scroll */
+        display: flex !important;
+        flex-direction: column !important;
+        
+        /* Habilita o scroll no container principal */
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        
+        /* Animação de entrada */
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    }
+
+    /* Quando a classe .mobile-open é adicionada pelo JS */
+    .members-sidebar.mobile-open {
+        transform: translateX(0) !important;
+    }
+
+    /* 2. O Cabeçalho da Sidebar (Onde estão os botões +, Contador e X) */
+    .sidebar-header {
+        flex-shrink: 0 !important; /* Impede que o header encolha ao rolar */
+        position: relative !important; /* Remove sticky para evitar bugs de scroll */
+        background-color: var(--bg-secondary);
+        padding: 1rem !important;
+        border-bottom: 1px solid var(--border-color);
+        
+        /* Garante visibilidade dos itens */
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    /* 3. Ajuste dos botões dentro do header para garantir que apareçam */
+    .sidebar-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 15px !important;
+    }
+
+    /* Força o botão de adicionar membro a aparecer (se o usuário for admin/moderador) */
+    #add-member-btn {
+        display: flex !important; 
+        position: relative;
+        z-index: 10;
+    }
+
+    /* 4. A Lista de Membros (Removemos o scroll interno dela) */
+    .members-list {
+        flex: none !important; /* Deixa a lista crescer o quanto precisar */
+        height: auto !important;
+        overflow: visible !important; /* O scroll será feito pelo pai (.members-sidebar) */
+        padding-bottom: 20px;
+    }
+
+    /* 5. Área de Detalhes do Projeto (Final do menu) */
+    .project-details {
+        flex: none !important;
+        height: auto !important;
+        padding-bottom: 40px; /* Espaço extra no final */
+    }
+}
+
+/* =================================================================
+   CORREÇÃO VISUAL: CABEÇALHO DA SIDEBAR (DESGRUDAR ELEMENTOS)
+================================================================= */
+.sidebar-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 1.25rem 1rem !important; /* Mais espaço vertical e horizontal */
+}
+
+/* 1. Título: Dá espaço à direita para não encostar nos ícones */
+.sidebar-header h3 {
+    margin: 0 !important;
+    font-size: 1.1rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: auto !important; /* Garante que ele fique na esquerda */
+    padding-right: 15px !important; /* Barreira invisível entre texto e botões */
+}
+
+/* 2. Container dos Ícones: Aumenta o espaço entre eles */
+.sidebar-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important; /* AQUI ESTÁ A MÁGICA: Aumentei o espaço entre os itens */
+    flex-shrink: 0 !important; /* Garante que os ícones nunca encolham/quebrem */
+}
+
+/* 3. Botão de Adicionar (Círculo Azul) */
+#add-member-btn {
+    width: 34px !important; /* Levemente maior para facilitar o toque */
+    height: 34px !important;
+    margin: 0 !important; /* Remove margens antigas, usa o gap do pai */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 4. Contador de Membros (Badge cinza) */
+.members-count {
+    font-size: 0.85rem !important;
+    padding: 4px 10px !important; /* Mais "gordinho" */
+    min-width: 30px;
+    text-align: center;
+    background-color: var(--bg-tertiary); /* Garante contraste */
+    border: 1px solid var(--border-color);
+}
+
+/* 5. Botão Fechar (X) */
+.sidebar-close {
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    margin-left: 5px !important; /* Um respiro extra apenas para o X */
+}

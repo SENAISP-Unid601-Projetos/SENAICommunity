@@ -760,109 +760,116 @@ function toggleModal(modalId, show) {
                 }
             },
 
-            showProjectPreview(projeto) {
-                // Criar modal de preview
-                const modal = document.createElement('div');
-                modal.className = 'modal-overlay visible';
-                modal.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0, 0, 0, 0.8);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 3000;
-                    padding: 1rem;
-                `;
+  showProjectPreview(projeto) {
+                // Remove modal anterior se existir
+                const existingModal = document.getElementById('dynamic-project-modal');
+                if (existingModal) existingModal.remove();
 
+                // 1. Preparar Dados
                 const imageUrl = this.getProjectImageUrl(projeto.imagemUrl);
+                const statusClass = (projeto.status || '').toLowerCase().replace(/\s+/g, '');
+                
+                // Mapear Tecnologias
+                const techsHtml = (projeto.tecnologias || [])
+                    .map(tech => `<span class="pm-tag">${tech}</span>`)
+                    .join('') || '<span class="pm-tag" style="font-style:italic; opacity:0.7">Nenhuma tecnologia listada</span>';
+
+                // Mapear Membros
                 const membrosHtml = (projeto.membros || [])
-                    .slice(0, 5)
-                    .map((membro) => {
+                    .map(membro => {
                         const avatarUrl = this.getMemberAvatarUrl(membro);
-                        return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
-                    })
-                    .join('');
-
-                const tagsHtml = (projeto.tecnologias || [])
-                    .slice(0, 5)
-                    .map(tag => `<span class="tech-tag">${tag}</span>`)
-                    .join('');
-
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 500px; max-height: 90vh; overflow-y: auto;">
-                        <div class="modal-header">
-                            <h2>Detalhes do Projeto</h2>
-                            <button class="close-modal-btn" onclick="this.closest('.modal-overlay').remove()">&times;</button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="project-preview">
-                                <div class="preview-image" style="background-image: url('${imageUrl}'); height: 200px; border-radius: 8px; background-size: cover; background-position: center; margin-bottom: 1rem;"></div>
-                                
-                                <div class="preview-header">
-                                    <h3>${projeto.titulo}</h3>
-                                    <span class="projeto-status ${projeto.status?.toLowerCase() || 'planejamento'}">${projeto.status || 'Em planejamento'}</span>
-                                </div>
-                                
-                                <div class="preview-section">
-                                    <h4>Descrição</h4>
-                                    <p>${projeto.descricao || "Este projeto não possui uma descrição."}</p>
-                                </div>
-                                
-                                <div class="preview-section">
-                                    <h4>Informações</h4>
-                                    <div class="preview-info-grid">
-                                        <div class="info-item">
-                                            <strong>Categoria:</strong>
-                                            <span>${projeto.categoria || 'Sem categoria'}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <strong>Privacidade:</strong>
-                                            <span>${projeto.grupoPrivado ? 'Privado' : 'Público'}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <strong>Membros:</strong>
-                                            <span>${projeto.totalMembros || projeto.membros?.length || 0}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="preview-section">
-                                    <h4>Tecnologias</h4>
-                                    <div class="preview-tags">
-                                        ${tagsHtml || '<span class="no-tech">Nenhuma tecnologia informada</span>'}
-                                    </div>
-                                </div>
-                                
-                                <div class="preview-section">
-                                    <h4>Membros</h4>
-                                    <div class="preview-members">
-                                        ${membrosHtml || '<span class="no-members">Nenhum membro</span>'}
-                                    </div>
-                                </div>
+                        return `
+                            <div class="pm-member">
+                                <img src="${avatarUrl}" onerror="this.src='${window.defaultAvatarUrl}'">
+                                <span>${membro.usuarioNome || membro.nome || 'Usuário'}</span>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Fechar</button>
-                            ${!projeto.grupoPrivado ? 
-                                `<button class="btn btn-primary" onclick="ProjetosPage.entrarNoProjeto(${projeto.id}); this.closest('.modal-overlay').remove()">Entrar no Projeto</button>` : 
-                                '<button class="btn btn-disabled" disabled>Projeto Privado</button>'
-                            }
+                        `;
+                    }).join('') || '<span style="color:var(--text-secondary)">Sem membros visíveis</span>';
+
+                // Lógica dos Botões de Ação (Entrar, Já é membro, etc)
+                const isMember = projeto.membros && projeto.membros.some(m => m.usuarioId === window.currentUser.id);
+                const isAuthor = projeto.autorId === window.currentUser.id;
+                
+                let actionButtonHtml = '';
+                
+                if (isAuthor) {
+                    actionButtonHtml = `<button class="pm-btn pm-btn-secondary" disabled>Você é o Criador</button>`;
+                } else if (isMember) {
+                    actionButtonHtml = `<button class="pm-btn pm-btn-secondary" disabled>Já é membro</button>`;
+                } else if (!projeto.grupoPrivado) {
+                    actionButtonHtml = `<button class="pm-btn" onclick="ProjetosPage.entrarNoProjeto(${projeto.id}); document.getElementById('dynamic-project-modal').remove()">Entrar no Projeto</button>`;
+                } else {
+                    actionButtonHtml = `<button class="pm-btn pm-btn-secondary" disabled><i class="fas fa-lock"></i> Projeto Privado</button>`;
+                }
+
+                // 2. Construir HTML Moderno
+                const modalHtml = `
+                    <div class="project-modal-overlay" id="dynamic-project-modal">
+                        <div class="project-modal-card">
+                            
+                            <div class="pm-hero" style="background-image: url('${imageUrl}');">
+                                <button class="pm-close-btn" onclick="document.getElementById('dynamic-project-modal').remove()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+
+                            <div class="pm-content">
+                                <div class="pm-header">
+                                    <span class="pm-status ${statusClass}">${projeto.status || 'Em Planejamento'}</span>
+                                    <h2 class="pm-title">${projeto.titulo}</h2>
+                                </div>
+
+                                <div class="pm-description">
+                                    ${projeto.descricao || "Este projeto não possui uma descrição detalhada."}
+                                </div>
+
+                                <div class="pm-grid">
+                                    <div class="pm-info-item">
+                                        <h4>Categoria</h4>
+                                        <span>${projeto.categoria || 'Geral'}</span>
+                                    </div>
+                                    <div class="pm-info-item">
+                                        <h4>Privacidade</h4>
+                                        <span>${projeto.grupoPrivado ? '<i class="fas fa-lock"></i> Privado' : '<i class="fas fa-globe"></i> Público'}</span>
+                                    </div>
+                                    <div class="pm-info-item">
+                                        <h4>Equipe</h4>
+                                        <span>${projeto.totalMembros || (projeto.membros?.length || 0)} Membros</span>
+                                    </div>
+                                </div>
+
+                                <div class="pm-section-title">Tecnologias Utilizadas</div>
+                                <div class="pm-tags">${techsHtml}</div>
+
+                                <div class="pm-section-title">Equipe do Projeto</div>
+                                <div class="pm-members">${membrosHtml}</div>
+                            </div>
+
+                            <div class="pm-footer">
+                                ${actionButtonHtml}
+                                <a href="projeto-detalhe.html?id=${projeto.id}" class="pm-btn pm-btn-secondary">
+                                    Ver Detalhes Completos <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+
                         </div>
                     </div>
                 `;
 
-                document.body.appendChild(modal);
+                // 3. Inserir no DOM
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-                // Fechar modal ao clicar fora
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        modal.remove();
+                // 4. Fechar ao clicar fora
+                setTimeout(() => {
+                    const modalOverlay = document.getElementById('dynamic-project-modal');
+                    if (modalOverlay) {
+                        modalOverlay.addEventListener('click', (e) => {
+                            if (e.target === modalOverlay) {
+                                modalOverlay.remove();
+                            }
+                        });
                     }
-                });
+                }, 100);
             },
 
             renderOnlineFriends() {

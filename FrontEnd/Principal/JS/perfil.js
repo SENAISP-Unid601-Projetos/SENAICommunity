@@ -308,17 +308,43 @@ document.addEventListener("DOMContentLoaded", () => {
       renderProfileProjects(response.data);
     } catch (error) { renderProfileProjects([]); }
   }
-  function renderProfileProjects(projects) {
+
+function renderProfileProjects(projects) {
     if (!elements.profileProjectsList) return;
+    
+    // Atualiza contador
     if (elements.tabProjectsCount) elements.tabProjectsCount.textContent = projects.length;
+    
     elements.profileProjectsList.innerHTML = '';
-    if (projects.length === 0) { elements.profileProjectsList.innerHTML = '<p class="empty-state">Nenhum projeto encontrado.</p>'; return; }
+    
+    if (projects.length === 0) { 
+        elements.profileProjectsList.innerHTML = '<p class="empty-state">Nenhum projeto encontrado.</p>'; 
+        return; 
+    }
+    
     projects.forEach(proj => {
       const card = document.createElement('div');
       card.className = 'profile-card-item project-card';
-      const imageUrl = proj.imagemUrl ? (proj.imagemUrl.startsWith('http') ? proj.imagemUrl : `${backendUrl}${proj.imagemUrl}`) : 'https://via.placeholder.com/200x120?text=Projeto';
-      card.innerHTML = `<img src="${imageUrl}" alt="${proj.titulo}" class="profile-card-img"><div class="profile-card-title">${proj.titulo}</div><div class="profile-card-subtitle">${proj.categoria || 'Projeto'}</div><div class="profile-card-status">${proj.status || 'Em andamento'}</div>`;
-      card.addEventListener('click', () => { if (window.openProjectModal) window.openProjectModal(proj.id); });
+      
+      const imageUrl = proj.imagemUrl 
+          ? (proj.imagemUrl.startsWith('http') ? proj.imagemUrl : `${backendUrl}${proj.imagemUrl}`) 
+          : 'https://via.placeholder.com/600x400/161b22/ffffff?text=Projeto';
+      
+      // Status classes
+      const statusClass = (proj.status || '').toLowerCase().replace(' ', '');
+
+      card.innerHTML = `
+          <img src="${imageUrl}" alt="${proj.titulo}" class="profile-card-img">
+          <div class="profile-card-title">${proj.titulo}</div>
+          <div class="profile-card-subtitle">${proj.categoria || 'Sem categoria'}</div>
+          <div class="profile-card-status">
+            <span class="status-dot ${statusClass}"></span> ${proj.status || 'Em andamento'}
+          </div>
+      `;
+      
+      // NOVA CHAMADA DO MODAL
+      card.addEventListener('click', () => openModernProjectModal(proj));
+      
       elements.profileProjectsList.appendChild(card);
     });
   }
@@ -445,3 +471,105 @@ document.addEventListener("DOMContentLoaded", () => {
   function setupCarouselModalEvents() { if (elements.mediaViewerModal) { elements.mediaViewerModal.addEventListener('click', (e) => { if (e.target === elements.mediaViewerModal) closeMediaViewer(); }); } }
   if (document.readyState === "complete" || document.readyState === "interactive") { init(); } else { window.addEventListener("load", init); }
 });
+
+// --- MODAL MODERNO DE PROJETO ---
+  window.openModernProjectModal = (project) => {
+      // 1. Preparar Dados
+      const imageUrl = project.imagemUrl 
+          ? (project.imagemUrl.startsWith('http') ? project.imagemUrl : `${backendUrl}${project.imagemUrl}`) 
+          : 'https://via.placeholder.com/800x400/161b22/ffffff?text=Capa+do+Projeto';
+      
+      const statusClass = (project.status || '').toLowerCase().replace(/\s+/g, '');
+      
+      // Tecnologias HTML
+      const techsHtml = (project.tecnologias || [])
+          .map(tech => `<span class="pm-tag">${tech}</span>`)
+          .join('') || '<span class="pm-tag" style="font-style:italic; opacity:0.7">Nenhuma tecnologia listada</span>';
+
+      // Membros HTML
+      const membersHtml = (project.membros || [])
+          .map(membro => {
+              const avatar = membro.usuarioFotoPerfil || membro.fotoPerfil;
+              const avatarUrl = avatar 
+                  ? (avatar.startsWith('http') ? avatar : `${backendUrl}${avatar}`)
+                  : defaultAvatarUrl;
+              return `
+                  <div class="pm-member">
+                      <img src="${avatarUrl}" onerror="this.src='${defaultAvatarUrl}'">
+                      <span>${membro.usuarioNome || membro.nome}</span>
+                  </div>
+              `;
+          }).join('') || '<span style="color:var(--text-secondary)">Sem membros visíveis</span>';
+
+      // 2. Criar Estrutura HTML
+      const modalHtml = `
+          <div class="project-modal-overlay" id="dynamic-project-modal">
+              <div class="project-modal-card">
+                  
+                  <div class="pm-hero" style="background-image: url('${imageUrl}');">
+                      <button class="pm-close-btn" onclick="document.getElementById('dynamic-project-modal').remove()">
+                          <i class="fas fa-times"></i>
+                      </button>
+                  </div>
+
+                  <div class="pm-content">
+                      <div class="pm-header">
+                          <span class="pm-status ${statusClass}">${project.status || 'Em Planejamento'}</span>
+                          <h2 class="pm-title">${project.titulo}</h2>
+                      </div>
+
+                      <div class="pm-description">
+                          ${project.descricao || "Este projeto não possui uma descrição detalhada."}
+                      </div>
+
+                      <div class="pm-grid">
+                          <div class="pm-info-item">
+                              <h4>Categoria</h4>
+                              <span>${project.categoria || 'Geral'}</span>
+                          </div>
+                          <div class="pm-info-item">
+                              <h4>Privacidade</h4>
+                              <span>${project.grupoPrivado ? '<i class="fas fa-lock"></i> Privado' : '<i class="fas fa-globe"></i> Público'}</span>
+                          </div>
+                          <div class="pm-info-item">
+                              <h4>Equipe</h4>
+                              <span>${project.totalMembros || (project.membros?.length || 0)} Membros</span>
+                          </div>
+                      </div>
+
+                      <div class="pm-section-title">Tecnologias Utilizadas</div>
+                      <div class="pm-tags">${techsHtml}</div>
+
+                      <div class="pm-section-title">Equipe do Projeto</div>
+                      <div class="pm-members">${membersHtml}</div>
+                  </div>
+
+                  <div class="pm-footer">
+                      <a href="projeto-detalhe.html?id=${project.id}" class="pm-btn">
+                          Ver Detalhes Completos <i class="fas fa-arrow-right"></i>
+                      </a>
+                  </div>
+
+              </div>
+          </div>
+      `;
+
+      // 3. Inserir no DOM
+      // Remove modal anterior se existir (para evitar duplicação)
+      const existingModal = document.getElementById('dynamic-project-modal');
+      if(existingModal) existingModal.remove();
+
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+      // 4. Fechar ao clicar fora
+      setTimeout(() => {
+          const modalOverlay = document.getElementById('dynamic-project-modal');
+          if(modalOverlay) {
+              modalOverlay.addEventListener('click', (e) => {
+                  if (e.target === modalOverlay) {
+                      modalOverlay.remove();
+                  }
+              });
+          }
+      }, 100);
+  };

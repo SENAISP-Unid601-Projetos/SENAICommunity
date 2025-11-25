@@ -137,6 +137,7 @@ function checkUserRole() {
     const leaveProjectBtn = document.getElementById('leave-project-btn');
     const deleteProjectBtn = document.getElementById('delete-project-btn');
     const deleteProjectModalBtn = document.getElementById('delete-project-modal-btn');
+    
 
     const isAdminOrModerator = (userRole === 'ADMIN' || userRole === 'MODERADOR');
     const isAdmin = (userRole === 'ADMIN');
@@ -145,6 +146,10 @@ function checkUserRole() {
     if (settingsBtn) {
         settingsBtn.style.display = isAdminOrModerator ? 'block' : 'none';
         console.log(`[DEBUG] Settings button display: ${settingsBtn.style.display}`);
+    }
+
+    if (addMemberBtn) {
+        addMemberBtn.style.display = isAdminOrModerator ? 'flex' : 'none'; // Use flex para centralizar o ícone
     }
 
     if (addMemberBtn) {
@@ -1717,6 +1722,18 @@ function setupEventListeners() {
         sendBtn.addEventListener('click', sendMessage);
     }
 
+    const addMemberBtn = document.getElementById('add-member-btn');
+    if (addMemberBtn) {
+        // Remove listeners antigos para evitar duplicidade (opcional, mas boa prática)
+        const newBtn = addMemberBtn.cloneNode(true);
+        addMemberBtn.parentNode.replaceChild(newBtn, addMemberBtn);
+        
+        newBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            openAddMemberModal(); // Chama a função que já existe no seu código
+        });
+    }
+
     // Anexar arquivo
     const attachFileBtn = document.getElementById('attach-file-btn');
     const mobileAttachFileBtn = document.getElementById('mobile-attach-file-btn');
@@ -2049,29 +2066,45 @@ async function searchUsers(searchTerm) {
             return;
         }
 
-        availableUsers.forEach(user => {
-            const userElement = document.createElement('div');
-            userElement.className = 'user-search-result';
+       /* No arquivo projeto-detalhe.js, dentro da função searchUsers */
 
-            const userAvatar = user.urlFotoPerfil ?
-                (user.urlFotoPerfil.startsWith('http') ? user.urlFotoPerfil : `${backendUrl}${user.urlFotoPerfil}`) :
-                defaultAvatarUrl;
+availableUsers.forEach(user => {
+    const userElement = document.createElement('div');
+    userElement.className = 'user-search-result';
 
-            userElement.innerHTML = `
-                <div class="user-avatar">
-                    <img src="${userAvatar}" alt="${user.nome}" onerror="this.src='${defaultAvatarUrl}'">
-                </div>
-                <div class="user-info">
-                    <div class="user-name">${user.nome}</div>
-                    <div class="user-email">${user.email}</div>
-                </div>
-                <button class="btn btn-primary add-user-btn" onclick="inviteUserToProject(${user.id})">
-                    Convidar
-                </button>
-            `;
+    // --- CORREÇÃO AQUI: Lógica robusta para imagem do usuário ---
+    let userAvatar = defaultAvatarUrl;
+    
+    // Verifica se existe alguma propriedade de foto
+    const rawPhoto = user.urlFotoPerfil || user.fotoPerfil || user.foto;
+    
+    if (rawPhoto) {
+        if (rawPhoto.startsWith('http')) {
+            userAvatar = rawPhoto;
+        } else if (rawPhoto.startsWith('/')) {
+            userAvatar = `${backendUrl}${rawPhoto}`;
+        } else {
+            // Se for apenas o nome do arquivo, adiciona o caminho da API
+            userAvatar = `${backendUrl}/api/arquivos/${rawPhoto}`;
+        }
+    }
+    // -----------------------------------------------------------
 
-            resultsContainer.appendChild(userElement);
-        });
+    userElement.innerHTML = `
+        <div class="user-avatar">
+            <img src="${userAvatar}" alt="${user.nome}" onerror="this.src='${defaultAvatarUrl}'">
+        </div>
+        <div class="user-info">
+            <div class="user-name">${user.nome}</div>
+            <div class="user-email">${user.email}</div>
+        </div>
+        <button class="btn btn-primary add-user-btn" onclick="inviteUserToProject(${user.id})">
+            Convidar
+        </button>
+    `;
+
+    resultsContainer.appendChild(userElement);
+});
 
     } catch (error) {
         console.error("Erro ao buscar usuários:", error);
