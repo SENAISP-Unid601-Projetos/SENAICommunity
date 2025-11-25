@@ -591,9 +591,272 @@
   }
 }
 
+/* =================================================================
+   SIDEBAR & USER CARD (Padronizado)
+================================================================= */
+
 :root {
-  --sidebar-width: 300px; /* Largura padrão da sidebar */
+  --sidebar-width: 320px;
   --header-height: 60px;
+}
+
+/* --- ESTRUTURA DA SIDEBAR (Forçando alinhamento ao topo) --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start !important; /* Força itens no topo */
+    
+    position: sticky;
+    top: var(--header-height);
+    height: 100%;
+    
+    overflow-y: auto;
+    flex-shrink: 0;
+    z-index: 100;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-widget {
+    /* margin-top: auto;  <-- REMOVA ESTA LINHA */
+    margin-top: 1rem; /* Adicione apenas um espaçamento pequeno se quiser */
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+}
+
+/* Botão de fechar (mobile) */
+.sidebar-close {
+    display: none;
+}
+
+/* --- USER CARD NA SIDEBAR --- */
+.sidebar-user-card { margin-bottom: 0.5rem; }
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    position: relative;
+    gap: 1rem;
+    text-decoration: none;
+}
+
+.user-info-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+/* Avatar */
+.avatar-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0.5rem;
+}
+
+.avatar-container img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--bg-tertiary);
+}
+
+.avatar-container .status {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+    background-color: var(--success, #22c55e); 
+}
+
+/* Identidade */
+.user-identity {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    text-align: center;
+}
+
+.user-identity h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.user-role {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Stats */
+.user-stats {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.4;
+}
+
+.stat-item strong {
+    color: var(--accent-primary);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.stat-item .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Loading Overlay do Perfil */
+.user-info-loading {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 12px;
+    transition: opacity 0.3s ease;
+}
+
+.user-info.loaded .user-info-loading {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* --- MENU DA SIDEBAR (Sem esticar) --- */
+.sidebar-menu {
+    flex: 0 0 auto !important; /* IMPORTANTE: Não deixa crescer */
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 0;
+    padding-top: 0;
+}
+
+.menu-item {
+    display: flex; 
+    align-items: center; 
+    gap: 1rem;
+    padding: 0.8rem 1.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.menu-item:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.menu-item.active {
+    background: linear-gradient(90deg, rgba(88, 166, 255, 0.1) 0%, transparent 100%);
+    color: var(--accent-primary);
+    border-left-color: var(--accent-primary);
+}
+
+.menu-item i { width: 24px; text-align: center; }
+
+/* --- WIDGET AMIGOS ONLINE --- */
+.sidebar-widget {
+    margin-top: 0 !important; /* IMPORTANTE: Fica colado no menu */
+    flex: 0 0 auto;
+}
+
+.sidebar-widget .online-friends {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: none;
+}
+
+.sidebar-widget .widget-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    text-transform: none;
+}
+
+/* RESPONSIVIDADE (Tablets e Mobile) */
+@media (max-width: 1024px) {
+    .container {
+        flex-direction: column; /* Restaura comportamento original do evento.css */
+        padding: 0;
+        gap: 0;
+    }
+
+    .sidebar {
+        position: fixed; 
+        top: 0; 
+        left: 0;
+        height: 100vh;
+        width: 85%; 
+        max-width: 320px;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+        z-index: 1000;
+        border-right: none;
+    }
+    .sidebar.active { transform: translateX(0); }
+
+    .sidebar-close {
+        display: block; 
+        position: absolute; 
+        top: 15px; 
+        right: 15px;
+        background: none; 
+        border: none; 
+        color: var(--text-secondary);
+        font-size: 1.5rem; 
+        cursor: pointer;
+    }
+
+    /* Ajuste para a sidebar direita do evento.html */
+    .right-sidebar {
+        width: 100%;
+        padding: 1rem;
+        order: 3;
+    }
 }
 
 /* Overlay para fundo escuro no mobile */
@@ -622,18 +885,7 @@
 }
 
 /* Sidebar Esquerda (Padrão Desktop) */
-.sidebar {
-  width: var(--sidebar-width);
-  flex-shrink: 0;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
-  height: calc(100vh - var(--header-height));
-  position: sticky;
-  top: var(--header-height);
-  overflow-y: auto;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 999;
-}
+
 
 /* Main Content */
 .main-content {

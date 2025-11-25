@@ -531,6 +531,9 @@ async function initEventos() {
 
 // --- FUNÇÃO AUXILIAR: Sidebar do Usuário ---
 function updateSidebarUserInfo() {
+    // 1. Seleciona o container que possui o spinner
+    const userInfoContainer = document.querySelector('.user-info');
+
     if (window.currentUser) {
         const sidebarName = document.getElementById('sidebar-user-name');
         const sidebarTitle = document.getElementById('sidebar-user-title');
@@ -545,6 +548,11 @@ function updateSidebarUserInfo() {
              } else {
                  sidebarImg.src = window.currentUser.fotoPerfil;
              }
+        }
+
+        // 2. CORREÇÃO: Adiciona a classe 'loaded' para esconder o spinner
+        if (userInfoContainer) {
+            userInfoContainer.classList.add('loaded');
         }
     }
 }
