@@ -26,4 +26,6 @@ public interface ProjetoMembroRepository extends JpaRepository<ProjetoMembro, Lo
 
     boolean existsByProjetoIdAndUsuarioId(Long projetoId, Long usuarioId);
 
+    long countByUsuarioId(Long usuarioId);
+
 }

@@ -387,22 +387,21 @@ body {
   font-size: 0.9rem;
   font-weight: 500;
   flex-grow: 1;
-    margin-bottom: 10px;
-
+  margin-bottom: 0; /* Alterado de 10px para 0 */
+  line-height: 1.2; /* Ajuda na centralização do texto */
 }
 
 .friend-item .status.online {
-  margin-left: auto;
-  /* Empurra o status para a direita */
+  margin-left: auto; /* Mantém a bolinha na direita */
   width: 10px;
   height: 10px;
   border: none;
-    margin-bottom: 10px;
-
+  margin-bottom: 0; /* Alterado de 10px para 0 */
   position: static;
   flex-shrink: 0;
+  border-radius: 50%; /* Garante que seja redonda */
+  background-color: var(--online); /* Garante a cor verde */
 }
-
 /* Container Layout */
 .container {
   display: grid;

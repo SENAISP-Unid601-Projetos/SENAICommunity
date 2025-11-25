@@ -55,6 +55,8 @@ public class ProjetoService {
     @Autowired
     private SolicitacaoEntradaRepository solicitacaoEntradaRepository;
 
+
+
     // Método auxiliar para notificar atualizações em tempo real
     private void notificarAtualizacaoProjeto(Long projetoId, String tipo) {
         try {

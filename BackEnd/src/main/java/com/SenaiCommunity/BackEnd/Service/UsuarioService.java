@@ -7,6 +7,7 @@ import com.SenaiCommunity.BackEnd.Entity.Amizade;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.AmizadeRepository;
+import com.SenaiCommunity.BackEnd.Repository.ProjetoMembroRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -41,11 +42,20 @@ public class UsuarioService {
     @Autowired
     private FiltroProfanidadeService filtroProfanidade;
 
+    @Autowired
+    private ProjetoMembroRepository projetoMembroRepository;
+
+    private UsuarioSaidaDTO criarDTOComContagem(Usuario usuario) {
+        UsuarioSaidaDTO dto = new UsuarioSaidaDTO(usuario);
+        long qtdProjetos = projetoMembroRepository.countByUsuarioId(usuario.getId());
+        dto.setTotalProjetos(qtdProjetos);
+        return dto;
+    }
 
     public UsuarioSaidaDTO buscarUsuarioPorId(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o ID: " + id));
-        return new UsuarioSaidaDTO(usuario);
+        return criarDTOComContagem(usuario);
     }
 
     // Adicione este método na classe UsuarioService
@@ -68,7 +78,7 @@ public class UsuarioService {
      */
     public UsuarioSaidaDTO buscarUsuarioLogado(Authentication authentication) {
         Usuario usuario = getUsuarioFromAuthentication(authentication);
-        return new UsuarioSaidaDTO(usuario);
+        return criarDTOComContagem(usuario);
     }
 
     /**
@@ -96,7 +106,7 @@ public class UsuarioService {
         }
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
-        return new UsuarioSaidaDTO(usuarioAtualizado);
+        return criarDTOComContagem(usuarioAtualizado);
     }
 
     public UsuarioSaidaDTO atualizarFotoPerfil(Authentication authentication, MultipartFile foto) throws IOException {
@@ -109,7 +119,8 @@ public class UsuarioService {
         usuario.setFotoPerfil(urlCloudinary);
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
-        return new UsuarioSaidaDTO(usuarioAtualizado);
+        return criarDTOComContagem(usuarioAtualizado);
+
     }
 
     /**

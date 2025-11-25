@@ -124,7 +124,8 @@ html, body {
     border: 3px solid var(--bg-tertiary);
 }
 
-.sidebar .status.online {
+/* Correto: afeta apenas a foto grande do usuário */
+.sidebar .avatar-container .status.online {
     position: absolute;
     bottom: 5px;
     right: 5px;

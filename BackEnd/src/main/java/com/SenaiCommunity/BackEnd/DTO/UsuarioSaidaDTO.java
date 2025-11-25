@@ -19,6 +19,7 @@ public class UsuarioSaidaDTO {
     private String bio;
     private LocalDate dataNascimento;
     private LocalDateTime dataCadastro;
+    private Long totalProjetos;
 
     public UsuarioSaidaDTO(Usuario usuario) {
         this.id = usuario.getId();
@@ -30,12 +31,11 @@ public class UsuarioSaidaDTO {
         this.dataCadastro = usuario.getDataCadastro();
 
         String nomeFoto = usuario.getFotoPerfil();
-
         if (nomeFoto != null && !nomeFoto.isBlank()) {
-
             this.urlFotoPerfil = nomeFoto;
         } else {
             this.urlFotoPerfil = "/images/default-avatar.jpg";
         }
+        this.totalProjetos = 0L;
     }
 }
