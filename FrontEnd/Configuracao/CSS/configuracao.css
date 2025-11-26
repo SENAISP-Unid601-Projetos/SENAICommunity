@@ -83,3 +83,143 @@
 input:checked + .slider { background-color: var(--accent-primary); border-color: var(--accent-primary); }
 input:checked + .slider:before { transform: translateX(24px); }
 
+/* ... (Mantenha o CSS que você já tinha no arquivo) ... */
+
+/* =================================================================
+   ACESSIBILIDADE GLOBAL (Cole no FINAL do arquivo principal.css)
+   ================================================================= */
+
+/* 1. Tamanhos de Fonte */
+html[data-font-size="small"] { font-size: 14px; }
+html[data-font-size="medium"] { font-size: 16px; }
+html[data-font-size="large"] { font-size: 20px; }
+
+/* 2. Redução de Movimento */
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+}
+
+/* 3. Alto Contraste (IMPORTANTE: use !important para forçar) */
+html.acessibilidade-alto-contraste {
+    filter: contrast(130%) grayscale(100%);
+    background-color: #000 !important;
+}
+html.acessibilidade-alto-contraste body {
+    background-color: #000 !important;
+    color: #fff !important;
+}
+/* Garante que os cards e menus fiquem visíveis no modo escuro total */
+html.acessibilidade-alto-contraste .widget-card,
+html.acessibilidade-alto-contraste .post,
+html.acessibilidade-alto-contraste .sidebar,
+html.acessibilidade-alto-contraste .topbar,
+html.acessibilidade-alto-contraste .nav-icon,
+html.acessibilidade-alto-contraste input,
+html.acessibilidade-alto-contraste textarea,
+html.acessibilidade-alto-contraste button,
+html.acessibilidade-alto-contraste .dropdown-menu,
+html.acessibilidade-alto-contraste .message-area,
+html.acessibilidade-alto-contraste .chat-list {
+    background-color: #000 !important;
+    border: 1px solid #fff !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+
+/* 4. Fonte Legível */
+html.acessibilidade-fonte-legivel body,
+html.acessibilidade-fonte-legivel * {
+    font-family: 'Verdana', 'Arial', sans-serif !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1.6 !important;
+}
+
+/* 5. Destacar Links */
+html.acessibilidade-destacar-links a {
+    text-decoration: underline !important;
+    font-weight: 700 !important;
+    background-color: #ffeb3b !important;
+    color: #000000 !important;
+}
+html.acessibilidade-destacar-links button,
+html.acessibilidade-destacar-links .btn {
+    border: 3px solid #ffeb3b !important;
+}
+
+
+/* =================================================================
+   BOTÃO DE SAIR MODERNO (VERSÃO COMPACTA)
+   ================================================================= */
+
+.logout-btn-modern {
+    position: relative;
+    padding: 0.5rem 1rem; /* Reduzido para ficar mais fino */
+    background: linear-gradient(135deg, #30363d 0%, #21262d 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 6px; /* Borda um pouco mais sutil */
+    color: var(--danger);
+    font-size: 0.85rem; /* Fonte ligeiramente menor */
+    font-weight: 600;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 120px; /* Largura mínima menor */
+    height: 36px; /* Altura fixa para garantir consistência */
+}
+
+.logout-btn-modern i {
+    font-size: 0.9rem; /* Ícone ajustado */
+}
+
+/* Hover State */
+.logout-btn-modern:hover {
+    background: var(--bg-quaternary);
+    transform: translateY(-1px); /* Movimento mais sutil */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    border-color: var(--danger);
+}
+
+/* Estado de Confirmação */
+.logout-btn-modern.confirming {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+    transform: scale(1); /* Remove o zoom exagerado */
+}
+
+/* Barra de Progresso */
+.btn-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px; /* Barra mais fina */
+    width: 0%;
+    background-color: rgba(255, 255, 255, 0.8);
+    transition: width linear; 
+}
+
+.logout-btn-modern.confirming .btn-progress {
+    width: 100%;
+    transition: width 3s linear;
+}
+
+/* Ajuste para acessibilidade */
+html.acessibilidade-alto-contraste .logout-btn-modern {
+    border: 2px solid white !important;
+    background: black !important;
+    color: yellow !important;
+    height: auto; /* Deixa a altura livre no alto contraste */
+}
+@media (max-width: 600px) {
+    .config-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .font-size-controls, .switch, .logout-action-btn { align-self: flex-end; }
+}
+

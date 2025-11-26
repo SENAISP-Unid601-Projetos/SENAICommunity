@@ -10,13 +10,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Inicializa o Menu Mobile (Sidebar) <-- NOVO
     initSidebarMobile();
 
-    // 4. Configura o botão de Sair (Logout)
-    const logoutBtn = document.querySelector('.logout-action-btn');
+   const logoutBtn = document.getElementById('logout-btn-modern');
+    let logoutTimeout;
+
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja sair da conta?')) {
-                localStorage.clear();
-                window.location.href = 'login.html';
+            const btnText = logoutBtn.querySelector('.btn-text');
+            
+            // Se já está confirmando (segundo clique), faz o logout
+            if (logoutBtn.classList.contains('confirming')) {
+                // Limpa o timer para não resetar
+                clearTimeout(logoutTimeout);
+                
+                // Feedback visual final
+                btnText.innerHTML = '<i class="fas fa-check"></i> Saindo...';
+                
+                // Lógica de sair
+                setTimeout(() => {
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                }, 500); // Pequeno delay para ver o "Saindo..."
+                
+            } else {
+                // Primeiro clique: Entra no modo de confirmação
+                logoutBtn.classList.add('confirming');
+                
+                // Troca o texto
+                const originalText = btnText.innerHTML;
+                btnText.innerHTML = 'Tem certeza?'; // Ou 'Clique para confirmar'
+                
+                // Inicia o timer de 3 segundos para cancelar
+                logoutTimeout = setTimeout(() => {
+                    logoutBtn.classList.remove('confirming');
+                    btnText.innerHTML = originalText; // Volta o texto original
+                }, 3000); // 3000ms = 3 segundos (mesmo tempo do CSS)
             }
         });
     }
