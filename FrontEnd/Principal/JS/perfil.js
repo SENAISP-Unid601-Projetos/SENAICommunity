@@ -693,39 +693,76 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function createProfilePostElement(post) {
-        const postElement = document.createElement("div");
-        postElement.className = "post";
-        postElement.id = `post-${post.id}`;
-        const autorNome = post.nomeAutor || "Usuário";
-        const autorAvatar = post.urlFotoAutor ? (post.urlFotoAutor.startsWith('http') ? post.urlFotoAutor : `${backendUrl}${post.urlFotoAutor}`) : defaultAvatarUrl;
-        const dataFormatada = new Date(post.dataCriacao).toLocaleDateString('pt-BR');
-        const isAuthor = currentUser && (String(post.autorId) === String(currentUser.id));
+    // Localize e substitua a função createProfilePostElement no arquivo perfil.js
+function createProfilePostElement(post) {
+    const postElement = document.createElement("div");
+    postElement.className = "post";
+    postElement.id = `post-${post.id}`;
+    
+    const autorNome = post.nomeAutor || "Usuário";
+    const autorAvatar = post.urlFotoAutor ? (post.urlFotoAutor.startsWith('http') ? post.urlFotoAutor : `${backendUrl}${post.urlFotoAutor}`) : defaultAvatarUrl;
+    const dataFormatada = new Date(post.dataCriacao).toLocaleDateString('pt-BR');
+    const isAuthor = currentUser && (String(post.autorId) === String(currentUser.id));
 
-        let mediaHtml = "";
-        if (post.urlsMidia && post.urlsMidia.length > 0) {
-            if (post.urlsMidia.length > 2) { mediaHtml = renderFeedCarousel(post.urlsMidia, post.id); }
-            else if (post.urlsMidia.length === 1) {
-                const url = post.urlsMidia[0];
-                const fullMediaUrl = url.startsWith("http") ? url : `${backendUrl}${url}`;
-                const safeMediaArray = JSON.stringify(post.urlsMidia).replace(/"/g, '&quot;');
-                if (url.match(/\.(mp4|webm)$/i)) { mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${safeMediaArray}, 0)"><video controls src="${fullMediaUrl}" style="max-width: 100%; border-radius: 8px;"></video></div>`; }
-                else { mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${safeMediaArray}, 0)"><img src="${fullMediaUrl}" style="max-width: 100%; border-radius: 8px; cursor: pointer;"></div>`; }
-            } else { mediaHtml = renderMediaGrid(post.urlsMidia); }
-        }
-        const rootComments = (post.comentarios || []).filter((c) => !c.parentId);
-        let commentsHtml = "";
-        if (typeof window.renderCommentWithReplies === 'function') {
-            commentsHtml = rootComments.sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao)).map((comment) => window.renderCommentWithReplies(comment, post.comentarios, post)).join("");
-        }
-        let optionsMenu = "";
-        if (isAuthor) {
-            optionsMenu = `<div class="post-options"><button class="post-options-btn" onclick="event.stopPropagation(); window.openPostMenu(${post.id})"><i class="fas fa-ellipsis-h"></i></button><div class="options-menu" id="post-menu-${post.id}" onclick="event.stopPropagation();"><button onclick="window.openEditPostModal(${post.id})"><i class="fas fa-pen"></i> Editar</button><button class="danger" onclick="window.deletePost(${post.id})"><i class="fas fa-trash"></i> Excluir</button></div></div>`;
-        }
-        postElement.innerHTML = `<div class="post-header"><div class="post-author-details"><div class="post-author-avatar"><img src="${autorAvatar}" alt="${autorNome}" onerror="this.src='${defaultAvatarUrl}'"></div><div class="post-author-info"><strong>${autorNome}</strong><span class="timestamp">· ${dataFormatada}</span></div></div>${optionsMenu}</div><div class="post-content"><p>${post.conteudo}</p></div>${mediaHtml}<div class="post-actions"><button class="action-btn ${post.curtidoPeloUsuario ? "liked" : ""}" onclick="window.toggleLike(event, ${post.id}, null)"><i class="${post.curtidoPeloUsuario ? "fas" : "far"} fa-heart"></i> <span id="like-count-post-${post.id}">${post.totalCurtidas || 0}</span></button><button class="action-btn" onclick="window.toggleComments(${post.id})"><i class="far fa-comment"></i> <span>${post.comentarios?.length || 0}</span></button></div><div class="comments-section" id="comments-section-${post.id}" style="display: none;"><div class="comments-list">${commentsHtml}</div><div class="comment-form"><input type="text" id="comment-input-${post.id}" placeholder="Comentar..."><button onclick="window.sendComment(${post.id}, null)"><i class="fas fa-paper-plane"></i></button></div></div>`;
-        if (post.urlsMidia && post.urlsMidia.length > 2) { setTimeout(() => setupCarouselEventListeners(postElement, post.id), 0); }
-        return postElement;
+    // Link para o perfil do autor
+    const profileLink = `perfil.html?id=${post.autorId}`;
+
+    let mediaHtml = "";
+    if (post.urlsMidia && post.urlsMidia.length > 0) {
+        if (post.urlsMidia.length > 2) { mediaHtml = renderFeedCarousel(post.urlsMidia, post.id); }
+        else if (post.urlsMidia.length === 1) {
+            const url = post.urlsMidia[0];
+            const fullMediaUrl = url.startsWith("http") ? url : `${backendUrl}${url}`;
+            const safeMediaArray = JSON.stringify(post.urlsMidia).replace(/"/g, '&quot;');
+            if (url.match(/\.(mp4|webm)$/i)) { mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${safeMediaArray}, 0)"><video controls src="${fullMediaUrl}" style="max-width: 100%; border-radius: 8px;"></video></div>`; }
+            else { mediaHtml = `<div class="post-media" onclick="window.openMediaViewer(${safeMediaArray}, 0)"><img src="${fullMediaUrl}" style="max-width: 100%; border-radius: 8px; cursor: pointer;"></div>`; }
+        } else { mediaHtml = renderMediaGrid(post.urlsMidia); }
     }
+    
+    const rootComments = (post.comentarios || []).filter((c) => !c.parentId);
+    let commentsHtml = "";
+    if (typeof window.renderCommentWithReplies === 'function') {
+        commentsHtml = rootComments.sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao)).map((comment) => window.renderCommentWithReplies(comment, post.comentarios, post)).join("");
+    }
+    
+    let optionsMenu = "";
+    if (isAuthor) {
+        optionsMenu = `<div class="post-options"><button class="post-options-btn" onclick="event.stopPropagation(); window.openPostMenu(${post.id})"><i class="fas fa-ellipsis-h"></i></button><div class="options-menu" id="post-menu-${post.id}" onclick="event.stopPropagation();"><button onclick="window.openEditPostModal(${post.id})"><i class="fas fa-pen"></i> Editar</button><button class="danger" onclick="window.deletePost(${post.id})"><i class="fas fa-trash"></i> Excluir</button></div></div>`;
+    }
+
+    // AQUI ESTÁ A ALTERAÇÃO PRINCIPAL NA ESTRUTURA HTML (Adição do <a>)
+    postElement.innerHTML = `
+        <div class="post-header">
+            <a href="${profileLink}" class="post-author-details-link">
+                <div class="post-author-details">
+                    <div class="post-author-avatar">
+                        <img src="${autorAvatar}" alt="${autorNome}" onerror="this.src='${defaultAvatarUrl}'">
+                    </div>
+                    <div class="post-author-info">
+                        <strong>${autorNome}</strong>
+                        <span class="timestamp">· ${dataFormatada}</span>
+                    </div>
+                </div>
+            </a>
+            ${optionsMenu}
+        </div>
+        <div class="post-content"><p>${post.conteudo}</p></div>
+        ${mediaHtml}
+        <div class="post-actions">
+            <button class="action-btn ${post.curtidoPeloUsuario ? "liked" : ""}" onclick="window.toggleLike(event, ${post.id}, null)"><i class="${post.curtidoPeloUsuario ? "fas" : "far"} fa-heart"></i> <span id="like-count-post-${post.id}">${post.totalCurtidas || 0}</span></button>
+            <button class="action-btn" onclick="window.toggleComments(${post.id})"><i class="far fa-comment"></i> <span>${post.comentarios?.length || 0}</span></button>
+        </div>
+        <div class="comments-section" id="comments-section-${post.id}" style="display: none;">
+            <div class="comments-list">${commentsHtml}</div>
+            <div class="comment-form">
+                <input type="text" id="comment-input-${post.id}" placeholder="Comentar...">
+                <button onclick="window.sendComment(${post.id}, null)"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>`;
+    
+    if (post.urlsMidia && post.urlsMidia.length > 2) { setTimeout(() => setupCarouselEventListeners(postElement, post.id), 0); }
+    return postElement;
+}
 
     function configureProfileActions(isMyProfile) {
         if (elements.editProfileBtnPage) { elements.editProfileBtnPage.style.display = isMyProfile ? "inline-block" : "none"; }

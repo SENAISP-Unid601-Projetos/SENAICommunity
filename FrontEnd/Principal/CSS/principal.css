@@ -3437,6 +3437,28 @@ a.user-card-link:hover h4 {
 .comment-read-more-btn:hover {
     text-decoration: underline;
 }
+
+/* Botão de Ler Mais / Ler Menos */
+.comment-read-more-btn {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-top: 2px;
+    
+    /* Alterações para alinhar à esquerda */
+    display: block;          /* Garante comportamento de bloco */
+    width: fit-content;      /* O botão terá apenas a largura do texto "Ler mais" */
+    align-self: flex-start;  /* Força o botão para o início do eixo (esquerda) dentro do Flexbox */
+    text-align: left;        /* Garante que o texto dentro do botão fique à esquerda */
+}
+
+.comment-read-more-btn:hover {
+    text-decoration: underline;
+}
 /* =================================================================
 
    ACESSIBILIDADE GLOBAL (SOLUÇÃO VIA VARIÁVEIS)
