@@ -723,59 +723,7 @@ function setupGlobalEventListeners() {
       if (file)
         globalElements.editProfilePicPreview.src = URL.createObjectURL(file);
     });
-  if (globalElements.editProfileForm)
-    globalElements.editProfileForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      // Lógica de update de foto
-      if (globalElements.editProfilePicInput.files[0]) {
-        const formData = new FormData();
-        formData.append("foto", globalElements.editProfilePicInput.files[0]);
-        try {
-          const response = await axios.put(
-            `${backendUrl}/usuarios/me/foto`,
-            formData
-          );
-          currentUser = response.data;
-          updateUIWithUserData(currentUser);
-          showNotification("Foto de perfil atualizada!", "success");
-        } catch (error) {
-          let errorMessage = "Erro ao atualizar a foto.";
-            if (error.response && error.response.data && error.response.data.message) {
-                errorMessage = error.response.data.message;
-            }
-            showNotification(errorMessage, "error");
-        }
-      }
-      // Lógica de update de dados
-      const password = globalElements.editProfilePassword.value;
-      if (
-        password &&
-        password !== globalElements.editProfilePasswordConfirm.value
-      ) {
-        showNotification("As novas senhas não coincidem.", "error");
-        return;
-      }
-      const updateData = {
-        nome: globalElements.editProfileName.value,
-        bio: globalElements.editProfileBio.value,
-        dataNascimento: globalElements.editProfileDob.value
-          ? new Date(globalElements.editProfileDob.value).toISOString()
-          : null,
-        senha: password || null,
-      };
-      try {
-        const response = await axios.put(
-          `${backendUrl}/usuarios/me`,
-          updateData
-        );
-        currentUser = response.data;
-        updateUIWithUserData(currentUser);
-        showNotification("Perfil atualizado com sucesso!", "success");
-        globalElements.editProfileModal.style.display = "none";
-      } catch (error) {
-        showNotification("Erro ao atualizar o perfil.", "error");
-      }
-    });
+
 
   // Deletar conta
   if (globalElements.cancelDeleteAccountBtn)
@@ -989,8 +937,20 @@ window.openEditCommentModal = (commentId, content) => {
     const modal = document.getElementById("edit-comment-modal");
     if(modal) {
         document.getElementById("edit-comment-id").value = commentId;
-        document.getElementById("edit-comment-textarea").value = content;
+        const textarea = document.getElementById("edit-comment-textarea");
+        
+        // Decodifica o conteúdo caso venha com entities HTML
+        textarea.value = content;
+        
         modal.style.display = "flex";
+
+        // MELHORIA UX: Foca no final do texto automaticamente
+        setTimeout(() => {
+            textarea.focus();
+            const val = textarea.value;
+            textarea.value = ''; 
+            textarea.value = val; // Truque para mover o cursor para o final
+        }, 50);
     }
 };
 

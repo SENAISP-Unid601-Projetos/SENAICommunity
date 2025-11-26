@@ -3237,3 +3237,136 @@ a.user-card-link:hover h4 {
     animation: fa-spin 1s infinite linear;
 }
 
+/* =================================================================
+   MODAL DE EDIÇÃO DE COMENTÁRIO - ESTILO MODERNO
+   ================================================================= */
+
+/* Fundo com desfoque (Blur) */
+#edit-comment-modal.modal-overlay {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background-color: rgba(0, 0, 0, 0.6);
+    transition: all 0.3s ease;
+}
+
+/* O Card do Modal */
+#edit-comment-modal .modal-content {
+    background: linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 95%;
+    max-width: 500px;
+    transform: scale(0.95);
+    animation: modalPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes modalPopIn {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Cabeçalho */
+#edit-comment-modal .modal-header {
+    border-bottom: none;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+#edit-comment-modal .modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Ícone decorativo antes do título (via CSS) */
+#edit-comment-modal .modal-header h3::before {
+    content: '\f044'; /* Código do ícone de edição do FontAwesome */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 1rem;
+    color: var(--accent-primary);
+    background: rgba(88, 166, 255, 0.15);
+    padding: 8px;
+    border-radius: 8px;
+}
+
+/* Área de Texto (Textarea) */
+#edit-comment-form textarea {
+    width: 100%;
+    min-height: 140px;
+    background-color: var(--bg-primary); /* Fundo mais escuro para contraste */
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 1rem;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    resize: vertical;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Efeito de Foco no Textarea */
+#edit-comment-form textarea:focus {
+    outline: none;
+    background-color: var(--bg-secondary);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.15); /* Glow suave */
+}
+
+/* Rodapé (Botões) */
+#edit-comment-modal .modal-footer {
+    margin-top: 2rem;
+    gap: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 1.5rem;
+}
+
+/* Botões Modernos */
+#edit-comment-modal .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#edit-comment-modal .btn:active {
+    transform: scale(0.96);
+}
+
+/* Botão Salvar */
+#edit-comment-modal .btn-primary {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    box-shadow: 0 4px 12px rgba(31, 111, 235, 0.3);
+    border: none;
+}
+
+#edit-comment-modal .btn-primary:hover {
+    box-shadow: 0 6px 15px rgba(31, 111, 235, 0.4);
+    transform: translateY(-1px);
+}
+
+/* Botão Cancelar */
+#edit-comment-modal .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+#edit-comment-modal .btn-secondary:hover {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    border-color: var(--text-tertiary);
+}
