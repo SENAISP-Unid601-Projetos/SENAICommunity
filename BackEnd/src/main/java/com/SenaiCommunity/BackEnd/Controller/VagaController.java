@@ -28,9 +28,8 @@ public class VagaController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     public ResponseEntity<VagaSaidaDTO> criarVaga(@RequestBody VagaEntradaDTO dto, Principal principal) {
+        // O Service agora vai lidar com requisitos, benefícios e salário que vêm dentro do 'dto'
         VagaSaidaDTO vagaCriada = vagaService.criar(dto, principal.getName());
         return ResponseEntity.status(201).body(vagaCriada);
     }
-
-    // Implemente também endpoints para GET por ID (público), PUT (restrito) e DELETE (restrito)
 }

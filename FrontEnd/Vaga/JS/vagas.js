@@ -3,31 +3,37 @@ document.addEventListener("DOMContentLoaded", () => {
     // -----------------------------------------------------------------
     // AGUARDA O SCRIPT PRINCIPAL (principal.js)
     // -----------------------------------------------------------------
-    // Usamos 'globalScriptsLoaded' que é disparado pelo principal.js
     document.addEventListener('globalScriptsLoaded', (e) => {
         
         // Variáveis globais vindas do principal.js
         const currentUser = window.currentUser;
         const backendUrl = window.backendUrl;
-        const showNotification = window.showNotification; // Pega a função global de notificação
+        const showNotification = window.showNotification; 
 
-        // --- SELEÇÃO DE ELEMENTOS (Específicos da Página) ---
+        // --- SELEÇÃO DE ELEMENTOS ---
         const elements = {
             vagasListContainer: document.querySelector('.vagas-list'),
-            createAlertBtn: document.querySelector('.create-alert-btn'),
-            searchInput: document.getElementById("search-input"), // ID do input de busca da página de vagas
+            createVagaBtn: document.getElementById('btn-publicar-vaga'),
+            searchInput: document.getElementById("search-input"), 
             filterTipo: document.getElementById("filter-tipo"),
             filterLocal: document.getElementById("filter-local"),
             filterNivel: document.getElementById("filter-nivel"),
         };
         
-        // --- SELEÇÃO DE ELEMENTOS (Do Novo Modal) ---
+        // --- SELEÇÃO DE ELEMENTOS (Modais) ---
         const createVagaModal = document.getElementById('create-vaga-modal');
         const createVagaForm = document.getElementById('create-vaga-form');
         const cancelCreateVagaBtn = document.getElementById('cancel-create-vaga-btn');
+        
+        // --- ELEMENTOS DO MODAL DE DETALHES ---
+        const vagaDetailsModal = document.getElementById('vaga-details-modal');
+        const closeVagaDetailsBtn = document.getElementById('close-vaga-details-btn');
+        const saveVagaDetailsBtn = document.getElementById('save-vaga-details-btn');
+        const contactVagaBtn = document.getElementById('contact-vaga-btn');
 
         // Cache local para todas as vagas
         let allVagas = [];
+        let currentVagaDetails = null;
 
         // Mapeamentos para filtros
         const tipoContratacaoMap = { 'TODOS': '', 'TEMPO_INTEGRAL': 'Tempo Integral', 'MEIO_PERIODO': 'Meio Período', 'ESTAGIO': 'Estágio', 'TRAINEE': 'Trainee' };
@@ -35,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const nivelMap = { 'TODOS': '', 'JUNIOR': 'Júnior', 'PLENO': 'Pleno', 'SENIOR': 'Sênior' };
 
         // -----------------------------------------------------------------
-        // FUNÇÕES DE BUSCA E RENDERIZAÇÃO (Específicas da Página)
+        // FUNÇÕES DE BUSCA E RENDERIZAÇÃO
         // -----------------------------------------------------------------
         
         async function fetchVagas() {
@@ -85,13 +91,24 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="tag tag-nivel">${nivel}</span>
                         <span class="tag tag-tipo">${tipoContratacao}</span>
                     </div>
-                    <div class="vaga-descricao">${vaga.descricao}</div>
+                    <div class="vaga-descricao">${vaga.descricao.substring(0, 150)}${vaga.descricao.length > 150 ? '...' : ''}</div>
                     <div class="vaga-card-footer">
                         <span class="vaga-publicado">Publicado por ${vaga.autorNome} em ${new Date(vaga.dataPublicacao).toLocaleDateString()}</span>
-                        <button class="vaga-candidatar-btn">Ver Detalhes</button>
+                        <button class="vaga-candidatar-btn" data-vaga-id="${vaga.id}">Ver Detalhes</button>
                     </div>
                 `;
                 elements.vagasListContainer.appendChild(vagaCard);
+            });
+
+            // Adiciona event listeners para os botões "Ver Detalhes"
+            document.querySelectorAll('.vaga-candidatar-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const vagaId = e.target.getAttribute('data-vaga-id');
+                    const vaga = allVagas.find(v => v.id == vagaId);
+                    if (vaga) {
+                        openVagaDetailsModal(vaga);
+                    }
+                });
             });
         }
 
@@ -121,7 +138,112 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // -----------------------------------------------------------------
-        // FUNÇÕES DO MODAL (NOVO)
+        // FUNÇÕES DO MODAL DE DETALHES
+        // -----------------------------------------------------------------
+
+        function openVagaDetailsModal(vaga) {
+            currentVagaDetails = vaga;
+            
+            // Mapeia os dados
+            const tipoContratacao = tipoContratacaoMap[vaga.tipoContratacao] || vaga.tipoContratacao;
+            const localizacao = localizacaoMap[vaga.localizacao] || vaga.localizacao;
+            const nivel = nivelMap[vaga.nivel] || vaga.nivel;
+            
+            // Preenche os dados básicos
+            document.getElementById('details-vaga-titulo').textContent = vaga.titulo;
+            document.getElementById('details-vaga-empresa').textContent = vaga.empresa;
+            document.getElementById('details-vaga-localizacao').textContent = localizacao;
+            document.getElementById('details-vaga-nivel').textContent = nivel;
+            document.getElementById('details-vaga-tipo').textContent = tipoContratacao;
+            document.getElementById('details-vaga-descricao').textContent = vaga.descricao;
+            document.getElementById('details-vaga-autor').textContent = vaga.autorNome;
+            
+            // Data de publicação formatada
+            const dataPublicacao = new Date(vaga.dataPublicacao);
+            document.getElementById('details-vaga-data-completa').textContent = dataPublicacao.toLocaleDateString('pt-BR');
+            
+            // Calcula "há quanto tempo" foi publicado
+            const agora = new Date();
+            const diffTime = Math.abs(agora - dataPublicacao);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const tempoPublicacao = diffDays === 1 ? 'há 1 dia' : `há ${diffDays} dias`;
+            document.getElementById('details-vaga-data').textContent = tempoPublicacao;
+            
+            // Logo da empresa
+            document.getElementById('details-company-logo').src = `https://placehold.co/200x200/58a6ff/ffffff?text=${vaga.empresa.substring(0, 2).toUpperCase()}`;
+            
+            // Cards de detalhes
+            document.getElementById('details-card-nivel').textContent = nivel;
+            document.getElementById('details-card-tipo').textContent = tipoContratacao;
+            document.getElementById('details-card-localizacao').textContent = localizacao;
+            // Salário Real ou Padrão
+            document.getElementById('details-card-salario').textContent = vaga.salario || 'A combinar';
+            
+            // --- GERA REQUISITOS (DO BANCO) ---
+            const requisitosList = document.getElementById('details-vaga-requisitos');
+            requisitosList.innerHTML = '';
+            
+            if (vaga.requisitos && vaga.requisitos.length > 0) {
+                vaga.requisitos.forEach(requisito => {
+                    const li = document.createElement('li');
+                    li.textContent = requisito;
+                    requisitosList.appendChild(li);
+                });
+            } else {
+                requisitosList.innerHTML = '<li style="list-style: none; color: var(--text-secondary);">Nenhum requisito especificado.</li>';
+            }
+            
+            // --- GERA BENEFÍCIOS (DO BANCO) ---
+            const beneficiosGrid = document.getElementById('details-vaga-beneficios');
+            beneficiosGrid.innerHTML = '';
+            
+            if (vaga.beneficios && vaga.beneficios.length > 0) {
+                vaga.beneficios.forEach(beneficio => {
+                    const div = document.createElement('div');
+                    div.className = 'benefit-item';
+                    div.innerHTML = `
+                        <i class="fas fa-check-circle"></i>
+                        <span>${beneficio}</span>
+                    `;
+                    beneficiosGrid.appendChild(div);
+                });
+            } else {
+                beneficiosGrid.innerHTML = '<p style="color:var(--text-secondary); width:100%;">A combinar ou não informado.</p>';
+            }
+            
+            // Configura o link de contato
+            contactVagaBtn.href = generateContactLink(vaga);
+            
+            // Mostra o modal
+            vagaDetailsModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeVagaDetailsModal() {
+            vagaDetailsModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            currentVagaDetails = null;
+        }
+
+        function generateContactLink(vaga) {
+            // Simula a geração de um link de contato baseado na empresa
+            const empresaSlug = vaga.empresa.toLowerCase().replace(/\s+/g, '-');
+            const tituloSlug = vaga.titulo.toLowerCase().replace(/\s+/g, '-');
+            return `https://${empresaSlug}.com/carreiras/${tituloSlug}-${vaga.id}`;
+        }
+
+        function handleSaveVaga() {
+            if (!currentVagaDetails) return;
+            
+            showNotification(`Vaga "${currentVagaDetails.titulo}" salva com sucesso!`, "success");
+            
+            // Aqui você pode implementar a lógica para salvar a vaga para o usuário
+            saveVagaDetailsBtn.innerHTML = '<i class="fas fa-bookmark"></i> Vaga Salva';
+            saveVagaDetailsBtn.disabled = true;
+        }
+
+        // -----------------------------------------------------------------
+        // FUNÇÕES DO MODAL DE CRIAÇÃO
         // -----------------------------------------------------------------
 
         function openCreateVagaModal() {
@@ -140,13 +262,28 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.textContent = "Publicando...";
 
             try {
+                // Captura e processa as listas (quebra por linha e remove vazios)
+                const requisitosArray = document.getElementById('vaga-requisitos').value
+                    .split('\n')
+                    .map(item => item.trim())
+                    .filter(item => item !== '');
+
+                const beneficiosArray = document.getElementById('vaga-beneficios').value
+                    .split('\n')
+                    .map(item => item.trim())
+                    .filter(item => item !== '');
+
                 const vagaData = {
                     titulo: document.getElementById('vaga-titulo').value,
                     empresa: document.getElementById('vaga-empresa').value,
                     descricao: document.getElementById('vaga-descricao').value,
                     nivel: document.getElementById('vaga-nivel').value,
                     localizacao: document.getElementById('vaga-localizacao').value,
-                    tipoContratacao: document.getElementById('vaga-tipo').value
+                    tipoContratacao: document.getElementById('vaga-tipo').value,
+                    // Novos campos
+                    salario: document.getElementById('vaga-salario').value,
+                    requisitos: requisitosArray,
+                    beneficios: beneficiosArray
                 };
 
                 // Envia para o backend (o token já está no axios graças ao principal.js)
@@ -171,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // -----------------------------------------------------------------
-        // EVENT LISTENERS (Específicos da Página)
+        // EVENT LISTENERS
         // -----------------------------------------------------------------
         function setupVagasEventListeners() {
             // Listeners dos filtros
@@ -180,15 +317,32 @@ document.addEventListener("DOMContentLoaded", () => {
             if (elements.filterLocal) elements.filterLocal.addEventListener('change', filterVagas);
             if (elements.filterNivel) elements.filterNivel.addEventListener('change', filterVagas);
             
-            // Listeners do Modal (NOVOS)
-            if (elements.createAlertBtn) {
-                elements.createAlertBtn.addEventListener('click', openCreateVagaModal);
+            // Listener do Modal de Criação
+            if (elements.createVagaBtn) {
+                elements.createVagaBtn.addEventListener('click', openCreateVagaModal);
             }
             if (cancelCreateVagaBtn) {
                 cancelCreateVagaBtn.addEventListener('click', closeCreateVagaModal);
             }
             if (createVagaForm) {
                 createVagaForm.addEventListener('submit', handleCreateVagaSubmit);
+            }
+            
+            // Listeners do Modal de Detalhes
+            if (closeVagaDetailsBtn) {
+                closeVagaDetailsBtn.addEventListener('click', closeVagaDetailsModal);
+            }
+            if (saveVagaDetailsBtn) {
+                saveVagaDetailsBtn.addEventListener('click', handleSaveVaga);
+            }
+            
+            // Fechar modal clicando fora
+            if (vagaDetailsModal) {
+                vagaDetailsModal.addEventListener('click', (e) => {
+                    if (e.target === vagaDetailsModal) {
+                        closeVagaDetailsModal();
+                    }
+                });
             }
         }
 
@@ -199,10 +353,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // Verifica permissão para mostrar o botão
         if (currentUser) { 
             const userRoles = currentUser.tipoUsuario ? [currentUser.tipoUsuario] : [];
-            // O tipoUsuario vem do UsuarioSaidaDTO
-            if ((userRoles.includes('ADMIN') || userRoles.includes('PROFESSOR')) && elements.createAlertBtn) {
-                elements.createAlertBtn.style.display = 'block';
-                elements.createAlertBtn.textContent = "Publicar Vaga"; // Muda o texto
+            // Se for Admin ou Professor, mostra o botão do Header
+            if ((userRoles.includes('ADMIN') || userRoles.includes('PROFESSOR')) && elements.createVagaBtn) {
+                elements.createVagaBtn.style.display = 'flex'; 
             }
         }
         

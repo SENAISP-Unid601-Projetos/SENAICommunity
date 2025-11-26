@@ -1,28 +1,73 @@
 /* CSS para /Vaga/CSS/vaga.css */
 
-/* Cabeçalho da Seção de Vagas */
+/* --- Variáveis CSS --- */
+:root {
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Cabeçalho da Seção de Vagas --- */
 .vagas-header {
   padding: 1.5rem;
   background-color: var(--bg-secondary);
   border-radius: var(--card-radius);
   margin-bottom: 1rem;
   border: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.header-content {
+  flex: 1;
+  min-width: 200px;
 }
 
 .vagas-header h1 {
   color: var(--accent-primary);
   margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .vagas-header p {
   color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
-/* Container de Filtros */
+/* Botão Criar Vaga */
+.criar-vaga-btn {
+  background-color: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.criar-vaga-btn:hover {
+  background-color: var(--accent-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* --- Container de Filtros --- */
 .filters-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
   padding: 1rem;
   background-color: var(--bg-secondary);
   border-radius: var(--card-radius);
@@ -30,8 +75,9 @@
   border: 1px solid var(--border-color);
 }
 
+/* Área de Busca */
 .search-vaga {
-  flex: 1 1 300px;
+  flex: 1 1 100%;
   position: relative;
 }
 
@@ -41,64 +87,92 @@
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-secondary);
+  pointer-events: none;
+  z-index: 2;
 }
 
-.search-vaga input, .filters select {
+/* Container dos Selects */
+.filters {
+  display: flex;
+  flex: 1 1 100%;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Input e Selects */
+.search-vaga input, 
+.filters select {
   width: 100%;
   padding: 0.75rem;
   background-color: var(--bg-tertiary);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
+  transition: var(--transition-smooth);
+  height: auto;
+  display: block;
 }
 
 .search-vaga input {
   padding-left: 2.5rem;
 }
 
-.search-vaga input:focus, .filters select:focus {
+/* Estados de Focus e Hover */
+.search-vaga input:focus, 
+.filters select:focus {
   outline: none;
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+  transform: translateY(-1px);
 }
 
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  flex: 2 1 400px;
+.filters select:hover {
+  border-color: var(--accent-secondary);
 }
 
-.filters select {
-  flex: 1;
-  min-width: 150px;
-}
-
-/* Lista de Vagas */
+/* --- Grid de Vagas --- */
 .vagas-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-/* Card de Vaga */
+/* Card de Vaga - DESIGN MELHORADO */
 .vaga-card {
   background-color: var(--bg-secondary);
-  border-radius: var(--card-radius);
+  border-radius: 12px;
   border: 1px solid var(--border-color);
-  padding: 1.5rem;
-  transition: var(--transition);
+  padding: 1.25rem;
+  transition: var(--transition-smooth);
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.vaga-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary));
+  opacity: 0;
+  transition: var(--transition-smooth);
 }
 
 .vaga-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-4px);
+  box-shadow: var(--card-shadow-hover);
   border-color: var(--accent-primary);
+}
+
+.vaga-card:hover::before {
+  opacity: 1;
 }
 
 .vaga-card-header {
@@ -108,80 +182,124 @@
 }
 
 .vaga-empresa-logo {
-  width: 60px;
-  height: 60px;
-  border-radius: 6px;
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
   overflow: hidden;
   flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  box-shadow: var(--card-shadow);
 }
 
 .vaga-empresa-logo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 8px;
 }
 
 .vaga-info-principal {
   flex-grow: 1;
+  min-width: 0; /* Permite que o texto quebre corretamente */
 }
 
 .vaga-titulo {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 0.25rem;
+  line-height: 1.3;
+  word-wrap: break-word;
 }
 
 .vaga-empresa {
-  color: var(--text-secondary);
+  color: var(--accent-primary);
   margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .vaga-localidade {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .save-vaga-btn {
   background: none;
   border: none;
   color: var(--text-secondary);
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 0.4rem;
+  transition: var(--transition-smooth);
+  flex-shrink: 0;
 }
 
 .save-vaga-btn:hover {
   color: var(--accent-primary);
+  transform: scale(1.1);
 }
 
+.save-vaga-btn.saved {
+  color: var(--accent-primary);
+}
+
+/* Tags - DESIGN MELHORADO */
 .vaga-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  margin: 0.5rem 0;
 }
 
 .tag {
   background-color: var(--bg-tertiary);
   color: var(--text-secondary);
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.tag.tag-tecnologia {
-  background-color: var(--accent-primary);
-  color: white;
+.tag-nivel {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #4CAF50;
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.tag-tipo {
+  background-color: rgba(33, 150, 243, 0.15);
+  color: #2196F3;
+  border-color: rgba(33, 150, 243, 0.3);
+}
+
+.tag-local {
+  background-color: rgba(156, 39, 176, 0.15);
+  color: #9C27B0;
+  border-color: rgba(156, 39, 176, 0.3);
 }
 
 .vaga-descricao {
   color: var(--text-primary);
-  font-size: 0.9375rem;
-  line-height: 1.6;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  opacity: 0.9;
 }
 
 .vaga-card-footer {
@@ -191,47 +309,59 @@
   border-top: 1px solid var(--border-color);
   padding-top: 1rem;
   margin-top: 0.5rem;
+  gap: 1rem;
 }
 
 .vaga-publicado {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
+  line-height: 1.3;
+  flex: 1;
 }
 
 .vaga-candidatar-btn {
   background-color: var(--accent-primary);
   color: #fff;
   border: none;
-  padding: 0.6rem 1.2rem;
+  padding: 0.5rem 1rem;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--transition-smooth);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .vaga-candidatar-btn:hover {
   background-color: var(--accent-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
 }
 
-/* Sidebar Direita - Alertas de Vagas */
-.job-alerts-card, .featured-companies {
+/* Sidebar Direita */
+.job-alerts-card {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--card-radius);
-  padding: 1.5rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .job-alerts-card h3 {
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  font-size: 1rem;
 }
 
 .job-alerts-card p {
-  font-size: 0.875rem;
   color: var(--text-secondary);
+  font-size: 0.8rem;
   margin-bottom: 1rem;
+  line-height: 1.4;
 }
 
 .create-alert-btn {
@@ -242,41 +372,688 @@
   padding: 0.6rem;
   border-radius: 6px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--transition-smooth);
+  font-weight: 600;
+  font-size: 0.8rem;
 }
 
 .create-alert-btn:hover {
   background-color: var(--accent-primary);
   color: white;
+  transform: translateY(-1px);
 }
 
-/* Sidebar Direita - Empresas em Destaque */
-.featured-companies {
+/* --- Modal de Detalhes da Vaga --- */
+.vaga-details-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  overflow-y: auto;
+  backdrop-filter: blur(5px);
+}
+
+.vaga-details-content {
+  position: relative;
+  background-color: var(--bg-primary);
+  margin: 1rem auto;
+  max-width: 800px;
+  width: 95%;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.vaga-details-header {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  padding: 1.5rem;
+  border-radius: 16px 16px 0 0;
+  position: relative;
+}
+
+.vaga-details-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: var(--transition-smooth);
+  backdrop-filter: blur(10px);
+}
+
+.vaga-details-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg) scale(1.1);
+}
+
+.vaga-details-company {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.vaga-details-company-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.vaga-details-company-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.vaga-details-company-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.vaga-details-company-info h1 {
+  font-size: 1.4rem;
+  margin: 0 0 0.4rem 0;
+  font-weight: 700;
+  line-height: 1.2;
+  word-wrap: break-word;
+}
+
+.vaga-details-company-info h2 {
+  font-size: 1rem;
+  margin: 0;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.vaga-details-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   margin-top: 1rem;
 }
 
-.company-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.company-item {
+.meta-item {
   display: flex;
   align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.4rem 0.8rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
+.vaga-details-body {
+  padding: 1.5rem;
+}
+
+.vaga-details-section {
+  margin-bottom: 1.5rem;
+}
+
+.vaga-details-section h3 {
+  color: var(--accent-primary);
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+.vaga-description-content {
+  line-height: 1.6;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.vaga-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 0.75rem;
-  cursor: pointer;
-  padding: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.detail-card {
+  background: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--accent-primary);
+  transition: var(--transition-smooth);
+}
+
+.detail-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow);
+}
+
+.detail-card h4 {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  margin: 0 0 0.4rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-card p {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.requirements-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.requirements-list li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.requirements-list li:before {
+  content: "✓";
+  color: var(--accent-primary);
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.requirements-list li:last-child {
+  border-bottom: none;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.benefit-item {
+  background: var(--bg-secondary);
+  padding: 0.8rem;
+  border-radius: 8px;
+  text-align: center;
+  transition: var(--transition-smooth);
+  border: 1px solid var(--border-color);
+}
+
+.benefit-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow);
+  border-color: var(--accent-primary);
+}
+
+.benefit-item i {
+  font-size: 1.2rem;
+  color: var(--accent-primary);
+  margin-bottom: 0.4rem;
+}
+
+.benefit-item span {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.vaga-details-footer {
+  background: var(--bg-secondary);
+  padding: 1.25rem 1.5rem;
+  border-radius: 0 0 16px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.vaga-publish-info {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.vaga-details-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 2px solid var(--accent-primary);
+  color: var(--accent-primary);
+  padding: 0.6rem 1rem;
   border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
-.company-item:hover {
-  background-color: var(--bg-tertiary);
+.btn-secondary:hover {
+  background: var(--accent-primary);
+  color: white;
+  transform: translateY(-2px);
 }
 
-.company-item img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
+.btn-contact {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.btn-contact:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+}
+
+/* Estados para cards sem conteúdo */
+.sem-vagas, .loading-vagas {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  background: var(--bg-secondary);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
+}
+
+/* --- RESPONSIVIDADE MELHORADA --- */
+@media (max-width: 768px) {
+  /* Header mobile */
+  .vagas-header {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .header-content {
+    width: 100%;
+    text-align: center;
+  }
+
+  .vagas-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .vagas-header p {
+    font-size: 0.85rem;
+  }
+
+  .criar-vaga-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.8rem 1rem;
+  }
+
+  /* Filtros mobile */
+  .filters-container {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .search-vaga, .filters {
+    flex: 1 1 100%;
+  }
+
+  .filters {
+    gap: 0.5rem;
+  }
+
+  .search-vaga input, 
+  .filters select {
+    padding: 0.7rem;
+    font-size: 0.85rem;
+  }
+
+  /* Card de vaga mobile - DESIGN OTIMIZADO */
+  .vaga-card {
+    padding: 1rem;
+    gap: 0.75rem;
+    margin: 0.5rem 0;
+  }
+
+  .vaga-card-header {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .vaga-empresa-logo {
+    width: 45px;
+    height: 45px;
+    font-size: 0.9rem;
+  }
+
+  .vaga-info-principal {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .vaga-titulo {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  .vaga-empresa {
+    font-size: 0.85rem;
+  }
+
+  .vaga-localidade {
+    font-size: 0.75rem;
+  }
+
+  .vaga-tags {
+    gap: 0.4rem;
+    margin: 0.4rem 0;
+  }
+
+  .tag {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.65rem;
+  }
+
+  .vaga-descricao {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .vaga-card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    text-align: center;
+  }
+
+  .vaga-publicado {
+    font-size: 0.7rem;
+    order: 2;
+  }
+
+  .vaga-candidatar-btn {
+    order: 1;
+    width: 100%;
+    padding: 0.6rem;
+  }
+
+  /* Modal mobile */
+  .vaga-details-content {
+    width: 98%;
+    margin: 0.5rem auto;
+  }
+  
+  .vaga-details-header {
+    padding: 1.25rem;
+  }
+  
+  .vaga-details-company {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .vaga-details-company-logo {
+    width: 50px;
+    height: 50px;
+    align-self: center;
+  }
+  
+  .vaga-details-company-info h1 {
+    font-size: 1.2rem;
+  }
+  
+  .vaga-details-company-info h2 {
+    font-size: 0.9rem;
+  }
+  
+  .vaga-details-meta {
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .meta-item {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.7rem;
+  }
+  
+  .vaga-details-body {
+    padding: 1.25rem;
+  }
+  
+  .vaga-details-section h3 {
+    font-size: 1rem;
+  }
+  
+  .vaga-description-content {
+    font-size: 0.85rem;
+  }
+  
+  .vaga-details-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .detail-card {
+    padding: 0.8rem;
+  }
+  
+  .benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .benefit-item {
+    padding: 0.6rem;
+  }
+  
+  .benefit-item i {
+    font-size: 1rem;
+  }
+  
+  .benefit-item span {
+    font-size: 0.7rem;
+  }
+  
+  .vaga-details-footer {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .vaga-publish-info {
+    order: 2;
+    min-width: auto;
+  }
+  
+  .vaga-details-actions {
+    order: 1;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .btn-secondary, .btn-contact {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+    padding: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Mobile muito pequeno */
+  .vaga-card {
+    padding: 0.875rem;
+  }
+
+  .vaga-card-header {
+    gap: 0.5rem;
+  }
+
+  .vaga-empresa-logo {
+    width: 40px;
+    height: 40px;
+    font-size: 0.8rem;
+  }
+
+  .vaga-titulo {
+    font-size: 0.95rem;
+  }
+
+  .vaga-empresa {
+    font-size: 0.8rem;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vaga-details-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-secondary, .btn-contact {
+    width: 100%;
+  }
+
+  /* Ajustes de texto para telas muito pequenas */
+  .vaga-publicado {
+    font-size: 0.65rem;
+  }
+
+  .vaga-candidatar-btn {
+    font-size: 0.75rem;
+  }
+}
+
+/* Animações melhoradas */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vaga-card {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Scroll personalizado */
+.vaga-details-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.vaga-details-modal::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.vaga-details-modal::-webkit-scrollbar-thumb {
+  background: var(--accent-primary);
+  border-radius: 3px;
+}
+
+.vaga-details-modal::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-secondary);
+}
+
+/* Estados de loading */
+.vaga-card.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Melhorias de acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  .vaga-card,
+  .vaga-details-content,
+  .criar-vaga-btn,
+  .vaga-candidatar-btn,
+  .btn-secondary,
+  .btn-contact {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Foco visível para acessibilidade */
+.vaga-candidatar-btn:focus,
+.btn-secondary:focus,
+.btn-contact:focus,
+.criar-vaga-btn:focus {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Dark mode improvements */
+[data-theme="dark"] .vaga-card {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .vaga-card:hover {
+  border-color: var(--accent-primary);
+  background-color: rgba(255, 255, 255, 0.02);
 }
