@@ -174,6 +174,11 @@ function updateProfilePageUI(user) {
         profileImg.src = window.getAvatarUrl(user.urlFotoPerfil);
     }
 
+    const bannerEl = document.getElementById('profile-banner');
+    if (bannerEl && user.urlFotoFundo) {
+        bannerEl.style.backgroundImage = `url('${window.getAvatarUrl(user.urlFotoFundo)}')`;
+    }
+
     // 2. Nome e Título (Tipo de Usuário)
     const nameEl = document.getElementById('profile-name');
     if (nameEl) nameEl.textContent = user.nome;
@@ -412,6 +417,21 @@ function updateProfilePageUI(user) {
     if (elements.profileBio) elements.profileBio.textContent = user.bio || "Nenhuma bio informada.";
     if (elements.profileEmail) elements.profileEmail.textContent = user.email;
 
+    const bannerEl = document.getElementById('profile-banner');
+    if (bannerEl) {
+        // Pega a URL do DTO ou usa o padrão
+        let bgUrl = user.urlFotoFundo || `${backendUrl}/images/default-background.jpg`;
+        
+        // Verifica se precisa do prefixo do backend (se for local)
+        if (!bgUrl.startsWith('http') && !bgUrl.startsWith('/')) {
+             bgUrl = `${backendUrl}/${bgUrl}`;
+        } else if (bgUrl.startsWith('/') && !bgUrl.startsWith('http')) {
+             bgUrl = `${backendUrl}${bgUrl}`;
+        }
+
+        bannerEl.style.backgroundImage = `url('${bgUrl}')`;
+    }
+
     if (elements.profileDob) {
       if (user.dataNascimento) {
         const dob = new Date(user.dataNascimento);
@@ -445,7 +465,15 @@ function updateProfilePageUI(user) {
 // Localize a função setupEditProfileForm() e substitua por esta:
 function setupEditProfileForm() {
     const editForm = document.getElementById('edit-profile-form');
+    const bgInput = document.getElementById('edit-profile-bg-input');
+    const bgPreview = document.getElementById('bg-preview-name');
     
+    if(bgInput) {
+        bgInput.addEventListener('change', () => {
+            if(bgInput.files.length > 0) bgPreview.textContent = bgInput.files[0].name;
+        });
+    }
+
     if (!editForm) return;
 
     editForm.addEventListener('submit', async (e) => {
@@ -479,6 +507,13 @@ function setupEditProfileForm() {
                 formData.append('fotoPerfil', fileInput.files[0]);
             }
 
+        if (bgInput && bgInput.files.length > 0) {
+           const bgFormData = new FormData();
+           bgFormData.append('file', bgInput.files[0]); // Nome do param no Controller
+           await axios.put(`${backendUrl}/usuarios/fundo`, bgFormData, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt_token')}` }
+           });
+       }
             // Envia para o Backend
             const response = await axios.put(`${backendUrl}/usuarios/atualizar`, formData, {
                 headers: {
@@ -521,6 +556,14 @@ function setupEditProfileForm() {
                 const topbarImg = document.getElementById("topbar-user-img");
                 if (topbarImg) topbarImg.src = novaFotoUrl;
             }
+
+            if (bgInput && bgInput.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profile-banner').style.backgroundImage = `url('${e.target.result}')`;
+            }
+            reader.readAsDataURL(bgInput.files[0]);
+       }
 
             // Feedback Visual
             if (window.showNotification) {

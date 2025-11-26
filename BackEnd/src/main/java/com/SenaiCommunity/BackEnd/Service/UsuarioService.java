@@ -140,26 +140,32 @@ public class UsuarioService {
             throw new IllegalArgumentException("Arquivo de fundo não pode ser vazio.");
         }
 
-        Usuario usuario = getUsuarioFromAuthentication(authentication);
+        Usuario usuario = getUsuarioFromAuthentication(authentication); // Método padrão para buscar usuário pelo auth
 
-        // Upload para o Cloudinary usando seu serviço existente
+        // 1. Upload para o Cloudinary
         String urlCloudinary = midiaService.upload(foto);
 
-        // Se já tiver um fundo antigo (que não seja o padrão local), deletar do Cloudinary
+        // 2. Deletar foto antiga do Cloudinary (se existir e não for a padrão local)
         String oldFundo = usuario.getFotoFundo();
-        if (oldFundo != null && oldFundo.contains("cloudinary")) {
+        // Verifica se a URL antiga é do Cloudinary/externa para deletar
+        if (oldFundo != null && (oldFundo.contains("cloudinary") || oldFundo.startsWith("http"))) {
             try {
                 midiaService.deletar(oldFundo);
             } catch (Exception e) {
-                System.err.println("Erro ao deletar fundo antigo: " + e.getMessage());
+                // Loga o erro, mas permite que o processo continue
+                System.err.println("AVISO: Falha ao deletar fundo antigo do Cloudinary: " + e.getMessage());
             }
         }
 
+        // 3. Salvar nova URL no banco de dados
         usuario.setFotoFundo(urlCloudinary);
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+
         notificarAtualizacaoPerfil(usuarioAtualizado);
-        return criarDTOComContagem(usuarioAtualizado);
+
+        // 4. Retornar DTO atualizado
+        return new UsuarioSaidaDTO(usuarioAtualizado);
     }
 
     /**

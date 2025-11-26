@@ -63,6 +63,15 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioAtualizado);
     }
 
+    @PutMapping("/me/fundo")
+    public ResponseEntity<UsuarioSaidaDTO> atualizarMinhaFotoFundo(
+            @RequestPart("file") MultipartFile foto, // O parâmetro no Form-Data será 'file'
+            Authentication authentication) throws IOException {
+
+        UsuarioSaidaDTO usuarioAtualizado = usuarioService.atualizarFotoFundo(authentication, foto);
+        return ResponseEntity.ok(usuarioAtualizado);
+    }
+
     @GetMapping("/buscar")
     public ResponseEntity<List<UsuarioBuscaDTO>> buscarUsuarios(
             @RequestParam(value = "nome", required = false, defaultValue = "") String nome,
