@@ -1,7 +1,49 @@
 // =================================================================
-// BLOCO DE CONTROLE DE TEMA (Executa primeiro em todas as páginas)
+// 1. BLOCO DE ACESSIBILIDADE GLOBAL (COLE ISTO NO TOPO DO ARQUIVO)
+// =================================================================
+window.aplicarAcessibilidadeGlobal = function() {
+
+    const html = document.documentElement;
+    const body = document.body;
+    // 1. Tamanho da Fonte (Aplica no HTML)
+    const savedFontSize = localStorage.getItem('fontSize') || 'medium';
+    html.setAttribute('data-font-size', savedFontSize);
+    // 2. Alto Contraste (Aplica no HTML para ser mais rápido)
+    if (localStorage.getItem('highContrast') === 'true') {
+        html.classList.add('acessibilidade-alto-contraste');
+    } else {
+        html.classList.remove('acessibilidade-alto-contraste');
+    }
+    // 3. Configurações que dependem do BODY
+    if (body) {
+        // Redução de Movimento
+        if (localStorage.getItem('reduceMotion') === 'true') {
+            body.classList.add('reduce-motion');
+        } else {
+            body.classList.remove('reduce-motion');
+        }
+        // Fonte Legível
+        if (localStorage.getItem('readableFont') === 'true') {
+            html.classList.add('acessibilidade-fonte-legivel');
+        } else {
+            html.classList.remove('acessibilidade-fonte-legivel');
+        }
+        // Destacar Links
+        if (localStorage.getItem('highlightLinks') === 'true') {
+            html.classList.add('acessibilidade-destacar-links');
+        } else {
+            html.classList.remove('acessibilidade-destacar-links');
+        }
+    }
+};
+// Executa IMEDIATAMENTE (antes da página aparecer)
+window.aplicarAcessibilidadeGlobal();
+// =================================================================
+// SEU CÓDIGO ANTIGO COMEÇA AQUI (NÃO APAGUE O RESTO)
 // =================================================================
 document.addEventListener("DOMContentLoaded", () => {
+    // ADICIONE ESTA LINHA DENTRO DO SEU DOMContentLoaded:
+    window.aplicarAcessibilidadeGlobal();   
   function setInitialTheme() {
     const savedTheme = localStorage.getItem("theme") || "dark";
     document.documentElement.setAttribute("data-theme", savedTheme);

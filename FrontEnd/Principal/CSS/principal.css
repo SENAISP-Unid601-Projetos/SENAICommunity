@@ -3437,3 +3437,79 @@ a.user-card-link:hover h4 {
 .comment-read-more-btn:hover {
     text-decoration: underline;
 }
+/* =================================================================
+
+   ACESSIBILIDADE GLOBAL (SOLUÇÃO VIA VARIÁVEIS)
+
+   Cole isto no FINAL do arquivo principal.css
+
+   ================================================================= */
+
+/* 1. Tamanhos de Fonte */
+
+html[data-font-size="small"] { font-size: 14px; }
+html[data-font-size="medium"] { font-size: 16px; }
+html[data-font-size="large"] { font-size: 20px; }
+
+/* 2. Redução de Movimento */
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+}
+
+/* 3. Alto Contraste - SOBRESCREVENDO AS VARIÁVEIS GLOBAIS */
+/* Isso garante que funcione em TODAS as páginas (Mensagem, Feed, etc) */
+html.acessibilidade-alto-contraste {
+    /* Força preto puro no fundo */
+    --bg-primary: #000000 !important;
+    --bg-secondary: #000000 !important;
+    --bg-tertiary: #000000 !important;
+    --bg-quaternary: #000000 !important;
+    --bg-hover: #333333 !important;
+    /* Força branco puro e amarelo no texto */
+    --text-primary: #ffffff !important;
+    --text-secondary: #ffff00 !important; /* Amarelo para destacar textos secundários */
+    --text-tertiary: #00ff00 !important;  /* Verde para textos terciários */
+    /* Destaques em Amarelo Acessível */
+    --accent-primary: #ffff00 !important; 
+    --accent-secondary: #ffcc00 !important;
+    --highlight: #ffff00 !important;
+    /* Bordas brancas para separar os elementos pretos */
+    --border-color: #ffffff !important;
+    /* Filtro extra para garantir imagens e ícones */
+    filter: contrast(130%) grayscale(100%);
+
+}
+/* Ajustes finos para elementos que não usam variáveis ou precisam de borda extra */
+
+html.acessibilidade-alto-contraste img {
+    filter: grayscale(100%);
+    border: 1px solid #fff; /* Borda nas fotos para não sumir no fundo preto */
+
+}
+html.acessibilidade-alto-contraste button,
+html.acessibilidade-alto-contraste input,
+html.acessibilidade-alto-contraste .btn {
+    border: 2px solid #fff !important;
+    background-color: #000 !important;
+    color: #ffff00 !important;
+    font-weight: bold;
+}
+/* 4. Fonte Legível */
+html.acessibilidade-fonte-legivel body,
+html.acessibilidade-fonte-legivel * {
+    font-family: 'Verdana', 'Arial', sans-serif !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1.6 !important;
+}
+/* 5. Destacar Links */
+
+html.acessibilidade-destacar-links a {
+    text-decoration: underline !important;
+    font-weight: 700 !important;
+    background-color: #ffff00 !important;
+    color: #000000 !important;
+}

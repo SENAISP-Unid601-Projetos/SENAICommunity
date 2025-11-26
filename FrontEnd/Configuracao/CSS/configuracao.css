@@ -86,80 +86,15 @@ input:checked + .slider:before { transform: translateX(24px); }
 /* ... (Mantenha o CSS que você já tinha no arquivo) ... */
 
 /* =================================================================
-   REGRAS VISUAIS DE ACESSIBILIDADE (Para funcionar nesta tela)
+   ACESSIBILIDADE GLOBAL (Cole no FINAL do arquivo principal.css)
    ================================================================= */
 
-/* Ajuste base de fonte */
-html {
-    transition: font-size 0.2s ease, filter 0.2s ease;
-}
-
-/* Tamanhos de Fonte */
+/* 1. Tamanhos de Fonte */
 html[data-font-size="small"] { font-size: 14px; }
 html[data-font-size="medium"] { font-size: 16px; }
 html[data-font-size="large"] { font-size: 20px; }
 
-/* 1. Redução de Movimento */
-body.reduce-motion * {
-    transition: none !important;
-    animation: none !important;
-}
-
-/* 2. Alto Contraste */
-html.acessibilidade-alto-contraste {
-    filter: contrast(130%) grayscale(100%);
-    background-color: #000 !important;
-}
-html.acessibilidade-alto-contraste body {
-    background-color: #000 !important;
-    color: #fff !important;
-}
-/* Força cores escuras nos cards para não sumir no alto contraste */
-html.acessibilidade-alto-contraste .widget-card,
-html.acessibilidade-alto-contraste .config-section,
-html.acessibilidade-alto-contraste .sidebar,
-html.acessibilidade-alto-contraste .topbar {
-    background-color: #111 !important;
-    border: 1px solid #fff !important;
-}
-
-/* 3. Fonte Legível */
-html.acessibilidade-fonte-legivel body,
-html.acessibilidade-fonte-legivel p,
-html.acessibilidade-fonte-legivel h2,
-html.acessibilidade-fonte-legivel h3,
-html.acessibilidade-fonte-legivel h4,
-html.acessibilidade-fonte-legivel span,
-html.acessibilidade-fonte-legivel a,
-html.acessibilidade-fonte-legivel button {
-    font-family: 'Verdana', 'Arial', sans-serif !important;
-    letter-spacing: 0.05em !important;
-    line-height: 1.6 !important;
-}
-
-/* 4. Destacar Links */
-html.acessibilidade-destacar-links a {
-    text-decoration: underline !important;
-    font-weight: 700 !important;
-    background-color: #ffeb3b !important;
-    color: #000 !important;
-}
-
-/* =================================================================
-   ACESSIBILIDADE GLOBAL (Adicione ao final do principal.css)
-   ================================================================= */
-
-/* Transição suave para mudanças de fonte e cor */
-html {
-    transition: font-size 0.3s ease, filter 0.3s ease;
-}
-
-/* 1. Tamanhos de Fonte */
-html[data-font-size="small"] { font-size: 14px; }
-html[data-font-size="medium"] { font-size: 16px; } /* Padrão */
-html[data-font-size="large"] { font-size: 20px; }
-
-/* 2. Reduzir Movimentos (Desliga todas as animações) */
+/* 2. Redução de Movimento */
 body.reduce-motion *,
 body.reduce-motion *::before,
 body.reduce-motion *::after {
@@ -168,7 +103,7 @@ body.reduce-motion *::after {
     scroll-behavior: auto !important;
 }
 
-/* 3. Alto Contraste */
+/* 3. Alto Contraste (IMPORTANTE: use !important para forçar) */
 html.acessibilidade-alto-contraste {
     filter: contrast(130%) grayscale(100%);
     background-color: #000 !important;
@@ -177,22 +112,25 @@ html.acessibilidade-alto-contraste body {
     background-color: #000 !important;
     color: #fff !important;
 }
-/* Adiciona bordas brancas para elementos não sumirem no fundo preto */
+/* Garante que os cards e menus fiquem visíveis no modo escuro total */
 html.acessibilidade-alto-contraste .widget-card,
 html.acessibilidade-alto-contraste .post,
 html.acessibilidade-alto-contraste .sidebar,
 html.acessibilidade-alto-contraste .topbar,
 html.acessibilidade-alto-contraste .nav-icon,
 html.acessibilidade-alto-contraste input,
+html.acessibilidade-alto-contraste textarea,
 html.acessibilidade-alto-contraste button,
-html.acessibilidade-alto-contraste .dropdown-menu {
+html.acessibilidade-alto-contraste .dropdown-menu,
+html.acessibilidade-alto-contraste .message-area,
+html.acessibilidade-alto-contraste .chat-list {
     background-color: #000 !important;
     border: 1px solid #fff !important;
     color: #fff !important;
     box-shadow: none !important;
 }
 
-/* 4. Fonte Legível (Arial/Verdana e Espaçamento) */
+/* 4. Fonte Legível */
 html.acessibilidade-fonte-legivel body,
 html.acessibilidade-fonte-legivel * {
     font-family: 'Verdana', 'Arial', sans-serif !important;
@@ -204,11 +142,11 @@ html.acessibilidade-fonte-legivel * {
 html.acessibilidade-destacar-links a {
     text-decoration: underline !important;
     font-weight: 700 !important;
-    background-color: #ffeb3b !important; /* Amarelo */
-    color: #000000 !important; /* Preto */
+    background-color: #ffeb3b !important;
+    color: #000000 !important;
 }
-html.acessibilidade-destacar-links .btn,
-html.acessibilidade-destacar-links button {
+html.acessibilidade-destacar-links button,
+html.acessibilidade-destacar-links .btn {
     border: 3px solid #ffeb3b !important;
 }
 @media (max-width: 600px) {

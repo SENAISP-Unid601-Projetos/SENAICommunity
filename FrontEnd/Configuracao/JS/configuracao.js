@@ -1,11 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Aplica as configurações assim que a página carrega
-    aplicarAcessibilidade();
-    
-    // 2. Inicializa os botões visuais (marca o que está ativo)
+    // 1. Aplica as configurações assim que a página carrega (puxando do global)
+    if (window.aplicarAcessibilidadeGlobal) {
+        window.aplicarAcessibilidadeGlobal();
+    }
+
+    // 2. Inicializa os botões visuais (marca o que está ativo e cria os eventos)
     initSettingsUI();
-    
-    // 3. Configura o botão de Sair
+
+    // 3. Configura o botão de Sair (Logout)
     const logoutBtn = document.querySelector('.logout-action-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
@@ -17,49 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- FUNÇÃO PRINCIPAL QUE FAZ A MÁGICA ACONTECER ---
-function aplicarAcessibilidade() {
-    const html = document.documentElement;
-
-    // 1. Tamanho da Fonte
-    const savedFontSize = localStorage.getItem('fontSize') || 'medium';
-    html.setAttribute('data-font-size', savedFontSize);
-
-    // 2. Redução de Movimento
-    if (localStorage.getItem('reduceMotion') === 'true') {
-        document.body.classList.add('reduce-motion');
-    } else {
-        document.body.classList.remove('reduce-motion');
-    }
-
-    // 3. Alto Contraste
-    if (localStorage.getItem('highContrast') === 'true') {
-        html.classList.add('acessibilidade-alto-contraste');
-    } else {
-        html.classList.remove('acessibilidade-alto-contraste');
-    }
-
-    // 4. Fonte Legível
-    if (localStorage.getItem('readableFont') === 'true') {
-        html.classList.add('acessibilidade-fonte-legivel');
-    } else {
-        html.classList.remove('acessibilidade-fonte-legivel');
-    }
-
-    // 5. Destacar Links
-    if (localStorage.getItem('highlightLinks') === 'true') {
-        html.classList.add('acessibilidade-destacar-links');
-    } else {
-        html.classList.remove('acessibilidade-destacar-links');
-    }
-}
-
 // --- CONTROLE DOS BOTÕES ---
 
 function initSettingsUI() {
+    // Verifica o tamanho da fonte atual
     const currentSize = localStorage.getItem('fontSize') || 'medium';
     updateFontButtonsUI(currentSize);
 
+    // Liga cada botão (Switch) à sua função
     setupToggle('reduceMotion', 'reduce-motion-toggle');
     setupToggle('highContrast', 'high-contrast-toggle');
     setupToggle('readableFont', 'readable-font-toggle');
@@ -69,19 +36,33 @@ function initSettingsUI() {
 function setupToggle(key, elementId) {
     const toggle = document.getElementById(elementId);
     if (toggle) {
+        // 1. Marca o checkbox se já estiver salvo como 'true'
         toggle.checked = localStorage.getItem(key) === 'true';
+
+        // 2. Adiciona o evento de clique
         toggle.addEventListener('change', (e) => {
+            // Salva a nova preferência no navegador
             localStorage.setItem(key, e.target.checked);
-            aplicarAcessibilidade(); // Aplica na hora!
+            
+            // Chama a função GLOBAL (que está no principal.js) para mudar a cor/estilo na hora
+            if (window.aplicarAcessibilidadeGlobal) {
+                window.aplicarAcessibilidadeGlobal();
+            } else {
+                console.error("Função global de acessibilidade não encontrada!");
+            }
         });
     }
 }
 
-// Essa função precisa ser global (window) pois é chamada no onclick do HTML
+// Essa função precisa ser global (window) pois é chamada no onclick do HTML (botões A A A)
 window.updateFontSize = (size) => {
     localStorage.setItem('fontSize', size);
     updateFontButtonsUI(size);
-    aplicarAcessibilidade(); // Aplica na hora!
+    
+    // Chama a função GLOBAL para aplicar a mudança
+    if (window.aplicarAcessibilidadeGlobal) {
+        window.aplicarAcessibilidadeGlobal();
+    }
 };
 
 function updateFontButtonsUI(size) {
