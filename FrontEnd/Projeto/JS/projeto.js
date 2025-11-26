@@ -283,6 +283,33 @@ function toggleModal(modalId, show) {
         }
     }
 
+    function updateSidebarUserInfo() {
+    // Seleciona o container que possui o spinner
+    const userInfoContainer = document.querySelector('.user-info');
+
+    if (window.currentUser) {
+        const sidebarName = document.getElementById('sidebar-user-name');
+        const sidebarTitle = document.getElementById('sidebar-user-title');
+        const sidebarImg = document.getElementById('sidebar-user-img');
+        
+        if(sidebarName) sidebarName.textContent = window.currentUser.nome;
+        if(sidebarTitle) sidebarTitle.textContent = window.currentUser.cargo || 'Membro'; 
+        
+        if(sidebarImg && window.currentUser.fotoPerfil) {
+             if(typeof window.getAvatarUrl === 'function') {
+                 sidebarImg.src = window.getAvatarUrl(window.currentUser.fotoPerfil);
+             } else {
+                 sidebarImg.src = window.currentUser.fotoPerfil;
+             }
+        }
+
+        // IMPORTANTE: Remove a classe de loading para mostrar o perfil
+        if (userInfoContainer) {
+            userInfoContainer.classList.add('loaded');
+        }
+    }
+}
+
     // Inicialmente mostrar loading nos perfis
     setProfileLoading(true);
 
@@ -352,6 +379,7 @@ function toggleModal(modalId, show) {
 
                 // Inicializar menu mobile
                 setupMobileMenu();
+                updateSidebarUserInfo();
 
                 if (this.elements.connectionsCount) {
                     this.elements.connectionsCount.textContent =

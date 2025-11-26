@@ -93,6 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
     backendUrl = window.backendUrl;
     defaultAvatarUrl = window.defaultAvatarUrl;
 
+    updateSidebarUserInfo();
     setupResponsiveListeners();
     setupChatEventListeners();
 
@@ -321,6 +322,40 @@ function formatMessageContent(text) {
     elements.messageInput.value = "";
     elements.messageInput.focus();
   }
+
+  // --- FUNÇÃO AUXILIAR: Preencher Sidebar do Usuário ---
+function updateSidebarUserInfo() {
+    const userInfoContainer = document.querySelector('.user-info');
+
+    if (window.currentUser) {
+        const sidebarName = document.getElementById('sidebar-user-name');
+        const sidebarTitle = document.getElementById('sidebar-user-title');
+        const sidebarImg = document.getElementById('sidebar-user-img');
+        const connectionsCount = document.getElementById('connections-count');
+        const projectsCount = document.getElementById('projects-count');
+        
+        if(sidebarName) sidebarName.textContent = window.currentUser.nome;
+        if(sidebarTitle) sidebarTitle.textContent = window.currentUser.cargo || 'Membro'; 
+        
+        if(sidebarImg && window.currentUser.fotoPerfil) {
+             if(typeof window.getAvatarUrl === 'function') {
+                 sidebarImg.src = window.getAvatarUrl(window.currentUser.fotoPerfil);
+             } else {
+                 sidebarImg.src = window.currentUser.fotoPerfil;
+             }
+        }
+        
+        // Atualiza stats se disponíveis (opcional, se tiver lógica para isso)
+        if(connectionsCount && window.userFriends) {
+            connectionsCount.textContent = window.userFriends.length;
+        }
+
+        // Remove a classe de loading para mostrar o perfil
+        if (userInfoContainer) {
+            userInfoContainer.classList.add('loaded');
+        }
+    }
+}
 
   // --- WEBSOCKET RECEIVER ---
   function onMessageReceived(payload) {

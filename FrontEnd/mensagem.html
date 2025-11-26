@@ -68,51 +68,86 @@
 
         <div class="container">
             <aside class="sidebar" id="sidebar">
-                <div class="sidebar-header-mobile">
-                    <span class="sidebar-title">Menu</span>
-                    <button class="sidebar-close" id="sidebar-close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
+    <div class="sidebar-header">
+        <div class="sidebar-user-card">
+            <a href="perfil.html" class="user-info-link">
+                <div class="user-info">
+                    <div class="user-info-loading" id="user-info-loading">
+                        <div class="loading-spinner"></div>
+                    </div>
 
-                <a href="perfil.html" class="user-info-link">
-                    <div class="user-info">
-                        <div class="avatar">
-                            <img src="https://via.placeholder.com/80" alt="Perfil" id="sidebar-user-img">
-                            <div class="status online"></div>
-                        </div>
+                    <div class="avatar-container">
+                        <img src="https://via.placeholder.com/80" alt="Perfil" id="sidebar-user-img">
+                        <div class="status online"></div>
+                    </div>
+
+                    <div class="user-identity">
                         <h2 id="sidebar-user-name">Carregando...</h2>
-                        <p class="user-title" id="sidebar-user-title">Carregando...</p>
-                        <div class="user-stats">
-                            <div class="stat">
-                                <strong id="connections-count">-</strong>
-                                <span>Conexões</span>
-                            </div>
-                            <div class="stat">
-                                <strong id="projects-count">-</strong>
-                                <span>Projetos</span>
-                            </div>
+                        <span class="user-role" id="sidebar-user-title">Carregando...</span>
+                    </div>
+
+                    <div class="user-stats">
+                        <div class="stat-item">
+                            <strong id="connections-count">-</strong>
+                            <span class="stat-label">Conexões</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong id="projects-count">-</strong>
+                            <span class="stat-label">Projetos</span>
                         </div>
                     </div>
-                </a>
-
-                <nav class="menu">
-                    <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
-                    <a href="mensagem.html" class="active"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge" id="message-badge-sidebar" style="display: none;">0</span></a>
-                    <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
-                    <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
-                    <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
-                    <a href="buscar_amigos.html"><i class="fas fa-user-plus"></i> Encontrar Pessoas</a>
-                    <a href="amizades.html"><i class="fas fa-user-friends"></i> Minhas Conexões</a> 
-                </nav>
-
-                <div class="widget-card online-friends" id="online-friends-widget">
-                    <h3 class="widget-title">Amigos Online</h3>
-                    <div class="friend-list" id="online-friends-list">
-                        <p class="empty-state">Nenhum amigo online no momento.</p>
-                    </div>
                 </div>
-            </aside>
+            </a>
+        </div>
+        <button class="sidebar-close" id="sidebar-close">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <nav class="sidebar-menu">
+        <a href="principal.html" class="menu-item">
+            <i class="fas fa-home"></i>
+            <span class="menu-text">Feed</span>
+        </a>
+        <a href="mensagem.html" class="menu-item active">
+            <i class="fas fa-comment-dots"></i>
+            <span class="menu-text">Mensagens</span>
+            <span class="badge" id="message-badge-sidebar" style="display: none;">0</span>
+        </a>
+        <a href="projeto.html" class="menu-item">
+            <i class="fas fa-users"></i>
+            <span class="menu-text">Projetos</span>
+        </a>
+        <a href="vaga.html" class="menu-item">
+            <i class="fas fa-briefcase"></i>
+            <span class="menu-text">Vagas</span>
+        </a>
+        <a href="evento.html" class="menu-item">
+            <i class="fas fa-calendar-check"></i>
+            <span class="menu-text">Eventos</span>
+        </a>
+        <a href="buscar_amigos.html" class="menu-item">
+            <i class="fas fa-user-plus"></i>
+            <span class="menu-text">Encontrar Pessoas</span>
+        </a>
+        <a href="amizades.html" class="menu-item">
+            <i class="fas fa-user-friends"></i>
+            <span class="menu-text">Minhas Conexões</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-widget">
+        <div class="widget-card online-friends" id="online-friends-widget">
+            <h3 class="widget-title">Amigos Online</h3>
+            <div class="friend-list" id="online-friends-list">
+                <div class="results-loading" style="padding: 1rem;">
+                    <div class="loading-spinner"></div>
+                    <p style="font-size: 0.8rem; margin-top: 0.5rem;">Carregando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
 
             <main class="main-content">
                 <div class="chat-container" id="chat-container">
