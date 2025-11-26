@@ -10,6 +10,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const backendUrl = window.backendUrl;
         const showNotification = window.showNotification; 
 
+        // 1. ATUALIZA A SIDEBAR (Perfil)
+        updateSidebarUserInfo();
+
+        // 2. INICIALIZA O MENU MOBILE (CORREÇÃO AQUI)
+        setupMobileMenu();
+
         // --- SELEÇÃO DE ELEMENTOS ---
         const elements = {
             vagasListContainer: document.querySelector('.vagas-list'),
@@ -39,6 +45,61 @@ document.addEventListener("DOMContentLoaded", () => {
         const tipoContratacaoMap = { 'TODOS': '', 'TEMPO_INTEGRAL': 'Tempo Integral', 'MEIO_PERIODO': 'Meio Período', 'ESTAGIO': 'Estágio', 'TRAINEE': 'Trainee' };
         const localizacaoMap = { 'TODOS': '', 'REMOTO': 'Remoto', 'HIBRIDO': 'Híbrido', 'PRESENCIAL': 'Presencial' };
         const nivelMap = { 'TODOS': '', 'JUNIOR': 'Júnior', 'PLENO': 'Pleno', 'SENIOR': 'Sênior' };
+
+        // -----------------------------------------------------------------
+        // FUNÇÃO NOVA: Configurar Menu Mobile
+        // -----------------------------------------------------------------
+        function setupMobileMenu() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const mobileOverlay = document.getElementById('mobile-overlay');
+            const sidebarClose = document.getElementById('sidebar-close');
+
+            function toggleMenu() {
+                if (sidebar) sidebar.classList.toggle('active');
+                if (mobileOverlay) mobileOverlay.classList.toggle('active');
+                
+                // Evita scroll no body quando menu está aberto
+                if (sidebar && sidebar.classList.contains('active')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            }
+
+            if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleMenu);
+            if (sidebarClose) sidebarClose.addEventListener('click', toggleMenu);
+            if (mobileOverlay) mobileOverlay.addEventListener('click', toggleMenu);
+        }
+
+        // -----------------------------------------------------------------
+        // FUNÇÃO: Atualizar Sidebar do Usuário
+        // -----------------------------------------------------------------
+        function updateSidebarUserInfo() {
+            const userInfoContainer = document.querySelector('.user-info');
+        
+            if (window.currentUser) {
+                const sidebarName = document.getElementById('sidebar-user-name');
+                const sidebarTitle = document.getElementById('sidebar-user-title');
+                const sidebarImg = document.getElementById('sidebar-user-img');
+                
+                if(sidebarName) sidebarName.textContent = window.currentUser.nome;
+                if(sidebarTitle) sidebarTitle.textContent = window.currentUser.cargo || 'Membro'; 
+                
+                if(sidebarImg && window.currentUser.fotoPerfil) {
+                     if(typeof window.getAvatarUrl === 'function') {
+                         sidebarImg.src = window.getAvatarUrl(window.currentUser.fotoPerfil);
+                     } else {
+                         sidebarImg.src = window.currentUser.fotoPerfil;
+                     }
+                }
+        
+                // Remove o loading
+                if (userInfoContainer) {
+                    userInfoContainer.classList.add('loaded');
+                }
+            }
+        }
 
         // -----------------------------------------------------------------
         // FUNÇÕES DE BUSCA E RENDERIZAÇÃO
