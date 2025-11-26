@@ -786,17 +786,48 @@ body {
   padding: 0.5rem 0.75rem;
   border-radius: 15px;
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centraliza verticalmente se for curto */
+  padding: 0.6rem 0.8rem;  /* Padding equilibrado */
 }
+
+/* Remove margem padrão e ajusta espaçamento interno */
+.comment-content {
+    margin-top: 0.25rem !important; /* Pequeno espaço entre nome e texto */
+    margin-bottom: 0 !important;    /* Remove espaço abaixo */
+    padding-top: 0 !important;      /* Garante que não haja padding extra no topo */
+    line-height: 1.4;               /* Melhora a leitura */
+}
+
+/* Estilo para o link do Avatar */
+.comment-avatar-link {
+    text-decoration: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: block; /* Garante que o link envolva a imagem corretamente */
+}
+
+/* Estilo para o link do Nome do Autor */
+.comment-author-link {
+    text-decoration: none;
+    color: inherit; /* Mantém a cor do tema */
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: inline-block;
+}
+
+.comment-author-link:hover {
+    text-decoration: underline; /* Sublinha ao passar o mouse */
+    color: var(--text-primary);
+}
+
+/* Ajuste fino para o corpo do comentário */
 
 .comment-author {
   font-size: 0.85rem;
   font-weight: 600;
-}
-
-.comment-content {
-  font-size: 0.9rem;
-  margin-top: 0.25rem;
-  word-wrap: break-word;
 }
 
 .comment.destacado .comment-body {
@@ -3369,4 +3400,40 @@ a.user-card-link:hover h4 {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     border-color: var(--text-tertiary);
+}
+
+/* =================================================================
+   ESTILO PARA COMENTÁRIOS LONGOS (LER MAIS)
+================================================================= */
+
+/* Classe utilitária para cortar o texto em 4 linhas */
+.comment-content.text-clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* Número de linhas visíveis antes de cortar */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Garante que quebras de linha sejam respeitadas */
+.comment-content {
+    white-space: pre-wrap; /* Mantém parágrafos originais */
+    word-break: break-word; /* Evita quebra de layout no mobile */
+}
+
+/* Botão de Ler Mais / Ler Menos */
+.comment-read-more-btn {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-top: 2px;
+    display: inline-block;
+}
+
+.comment-read-more-btn:hover {
+    text-decoration: underline;
 }
