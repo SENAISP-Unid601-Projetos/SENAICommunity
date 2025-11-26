@@ -1096,6 +1096,32 @@ function toggleModal(modalId, show) {
             },
 
             setupEventListeners() {
+
+                const projImageInput = document.getElementById('proj-imagem');
+const projImagePreview = document.getElementById('proj-image-preview');
+const defaultCover = "https://placehold.co/600x200/1e293b/cbd5e1?text=Adicionar+Capa+do+Projeto";
+
+if (projImageInput && projImagePreview) {
+    projImageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                projImagePreview.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        } else {
+            projImagePreview.src = defaultCover;
+        }
+    });
+}
+
+// 2. Adicionar lógica de Cancelar botão secundário
+const closeBtnAction = document.querySelector('.close-modal-btn-action');
+if (closeBtnAction) {
+    closeBtnAction.addEventListener('click', () => this.handlers.closeModal.call(this));
+}
+
                 const { openModalBtn, closeModalBtn, modalOverlay, form, searchInput, categoryFilter } =
                     this.elements;
 
