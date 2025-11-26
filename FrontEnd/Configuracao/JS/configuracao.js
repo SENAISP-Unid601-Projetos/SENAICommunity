@@ -1,13 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Aplica as configurações assim que a página carrega (puxando do global)
+    // 1. Aplica as configurações assim que a página carrega
     if (window.aplicarAcessibilidadeGlobal) {
         window.aplicarAcessibilidadeGlobal();
     }
 
-    // 2. Inicializa os botões visuais (marca o que está ativo e cria os eventos)
+    // 2. Inicializa os botões visuais da página
     initSettingsUI();
 
-    // 3. Configura o botão de Sair (Logout)
+    // 3. Inicializa o Menu Mobile (Sidebar) <-- NOVO
+    initSidebarMobile();
+
+    // 4. Configura o botão de Sair (Logout)
     const logoutBtn = document.querySelector('.logout-action-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
@@ -19,14 +22,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- CONTROLE DOS BOTÕES ---
+// --- NOVO: FUNÇÃO PARA O MENU MOBILE ---
+function initSidebarMobile() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('mobile-open');
+            if (overlay) overlay.classList.toggle('active');
+        });
+    }
+
+    // Fecha ao clicar no fundo escuro
+    if (overlay) {
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+        });
+    }
+}
+
+// --- CONTROLE DOS BOTÕES DE ACESSIBILIDADE ---
 
 function initSettingsUI() {
-    // Verifica o tamanho da fonte atual
     const currentSize = localStorage.getItem('fontSize') || 'medium';
     updateFontButtonsUI(currentSize);
 
-    // Liga cada botão (Switch) à sua função
     setupToggle('reduceMotion', 'reduce-motion-toggle');
     setupToggle('highContrast', 'high-contrast-toggle');
     setupToggle('readableFont', 'readable-font-toggle');
@@ -36,30 +59,19 @@ function initSettingsUI() {
 function setupToggle(key, elementId) {
     const toggle = document.getElementById(elementId);
     if (toggle) {
-        // 1. Marca o checkbox se já estiver salvo como 'true'
         toggle.checked = localStorage.getItem(key) === 'true';
-
-        // 2. Adiciona o evento de clique
         toggle.addEventListener('change', (e) => {
-            // Salva a nova preferência no navegador
             localStorage.setItem(key, e.target.checked);
-            
-            // Chama a função GLOBAL (que está no principal.js) para mudar a cor/estilo na hora
             if (window.aplicarAcessibilidadeGlobal) {
                 window.aplicarAcessibilidadeGlobal();
-            } else {
-                console.error("Função global de acessibilidade não encontrada!");
             }
         });
     }
 }
 
-// Essa função precisa ser global (window) pois é chamada no onclick do HTML (botões A A A)
 window.updateFontSize = (size) => {
     localStorage.setItem('fontSize', size);
     updateFontButtonsUI(size);
-    
-    // Chama a função GLOBAL para aplicar a mudança
     if (window.aplicarAcessibilidadeGlobal) {
         window.aplicarAcessibilidadeGlobal();
     }
