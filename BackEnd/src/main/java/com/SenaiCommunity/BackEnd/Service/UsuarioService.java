@@ -7,8 +7,10 @@ import com.SenaiCommunity.BackEnd.Entity.Amizade;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.AmizadeRepository;
+import com.SenaiCommunity.BackEnd.Repository.ProjetoMembroRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,11 +43,29 @@ public class UsuarioService {
     @Autowired
     private FiltroProfanidadeService filtroProfanidade;
 
+    @Autowired
+    private ProjetoMembroRepository projetoMembroRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    private UsuarioSaidaDTO criarDTOComContagem(Usuario usuario) {
+        UsuarioSaidaDTO dto = new UsuarioSaidaDTO(usuario);
+        long qtdProjetos = projetoMembroRepository.countByUsuarioId(usuario.getId());
+        dto.setTotalProjetos(qtdProjetos);
+        return dto;
+    }
+
+    public void notificarAtualizacaoPerfil(Usuario usuario) {
+        UsuarioSaidaDTO dto = criarDTOComContagem(usuario);
+        // Envia para o tópico específico deste usuário
+        messagingTemplate.convertAndSend("/topic/perfil/" + usuario.getId(), dto);
+    }
 
     public UsuarioSaidaDTO buscarUsuarioPorId(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o ID: " + id));
-        return new UsuarioSaidaDTO(usuario);
+        return criarDTOComContagem(usuario);
     }
 
     // Adicione este método na classe UsuarioService
@@ -68,7 +88,7 @@ public class UsuarioService {
      */
     public UsuarioSaidaDTO buscarUsuarioLogado(Authentication authentication) {
         Usuario usuario = getUsuarioFromAuthentication(authentication);
-        return new UsuarioSaidaDTO(usuario);
+        return criarDTOComContagem(usuario);
     }
 
     /**
@@ -96,7 +116,8 @@ public class UsuarioService {
         }
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
-        return new UsuarioSaidaDTO(usuarioAtualizado);
+        notificarAtualizacaoPerfil(usuarioAtualizado);
+        return criarDTOComContagem(usuarioAtualizado);
     }
 
     public UsuarioSaidaDTO atualizarFotoPerfil(Authentication authentication, MultipartFile foto) throws IOException {
@@ -109,6 +130,41 @@ public class UsuarioService {
         usuario.setFotoPerfil(urlCloudinary);
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+        notificarAtualizacaoPerfil(usuarioAtualizado);
+        return criarDTOComContagem(usuarioAtualizado);
+
+    }
+
+    public UsuarioSaidaDTO atualizarFotoFundo(Authentication authentication, MultipartFile foto) throws IOException {
+        if (foto == null || foto.isEmpty()) {
+            throw new IllegalArgumentException("Arquivo de fundo não pode ser vazio.");
+        }
+
+        Usuario usuario = getUsuarioFromAuthentication(authentication); // Método padrão para buscar usuário pelo auth
+
+        // 1. Upload para o Cloudinary
+        String urlCloudinary = midiaService.upload(foto);
+
+        // 2. Deletar foto antiga do Cloudinary (se existir e não for a padrão local)
+        String oldFundo = usuario.getFotoFundo();
+        // Verifica se a URL antiga é do Cloudinary/externa para deletar
+        if (oldFundo != null && (oldFundo.contains("cloudinary") || oldFundo.startsWith("http"))) {
+            try {
+                midiaService.deletar(oldFundo);
+            } catch (Exception e) {
+                // Loga o erro, mas permite que o processo continue
+                System.err.println("AVISO: Falha ao deletar fundo antigo do Cloudinary: " + e.getMessage());
+            }
+        }
+
+        // 3. Salvar nova URL no banco de dados
+        usuario.setFotoFundo(urlCloudinary);
+
+        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+
+        notificarAtualizacaoPerfil(usuarioAtualizado);
+
+        // 4. Retornar DTO atualizado
         return new UsuarioSaidaDTO(usuarioAtualizado);
     }
 

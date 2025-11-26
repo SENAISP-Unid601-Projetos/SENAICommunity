@@ -128,10 +128,8 @@ async function initGlobal() {
 
     // 2. Atualiza a UI (sidebar/topbar)
     updateUIWithUserData(currentUser);
-
-    // 3. Buscar contagem de projetos do usuário
-    await fetchUserProjectsCount();
-
+    
+   
     // 4. Conecta ao WebSocket
     connectWebSocket(); // Define window.stompClient
 
@@ -153,27 +151,6 @@ async function initGlobal() {
 
 // --- FUNÇÕES GLOBAIS (Auth, UI, WebSocket, Notificações) ---
 
-// NOVA FUNÇÃO: Buscar contagem de projetos do usuário
-async function fetchUserProjectsCount() {
-  try {
-    const response = await axios.get(`${backendUrl}/projetos`);
-    const allProjects = response.data;
-    
-    // Filtra os projetos em que o usuário atual é membro
-    const myProjects = allProjects.filter(proj => 
-      proj.membros && proj.membros.some(membro => membro.usuarioId === currentUser.id)
-    );
-    
-    if (globalElements.projectsCount) {
-      globalElements.projectsCount.textContent = myProjects.length;
-    }
-  } catch (error) {
-    console.error("Erro ao buscar projetos do usuário:", error);
-    if (globalElements.projectsCount) {
-      globalElements.projectsCount.textContent = "0";
-    }
-  }
-}
 
 function updateUIWithUserData(user) {
   if (!user) return;
@@ -201,6 +178,12 @@ function updateUIWithUserData(user) {
       user.tipoUsuario || "Membro da Comunidade";
   if (globalElements.sidebarUserImg)
     globalElements.sidebarUserImg.src = userImage;
+
+  const projectsCountElement = document.getElementById("projects-count");
+  if (projectsCountElement) {
+      // Usa o valor vindo do Backend ou 0 se for nulo
+      projectsCountElement.textContent = user.totalProjetos || 0;
+  }
 
   // Atualiza a imagem do criador de post (se existir na página)
   const postCreatorImg = document.getElementById("post-creator-img");

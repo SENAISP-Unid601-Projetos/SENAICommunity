@@ -16,9 +16,12 @@ public class UsuarioSaidaDTO {
     private String email;
     private String tipoUsuario;
     private String urlFotoPerfil;
+    private String urlFotoFundo;
     private String bio;
     private LocalDate dataNascimento;
     private LocalDateTime dataCadastro;
+    private Long totalProjetos;
+
 
     public UsuarioSaidaDTO(Usuario usuario) {
         this.id = usuario.getId();
@@ -30,12 +33,17 @@ public class UsuarioSaidaDTO {
         this.dataCadastro = usuario.getDataCadastro();
 
         String nomeFoto = usuario.getFotoPerfil();
-
         if (nomeFoto != null && !nomeFoto.isBlank()) {
-
             this.urlFotoPerfil = nomeFoto;
         } else {
             this.urlFotoPerfil = "/images/default-avatar.jpg";
         }
+        String nomeFundo = usuario.getFotoFundo();
+        if (nomeFundo != null && !nomeFundo.isBlank()) {
+            this.urlFotoFundo = nomeFundo;
+        } else {
+            this.urlFotoFundo = "/images/default-background.jpg";
+        }
+        this.totalProjetos = 0L;
     }
 }

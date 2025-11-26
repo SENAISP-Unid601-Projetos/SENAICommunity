@@ -49,6 +49,176 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+       // --- LÓGICA DE TEMPO REAL DO PERFIL ---
+
+// 1. Função para gerenciar atualizações via WebSocket
+// --- LÓGICA DE TEMPO REAL DO PERFIL (CORRIGIDA) ---
+
+// 1. Atualiza a interface gráfica do topo do perfil (Imagem, Bio, Contadores)
+function updateProfilePageUI(user) {
+    console.log("Atualizando header do perfil em tempo real:", user);
+
+    // Atualiza Imagem
+    if (elements.profilePicImg) {
+        elements.profilePicImg.src = window.getAvatarUrl(user.urlFotoPerfil);
+    }
+    
+    // Atualiza Textos Básicos
+    if (elements.profileName) elements.profileName.textContent = user.nome;
+    if (elements.profileTitle) elements.profileTitle.textContent = user.tipoUsuario || 'Usuário';
+    if (elements.profileBio) elements.profileBio.textContent = user.bio || "Nenhuma bio informada.";
+    if (elements.profileEmail) elements.profileEmail.textContent = user.email;
+
+    // Atualiza Data de Nascimento
+    if (elements.profileDob && user.dataNascimento) {
+        const dob = new Date(user.dataNascimento);
+        const userTimezoneOffset = dob.getTimezoneOffset() * 60000;
+        const adjustedDate = new Date(dob.getTime() + userTimezoneOffset);
+        elements.profileDob.textContent = new Intl.DateTimeFormat('pt-BR').format(adjustedDate);
+    }
+
+    // Atualiza Contadores (Projetos e Amigos)
+    if (elements.tabProjectsCount) {
+        // Usa o valor novo ou mantém o atual se vier nulo
+        const novoTotal = user.totalProjetos !== undefined ? user.totalProjetos : elements.tabProjectsCount.textContent;
+        elements.tabProjectsCount.textContent = novoTotal;
+    }
+    
+    // Se você tiver o campo totalAmigos no DTO, descomente abaixo:
+    // if (elements.tabFriendsCount && user.totalAmigos !== undefined) {
+    //    elements.tabFriendsCount.textContent = user.totalAmigos;
+    // }
+}
+
+// 2. Gerencia atualizações do FEED do perfil (Postagens novas/removidas)
+function handleProfileFeedUpdate(payload) {
+    if (!profileUser) return;
+    
+    // Só atualiza se a ação for do dono do perfil que estamos vendo
+    const autorIdDoPayload = payload.autorId || payload.postagem?.autorId;
+    const isOwnerAction = String(autorIdDoPayload) === String(profileUser.id);
+    
+    if (!isOwnerAction) return; 
+
+    const postId = payload.postagem?.id || payload.id || payload.postagemId;
+
+    if (payload.tipo === 'CRIACAO' && payload.postagem) {
+        const newPostElement = createProfilePostElement(payload.postagem);
+        const emptyState = elements.postsContainer.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+        
+        elements.postsContainer.prepend(newPostElement);
+        newPostElement.style.animation = "flash-animation 1.5s ease-out";
+    } else if (payload.tipo === 'EDICAO' && postId) {
+        if (typeof window.fetchAndReplacePost === 'function') window.fetchAndReplacePost(postId);
+    } else if (payload.tipo === 'REMOCAO' && postId) {
+        const postElement = document.getElementById(`post-${postId}`);
+        if (postElement) postElement.remove();
+    }
+}
+
+// 3. Configura todas as inscrições do WebSocket para o Perfil
+function setupProfileWebSocketListener() {
+    const subscribeToTopics = (client) => {
+        // A. Inscreve no Feed Público (para atualizar posts)
+        client.subscribe("/topic/publico", (message) => {
+            handleProfileFeedUpdate(JSON.parse(message.body));
+        });
+
+        // B. Inscreve nos Dados do Perfil (Header, Bio, Contadores)
+        // Pega o ID da URL ou do usuário logado
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetId = urlParams.get('id') || (currentUser ? currentUser.id : null);
+
+        if (targetId) {
+            console.log(`Inscrito para atualizações do perfil ID: ${targetId}`);
+            client.subscribe(`/topic/perfil/${targetId}`, (message) => {
+                const updatedUserDTO = JSON.parse(message.body);
+                updateProfilePageUI(updatedUserDTO);
+                
+                // Se a atualização foi no próprio usuário logado, atualiza também a sidebar/topbar
+                if (currentUser && String(updatedUserDTO.id) === String(currentUser.id)) {
+                    // Função global do principal.js
+                    if(typeof window.updateUIWithUserData === 'function') {
+                        window.updateUIWithUserData(updatedUserDTO);
+                    }
+                }
+            });
+        }
+    };
+
+    // Tenta usar conexão existente ou aguarda evento
+    if (window.stompClient && window.stompClient.connected) {
+        subscribeToTopics(window.stompClient);
+    } else {
+        document.addEventListener("webSocketConnected", (e) => {
+            subscribeToTopics(e.detail.stompClient);
+        });
+    }
+}
+
+function subscribeToProfileUpdates(profileId) {
+    window.stompClient.subscribe(`/topic/perfil/${profileId}`, (message) => {
+        const updatedUser = JSON.parse(message.body);
+        updateProfilePageUI(updatedUser);
+    });
+}
+
+// ATUALIZA A TELA COM OS IDS DO SEU HTML
+function updateProfilePageUI(user) {
+    console.log("Atualizando dados do perfil em tempo real...", user);
+
+    // 1. Imagem de Perfil
+    const profileImg = document.getElementById('profile-pic-img');
+    if (profileImg) {
+        profileImg.src = window.getAvatarUrl(user.urlFotoPerfil);
+    }
+
+    const bannerEl = document.getElementById('profile-banner');
+    if (bannerEl && user.urlFotoFundo) {
+        bannerEl.style.backgroundImage = `url('${window.getAvatarUrl(user.urlFotoFundo)}')`;
+    }
+
+    // 2. Nome e Título (Tipo de Usuário)
+    const nameEl = document.getElementById('profile-name');
+    if (nameEl) nameEl.textContent = user.nome;
+
+    const titleEl = document.getElementById('profile-title');
+    if (titleEl) titleEl.textContent = user.tipoUsuario || 'Usuário';
+
+    // 3. Bio
+    const bioEl = document.getElementById('profile-bio');
+    if (bioEl) {
+        bioEl.textContent = user.bio || "Nenhuma bio informada.";
+    }
+
+    // 4. Metadados (Email e Data de Nascimento)
+    const emailEl = document.getElementById('profile-email');
+    if (emailEl) emailEl.textContent = user.email;
+
+    const dobEl = document.getElementById('profile-dob');
+    if (dobEl && user.dataNascimento) {
+        // Formata a data se vier como string ISO (YYYY-MM-DD) ou array
+        const dateObj = new Date(user.dataNascimento);
+        dobEl.textContent = dateObj.toLocaleDateString('pt-BR');
+    }
+
+    // 5. Contadores nas Abas (Tabs)
+    // Contador de Projetos
+    const projectsCountEl = document.getElementById('tab-projects-count');
+    if (projectsCountEl) {
+        // Usa o valor enviado pelo socket ou mantém o atual se undefined
+        projectsCountEl.textContent = user.totalProjetos !== undefined ? user.totalProjetos : 0;
+    }
+
+    // Contador de Amigos (se você implementou no backend)
+    const friendsCountEl = document.getElementById('tab-friends-count');
+    if (friendsCountEl && user.totalAmigos !== undefined) {
+        friendsCountEl.textContent = user.totalAmigos;
+    }
+}
+
+
   // --- CARROSSEL E MÍDIA ---
   window.openMediaViewer = (mediaUrls, startIndex = 0) => {
     const modal = document.getElementById('media-viewer-modal');
@@ -194,6 +364,9 @@ document.addEventListener("DOMContentLoaded", () => {
     setProfileLoading(true);
     setupMobileMenu();
     setupProfileMobileMenu();
+    setupEditProfileForm();
+    setupProfileWebSocketListener();
+
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const profileUserId = urlParams.get("id");
@@ -244,6 +417,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elements.profileBio) elements.profileBio.textContent = user.bio || "Nenhuma bio informada.";
     if (elements.profileEmail) elements.profileEmail.textContent = user.email;
 
+    const bannerEl = document.getElementById('profile-banner');
+    if (bannerEl) {
+        // Pega a URL do DTO ou usa o padrão
+        let bgUrl = user.urlFotoFundo || `${backendUrl}/images/default-background.jpg`;
+        
+        // Verifica se precisa do prefixo do backend (se for local)
+        if (!bgUrl.startsWith('http') && !bgUrl.startsWith('/')) {
+             bgUrl = `${backendUrl}/${bgUrl}`;
+        } else if (bgUrl.startsWith('/') && !bgUrl.startsWith('http')) {
+             bgUrl = `${backendUrl}${bgUrl}`;
+        }
+
+        bannerEl.style.backgroundImage = `url('${bgUrl}')`;
+    }
+
     if (elements.profileDob) {
       if (user.dataNascimento) {
         const dob = new Date(user.dataNascimento);
@@ -273,6 +461,133 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
+
+// Localize a função setupEditProfileForm() e substitua por esta:
+function setupEditProfileForm() {
+    const editForm = document.getElementById('edit-profile-form');
+    const bgInput = document.getElementById('edit-profile-bg-input');
+    const bgPreview = document.getElementById('bg-preview-name');
+    
+    if(bgInput) {
+        bgInput.addEventListener('change', () => {
+            if(bgInput.files.length > 0) bgPreview.textContent = bgInput.files[0].name;
+        });
+    }
+
+    if (!editForm) return;
+
+    editForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); 
+
+        const saveBtn = editForm.querySelector('button[type="submit"]');
+        const originalBtnText = saveBtn.innerHTML;
+
+        // Estado de carregamento
+        saveBtn.disabled = true;
+        saveBtn.classList.add('btn-loading');
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+        try {
+            const formData = new FormData();
+            
+            // Pega os valores
+            const novoNome = document.getElementById('edit-profile-name').value;
+            const novaBio = document.getElementById('edit-profile-bio').value;
+            const novaData = document.getElementById('edit-profile-dob').value;
+            
+            formData.append('nome', novoNome);
+            formData.append('bio', novaBio);
+            formData.append('dataNascimento', novaData);
+            
+            const password = document.getElementById('edit-profile-password').value;
+            if (password) formData.append('senha', password);
+
+            const fileInput = document.getElementById('edit-profile-pic-input');
+            if (fileInput.files.length > 0) {
+                formData.append('fotoPerfil', fileInput.files[0]);
+            }
+
+        if (bgInput && bgInput.files.length > 0) {
+           const bgFormData = new FormData();
+           bgFormData.append('file', bgInput.files[0]); // Nome do param no Controller
+           await axios.put(`${backendUrl}/usuarios/fundo`, bgFormData, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('jwt_token')}` }
+           });
+       }
+            // Envia para o Backend
+            const response = await axios.put(`${backendUrl}/usuarios/atualizar`, formData, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                }
+            });
+
+            const usuarioAtualizado = response.data;
+
+            // --- ATUALIZAÇÃO EM TEMPO REAL (DOM) ---
+            
+            // 1. Atualiza variáveis globais
+            currentUser = usuarioAtualizado;
+            profileUser = usuarioAtualizado; // Assumindo que estamos no próprio perfil
+
+            // 2. Atualiza elementos da página
+            if (elements.profileName) elements.profileName.textContent = usuarioAtualizado.nome;
+            if (elements.profileBio) elements.profileBio.textContent = usuarioAtualizado.bio || "Nenhuma bio informada.";
+            
+            // 3. Atualiza Data de Nascimento
+            if (elements.profileDob && usuarioAtualizado.dataNascimento) {
+                 const dob = new Date(usuarioAtualizado.dataNascimento);
+                 const userTimezoneOffset = dob.getTimezoneOffset() * 60000;
+                 const adjustedDate = new Date(dob.getTime() + userTimezoneOffset);
+                 elements.profileDob.textContent = new Intl.DateTimeFormat('pt-BR').format(adjustedDate);
+            }
+
+            // 4. Atualiza Foto de Perfil (se mudou)
+            if (fileInput.files.length > 0 && usuarioAtualizado.urlFotoPerfil) {
+                const novaFotoUrl = usuarioAtualizado.urlFotoPerfil.startsWith('http') 
+                    ? usuarioAtualizado.urlFotoPerfil 
+                    : `${backendUrl}${usuarioAtualizado.urlFotoPerfil}`;
+                
+                // Atualiza imagem grande do perfil
+                if (elements.profilePicImg) elements.profilePicImg.src = novaFotoUrl;
+                // Atualiza avatar da sidebar
+                const sidebarImg = document.getElementById("sidebar-user-img");
+                if (sidebarImg) sidebarImg.src = novaFotoUrl;
+                // Atualiza avatar do topo
+                const topbarImg = document.getElementById("topbar-user-img");
+                if (topbarImg) topbarImg.src = novaFotoUrl;
+            }
+
+            if (bgInput && bgInput.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profile-banner').style.backgroundImage = `url('${e.target.result}')`;
+            }
+            reader.readAsDataURL(bgInput.files[0]);
+       }
+
+            // Feedback Visual
+            if (window.showNotification) {
+                window.showNotification('Perfil atualizado com sucesso!', 'success');
+            } else {
+                alert('Perfil atualizado!');
+            }
+
+            // Fecha o modal sem reload
+            document.getElementById('edit-profile-modal').style.display = 'none';
+
+        } catch (error) {
+            console.error("Erro ao atualizar perfil:", error);
+            if (window.showNotification) {
+                window.showNotification('Erro ao salvar alterações.', 'error');
+            }
+        } finally {
+            // Restaura o botão
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('btn-loading');
+            saveBtn.innerHTML = originalBtnText;
+        }
+    });
+}
 
   async function fetchProfileFriends(userId) {
     try {
@@ -572,4 +887,6 @@ function renderProfileProjects(projects) {
               });
           }
       }, 100);
+
+ 
   };

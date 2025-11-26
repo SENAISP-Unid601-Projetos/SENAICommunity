@@ -124,7 +124,8 @@ html, body {
     border: 3px solid var(--bg-tertiary);
 }
 
-.sidebar .status.online {
+/* Correto: afeta apenas a foto grande do usuário */
+.sidebar .avatar-container .status.online {
     position: absolute;
     bottom: 5px;
     right: 5px;
@@ -1091,4 +1092,24 @@ html, body {
     .pm-footer { padding: 1rem 1.5rem; }
     
     .pm-btn { width: 100%; justify-content: center; }
+}
+
+.profile-banner {
+    width: 100%;
+    height: var(--banner-height);
+    background-color: var(--bg-quaternary);
+    position: relative;
+    /* Adicione isto para garantir o posicionamento da imagem */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 0.3s ease-in-out;
+}
+
+/* Opcional: Adicionar um gradiente escuro por cima da imagem para o texto contrastar melhor se houver texto em cima */
+.profile-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4));
 }
