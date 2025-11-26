@@ -136,8 +136,6 @@
                     <i class="fas fa-user-friends"></i>
                     <span class="menu-text">Minhas Conexões</span>
                 </a>
-
-
             </nav>
 
             <div class="sidebar-widget">
@@ -161,8 +159,8 @@
 
             <div class="profile-page">
                 <div class="profile-header">
-                    <div class="profile-banner">
-                        <!-- Banner será carregado via JS se existir -->
+                    <div class="profile-banner" id="profile-banner">
+                        <!-- Banner será carregado via JS -->
                     </div>
                     <div class="profile-details">
                         <div class="profile-picture-container">
@@ -227,7 +225,7 @@
         </main>
     </div>
 
-    <!-- Modais (mantidos do código original) -->
+    <!-- Modais -->
     <div id="edit-post-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -304,6 +302,7 @@
         </div>
     </div>
 
+    <!-- Modal de Edição de Perfil Corrigido -->
     <div id="edit-profile-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -321,15 +320,24 @@
                     <input type="file" id="edit-profile-pic-input" accept="image/*" style="display: none;">
                 </div>
 
+                <!-- NOVA SEÇÃO: Preview da Foto de Fundo -->
                 <div class="form-group">
-                    <label class="file-label" style="cursor: pointer; display: block; margin-bottom: 10px;">
-                        <i class="fas fa-image"></i> Alterar Foto de Capa (Background)
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500;">
+                        Foto de Capa (Background)
+                    </label>
+
+                    <label class="cover-upload-wrapper" for="edit-profile-bg-input">
+                        <div class="cover-preview-container">
+                            <img id="bg-preview-img" src="" alt="Capa" style="display: none;">
+
+                            <div class="cover-upload-overlay" id="cover-upload-overlay">
+                                <i class="fas fa-camera"></i>
+                                <span id="cover-upload-text">Alterar Capa</span>
+                            </div>
+                        </div>
                         <input type="file" id="edit-profile-bg-input" accept="image/*" style="display: none;">
                     </label>
-                    <div id="bg-preview-name" style="font-size: 0.8rem; color: var(--text-secondary);"></div>
-                </div>
-
-                <div class="profile-pic-editor">
                 </div>
 
                 <div class="form-group">

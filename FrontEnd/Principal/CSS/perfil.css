@@ -226,18 +226,24 @@ html, body {
     width: 100%;
 }
 
-/* Banner */
+/* Banner - CORRIGIDO */
 .profile-banner {
     width: 100%;
     height: var(--banner-height);
     background-color: var(--bg-quaternary);
     position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 0.3s ease-in-out;
 }
 
-.profile-banner img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+/* Gradiente escuro para melhor contraste do texto */
+.profile-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4));
 }
 
 /* Detalhes */
@@ -776,15 +782,121 @@ html, body {
 }
 
 /* =================================================================
+   MODAL DE EDIÇÃO DE PERFIL - PREVIEW DA FOTO DE FUNDO
+================================================================= */
+
+.modal-content {
+  background-color: var(--bg-secondary);
+  padding: 2rem;
+  border-radius: var(--card-radius);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--shadow);
+  
+  /* --- ADICIONE ESTAS LINHAS --- */
+  max-height: 90vh; /* Limita a altura a 90% da tela */
+  overflow-y: auto; /* Cria barra de rolagem se o conteúdo for maior */
+  display: flex;    /* Garante organização */
+  flex-direction: column;
+  position: relative; /* Para garantir contexto */
+  /* ----------------------------- */
+}
+
+/* Opcional: Estilizar a barra de rolagem do modal para ficar bonita */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+    background-color: var(--bg-quaternary);
+    border-radius: 4px;
+}
+
+/* Container principal do preview */
+.bg-preview-container {
+    margin-top: 10px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    display: none;
+}
+
+.bg-preview-container.active {
+    display: block;
+    animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Wrapper da imagem */
+.bg-preview-wrapper {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+}
+
+/* Imagem do preview */
+.bg-preview-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+/* Overlay informativo */
+.bg-preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(2px);
+}
+
+.bg-preview-wrapper:hover .bg-preview-overlay {
+    opacity: 1;
+}
+
+.bg-preview-overlay i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.bg-preview-overlay span {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Efeito hover na imagem */
+.bg-preview-wrapper:hover img {
+    transform: scale(1.05);
+}
+
+/* =================================================================
    MODAL MODERNO DE DETALHES DO PROJETO (PERFIL)
 ================================================================= */
 
 /* Overlay Fundo Escuro */
-/* =================================================================
-   MODAL MODERNO DE DETALHES DO PROJETO (CORRIGIDO)
-================================================================= */
-
-/* Overlay */
 .project-modal-overlay {
     position: fixed;
     top: 0;
@@ -1094,22 +1206,73 @@ html, body {
     .pm-btn { width: 100%; justify-content: center; }
 }
 
-.profile-banner {
+/* --- UPLOAD DE CAPA NO MODAL --- */
+.cover-upload-wrapper {
+    display: block;
     width: 100%;
-    height: var(--banner-height);
-    background-color: var(--bg-quaternary);
+    height: 180px; /* Altura fixa para o banner */
+    border-radius: 12px;
+    overflow: hidden;
     position: relative;
-    /* Adicione isto para garantir o posicionamento da imagem */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transition: background-image 0.3s ease-in-out;
+    cursor: pointer;
+    border: 2px dashed var(--border-color);
+    background-color: var(--bg-tertiary);
+    transition: all 0.2s ease;
 }
 
-/* Opcional: Adicionar um gradiente escuro por cima da imagem para o texto contrastar melhor se houver texto em cima */
-.profile-banner::before {
-    content: '';
+.cover-upload-wrapper:hover {
+    border-color: var(--accent-primary);
+}
+
+.cover-preview-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Imagem de preview (quando existir) */
+#bg-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Overlay com ícone e texto */
+.cover-upload-overlay {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4));
+    inset: 0; /* Top, left, right, bottom = 0 */
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    transition: background 0.2s;
+}
+
+.cover-upload-overlay i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.cover-upload-overlay span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* Se já tiver imagem, o overlay fica transparente e só aparece no hover */
+#bg-preview-img[src]:not([src=""]) + .cover-upload-overlay {
+    background-color: transparent;
+    opacity: 0;
+}
+
+.cover-upload-wrapper:hover #bg-preview-img[src]:not([src=""]) + .cover-upload-overlay {
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 1;
 }

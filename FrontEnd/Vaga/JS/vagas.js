@@ -10,14 +10,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const backendUrl = window.backendUrl;
         const showNotification = window.showNotification; 
 
-        // --- SELEÇÃO DE ELEMENTOS ---
+        // --- SELEÇÃO DE ELEMENTOS (Atualizada para incluir Mobile) ---
         const elements = {
             vagasListContainer: document.querySelector('.vagas-list'),
             createVagaBtn: document.getElementById('btn-publicar-vaga'),
-            searchInput: document.getElementById("search-input"), 
+            searchInput: document.getElementById("search-input"), // Input do Header (se houver lógica específica)
+            searchInputVagas: document.getElementById("search-input-vagas"), // Input da página de vagas
             filterTipo: document.getElementById("filter-tipo"),
             filterLocal: document.getElementById("filter-local"),
             filterNivel: document.getElementById("filter-nivel"),
+            
+            // Elementos Mobile (Igual ao amizades.js)
+            mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
+            sidebar: document.getElementById('sidebar'),
+            mobileOverlay: document.getElementById('mobile-overlay'),
+            sidebarClose: document.getElementById('sidebar-close')
         };
         
         // --- SELEÇÃO DE ELEMENTOS (Modais) ---
@@ -41,12 +48,89 @@ document.addEventListener("DOMContentLoaded", () => {
         const nivelMap = { 'TODOS': '', 'JUNIOR': 'Júnior', 'PLENO': 'Pleno', 'SENIOR': 'Sênior' };
 
         // -----------------------------------------------------------------
+        // FUNÇÕES DE RESPONSIVIDADE (Copiado de amizades.js)
+        // -----------------------------------------------------------------
+        function initResponsiveFeatures() {
+            if (elements.mobileMenuToggle) {
+                elements.mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+            }
+            if (elements.sidebarClose) {
+                elements.sidebarClose.addEventListener('click', toggleMobileMenu);
+            }
+            if (elements.mobileOverlay) {
+                elements.mobileOverlay.addEventListener('click', toggleMobileMenu);
+            }
+
+            // Fecha o menu ao clicar em um link da sidebar
+            const menuLinks = document.querySelectorAll('.menu-item');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 1024) { // Ajustado para coincidir com o CSS mobile
+                        toggleMobileMenu();
+                    }
+                });
+            });
+
+            window.addEventListener('resize', handleResize);
+        }
+
+        function toggleMobileMenu() {
+            if (elements.sidebar) elements.sidebar.classList.toggle('active');
+            if (elements.mobileOverlay) elements.mobileOverlay.classList.toggle('active');
+            
+            // Evita scroll no body quando menu está aberto
+            if (elements.sidebar && elements.sidebar.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        function handleResize() {
+            // Se a tela for grande, garante que o menu lateral volte ao normal e o overlay suma
+            if (window.innerWidth > 1024) {
+                if (elements.sidebar) elements.sidebar.classList.remove('active');
+                if (elements.mobileOverlay) elements.mobileOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // -----------------------------------------------------------------
+        // FUNÇÃO: Atualizar Sidebar do Usuário
+        // -----------------------------------------------------------------
+        function updateSidebarUserInfo() {
+            const userInfoContainer = document.querySelector('.user-info');
+        
+            if (window.currentUser) {
+                const sidebarName = document.getElementById('sidebar-user-name');
+                const sidebarTitle = document.getElementById('sidebar-user-title');
+                const sidebarImg = document.getElementById('sidebar-user-img');
+                
+                if(sidebarName) sidebarName.textContent = window.currentUser.nome;
+                if(sidebarTitle) sidebarTitle.textContent = window.currentUser.cargo || 'Membro'; 
+                
+                if(sidebarImg && window.currentUser.fotoPerfil) {
+                     if(typeof window.getAvatarUrl === 'function') {
+                         sidebarImg.src = window.getAvatarUrl(window.currentUser.fotoPerfil);
+                     } else {
+                         sidebarImg.src = window.currentUser.fotoPerfil;
+                     }
+                }
+        
+                // Remove o loading
+                if (userInfoContainer) {
+                    userInfoContainer.classList.add('loaded');
+                }
+            }
+        }
+
+        // -----------------------------------------------------------------
         // FUNÇÕES DE BUSCA E RENDERIZAÇÃO
         // -----------------------------------------------------------------
         
         async function fetchVagas() {
             if (!elements.vagasListContainer) return;
-            elements.vagasListContainer.innerHTML = '<p class="sem-vagas" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Carregando vagas...</p>';
+            elements.vagasListContainer.innerHTML = '<div class="results-loading"><div class="loading-spinner"></div><p>Carregando vagas...</p></div>';
             try {
                 const response = await axios.get(`${backendUrl}/api/vagas`);
                 allVagas = response.data; // Armazena no cache
@@ -113,7 +197,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         function filterVagas() {
-            const searchTerm = elements.searchInput.value.toLowerCase();
+            // Usa o input de busca específico da página de vagas, se existir
+            const searchInput = elements.searchInputVagas || elements.searchInput;
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            
             const tipo = elements.filterTipo.value;
             const local = elements.filterLocal.value;
             const nivel = elements.filterNivel.value;
@@ -312,7 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // -----------------------------------------------------------------
         function setupVagasEventListeners() {
             // Listeners dos filtros
-            if (elements.searchInput) elements.searchInput.addEventListener('input', filterVagas);
+            if (elements.searchInputVagas) elements.searchInputVagas.addEventListener('input', filterVagas);
             if (elements.filterTipo) elements.filterTipo.addEventListener('change', filterVagas);
             if (elements.filterLocal) elements.filterLocal.addEventListener('change', filterVagas);
             if (elements.filterNivel) elements.filterNivel.addEventListener('change', filterVagas);
@@ -350,10 +437,15 @@ document.addEventListener("DOMContentLoaded", () => {
         // INICIALIZAÇÃO DA PÁGINA
         // -----------------------------------------------------------------
         
-        // Verifica permissão para mostrar o botão
+        // 1. ATUALIZA A SIDEBAR (Perfil)
+        updateSidebarUserInfo();
+
+        // 2. INICIALIZA O MENU MOBILE (Agora usando a função robusta)
+        initResponsiveFeatures();
+
+        // Verifica permissão para mostrar o botão de criar vaga
         if (currentUser) { 
             const userRoles = currentUser.tipoUsuario ? [currentUser.tipoUsuario] : [];
-            // Se for Admin ou Professor, mostra o botão do Header
             if ((userRoles.includes('ADMIN') || userRoles.includes('PROFESSOR')) && elements.createVagaBtn) {
                 elements.createVagaBtn.style.display = 'flex'; 
             }

@@ -14,6 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("theme", newTheme);
     updateThemeIcon(newTheme);
   }
+
+  
+
   function updateThemeIcon(theme) {
     const themeToggleIcon = document.querySelector(".theme-toggle i");
     if (themeToggleIcon) {
@@ -189,6 +192,23 @@ function updateUIWithUserData(user) {
   const postCreatorImg = document.getElementById("post-creator-img");
   if (postCreatorImg) postCreatorImg.src = userImage;
 }
+
+// Função global para expandir/recolher comentários
+window.toggleCommentReadMore = (btn) => {
+    // O botão é irmão (sibling) do parágrafo .comment-content
+    // Estrutura: .comment-body > .comment-author, .comment-content, button
+    const commentParagraph = btn.previousElementSibling; 
+    
+    if (commentParagraph && commentParagraph.classList.contains('text-clamped')) {
+        // Expandir
+        commentParagraph.classList.remove('text-clamped');
+        btn.textContent = "Ler menos";
+    } else if (commentParagraph) {
+        // Recolher
+        commentParagraph.classList.add('text-clamped');
+        btn.textContent = "Ler mais";
+    }
+};
 
 function connectWebSocket() {
   const socket = new SockJS(`${backendUrl}/ws`);
@@ -723,59 +743,7 @@ function setupGlobalEventListeners() {
       if (file)
         globalElements.editProfilePicPreview.src = URL.createObjectURL(file);
     });
-  if (globalElements.editProfileForm)
-    globalElements.editProfileForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      // Lógica de update de foto
-      if (globalElements.editProfilePicInput.files[0]) {
-        const formData = new FormData();
-        formData.append("foto", globalElements.editProfilePicInput.files[0]);
-        try {
-          const response = await axios.put(
-            `${backendUrl}/usuarios/me/foto`,
-            formData
-          );
-          currentUser = response.data;
-          updateUIWithUserData(currentUser);
-          showNotification("Foto de perfil atualizada!", "success");
-        } catch (error) {
-          let errorMessage = "Erro ao atualizar a foto.";
-            if (error.response && error.response.data && error.response.data.message) {
-                errorMessage = error.response.data.message;
-            }
-            showNotification(errorMessage, "error");
-        }
-      }
-      // Lógica de update de dados
-      const password = globalElements.editProfilePassword.value;
-      if (
-        password &&
-        password !== globalElements.editProfilePasswordConfirm.value
-      ) {
-        showNotification("As novas senhas não coincidem.", "error");
-        return;
-      }
-      const updateData = {
-        nome: globalElements.editProfileName.value,
-        bio: globalElements.editProfileBio.value,
-        dataNascimento: globalElements.editProfileDob.value
-          ? new Date(globalElements.editProfileDob.value).toISOString()
-          : null,
-        senha: password || null,
-      };
-      try {
-        const response = await axios.put(
-          `${backendUrl}/usuarios/me`,
-          updateData
-        );
-        currentUser = response.data;
-        updateUIWithUserData(currentUser);
-        showNotification("Perfil atualizado com sucesso!", "success");
-        globalElements.editProfileModal.style.display = "none";
-      } catch (error) {
-        showNotification("Erro ao atualizar o perfil.", "error");
-      }
-    });
+
 
   // Deletar conta
   if (globalElements.cancelDeleteAccountBtn)
@@ -819,48 +787,92 @@ function setupGlobalEventListeners() {
 
 window.createCommentElement = (comment, post, allComments) => {
     const commentAuthorName = comment.autor?.nome || comment.nomeAutor || "Usuário";
-    const commentAuthorAvatar = window.getAvatarUrl(comment.autor?.urlFotoPerfil || comment.urlFotoAutor);
+    
+    // URL da foto
+    const rawAvatarUrl = comment.autor?.urlFotoPerfil || comment.urlFotoAutor;
+    const commentAuthorAvatar = window.getAvatarUrl(rawAvatarUrl);
+    
+    // IDs para lógica e link
     const autorIdDoComentario = comment.autor?.id || comment.autorId;
     const autorIdDoPost = post.autor?.id || post.autorId;
-    const isAuthor = window.currentUser && autorIdDoComentario == window.currentUser.id;
-    const isPostOwner = window.currentUser && autorIdDoPost == window.currentUser.id;
+    
+    // Link para o perfil
+    const profileLink = `perfil.html?id=${autorIdDoComentario}`;
+
+    const isAuthor = window.currentUser && String(autorIdDoComentario) === String(window.currentUser.id);
+    const isPostOwner = window.currentUser && String(autorIdDoPost) === String(window.currentUser.id);
+    
     let optionsMenu = "";
 
+    // Menu de opções (Editar/Excluir)
     if (isAuthor || isPostOwner) {
+        // Escapa aspas para evitar erro no JS inline
+        const safeContent = comment.conteudo ? comment.conteudo.replace(/'/g, "\\'") : "";
+        
         optionsMenu = `
             <button class="comment-options-btn" onclick="event.stopPropagation(); window.openCommentMenu(${comment.id})">
                 <i class="fas fa-ellipsis-h"></i>
             </button>
             <div class="options-menu" id="comment-menu-${comment.id}" onclick="event.stopPropagation();">
-                ${isAuthor ? `<button onclick="window.openEditCommentModal(${comment.id}, '${comment.conteudo.replace(/'/g, "\\'")}')"><i class="fas fa-pen"></i> Editar</button>` : ""}
+                ${isAuthor ? `<button onclick="window.openEditCommentModal(${comment.id}, '${safeContent}')"><i class="fas fa-pen"></i> Editar</button>` : ""}
                 ${isAuthor || isPostOwner ? `<button class="danger" onclick="window.deleteComment(${comment.id})"><i class="fas fa-trash"></i> Excluir</button>` : ""}
                 ${isPostOwner ? `<button onclick="window.highlightComment(${comment.id})"><i class="fas fa-star"></i> ${comment.destacado ? "Remover Destaque" : "Destacar"}</button>` : ""}
             </div>`;
     }
 
+    // Tag de resposta (@Usuario)
     let tagHtml = '';
     if (comment.parentId && allComments) {
         const parentComment = allComments.find(c => c.id === comment.parentId);
-        if (parentComment && parentComment.parentId) {
-            tagHtml = `<a href="perfil.html?id=${parentComment.autorId}" class="reply-tag">@${comment.replyingToName || 'Usuario'}</a>`;
+        if (parentComment && parentComment.parentId) { 
+            const parentAuthorId = parentComment.autorId || parentComment.autor?.id;
+            tagHtml = `<a href="perfil.html?id=${parentAuthorId}" class="reply-tag">@${comment.replyingToName || 'Usuario'}</a>`;
         }
+    }
+
+    // --- CORREÇÃO DE ESPAÇO: TRIM() ---
+    // Remove espaços vazios no inicio e fim
+    const rawContent = (comment.conteudo || "").trim(); 
+
+    // --- LÓGICA DE TEXTO LONGO (LER MAIS) ---
+    const CHAR_LIMIT = 300;
+    let contentHtml = `${tagHtml} ${rawContent}`;
+    let readMoreBtnHtml = '';
+    let clampClass = '';
+
+    if (rawContent.length > CHAR_LIMIT) {
+        clampClass = 'text-clamped';
+        readMoreBtnHtml = `<button class="comment-read-more-btn" onclick="window.toggleCommentReadMore(this)">Ler mais</button>`;
     }
 
     return `
             <div class="comment-container">
                 <div class="comment ${comment.destacado ? "destacado" : ""}" id="comment-${comment.id}">
-                    <div class="comment-avatar"><img src="${commentAuthorAvatar}" alt="Avatar"></div>
+                    
+                    <a href="${profileLink}" class="comment-avatar-link">
+                        <div class="comment-avatar">
+                            <img src="${commentAuthorAvatar}" alt="Avatar" onerror="this.src='${window.defaultAvatarUrl}'">
+                        </div>
+                    </a>
+                    
                     <div class="comment-body">
-                        <span class="comment-author">${commentAuthorName}</span>
-                        <p class="comment-content">${tagHtml} ${comment.conteudo}</p>
+                        <a href="${profileLink}" class="comment-author-link">
+                            <span class="comment-author">${commentAuthorName}</span>
+                        </a>
+
+                        <p class="comment-content ${clampClass}">${contentHtml}</p>
+                        ${readMoreBtnHtml}
                     </div>
+
                     ${optionsMenu}
                 </div>
+                
                 <div class="comment-actions-footer">
                     <button class="action-btn-like ${comment.curtidoPeloUsuario ? "liked" : ""}" onclick="window.toggleLike(event, ${post.id}, ${comment.id})">Curtir</button>
                     <button class="action-btn-reply" onclick="window.toggleReplyForm(${comment.id})">Responder</button>
                     <span class="like-count" id="like-count-comment-${comment.id}"><i class="fas fa-heart"></i> ${comment.totalCurtidas || 0}</span>
                 </div>
+                
                 <div class="reply-form" id="reply-form-${comment.id}">
                     <input type="text" id="reply-input-${comment.id}" placeholder="Escreva sua resposta..."><button onclick="window.sendComment(${post.id}, ${comment.id})"><i class="fas fa-paper-plane"></i></button>
                 </div>
@@ -989,8 +1001,20 @@ window.openEditCommentModal = (commentId, content) => {
     const modal = document.getElementById("edit-comment-modal");
     if(modal) {
         document.getElementById("edit-comment-id").value = commentId;
-        document.getElementById("edit-comment-textarea").value = content;
+        const textarea = document.getElementById("edit-comment-textarea");
+        
+        // Decodifica o conteúdo caso venha com entities HTML
+        textarea.value = content;
+        
         modal.style.display = "flex";
+
+        // MELHORIA UX: Foca no final do texto automaticamente
+        setTimeout(() => {
+            textarea.focus();
+            const val = textarea.value;
+            textarea.value = ''; 
+            textarea.value = val; // Truque para mover o cursor para o final
+        }, 50);
     }
 };
 
