@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SENAI Community | Configurações</title>
+    <link rel="icon" href="img/LogoFavicon-removebg-preview.png2.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="Principal/CSS/principal.css">
+    <link rel="stylesheet" href="Configuracao/CSS/configuracao.css">
+</head>
+
+<body>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="notification-center"></div>
+
+    <header class="topbar">
+        <div class="header-left">
+            <div class="menu-toggle"><i class="fas fa-bars"></i></div>
+            <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+        </div>
+
+        <div class="search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Pesquisar...">
+        </div>
+
+        <nav class="nav-icons">
+            <div class="nav-icon" data-tooltip="Página Inicial" onclick="window.location.href='principal.html'">
+                <i class="fas fa-home"></i>
+            </div>
+            <div class="nav-icon" data-tooltip="Mensagens" onclick="window.location.href='mensagem.html'">
+                <i class="fas fa-comment-dots"></i>
+                <span class="badge" id="message-badge" style="display: none;">0</span>
+            </div>
+            <div class="nav-icon" data-tooltip="Notificações" id="notifications-icon">
+                <i class="fas fa-bell"></i>
+                <span class="badge" id="notifications-badge" style="display: none;">0</span>
+                <div class="notifications-panel" id="notifications-panel">
+                    <div class="notifications-header"><h3>Notificações</h3></div>
+                    <div class="notifications-list" id="notifications-list"></div>
+                </div>
+            </div>
+            <div class="theme-toggle"><i class="fas fa-moon"></i></div>
+        </nav>
+
+        <div class="user-dropdown">
+            <div class="user">
+                <div class="profile-pic">
+                    <img src="https://via.placeholder.com/40" alt="Perfil" id="topbar-user-img">
+                </div>
+                <span id="topbar-user-name">Carregando...</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="perfil.html"><i class="fas fa-user"></i> Meu Perfil</a>
+                <a href="configuracao.html"><i class="fas fa-cog"></i> Configurações</a>
+                <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <a href="perfil.html" class="user-info-link">
+                <div class="user-info">
+                    <div class="avatar">
+                        <img src="https://via.placeholder.com/80" alt="Perfil" id="sidebar-user-img">
+                        <div class="status online"></div>
+                    </div>
+                    <h2 id="sidebar-user-name">Carregando...</h2>
+                    <p class="user-title" id="sidebar-user-title">Carregando...</p>
+                    <div class="user-stats">
+                        <div class="stat"><strong id="connections-count">-</strong><span>Conexões</span></div>
+                        <div class="stat"><strong id="projects-count">-</strong><span>Projetos</span></div>
+                    </div>
+                </div>
+            </a>
+
+            <nav class="menu">
+                <a href="principal.html"><i class="fas fa-home"></i> Feed</a>
+                <a href="mensagem.html"><i class="fas fa-comment-dots"></i> Mensagens <span class="badge" id="message-badge-sidebar" style="display: none;">0</span></a>
+                <a href="projeto.html"><i class="fas fa-users"></i> Projetos</a>
+                <a href="vaga.html"><i class="fas fa-briefcase"></i> Vagas</a>
+                <a href="evento.html"><i class="fas fa-calendar-check"></i> Eventos</a>
+                <a href="buscar_amigos.html"><i class="fas fa-user-plus"></i> Encontrar Pessoas</a>
+                <a href="amizades.html"><i class="fas fa-user-friends"></i> Minhas Conexões</a> 
+            </nav>
+
+            <div class="widget-card online-friends" id="online-friends-widget">
+                <h3 class="widget-title">Amigos Online</h3>
+                <div class="friend-list" id="online-friends-list">
+                    <p class="empty-state">Nenhum amigo online.</p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="config-container">
+                <h2 class="page-title">Configurações</h2>
+                
+                <div class="widget-card config-section">
+                    <div class="config-header">
+                        <i class="fas fa-universal-access"></i>
+                        <h3>Acessibilidade Global</h3>
+                    </div>
+                    
+                    <div class="config-item">
+                        <div class="config-info">
+                            <h4>Tamanho da Fonte</h4>
+                            <p>Ajuste o tamanho do texto para todo o site.</p>
+                        </div>
+                        <div class="font-size-controls">
+                            <button class="btn-font small" onclick="window.updateFontSize('small')">A</button>
+                            <button class="btn-font medium" onclick="window.updateFontSize('medium')">A</button>
+                            <button class="btn-font large" onclick="window.updateFontSize('large')">A</button>
+                        </div>
+                    </div>
+
+                    <div class="config-item">
+                        <div class="config-info">
+                            <h4>Reduzir Animações</h4>
+                            <p>Remove transições e efeitos de movimento.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="reduce-motion-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="config-item">
+                        <div class="config-info">
+                            <h4>Alto Contraste</h4>
+                            <p>Aumenta o contraste e remove cores (Preto/Branco).</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="high-contrast-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="config-item">
+                        <div class="config-info">
+                            <h4>Fonte Legível (Dislexia)</h4>
+                            <p>Usa fonte Arial/Verdana e aumenta espaçamento.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="readable-font-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="config-item">
+                        <div class="config-info">
+                            <h4>Destacar Links</h4>
+                            <p>Sublinha e coloca fundo amarelo em links.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="highlight-links-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="widget-card config-section">
+                    <div class="config-header">
+                        <i class="fas fa-user-shield"></i>
+                        <h3>Conta</h3>
+                    </div>
+
+                    <div class="config-item">
+                        <div class="config-info">
+                            <h4>Sair da Conta</h4>
+                            <p>Encerra sua sessão neste dispositivo.</p>
+                        </div>
+                        <button class="btn btn-danger logout-action-btn">
+                            <i class="fas fa-sign-out-alt"></i> Sair Agora
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+        
+        <aside class="right-sidebar"></aside>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="Principal/JS/principal.js"></script>
+    <script src="Configuracao/JS/configuracao.js"></script>
+</body>
+</html>
