@@ -82,7 +82,7 @@ public class BackEndApplication {
 //				System.out.println("==================================================");
 //			}
 //
-			// --- 2. Criar Usuário ADMIN (admin@teste.com) ---
+//			 --- 2. Criar Usuário ADMIN (admin@teste.com) ---
 			String adminEmail = "admin@teste.com";
 			if (usuarioRepository.findByEmail(adminEmail).isEmpty()) {
 
