@@ -29,7 +29,6 @@
         </div>
 
         <nav class="nav-icons">
-           
             <div class="nav-icon" data-tooltip="Notificações" id="notifications-icon">
                 <i class="fas fa-bell"></i>
                 <span class="badge" id="notifications-badge" style="display: none;">0</span>
@@ -59,15 +58,16 @@
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div class="dropdown-menu">
-                <a href="#" id="edit-profile-btn"><i class="fas fa-user-edit"></i> Editar Perfil</a>
-                <a href="#" id="delete-account-btn" class="danger"><i class="fas fa-user-slash"></i> Excluir Conta</a>
+                <a href="perfil.html" id="my-profile-btn"><i class="fas fa-user"></i> Meu Perfil</a>
+
+                <a href="configuracao.html"><i class="fas fa-cog"></i> Configurações</a>
+
                 <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
             </div>
         </div>
     </header>
 
     <div class="container">
-        <!-- Mobile Overlay -->
         <div class="mobile-overlay" id="mobile-overlay"></div>
 
         <aside class="sidebar" id="sidebar">
@@ -155,7 +155,6 @@
         <main class="main-content">
             <div class="page-header-mobile">
                 <h1 class="page-title-mobile">Minhas Conexões</h1>
-
             </div>
 
             <div class="connections-container">
@@ -198,18 +197,6 @@
                                 <div class="skeleton-line medium"></div>
                                 <div class="skeleton-line long"></div>
                             </div>
-                            <div class="friend-card-skeleton">
-                                <div class="skeleton-avatar"></div>
-                                <div class="skeleton-line short"></div>
-                                <div class="skeleton-line medium"></div>
-                                <div class="skeleton-line long"></div>
-                            </div>
-                            <div class="friend-card-skeleton">
-                                <div class="skeleton-avatar"></div>
-                                <div class="skeleton-line short"></div>
-                                <div class="skeleton-line medium"></div>
-                                <div class="skeleton-line long"></div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -223,84 +210,31 @@
                 <h3>Editar Perfil</h3>
                 <button class="btn-secondary" id="cancel-edit-profile-btn">Cancelar</button>
             </div>
-            <form id="edit-profile-form">
-                <div class="profile-pic-editor">
-                    <label for="edit-profile-pic-input">
-                        <img src="https://via.placeholder.com/150" id="edit-profile-pic-preview" alt="Preview">
-                        <div class="pic-editor-overlay">
-                            <i class="fas fa-camera"></i>
-                            <span>Alterar Foto</span>
-                        </div>
-                    </label>
-                    <input type="file" id="edit-profile-pic-input" accept="image/*" style="display: none;">
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-profile-name">Nome Completo</label>
-                    <input type="text" id="edit-profile-name" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-profile-bio">Bio / Sobre</label>
-                    <textarea id="edit-profile-bio" rows="3"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-profile-dob">Data de Nascimento</label>
-                    <input type="date" id="edit-profile-dob">
-                </div>
-
-                <hr class="form-divider">
-                <p class="warning-text"
-                    style="background: rgba(255, 255, 255, 0.05); border: none; color: var(--text-secondary);">
-                    Deixe as senhas em branco se não quiser alterá-las.
-                </p>
-
-                <div class="form-group">
-                    <label for="edit-profile-password">Nova Senha</label>
-                    <input type="password" id="edit-profile-password" placeholder="Nova senha">
-                </div>
-
-                <div class="form-group">
-                    <label for="edit-profile-password-confirm">Confirmar Nova Senha</label>
-                    <input type="password" id="edit-profile-password-confirm" placeholder="Confirme a senha">
-                </div>
-
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                </div>
-            </form>
         </div>
     </div>
 
     <div id="delete-account-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
+        </div>
+    </div>
+
+    <div id="modal-lista-usuarios" class="modal-overlay" style="display: none;">
+        <div class="modal-content modal-content-lista">
             <div class="modal-header">
-                <h3 style="color: var(--danger);">Excluir Conta</h3>
+                <h3 id="modal-lista-titulo">Lista Completa</h3>
+                <button class="close-btn-lista" id="btn-fechar-lista">&times;</button>
             </div>
-            <div class="modal-body">
-                <p class="warning-text">
-                    <strong>ATENÇÃO:</strong> Esta ação é irreversível. Todos os seus dados, conexões, mensagens e
-                    projetos serão apagados permanentemente.
-                </p>
-                <form id="delete-account-form">
-                    <div class="form-group">
-                        <label for="delete-confirm-password">Digite sua senha para confirmar:</label>
-                        <input type="password" id="delete-confirm-password" required placeholder="Sua senha atual">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="cancel-delete-account-btn">Cancelar</button>
-                        <button type="submit" class="btn btn-danger">Excluir Permanentemente</button>
-                    </div>
-                </form>
+            <div class="modal-body-lista" id="modal-lista-container">
             </div>
         </div>
     </div>
 
-   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-<script src="Principal/JS/principal.js"></script> <script src="/Principal/JS/amizades.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="Principal/JS/principal.js"></script>
+    <script src="Principal/JS/amizades.js"></script>
+
 </body>
 
 </html>
