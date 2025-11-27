@@ -3,7 +3,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // AGUARDA O SCRIPT PRINCIPAL
     // -----------------------------------------------------------------
     document.addEventListener("globalScriptsLoaded", (e) => {
-        // --- SELEÇÃO DE ELEMENTOS (Específicos da Página) ---
+        // --- VARIÁVEIS GLOBAIS ---
+        let listaCompletaRecebidos = [];
+        let listaCompletaEnviados = [];
+        let listaCompletaAmigos = [];
+        const LIMITE_EXIBICAO = 6;
+
+        // --- SELEÇÃO DE ELEMENTOS ---
         const elements = {
             receivedRequestsList: document.getElementById("received-requests-list"),
             sentRequestsList: document.getElementById("sent-requests-list"),
@@ -17,36 +23,49 @@ document.addEventListener("DOMContentLoaded", () => {
             sidebar: document.getElementById('sidebar'),
             sidebarClose: document.getElementById('sidebar-close'),
             mobileOverlay: document.getElementById('mobile-overlay'),
-            projectsCount: document.getElementById("projects-count")
+            projectsCount: document.getElementById("projects-count"),
+            
+            // Modal "Ver Mais"
+            modalLista: document.getElementById("modal-lista-usuarios"),
+            modalListaContainer: document.getElementById("modal-lista-container"),
+            modalListaTitulo: document.getElementById("modal-lista-titulo"),
+            btnFecharLista: document.getElementById("btn-fechar-lista")
         };
 
         // -----------------------------------------------------------------
-        // FUNÇÕES DE RESPONSIVIDADE SIMPLIFICADAS
+        // FUNÇÃO DE ORDENAÇÃO (ONLINE PRIMEIRO)
         // -----------------------------------------------------------------
+        function ordenarAmigosPorOnline(lista) {
+            const onlineEmails = window.latestOnlineEmails || [];
+            
+            return lista.sort((a, b) => {
+                const aOnline = onlineEmails.includes(a.email);
+                const bOnline = onlineEmails.includes(b.email);
 
+                // Se A está online e B não, A vem primeiro (-1)
+                if (aOnline && !bOnline) return -1;
+                // Se B está online e A não, B vem primeiro (1)
+                if (!aOnline && bOnline) return 1;
+                // Se ambos tem o mesmo status, mantém ordem alfabética ou original
+                return 0;
+            });
+        }
+
+        // -----------------------------------------------------------------
+        // RESPONSIVIDADE
+        // -----------------------------------------------------------------
         function initResponsiveFeatures() {
-            if (elements.mobileMenuToggle) {
-                elements.mobileMenuToggle.addEventListener('click', toggleMobileMenu);
-            }
-            if (elements.mobileMenuBtn) {
-                elements.mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-            }
-            if (elements.sidebarClose) {
-                elements.sidebarClose.addEventListener('click', toggleMobileMenu);
-            }
-            if (elements.mobileOverlay) {
-                elements.mobileOverlay.addEventListener('click', toggleMobileMenu);
-            }
+            if (elements.mobileMenuToggle) elements.mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+            if (elements.mobileMenuBtn) elements.mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+            if (elements.sidebarClose) elements.sidebarClose.addEventListener('click', toggleMobileMenu);
+            if (elements.mobileOverlay) elements.mobileOverlay.addEventListener('click', toggleMobileMenu);
 
             const menuLinks = document.querySelectorAll('.menu-item');
             menuLinks.forEach(link => {
                 link.addEventListener('click', () => {
-                    if (window.innerWidth <= 768) {
-                        toggleMobileMenu();
-                    }
+                    if (window.innerWidth <= 768) toggleMobileMenu();
                 });
             });
-
             window.addEventListener('resize', handleResize);
         }
 
@@ -65,9 +84,93 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // -----------------------------------------------------------------
-        // FUNÇÕES DE CARREGAMENTO E RENDERIZAÇÃO
+        // LÓGICA DO MODAL "VER MAIS"
         // -----------------------------------------------------------------
+        function abrirModalLista(tipo) {
+            if (!elements.modalLista) return;
 
+            elements.modalListaContainer.innerHTML = ''; 
+            elements.modalLista.style.display = 'flex'; 
+            
+            let listaAlvo = [];
+            let titulo = "";
+
+            if (tipo === 'received') {
+                listaAlvo = listaCompletaRecebidos;
+                titulo = "Pedidos de Amizade Recebidos";
+                renderRequests(listaAlvo, elements.modalListaContainer, 'received');
+            } else if (tipo === 'sent') {
+                listaAlvo = listaCompletaEnviados;
+                titulo = "Pedidos de Amizade Enviados";
+                renderRequests(listaAlvo, elements.modalListaContainer, 'sent');
+            } else if (tipo === 'friends') {
+                // Ordena antes de mostrar no modal também
+                listaAlvo = ordenarAmigosPorOnline([...listaCompletaAmigos]); 
+                titulo = "Todas as Conexões";
+                renderFriends(listaAlvo, elements.modalListaContainer);
+            }
+
+            elements.modalListaTitulo.innerText = `${titulo} (${listaAlvo.length})`;
+        }
+
+        function fecharModalLista() {
+            if (elements.modalLista) elements.modalLista.style.display = 'none';
+        }
+
+        if (elements.btnFecharLista) elements.btnFecharLista.onclick = fecharModalLista;
+        window.addEventListener('click', (e) => {
+            if (e.target === elements.modalLista) fecharModalLista();
+        });
+
+        // -----------------------------------------------------------------
+        // RENDERIZAÇÃO INTELIGENTE (LIMITADA + ORDENADA)
+        // -----------------------------------------------------------------
+        function renderizarSecaoLimitada(listaCompleta, container, tipo) {
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (!listaCompleta || listaCompleta.length === 0) {
+                if (tipo === 'friends') {
+                    container.innerHTML = `
+                        <div class="empty-friends-state">
+                            <i class="fas fa-user-friends"></i>
+                            <h3>Nenhuma conexão ainda</h3>
+                            <a href="buscar_amigos.html" class="btn btn-primary">Encontrar Pessoas</a>
+                        </div>`;
+                } else {
+                    container.innerHTML = `<div class="empty-state">Nenhum item encontrado.</div>`;
+                }
+                return;
+            }
+
+            // SE FOR AMIGOS, ORDENA: ONLINE PRIMEIRO
+            let listaProcessada = [...listaCompleta]; // Cria cópia para não alterar a original permanentemente
+            if (tipo === 'friends') {
+                listaProcessada = ordenarAmigosPorOnline(listaProcessada);
+            }
+
+            // Fatia a lista (Pega só os primeiros X itens)
+            const itensParaMostrar = listaProcessada.slice(0, LIMITE_EXIBICAO);
+
+            if (tipo === 'friends') {
+                renderFriends(itensParaMostrar, container);
+            } else {
+                renderRequests(itensParaMostrar, container, tipo);
+            }
+
+            if (listaCompleta.length > LIMITE_EXIBICAO) {
+                const qtdRestante = listaCompleta.length - LIMITE_EXIBICAO;
+                const btnVerMais = document.createElement('button');
+                btnVerMais.className = 'btn-ver-mais';
+                btnVerMais.innerText = `Ver mais (${qtdRestante})`;
+                btnVerMais.onclick = () => abrirModalLista(tipo);
+                container.appendChild(btnVerMais);
+            }
+        }
+
+        // -----------------------------------------------------------------
+        // BUSCA DE DADOS
+        // -----------------------------------------------------------------
         function setProfileLoading(isLoading) {
             if (elements.userInfo && elements.topbarUser) {
                 if (isLoading) {
@@ -81,6 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         function setButtonLoading(button, isLoading) {
+            if (!button) return;
             if (isLoading) {
                 button.disabled = true;
                 button.classList.add('loading');
@@ -90,70 +194,44 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        setProfileLoading(true);
-
-        // -----------------------------------------------------------------
-        // FUNÇÕES DE BUSCA DE DADOS
-        // -----------------------------------------------------------------
-
         async function fetchUserProjectsCount() {
             if (!elements.projectsCount) return;
             try {
                 const response = await window.axios.get(`${window.backendUrl}/projetos`);
-                const projects = response.data;
-                elements.projectsCount.textContent = projects.length;
+                elements.projectsCount.textContent = response.data.length || "0";
             } catch (error) {
-                console.error("Erro ao buscar contagem de projetos:", error);
                 elements.projectsCount.textContent = "0";
             }
         }
 
         async function fetchReceivedRequests() {
             if (!elements.receivedRequestsList) return;
-            elements.receivedRequestsList.innerHTML = `
-                <div class="results-loading">
-                    <div class="loading-spinner"></div>
-                    <p>Carregando pedidos recebidos...</p>
-                </div>
-            `;
+            elements.receivedRequestsList.innerHTML = `<div class="results-loading"><div class="loading-spinner"></div></div>`;
             try {
                 const response = await window.axios.get(`${window.backendUrl}/api/amizades/pendentes`);
-                renderRequests(response.data, elements.receivedRequestsList, "received");
+                listaCompletaRecebidos = response.data;
+                renderizarSecaoLimitada(listaCompletaRecebidos, elements.receivedRequestsList, 'received');
             } catch (error) {
-                console.error("Erro ao buscar pedidos recebidos:", error);
-                elements.receivedRequestsList.innerHTML = `<div class="empty-state">Não foi possível carregar os pedidos.</div>`;
+                elements.receivedRequestsList.innerHTML = `<div class="empty-state">Erro ao carregar.</div>`;
             }
         }
 
         async function fetchSentRequests() {
             if (!elements.sentRequestsList) return;
-            elements.sentRequestsList.innerHTML = `
-                <div class="results-loading">
-                    <div class="loading-spinner"></div>
-                    <p>Carregando pedidos enviados...</p>
-                </div>
-            `;
+            elements.sentRequestsList.innerHTML = `<div class="results-loading"><div class="loading-spinner"></div></div>`;
             try {
                 const response = await window.axios.get(`${window.backendUrl}/api/amizades/enviadas`);
-                renderRequests(response.data, elements.sentRequestsList, "sent");
+                listaCompletaEnviados = response.data;
+                renderizarSecaoLimitada(listaCompletaEnviados, elements.sentRequestsList, 'sent');
             } catch (error) {
-                console.error("Erro ao buscar pedidos enviados:", error);
-                elements.sentRequestsList.innerHTML = `<div class="empty-state">Não foi possível carregar os pedidos.</div>`;
+                elements.sentRequestsList.innerHTML = `<div class="empty-state">Erro ao carregar.</div>`;
             }
         }
 
         // -----------------------------------------------------------------
-        // FUNÇÕES DE RENDERIZAÇÃO (ATUALIZADA)
+        // RENDERIZADORES
         // -----------------------------------------------------------------
-
         function renderRequests(requests, container, type) {
-            if (!container) return;
-            container.innerHTML = "";
-            if (requests.length === 0) {
-                container.innerHTML = `<div class="empty-state">Nenhum pedido ${type === 'received' ? 'recebido' : 'enviado'}.</div>`;
-                return;
-            }
-
             requests.forEach((req) => {
                 const card = document.createElement("div");
                 card.className = "request-card";
@@ -174,8 +252,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     actionsHtml = `<button class="btn btn-danger" onclick="window.cancelar(${req.idAmizade}, this)">Cancelar Pedido</button>`;
                 }
 
-                // --- AQUI ESTÁ A CORREÇÃO DO HTML ---
-                // Usando a estrutura 'request-card-header' para alinhar foto e texto
                 card.innerHTML = `
                     <div class="request-card-header">
                         <div class="request-avatar">
@@ -194,28 +270,8 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        function renderFriends() {
-            const container = elements.friendsList;
-            if (!container) return;
-            container.innerHTML = "";
-
-            const friends = window.userFriends || [];
-
-            if (friends.length === 0) {
-                container.innerHTML = `
-                <div class="empty-friends-state">
-                    <i class="fas fa-user-friends"></i>
-                    <h3>Nenhuma conexão ainda</h3>
-                    <p>Encontre pessoas para se conectar e expandir sua rede</p>
-                    <a href="buscar_amigos.html" class="btn btn-primary">
-                    <i class="fas fa-user-plus"></i> Encontrar Pessoas
-                    </a>
-                </div>
-                `;
-                return;
-            }
-
-            friends.forEach((friend, index) => {
+        function renderFriends(friendsData, container) {
+            friendsData.forEach((friend, index) => {
                 const card = document.createElement("div");
                 card.className = "friend-card";
                 card.id = `friend-card-${friend.idAmizade}`;
@@ -227,46 +283,49 @@ document.addEventListener("DOMContentLoaded", () => {
                 card.innerHTML = `
                 <a href="perfil.html?id=${friend.idUsuario}" class="friend-card-header">
                     <div class="friend-avatar">
-                    <img src="${fotoUrl}" alt="Foto de ${friend.nome}" loading="lazy">
-                    <div class="friend-status ${statusClass}"></div>
+                        <img src="${fotoUrl}" alt="Foto de ${friend.nome}" loading="lazy">
+                        <div class="friend-status ${statusClass}"></div>
                     </div>
                     <div class="friend-info">
-                    <h3 class="friend-name">${friend.nome}</h3>
-                    <p class="friend-email">${friend.email}</p>
+                        <h3 class="friend-name">${friend.nome}</h3>
+                        <p class="friend-email">${friend.email}</p>
                     </div>
                 </a>
                 
                 <div class="friend-actions">
                     <a href="mensagem.html?start_chat=${friend.idUsuario}" class="friend-action-btn primary">
-                    <i class="fas fa-comment-dots"></i> Mensagem
+                        <i class="fas fa-comment-dots"></i> Mensagem
                     </a>
                     <button class="friend-action-btn danger" onclick="window.removerAmizade(${friend.idAmizade}, this)">
-                    <i class="fas fa-user-minus"></i> Remover
+                        <i class="fas fa-user-minus"></i> Remover
                     </button>
                 </div>
                 `;
-
-                card.style.animationDelay = `${index * 0.1}s`;
+                // Animação suave na entrada
+                card.style.animation = `fadeIn 0.3s ease forwards ${index * 0.05}s`;
+                card.style.opacity = '0';
                 container.appendChild(card);
             });
             
-            if (typeof window.atualizarStatusDeAmigosNaUI === "function") {
-                window.atualizarStatusDeAmigosNaUI();
+            // Adiciona estilo da animação dinamicamente se não existir
+            if (!document.getElementById('fade-style')) {
+                const style = document.createElement('style');
+                style.id = 'fade-style';
+                style.innerHTML = `@keyframes fadeIn { to { opacity: 1; transform: translateY(0); } } .friend-card { transform: translateY(10px); }`;
+                document.head.appendChild(style);
             }
         }
 
         // -----------------------------------------------------------------
-        // FUNÇÕES DE AÇÃO
+        // AÇÕES GLOBAIS
         // -----------------------------------------------------------------
         window.aceitar = async (amizadeId, buttonElement) => {
             setButtonLoading(buttonElement, true);
             try {
                 await window.axios.post(`${window.backendUrl}/api/amizades/aceitar/${amizadeId}`);
                 window.showNotification("Amizade aceita!", "success");
-                fetchReceivedRequests();
                 carregarDadosDaPagina();
             } catch (err) {
-                console.error(err);
                 window.showNotification("Erro ao aceitar amizade.", "error");
                 setButtonLoading(buttonElement, false);
             }
@@ -279,7 +338,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.showNotification("Pedido recusado.", "info");
                 fetchReceivedRequests();
             } catch (err) {
-                console.error(err);
                 window.showNotification("Erro ao recusar.", "error");
                 setButtonLoading(buttonElement, false);
             }
@@ -292,7 +350,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.showNotification("Pedido cancelado.", "info");
                 fetchSentRequests();
             } catch (err) {
-                console.error(err);
                 window.showNotification("Erro ao cancelar pedido.", "error");
                 setButtonLoading(buttonElement, false);
             }
@@ -304,9 +361,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 try {
                     await window.axios.delete(`${window.backendUrl}/api/amizades/recusar/${amizadeId}`);
                     window.showNotification("Amizade removida.", "info");
-                    carregarDadosDaPagina();
+                    
+                    listaCompletaAmigos = listaCompletaAmigos.filter(f => f.idAmizade !== amizadeId);
+                    
+                    if(elements.modalLista.style.display === 'flex') {
+                        abrirModalLista('friends');
+                        renderizarSecaoLimitada(listaCompletaAmigos, elements.friendsList, 'friends');
+                    } else {
+                         renderizarSecaoLimitada(listaCompletaAmigos, elements.friendsList, 'friends');
+                    }
+
                 } catch (err) {
-                    console.error("Erro ao remover amizade:", err);
                     window.showNotification("Erro ao remover amizade.", "error");
                     setButtonLoading(buttonElement, false);
                 }
@@ -314,29 +379,42 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         function carregarDadosDaPagina() {
-            if (elements.friendsList) {
-                elements.friendsList.innerHTML = `<div class="friends-loading">...</div>`; 
-                // Skeleton simplificado para brevidade, o original tinha o HTML completo
-            }
-            
+            setProfileLoading(true);
             fetchReceivedRequests();
             fetchSentRequests();
             fetchUserProjectsCount();
             
-            setTimeout(() => { setProfileLoading(false); }, 1500);
-            setTimeout(() => { renderFriends(); }, 500);
+            setTimeout(() => {
+                listaCompletaAmigos = window.userFriends || [];
+                renderizarSecaoLimitada(listaCompletaAmigos, elements.friendsList, 'friends');
+                setProfileLoading(false);
+            }, 1000);
         }
 
         initResponsiveFeatures();
         carregarDadosDaPagina();
-        handleResize();
+        
+        // --- LISTENERS DE ATUALIZAÇÃO ---
 
+        // Quando a lista de amigos é atualizada pelo sistema
         document.addEventListener("friendsListUpdated", () => {
-            carregarDadosDaPagina();
+             listaCompletaAmigos = window.userFriends || [];
+             renderizarSecaoLimitada(listaCompletaAmigos, elements.friendsList, 'friends');
+             
+             if (elements.modalLista && elements.modalLista.style.display === 'flex' && elements.modalListaTitulo.innerText.includes('Conexões')) {
+                abrirModalLista('friends');
+            }
         });
 
+        // Quando alguém entra/sai (status online muda)
         document.addEventListener("onlineStatusUpdated", () => {
-            renderFriends();
+            // Re-renderiza a lista principal (que agora vai reordenar automaticamente)
+            renderizarSecaoLimitada(listaCompletaAmigos, elements.friendsList, 'friends');
+
+            // Se o modal estiver aberto, atualiza ele também
+            if (elements.modalLista && elements.modalLista.style.display === 'flex' && elements.modalListaTitulo.innerText.includes('Conexões')) {
+                abrirModalLista('friends');
+            }
         });
     });
 });
