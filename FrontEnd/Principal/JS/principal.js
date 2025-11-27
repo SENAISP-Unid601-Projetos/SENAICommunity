@@ -63,35 +63,54 @@ document.addEventListener("DOMContentLoaded", () => {
   // Adicione estas funções dentro do DOMContentLoaded em principal.js
 
 // Mobile sidebar toggle
+// Substitua a função setupMobileSidebar existente por esta versão corrigida
 function setupMobileSidebar() {
-    const menuToggle = document.querySelector('.menu-toggle');
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const menuToggle = document.getElementById('mobile-menu-toggle'); // ID específico
+    const sidebar = document.getElementById('sidebar');
+    const sidebarClose = document.getElementById('sidebar-close');
+    const sidebarOverlay = document.getElementById('mobile-overlay'); // ID específico
+
+    function toggleMenu() {
+        sidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+        // Previne scroll do corpo quando menu está aberto
+        document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+    }
+
+    if (menuToggle) {
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleMenu();
+        });
+    }
+
+    if (sidebarClose) {
+        sidebarClose.addEventListener('click', toggleMenu);
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', toggleMenu);
+    }
     
-    if (menuToggle && sidebar && sidebarOverlay) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('mobile-open');
-            sidebarOverlay.classList.toggle('active');
-            document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
-        });
-        
-        sidebarOverlay.addEventListener('click', () => {
-            sidebar.classList.remove('mobile-open');
-            sidebarOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-        });
-        
-        // Fechar sidebar ao clicar em um link
-        sidebar.querySelectorAll('a').forEach(link => {
+    // Fechar ao clicar em links (exceto dropdowns)
+    if (sidebar) {
+        sidebar.querySelectorAll('.menu-item').forEach(link => {
             link.addEventListener('click', () => {
-                sidebar.classList.remove('mobile-open');
-                sidebarOverlay.classList.remove('active');
-                document.body.style.overflow = '';
+                // Pequeno delay para visualização do clique
+                if (window.innerWidth <= 768) {
+                    setTimeout(toggleMenu, 150);
+                }
             });
         });
     }
 }
 
+// Além disso, na função updateUIWithUserData, certifique-se de remover o loading:
+// Dentro da função updateUIWithUserData(user) {...}:
+const userInfoContainer = document.querySelector('.user-info');
+if (userInfoContainer) {
+    userInfoContainer.classList.add('loaded'); // Isso esconde o spinner cinza
+}
 // Mobile responsive adjustments
 function setupMobileResponsive() {
     // Hide certain elements on mobile
@@ -150,33 +169,59 @@ function setupMobilePostCreator() {
 }
 
 // Mobile-optimized notifications
+// Mobile-optimized notifications
 function setupMobileNotifications() {
     const notificationsIcon = document.getElementById('notifications-icon');
     const notificationsPanel = document.getElementById('notifications-panel');
     
-    if (notificationsIcon && notificationsPanel) {
-        notificationsIcon.addEventListener('click', (e) => {
-            e.stopPropagation();
+    // Remove clones antigos para evitar múltiplos listeners
+    if (notificationsIcon) {
+        const newIcon = notificationsIcon.cloneNode(true);
+        notificationsIcon.parentNode.replaceChild(newIcon, notificationsIcon);
+        
+        // Re-seleciona o novo elemento e o painel (que pode ter se perdido na clonagem se estivesse dentro)
+        const currentIcon = document.getElementById('notifications-icon');
+        // O painel geralmente é filho do ícone ou irmão. Se for filho, precisamos pegá-lo de novo dentro do novo ícone
+        let currentPanel = document.getElementById('notifications-panel'); 
+        
+        // Se o painel sumiu (era filho), precisamos ter cuidado. 
+        // No seu HTML atual, o painel é FILHO do ícone. A clonagem profunda (true) preserva ele.
+        // Mas precisamos re-selecionar a referência ao painel dentro do novo ícone para garantir.
+        if (!currentPanel) {
+             currentPanel = currentIcon.querySelector('.notifications-panel');
+        }
+
+        currentIcon.addEventListener('click', (e) => {
+            e.stopPropagation(); // Impede fechar ao clicar
+            e.preventDefault();  // Previne comportamento padrão de link
+            
             const isMobile = window.innerWidth <= 768;
             
-            if (isMobile) {
-                // Centralize and adjust for mobile
-                notificationsPanel.style.position = 'fixed';
-                notificationsPanel.style.top = '70px';
-                notificationsPanel.style.left = '50%';
-                notificationsPanel.style.transform = 'translateX(-50%)';
-                notificationsPanel.style.width = '90%';
-                notificationsPanel.style.maxWidth = '400px';
-                notificationsPanel.style.maxHeight = '60vh';
+            if (isMobile && currentPanel) {
+                // Força estilos inline para garantir visibilidade no mobile
+                currentPanel.style.position = 'fixed';
+                currentPanel.style.top = '70px';
+                currentPanel.style.left = '50%';
+                currentPanel.style.transform = 'translateX(-50%)';
+                currentPanel.style.width = '90%';
+                currentPanel.style.maxWidth = '380px';
+                currentPanel.style.maxHeight = '60vh';
+                currentPanel.style.zIndex = '9999';
             }
             
-            const isVisible = notificationsPanel.style.display === 'block';
-            notificationsPanel.style.display = isVisible ? 'none' : 'block';
-            
-            if (!isVisible) {
-                markAllNotificationsAsRead();
+            if (currentPanel) {
+                const isVisible = currentPanel.style.display === 'block';
+                currentPanel.style.display = isVisible ? 'none' : 'block';
+                
+                if (!isVisible && typeof window.markAllNotificationsAsRead === 'function') {
+                    window.markAllNotificationsAsRead();
+                }
             }
         });
+        
+        // Atualiza a referência global se necessário para outras funções
+        globalElements.notificationsIcon = currentIcon;
+        globalElements.notificationsPanel = currentPanel;
     }
 }
 

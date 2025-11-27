@@ -12,8 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
             topbarUserLoading: document.getElementById("topbar-user-loading"),
             userInfo: document.querySelector('.user-info'),
             topbarUser: document.querySelector('.user-dropdown .user'),
+            // Seletores Mobile
             mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
-            mobileMenuBtn: document.getElementById('mobile-menu-btn'),
             sidebar: document.getElementById('sidebar'),
             sidebarClose: document.getElementById('sidebar-close'),
             mobileOverlay: document.getElementById('mobile-overlay'),
@@ -21,27 +21,47 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         // -----------------------------------------------------------------
-        // FUNÇÕES DE RESPONSIVIDADE SIMPLIFICADAS
+        // CORREÇÃO: FUNÇÕES DE RESPONSIVIDADE
         // -----------------------------------------------------------------
 
         function initResponsiveFeatures() {
+            // 1. Botão de Abrir Menu (Clonagem para limpar eventos do principal.js)
             if (elements.mobileMenuToggle) {
-                elements.mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+                const newBtn = elements.mobileMenuToggle.cloneNode(true);
+                elements.mobileMenuToggle.parentNode.replaceChild(newBtn, elements.mobileMenuToggle);
+                elements.mobileMenuToggle = newBtn;
+                
+                elements.mobileMenuToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleMobileMenu();
+                });
             }
-            if (elements.mobileMenuBtn) {
-                elements.mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-            }
+
+            // 2. CORREÇÃO AQUI: Botão de Fechar Menu (Clonagem também necessária)
             if (elements.sidebarClose) {
-                elements.sidebarClose.addEventListener('click', toggleMobileMenu);
+                const newCloseBtn = elements.sidebarClose.cloneNode(true);
+                elements.sidebarClose.parentNode.replaceChild(newCloseBtn, elements.sidebarClose);
+                elements.sidebarClose = newCloseBtn; // Atualiza a referência
+
+                elements.sidebarClose.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMobileMenu();
+                });
             }
+            
+            // 3. Overlay (Clicar fora para fechar)
             if (elements.mobileOverlay) {
+                // Remove listener antigo se existir (embora cloneNode não se aplique aqui facilmente, removemos e adicionamos)
+                elements.mobileOverlay.removeEventListener('click', toggleMobileMenu); 
                 elements.mobileOverlay.addEventListener('click', toggleMobileMenu);
             }
 
+            // 4. Fechar ao clicar em links do menu
             const menuLinks = document.querySelectorAll('.menu-item');
             menuLinks.forEach(link => {
                 link.addEventListener('click', () => {
-                    if (window.innerWidth <= 768) {
+                    if (window.innerWidth <= 1024) { 
                         toggleMobileMenu();
                     }
                 });
@@ -51,14 +71,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         function toggleMobileMenu() {
-            elements.sidebar.classList.toggle('active');
-            elements.mobileOverlay.classList.toggle('active');
-            document.body.style.overflow = elements.sidebar.classList.contains('active') ? 'hidden' : '';
+            // Verifica se está aberto
+            const isOpen = elements.sidebar.classList.contains('mobile-open');
+            
+            if (isOpen) {
+                // FECHAR
+                elements.sidebar.classList.remove('mobile-open');
+                elements.mobileOverlay.classList.remove('active');
+                document.body.style.overflow = ''; // Libera o scroll
+            } else {
+                // ABRIR
+                elements.sidebar.classList.add('mobile-open');
+                elements.mobileOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Trava o scroll
+            }
         }
 
         function handleResize() {
-            if (window.innerWidth > 768) {
-                elements.sidebar.classList.remove('active');
+            if (window.innerWidth > 1024) {
+                elements.sidebar.classList.remove('mobile-open');
                 elements.mobileOverlay.classList.remove('active');
                 document.body.style.overflow = '';
             }
@@ -143,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // -----------------------------------------------------------------
-        // FUNÇÕES DE RENDERIZAÇÃO (ATUALIZADA)
+        // FUNÇÕES DE RENDERIZAÇÃO
         // -----------------------------------------------------------------
 
         function renderRequests(requests, container, type) {
@@ -174,8 +205,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     actionsHtml = `<button class="btn btn-danger" onclick="window.cancelar(${req.idAmizade}, this)">Cancelar Pedido</button>`;
                 }
 
-                // --- AQUI ESTÁ A CORREÇÃO DO HTML ---
-                // Usando a estrutura 'request-card-header' para alinhar foto e texto
                 card.innerHTML = `
                     <div class="request-card-header">
                         <div class="request-avatar">
@@ -256,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // -----------------------------------------------------------------
-        // FUNÇÕES DE AÇÃO
+        // FUNÇÕES DE AÇÃO GLOBAL
         // -----------------------------------------------------------------
         window.aceitar = async (amizadeId, buttonElement) => {
             setButtonLoading(buttonElement, true);
@@ -315,15 +344,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         function carregarDadosDaPagina() {
             if (elements.friendsList) {
-                elements.friendsList.innerHTML = `<div class="friends-loading">...</div>`; 
-                // Skeleton simplificado para brevidade, o original tinha o HTML completo
+                // Não substitui o conteúdo se já houver cards, para evitar flash
+                if(elements.friendsList.children.length === 0) {
+                     elements.friendsList.innerHTML = `<div class="friends-loading"><div class="loading-spinner"></div></div>`; 
+                }
             }
             
             fetchReceivedRequests();
             fetchSentRequests();
             fetchUserProjectsCount();
             
-            setTimeout(() => { setProfileLoading(false); }, 1500);
+            setTimeout(() => { setProfileLoading(false); }, 1000);
             setTimeout(() => { renderFriends(); }, 500);
         }
 

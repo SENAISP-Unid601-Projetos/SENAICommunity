@@ -44,69 +44,72 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         setupEventListeners() {
-            // Abrir Modal de Edição
-            if (this.elements.editBtn) {
-                this.elements.editBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.openEditModal();
-                });
+    // 1. Preview da Imagem no Modal (Ao selecionar arquivo)
+    if (this.elements.projImagemInput && this.elements.projImagePreview) {
+        this.elements.projImagemInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    this.elements.projImagePreview.src = ev.target.result;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                // Se o usuário cancelar a seleção, volta para a imagem padrão
+                this.elements.projImagePreview.src = DEFAULT_COVER_IMAGE;
             }
+        });
+    }
 
-            // Abrir Modal de Exclusão
-            if (this.elements.deleteBtn) {
-                this.elements.deleteBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.elements.deleteModal.classList.add('visible');
-                    this.elements.deleteModal.style.display = 'flex';
-                });
-            }
+    // 2. Botão "Publicar Projeto" (Abrir Modal)
+    if (this.elements.openModalBtn) {
+        this.elements.openModalBtn.addEventListener("click", () => this.handlers.openModal.call(this));
+    }
 
-            // Logout
-            if (this.elements.logoutBtn) {
-                this.elements.logoutBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    localStorage.removeItem('user');
-                    window.location.href = 'login.html';
-                });
-            }
+    // 3. Botão "X" do Modal (Fechar)
+    if (this.elements.closeModalBtn) {
+        this.elements.closeModalBtn.addEventListener("click", () => this.handlers.closeModal.call(this));
+    }
 
-            // Fechar Modais (Cancel)
-            if (this.elements.cancelEditBtn) {
-                this.elements.cancelEditBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.closeModals();
-                });
-            }
-            if (this.elements.cancelDeleteBtn) {
-                this.elements.cancelDeleteBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.closeModals();
-                });
-            }
+    // 4. Botão "Cancelar" do Modal (Fechar)
+    if (this.elements.closeModalBtnAction) {
+        this.elements.closeModalBtnAction.addEventListener("click", () => this.handlers.closeModal.call(this));
+    }
 
-            // Preview da Imagem ao selecionar arquivo
-            if (this.elements.editPicInput) {
-                this.elements.editPicInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.elements.editPicPreview.src = e.target.result;
-                        }
-                        reader.readAsDataURL(file);
-                    }
-                });
-            }
+    // 5. Submit do Formulário (Criar Projeto)
+    if (this.elements.form) {
+        this.elements.form.addEventListener("submit", (e) => this.handlers.handleFormSubmit.call(this, e));
+    }
 
-            // Submissão do Formulário de Edição
-            if (this.elements.editForm) {
-                this.elements.editForm.addEventListener('submit', (e) => this.handleEditSubmit(e));
+    // 6. Fechar ao clicar no fundo escuro (Overlay)
+    if (this.elements.modalOverlay) {
+        this.elements.modalOverlay.addEventListener("click", (e) => {
+            if (e.target === this.elements.modalOverlay) {
+                this.handlers.closeModal.call(this);
             }
+        });
+    }
 
-            // Submissão do Formulário de Exclusão
-            if (this.elements.deleteForm) {
-                this.elements.deleteForm.addEventListener('submit', (e) => this.handleDeleteSubmit(e));
-            }
+    // 7. Filtros de Busca e Categoria (Funciona para todas as abas)
+    const runFilters = () => {
+        // Verifica qual aba está ativa e roda o filtro correspondente
+        if (this.state.currentTab === 'meus-projetos') {
+            this.applyFilters();
+        } else if (this.state.currentTab === 'projetos-publicos') {
+            this.filterPublicProjects();
+        } else if (this.state.currentTab === 'projetos-privados') {
+            this.filterPrivateProjects();
+        }
+    };
+
+    if (this.elements.searchInput) {
+        this.elements.searchInput.addEventListener("input", runFilters);
+    }
+
+    if (this.elements.categoryFilter) {
+        this.elements.categoryFilter.addEventListener("change", runFilters);
+    }
+
 
             // Fechar ao clicar fora
             window.addEventListener('click', (e) => {
@@ -1053,75 +1056,113 @@ closeModal() {
     }
 },
                 async handleFormSubmit(e) {
-                    e.preventDefault();
-                    const form = this.elements.form;
-                    const btn = form.querySelector(".btn-publish");
-                    setButtonLoading(btn, true);
+    e.preventDefault();
+    const form = this.elements.form;
+    const btn = form.querySelector(".btn-publish");
+    setButtonLoading(btn, true);
 
-                    const formData = new FormData();
-                    formData.append("titulo", this.elements.projTituloInput.value);
-                    formData.append("descricao", this.elements.projDescricaoInput.value);
-                    formData.append("autorId", currentUser.id);
-                    formData.append("maxMembros", 50);
-                    formData.append("grupoPrivado", this.elements.projPrivacidadeInput.value === 'true');
+    const formData = new FormData();
+    formData.append("titulo", this.elements.projTituloInput.value);
+    formData.append("descricao", this.elements.projDescricaoInput.value);
+    formData.append("autorId", currentUser.id);
+    formData.append("maxMembros", 50);
+    // Converte string 'true'/'false' para booleano real
+    formData.append("grupoPrivado", this.elements.projPrivacidadeInput.value === 'true');
 
-                    const categoria = this.elements.projCategoriaInput.value;
-                    if (categoria) {
-                        formData.append("categoria", categoria);
-                    }
+    const categoria = this.elements.projCategoriaInput.value;
+    if (categoria) {
+        formData.append("categoria", categoria);
+    }
 
-                    const techsString = this.elements.projTecnologiasInput.value;
-                    if (techsString) {
-                        const tecnologias = techsString.split(',')
-                            .map(tech => tech.trim())
-                            .filter(tech => tech.length > 0);
-                        tecnologias.forEach(tech => {
-                            formData.append("tecnologias", tech);
-                        });
-                    }
+    const techsString = this.elements.projTecnologiasInput.value;
+    if (techsString) {
+        const tecnologias = techsString.split(',')
+            .map(tech => tech.trim())
+            .filter(tech => tech.length > 0);
+        tecnologias.forEach(tech => {
+            formData.append("tecnologias", tech);
+        });
+    }
 
-                    if (this.elements.projImagemInput.files[0]) {
-                        formData.append("foto", this.elements.projImagemInput.files[0]);
-                    }
+    if (this.elements.projImagemInput.files[0]) {
+        formData.append("foto", this.elements.projImagemInput.files[0]);
+    }
 
-                    try {
-                        await window.axios.post(`${window.backendUrl}/projetos`, formData, {
-                            headers: { "Content-Type": "multipart/form-data" },
-                        });
+    try {
+        // 1. Tenta criar o projeto
+        const response = await window.axios.post(`${window.backendUrl}/projetos`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
 
-                        form.reset();
-                      this.handlers.closeModal.call(this);
+        const novoProjeto = response.data;
 
-                        // Mostrar loading enquanto recarrega as listas
-                        setGridLoading('meus-projetos-container', true);
-                        setGridLoading('projetos-publicos-container', true);
-                        setGridLoading('projetos-privados-container', true);
+        // 2. Limpa o formulário e fecha o modal IMEDIATAMENTE
+        form.reset();
+        this.handlers.closeModal.call(this); // Fecha o modal
+        window.showNotification("Projeto criado com sucesso!", "success");
 
-                        // Recarregar todas as listas
-                        await this.fetchMeusProjetos();
-                        await this.fetchProjetosPublicos();
-                        await this.fetchProjetosPrivados();
+        // 3. UI OTIMISTA: Adiciona o novo projeto na lista local manualmente
+        // Garante que a estrutura de membros exista para não quebrar o card
+        if (!novoProjeto.membros) {
+            novoProjeto.membros = [{
+                usuarioId: currentUser.id,
+                usuarioNome: currentUser.nome,
+                usuarioFotoPerfil: currentUser.urlFotoPerfil || currentUser.fotoPerfil
+            }];
+            novoProjeto.totalMembros = 1;
+        }
+        
+        // Adiciona ao início das listas de estado
+        this.state.allProjects.unshift(novoProjeto);
+        
+        // Se for público, adiciona na lista de públicos também
+        if (!novoProjeto.grupoPrivado) {
+            this.state.publicProjects.unshift(novoProjeto);
+        } else {
+            this.state.privateProjects.unshift(novoProjeto);
+        }
 
-                        // Voltar para a aba de meus projetos
-                        this.state.currentTab = 'meus-projetos';
-                        this.elements.tabButtons.forEach(btn => {
-                            btn.classList.toggle('active', btn.dataset.tab === 'meus-projetos');
-                        });
-                        this.switchTab('meus-projetos');
+        // 4. Força a troca para a aba "Meus Projetos" e renderiza
+        this.state.currentTab = 'meus-projetos';
+        this.elements.tabButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === 'meus-projetos');
+        });
+        
+        // Esconde os outros containers e mostra o "Meus Projetos"
+        document.getElementById('projetos-publicos-container').style.display = 'none';
+        document.getElementById('projetos-privados-container').style.display = 'none';
+        document.getElementById('meus-projetos-container').style.display = 'block';
 
-                        window.showNotification("Projeto criado com sucesso!", "success");
-                    } catch (error) {
-                        let errorMessage = "Falha ao criar o projeto.";
-                        if (error.response?.data?.message) {
-                            errorMessage = error.response.data.message;
-                        } else if (error.response?.data) {
-                            errorMessage = error.response.data;
-                        }
-                        window.showNotification(errorMessage, "error");
-                    } finally {
-                        setButtonLoading(btn, false);
-                    }
-                }
+        // Aplica os filtros (que vai chamar o render e mostrar o novo projeto)
+        this.applyFilters();
+
+        // 5. Atualização silenciosa em segundo plano (não bloqueia o sucesso)
+        // Isso garante que se houver algum dado extra do backend, ele apareça depois
+        setTimeout(async () => {
+            try {
+                await this.fetchMeusProjetos();
+                await this.fetchProjetosPublicos();
+                await this.fetchProjetosPrivados();
+            } catch (bgError) {
+                console.warn("Erro na atualização de fundo (ignorado para UX):", bgError);
+            }
+        }, 1000);
+
+    } catch (error) {
+        console.error("Erro ao criar projeto:", error);
+        let errorMessage = "Falha ao criar o projeto.";
+        
+        if (error.response?.data?.message) {
+            errorMessage = error.response.data.message;
+        } else if (error.response?.data && typeof error.response.data === 'string') {
+            errorMessage = error.response.data;
+        }
+        
+        window.showNotification(errorMessage, "error");
+    } finally {
+        setButtonLoading(btn, false);
+    }
+}
             },
 
             applyFilters() {
