@@ -243,10 +243,7 @@
     padding-bottom: 0;
 }
 
-.sidebar-widget {
-    /* margin-top: auto;  <-- REMOVA ESTA LINHA */
-    margin-top: 1rem; /* Adicione apenas um espaçamento pequeno se quiser */
-}
+
 
 .menu-item {
     display: flex; align-items: center; gap: 1rem;
