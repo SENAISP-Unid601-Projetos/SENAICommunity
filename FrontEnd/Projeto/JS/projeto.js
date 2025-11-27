@@ -1055,10 +1055,13 @@ closeModal() {
         preview.src = DEFAULT_COVER_IMAGE;
     }
 },
-                async handleFormSubmit(e) {
+async handleFormSubmit(e) {
     e.preventDefault();
     const form = this.elements.form;
     const btn = form.querySelector(".btn-publish");
+    
+    if (btn.disabled) return;
+    
     setButtonLoading(btn, true);
 
     const formData = new FormData();
@@ -1066,22 +1069,15 @@ closeModal() {
     formData.append("descricao", this.elements.projDescricaoInput.value);
     formData.append("autorId", currentUser.id);
     formData.append("maxMembros", 50);
-    // Converte string 'true'/'false' para booleano real
     formData.append("grupoPrivado", this.elements.projPrivacidadeInput.value === 'true');
 
     const categoria = this.elements.projCategoriaInput.value;
-    if (categoria) {
-        formData.append("categoria", categoria);
-    }
+    if (categoria) formData.append("categoria", categoria);
 
     const techsString = this.elements.projTecnologiasInput.value;
     if (techsString) {
-        const tecnologias = techsString.split(',')
-            .map(tech => tech.trim())
-            .filter(tech => tech.length > 0);
-        tecnologias.forEach(tech => {
-            formData.append("tecnologias", tech);
-        });
+        const tecnologias = techsString.split(',').map(tech => tech.trim()).filter(t => t.length > 0);
+        tecnologias.forEach(tech => formData.append("tecnologias", tech));
     }
 
     if (this.elements.projImagemInput.files[0]) {
@@ -1089,75 +1085,87 @@ closeModal() {
     }
 
     try {
-        // 1. Tenta criar o projeto
+        // 1. Criação no Backend
         const response = await window.axios.post(`${window.backendUrl}/projetos`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
 
         const novoProjeto = response.data;
 
-        // 2. Limpa o formulário e fecha o modal IMEDIATAMENTE
-        form.reset();
-        this.handlers.closeModal.call(this); // Fecha o modal
+        // 2. Feedback Visual Imediato
         window.showNotification("Projeto criado com sucesso!", "success");
-
-        // 3. UI OTIMISTA: Adiciona o novo projeto na lista local manualmente
-        // Garante que a estrutura de membros exista para não quebrar o card
-        if (!novoProjeto.membros) {
-            novoProjeto.membros = [{
-                usuarioId: currentUser.id,
-                usuarioNome: currentUser.nome,
-                usuarioFotoPerfil: currentUser.urlFotoPerfil || currentUser.fotoPerfil
-            }];
-            novoProjeto.totalMembros = 1;
-        }
+        form.reset();
         
-        // Adiciona ao início das listas de estado
-        this.state.allProjects.unshift(novoProjeto);
+        const preview = document.getElementById('proj-image-preview');
+        if(preview) preview.src = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
         
-        // Se for público, adiciona na lista de públicos também
-        if (!novoProjeto.grupoPrivado) {
-            this.state.publicProjects.unshift(novoProjeto);
-        } else {
-            this.state.privateProjects.unshift(novoProjeto);
-        }
+        this.handlers.closeModal.call(this);
 
-        // 4. Força a troca para a aba "Meus Projetos" e renderiza
-        this.state.currentTab = 'meus-projetos';
-        this.elements.tabButtons.forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === 'meus-projetos');
-        });
-        
-        // Esconde os outros containers e mostra o "Meus Projetos"
-        document.getElementById('projetos-publicos-container').style.display = 'none';
-        document.getElementById('projetos-privados-container').style.display = 'none';
-        document.getElementById('meus-projetos-container').style.display = 'block';
-
-        // Aplica os filtros (que vai chamar o render e mostrar o novo projeto)
-        this.applyFilters();
-
-        // 5. Atualização silenciosa em segundo plano (não bloqueia o sucesso)
-        // Isso garante que se houver algum dado extra do backend, ele apareça depois
-        setTimeout(async () => {
-            try {
-                await this.fetchMeusProjetos();
-                await this.fetchProjetosPublicos();
-                await this.fetchProjetosPrivados();
-            } catch (bgError) {
-                console.warn("Erro na atualização de fundo (ignorado para UX):", bgError);
+        // 3. TRUQUE PARA EXIBIÇÃO IMEDIATA (Bypass no Filtro)
+        try {
+            // Garante que o array de membros exista
+            if (!novoProjeto.membros) novoProjeto.membros = [];
+            
+            // Verifica se o usuário atual já está na lista (evita duplicatas)
+            const jaEhMembro = novoProjeto.membros.some(m => m.usuarioId == currentUser.id);
+            
+            // Se não estiver (o que é comum na resposta do create), adicionamos manualmente
+            // Isso garante que o applyFilters() aceite este projeto na aba "Meus Projetos"
+            if (!jaEhMembro) {
+                novoProjeto.membros.push({
+                    usuarioId: currentUser.id,
+                    usuarioNome: currentUser.nome,
+                    usuarioFotoPerfil: currentUser.urlFotoPerfil || currentUser.fotoPerfil
+                });
+                novoProjeto.totalMembros = (novoProjeto.totalMembros || 0) + 1;
             }
-        }, 1000);
+
+            // Inicializa listas se estiverem vazias
+            if (!this.state.allProjects) this.state.allProjects = [];
+            if (!this.state.publicProjects) this.state.publicProjects = [];
+            if (!this.state.privateProjects) this.state.privateProjects = [];
+
+            // Adiciona ao topo das listas locais
+            this.state.allProjects.unshift(novoProjeto);
+
+            if (novoProjeto.grupoPrivado) {
+                this.state.privateProjects.unshift(novoProjeto);
+            } else {
+                this.state.publicProjects.unshift(novoProjeto);
+            }
+
+            // 4. LIMPEZA DE FILTROS E FOCO NA ABA
+            // Limpa a busca para garantir que o novo projeto apareça
+            if (this.elements.searchInput) this.elements.searchInput.value = "";
+            if (this.elements.categoryFilter) this.elements.categoryFilter.value = "todos";
+
+            // Força a ida para a aba "Meus Projetos"
+            this.state.currentTab = 'meus-projetos';
+            this.elements.tabButtons.forEach(btn => {
+                if(btn.dataset.tab === 'meus-projetos') btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            // Troca os containers visíveis
+            document.getElementById('projetos-publicos-container').style.display = 'none';
+            document.getElementById('projetos-privados-container').style.display = 'none';
+            document.getElementById('meus-projetos-container').style.display = 'block';
+
+            // 5. RENDERIZAÇÃO FINAL
+            this.applyFilters();
+
+        } catch (renderError) {
+            console.warn("Erro na renderização otimista:", renderError);
+            // Fallback seguro
+            setTimeout(() => this.fetchMeusProjetos(), 500);
+        }
 
     } catch (error) {
         console.error("Erro ao criar projeto:", error);
         let errorMessage = "Falha ao criar o projeto.";
-        
         if (error.response?.data?.message) {
             errorMessage = error.response.data.message;
-        } else if (error.response?.data && typeof error.response.data === 'string') {
-            errorMessage = error.response.data;
         }
-        
         window.showNotification(errorMessage, "error");
     } finally {
         setButtonLoading(btn, false);

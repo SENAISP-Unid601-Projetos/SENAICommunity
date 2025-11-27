@@ -403,24 +403,71 @@ body {
   background-color: var(--online); /* Garante a cor verde */
 }
 /* Container Layout */
+/* 1. Ajuste no Container (Grid) */
 .container {
-  display: grid;
-  grid-template-columns: 280px 1fr 300px;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  max-width: 1600px;
-  margin: 0 auto;
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    max-width: 1600px;
+    margin: 0 auto;
+    
+    /* ADICIONE ISTO: */
+    /* Impede que as colunas laterais estiquem até o fim da página. */
+    /* Isso é essencial para o position: sticky funcionar no Grid. */
+    align-items: start; 
 }
 
-/* Sidebar Styles */
+/* 2. Ajuste na Sidebar Esquerda (Menu) */
 .sidebar {
-  position: sticky;
-  top: 80px;
-  height: calc(100vh - 100px);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+    /* Fixação */
+    position: sticky;
+    top: 80px; /* Altura do Header */
+    
+    /* Tamanho exato da tela visível (Viewport - Header) */
+    height: calc(100vh - 80px);
+    
+    /* Habilita rolagem interna se o menu for maior que a tela */
+    overflow-y: auto;
+    
+    /* Mantém o layout flex interno */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    
+    /* Estética da rolagem */
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-quaternary) var(--bg-secondary);
+}
+
+/* 3. Ajuste na Sidebar Direita (Eventos/Sugestões) */
+.right-sidebar {
+    /* Fixação */
+    position: sticky;
+    top: 80px; /* Altura do Header */
+    
+    /* Tamanho exato da tela visível */
+    height: calc(100vh - 80px);
+    
+    /* Habilita rolagem interna */
+    overflow-y: auto;
+    
+    /* Garante que ela apareça */
+    display: block; 
+    
+    /* Estética da rolagem */
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-quaternary) var(--bg-secondary);
+}
+
+/* (Opcional) Ajuste para telas menores onde a direita some */
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 280px 1fr; /* Remove a coluna da direita do grid */
+  }
+  .right-sidebar {
+    display: none; /* Esconde a sidebar direita */
+  }
 }
 
 .user-info-link {
@@ -4196,5 +4243,84 @@ html.acessibilidade-destacar-links .btn {
         max-height: 70vh !important;
         z-index: 9999 !important;
         box-shadow: 0 0 0 100vmax rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.5) !important;
+    }
+}
+
+/* =================================================================
+   CORREÇÃO DEFINITIVA: LAYOUT DE APP (ROLAGEM INDEPENDENTE)
+   Adicione ao final de principal.css
+================================================================= */
+
+/* 1. Trava a rolagem da janela inteira (O scroll do navegador some) */
+html, body {
+    height: 100vh; /* Força a altura exata da tela */
+    overflow: hidden; /* Impede a página inteira de rolar */
+}
+
+/* 2. Configura o Header para ficar fixo no topo visualmente */
+.topbar {
+    position: relative; /* Ocupa espaço no fluxo normal */
+    z-index: 1000;
+}
+
+/* 3. Transforma o Container na área útil restante da tela */
+.container {
+    /* Altura = Tela inteira - Altura do Header (aprox 80px) */
+    height: calc(100vh - 83px); 
+    
+    display: flex !important; /* Garante layout em colunas */
+    align-items: stretch; /* Faz todas as colunas terem 100% de altura */
+    overflow: hidden; /* O container em si não rola */
+    padding-bottom: 0 !important; /* Remove padding extra em baixo */
+    margin-bottom: 0 !important;
+}
+
+/* 4. Configura as Laterais (Menu e Direita) para rolarem sozinhas */
+.sidebar, .right-sidebar {
+    height: 100%; /* Ocupa toda a altura do container */
+    overflow-y: auto; /* CRIA O SCROLL INDEPENDENTE AQUI */
+    
+    /* Removemos o sticky, pois agora a coluna inteira é fixa */
+    position: relative; 
+    top: 0;
+    
+    /* Melhoria visual da barra de rolagem */
+    scrollbar-width: thin;
+    padding-bottom: 20px; /* Espaço no final do scroll */
+}
+
+/* 5. Configura o Feed (Meio) para rolar sozinho também */
+.main-content {
+    flex: 1; /* Ocupa o espaço central */
+    height: 100%; /* Ocupa toda a altura do container */
+    overflow-y: auto; /* O FEED GANHA SEU PRÓPRIO SCROLL AGORA */
+    
+    min-width: 0; /* Previne quebra de layout flex */
+    padding: 1.5rem; /* Mantém o espaçamento interno */
+}
+
+/* --- Ajuste Mobile --- */
+@media (max-width: 768px) {
+    /* No mobile, voltamos ao comportamento padrão para a rolagem funcionar com o dedo */
+    html, body {
+        height: auto;
+        overflow: auto;
+        overflow-x: hidden;
+    }
+    
+    .container {
+        height: auto;
+        display: block !important;
+    }
+    
+    .main-content {
+        height: auto;
+        overflow-y: visible;
+    }
+    
+    .sidebar {
+        position: fixed; /* Volta a ser menu gaveta */
+        height: 100vh;
+        z-index: 2000;
     }
 }
