@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-
+    const DEFAULT_COVER_IMAGE = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
     // Função utilitária para mostrar/ocultar modais
     function toggleModal(modalId, show) {
         const modal = document.getElementById(modalId);
@@ -77,9 +77,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 5. Submit do Formulário (Criar Projeto)
-    if (this.elements.form) {
-        this.elements.form.addEventListener("submit", (e) => this.handlers.handleFormSubmit.call(this, e));
+  // Substitua o addEventListener antigo por isto:
+if (this.elements.form) {
+    // Remove listeners antigos clonando o nó (Truque para limpar eventos duplicados)
+    const newForm = this.elements.form.cloneNode(true);
+    this.elements.form.parentNode.replaceChild(newForm, this.elements.form);
+    this.elements.form = newForm; // Atualiza a referência
+    
+    // Adiciona o listener no novo formulário limpo
+    this.elements.form.addEventListener("submit", (e) => this.handlers.handleFormSubmit.call(this, e));
+    
+    // Re-seleciona os inputs dentro do novo formulário para não perder a referência
+    this.elements.projTituloInput = document.getElementById("proj-titulo");
+    this.elements.projDescricaoInput = document.getElementById("proj-descricao");
+    this.elements.projImagemInput = document.getElementById("proj-imagem");
+    this.elements.projCategoriaInput = document.getElementById("proj-categoria");
+    this.elements.projTecnologiasInput = document.getElementById("proj-tecnologias");
+    this.elements.projPrivacidadeInput = document.getElementById("proj-privacidade");
+    
+    // Re-ativa o preview da imagem no novo form
+    if (this.elements.projImagemInput) {
+        this.elements.projImagemInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const preview = document.getElementById('proj-image-preview');
+            if (file && preview) {
+                const reader = new FileReader();
+                reader.onload = (ev) => preview.src = ev.target.result;
+                reader.readAsDataURL(file);
+            }
+        });
     }
+}
 
     // 6. Fechar ao clicar no fundo escuro (Overlay)
     if (this.elements.modalOverlay) {
@@ -1022,156 +1050,123 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             },
 
-            handlers: {
-               openModal() {
-    const preview = document.getElementById('proj-image-preview');
-    
-    // Se não tiver src, ou se for o placeholder antigo, ou se a imagem quebrou (src vazio)
-    if (preview) {
-        // Define a imagem padrão do backend
-        if (!preview.src || preview.src.includes('placehold.co') || preview.src === window.location.href) {
-            preview.src = DEFAULT_COVER_IMAGE;
-        }
-        
-        // Garante que, se der erro ao carregar (ex: 404), volte para o padrão
-        preview.onerror = function() {
-            this.src = DEFAULT_COVER_IMAGE;
-        };
-    }
-    toggleModal('novo-projeto-modal', true);
-},
-
-// Atualize o método handlers.closeModal
-closeModal() {
-    toggleModal('novo-projeto-modal', false);
-    
-    const form = document.getElementById('novo-projeto-form');
-    const preview = document.getElementById('proj-image-preview');
-    
-    if (form) form.reset();
-    
-    // Reseta para a imagem padrão do backend ao fechar
-    if (preview) {
-        preview.src = DEFAULT_COVER_IMAGE;
-    }
-},
-async handleFormSubmit(e) {
-    e.preventDefault();
-    const form = this.elements.form;
-    const btn = form.querySelector(".btn-publish");
-    
-    if (btn.disabled) return;
-    
-    setButtonLoading(btn, true);
-
-    const formData = new FormData();
-    formData.append("titulo", this.elements.projTituloInput.value);
-    formData.append("descricao", this.elements.projDescricaoInput.value);
-    formData.append("autorId", currentUser.id);
-    formData.append("maxMembros", 50);
-    formData.append("grupoPrivado", this.elements.projPrivacidadeInput.value === 'true');
-
-    const categoria = this.elements.projCategoriaInput.value;
-    if (categoria) formData.append("categoria", categoria);
-
-    const techsString = this.elements.projTecnologiasInput.value;
-    if (techsString) {
-        const tecnologias = techsString.split(',').map(tech => tech.trim()).filter(t => t.length > 0);
-        tecnologias.forEach(tech => formData.append("tecnologias", tech));
-    }
-
-    if (this.elements.projImagemInput.files[0]) {
-        formData.append("foto", this.elements.projImagemInput.files[0]);
-    }
-
-    try {
-        // 1. Criação no Backend
-        const response = await window.axios.post(`${window.backendUrl}/projetos`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-        });
-
-        const novoProjeto = response.data;
-
-        // 2. Feedback Visual Imediato
-        window.showNotification("Projeto criado com sucesso!", "success");
-        form.reset();
-        
+    handlers: {
+    openModal() {
         const preview = document.getElementById('proj-image-preview');
-        if(preview) preview.src = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
+        // Define a imagem padrão (usa a variável global do window ou um fallback)
+        const defaultImg = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
         
-        this.handlers.closeModal.call(this);
+        if (preview) {
+            // Se não tiver src, ou se for placeholder, ou se estiver vazio
+            if (!preview.src || preview.src.includes('placehold.co') || preview.src === window.location.href) {
+                preview.src = defaultImg;
+            }
+            
+            // Garante que, se der erro ao carregar, volte para o padrão
+            preview.onerror = function() {
+                this.src = defaultImg;
+            };
+        }
+        toggleModal('novo-projeto-modal', true);
+    },
 
-        // 3. TRUQUE PARA EXIBIÇÃO IMEDIATA (Bypass no Filtro)
+    closeModal() {
+        toggleModal('novo-projeto-modal', false);
+        
+        const form = document.getElementById('novo-projeto-form');
+        const preview = document.getElementById('proj-image-preview');
+        const defaultImg = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
+        
+        if (form) form.reset();
+        
+        // Reseta para a imagem padrão ao fechar
+        if (preview) {
+            preview.src = defaultImg;
+        }
+    },
+
+    async handleFormSubmit(e) {
+        e.preventDefault();
+        
+        const form = this.elements.form;
+        const btn = form.querySelector(".btn-publish");
+        
+        // Trava de segurança
+        if (btn.disabled || btn.dataset.processing === "true") return;
+
+        // Ativa estado de carregamento
+        btn.dataset.processing = "true";
+        setButtonLoading(btn, true);
+
+        const formData = new FormData();
+        formData.append("titulo", this.elements.projTituloInput.value);
+        formData.append("descricao", this.elements.projDescricaoInput.value);
+        formData.append("autorId", currentUser.id);
+        formData.append("maxMembros", 50);
+        
+        // Tratamento booleano
+        const isPrivate = this.elements.projPrivacidadeInput.value === 'true';
+        formData.append("grupoPrivado", isPrivate);
+
+        const categoria = this.elements.projCategoriaInput.value;
+        if (categoria) formData.append("categoria", categoria);
+
+        const techsString = this.elements.projTecnologiasInput.value;
+        if (techsString) {
+            const tecnologias = techsString.split(',').map(tech => tech.trim()).filter(t => t.length > 0);
+            tecnologias.forEach(tech => formData.append("tecnologias", tech));
+        }
+
+        if (this.elements.projImagemInput.files[0]) {
+            formData.append("foto", this.elements.projImagemInput.files[0]);
+        }
+
         try {
-            // Garante que o array de membros exista
-            if (!novoProjeto.membros) novoProjeto.membros = [];
-            
-            // Verifica se o usuário atual já está na lista (evita duplicatas)
-            const jaEhMembro = novoProjeto.membros.some(m => m.usuarioId == currentUser.id);
-            
-            // Se não estiver (o que é comum na resposta do create), adicionamos manualmente
-            // Isso garante que o applyFilters() aceite este projeto na aba "Meus Projetos"
-            if (!jaEhMembro) {
-                novoProjeto.membros.push({
-                    usuarioId: currentUser.id,
-                    usuarioNome: currentUser.nome,
-                    usuarioFotoPerfil: currentUser.urlFotoPerfil || currentUser.fotoPerfil
-                });
-                novoProjeto.totalMembros = (novoProjeto.totalMembros || 0) + 1;
-            }
-
-            // Inicializa listas se estiverem vazias
-            if (!this.state.allProjects) this.state.allProjects = [];
-            if (!this.state.publicProjects) this.state.publicProjects = [];
-            if (!this.state.privateProjects) this.state.privateProjects = [];
-
-            // Adiciona ao topo das listas locais
-            this.state.allProjects.unshift(novoProjeto);
-
-            if (novoProjeto.grupoPrivado) {
-                this.state.privateProjects.unshift(novoProjeto);
-            } else {
-                this.state.publicProjects.unshift(novoProjeto);
-            }
-
-            // 4. LIMPEZA DE FILTROS E FOCO NA ABA
-            // Limpa a busca para garantir que o novo projeto apareça
-            if (this.elements.searchInput) this.elements.searchInput.value = "";
-            if (this.elements.categoryFilter) this.elements.categoryFilter.value = "todos";
-
-            // Força a ida para a aba "Meus Projetos"
-            this.state.currentTab = 'meus-projetos';
-            this.elements.tabButtons.forEach(btn => {
-                if(btn.dataset.tab === 'meus-projetos') btn.classList.add('active');
-                else btn.classList.remove('active');
+            // 1. Envia para o Backend
+            await window.axios.post(`${window.backendUrl}/projetos`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
             });
 
-            // Troca os containers visíveis
-            document.getElementById('projetos-publicos-container').style.display = 'none';
-            document.getElementById('projetos-privados-container').style.display = 'none';
-            document.getElementById('meus-projetos-container').style.display = 'block';
+            // 2. Fecha o modal (Agora sem dar erro de ReferenceError)
+            this.handlers.closeModal.call(this);
+            
+            // 3. Notifica Sucesso
+            window.showNotification("Projeto criado com sucesso!", "success");
 
-            // 5. RENDERIZAÇÃO FINAL
-            this.applyFilters();
+            // 4. ATUALIZAÇÃO IMEDIATA
+            setGridLoading('meus-projetos-container', true);
+            
+            if(this.elements.searchInput) this.elements.searchInput.value = "";
+            if(this.elements.categoryFilter) this.elements.categoryFilter.value = "todos";
 
-        } catch (renderError) {
-            console.warn("Erro na renderização otimista:", renderError);
-            // Fallback seguro
-            setTimeout(() => this.fetchMeusProjetos(), 500);
+            // Busca dados novos
+            await this.fetchMeusProjetos();
+            
+            // Muda aba
+            this.elements.tabButtons.forEach(b => b.classList.remove('active'));
+            const myTabBtn = document.querySelector('[data-tab="meus-projetos"]');
+            if(myTabBtn) myTabBtn.classList.add('active');
+            
+            this.state.currentTab = 'meus-projetos';
+            this.switchTab('meus-projetos');
+
+        } catch (error) {
+            console.error("Erro ao criar projeto:", error);
+            let errorMessage = "Falha ao criar o projeto.";
+            
+            if (error.response && error.response.data) {
+                errorMessage = error.response.data.message || error.response.data;
+            } else if (typeof error.response?.data === 'string') {
+                 errorMessage = error.response.data;
+            }
+
+            window.showNotification(errorMessage, "error");
+        } finally {
+            setButtonLoading(btn, false);
+            btn.dataset.processing = "false";
         }
-
-    } catch (error) {
-        console.error("Erro ao criar projeto:", error);
-        let errorMessage = "Falha ao criar o projeto.";
-        if (error.response?.data?.message) {
-            errorMessage = error.response.data.message;
-        }
-        window.showNotification(errorMessage, "error");
-    } finally {
-        setButtonLoading(btn, false);
     }
-}
-            },
+},
 
             applyFilters() {
                 const search = this.elements.searchInput.value.toLowerCase();
