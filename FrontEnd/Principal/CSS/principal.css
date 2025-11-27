@@ -1242,7 +1242,7 @@ body {
   .sidebar {
     position: fixed;
     top: 60px;
-    left: 0;
+    left: -280px;
     width: 280px;
     height: calc(100vh - 60px);
     z-index: 800;
@@ -1252,7 +1252,7 @@ body {
   }
 
   .sidebar.mobile-open {
-    transform: translateX(0);
+    transform: translateX(280px);
   }
 }
 
@@ -3460,15 +3460,10 @@ a.user-card-link:hover h4 {
     text-decoration: underline;
 }
 /* =================================================================
-
-   ACESSIBILIDADE GLOBAL (SOLUÇÃO VIA VARIÁVEIS)
-
-   Cole isto no FINAL do arquivo principal.css
-
+   ACESSIBILIDADE GLOBAL (Substitua o bloco antigo por este)
    ================================================================= */
 
 /* 1. Tamanhos de Fonte */
-
 html[data-font-size="small"] { font-size: 14px; }
 html[data-font-size="medium"] { font-size: 16px; }
 html[data-font-size="large"] { font-size: 20px; }
@@ -3482,35 +3477,25 @@ body.reduce-motion *::after {
     scroll-behavior: auto !important;
 }
 
-/* 3. Alto Contraste - SOBRESCREVENDO AS VARIÁVEIS GLOBAIS */
-/* Isso garante que funcione em TODAS as páginas (Mensagem, Feed, etc) */
+/* 3. Alto Contraste (Sobrescrevendo Variáveis) */
 html.acessibilidade-alto-contraste {
-    /* Força preto puro no fundo */
     --bg-primary: #000000 !important;
     --bg-secondary: #000000 !important;
     --bg-tertiary: #000000 !important;
     --bg-quaternary: #000000 !important;
     --bg-hover: #333333 !important;
-    /* Força branco puro e amarelo no texto */
     --text-primary: #ffffff !important;
-    --text-secondary: #ffff00 !important; /* Amarelo para destacar textos secundários */
-    --text-tertiary: #00ff00 !important;  /* Verde para textos terciários */
-    /* Destaques em Amarelo Acessível */
+    --text-secondary: #ffff00 !important;
+    --text-tertiary: #00ff00 !important;
     --accent-primary: #ffff00 !important; 
     --accent-secondary: #ffcc00 !important;
     --highlight: #ffff00 !important;
-    /* Bordas brancas para separar os elementos pretos */
     --border-color: #ffffff !important;
-    /* Filtro extra para garantir imagens e ícones */
     filter: contrast(130%) grayscale(100%);
-
 }
-/* Ajustes finos para elementos que não usam variáveis ou precisam de borda extra */
-
 html.acessibilidade-alto-contraste img {
     filter: grayscale(100%);
-    border: 1px solid #fff; /* Borda nas fotos para não sumir no fundo preto */
-
+    border: 1px solid #fff;
 }
 html.acessibilidade-alto-contraste button,
 html.acessibilidade-alto-contraste input,
@@ -3520,18 +3505,26 @@ html.acessibilidade-alto-contraste .btn {
     color: #ffff00 !important;
     font-weight: bold;
 }
-/* 4. Fonte Legível */
+
+/* 4. Fonte Legível (CORREÇÃO DOS ÍCONES) */
+/* O seletor :not(i) impede que a fonte Arial seja aplicada nos ícones FontAwesome */
 html.acessibilidade-fonte-legivel body,
-html.acessibilidade-fonte-legivel * {
+html.acessibilidade-fonte-legivel *:not(i):not(.fas):not(.far):not(.fab):not(.fa) {
     font-family: 'Verdana', 'Arial', sans-serif !important;
     letter-spacing: 0.05em !important;
     line-height: 1.6 !important;
 }
-/* 5. Destacar Links */
 
+/* 5. Destacar Links (CORREÇÃO DA COR) */
 html.acessibilidade-destacar-links a {
     text-decoration: underline !important;
     font-weight: 700 !important;
-    background-color: #ffff00 !important;
-    color: #000000 !important;
+    background-color: transparent !important; /* Remove fundo amarelo */
+    color: #58a6ff !important; /* Cor Azul claro */
+}
+/* Garante que botões/links tenham borda azul também */
+html.acessibilidade-destacar-links button,
+html.acessibilidade-destacar-links .btn {
+    border: 2px solid #58a6ff !important;
+    color: #58a6ff !important;
 }
