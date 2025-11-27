@@ -152,13 +152,15 @@
 
 /* --- WIDGET AMIGOS --- */
 .sidebar-widget {
-    margin-top: 0 !important;
-    flex: 0 0 auto;
+    margin-top: 1.5rem;
+    
 }
 .sidebar-widget .online-friends {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 12px; padding: 1.5rem; box-shadow: none;
+        margin-top: 1.5rem;
+
 }
 .sidebar-widget .widget-title {
     font-size: 1rem; font-weight: 600; color: var(--text-secondary);

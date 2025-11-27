@@ -96,6 +96,10 @@ body {
     z-index: 100;
 }
 
+.sidebar-widget {
+    margin-top: 1.5rem;
+}
+
 .sidebar-header {
     padding: 1.5rem;
     border-bottom: 1px solid var(--border-color);
