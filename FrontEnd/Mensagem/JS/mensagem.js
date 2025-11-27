@@ -322,7 +322,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateSidebarUserInfo() {
         const userInfoContainer = document.querySelector('.user-info');
         
-        // Usa currentUser (carregado via principal.js) ou window.currentUser
         const user = currentUser || window.currentUser;
 
         if (user) {
@@ -333,17 +332,12 @@ document.addEventListener("DOMContentLoaded", () => {
             
             if(sidebarName) sidebarName.textContent = user.nome;
             
-            // --- LÓGICA DE CARGO SIMPLIFICADA (Igual ao Principal.js) ---
+            // --- LÓGICA DE CARGO SIMPLIFICADA ---
             if(sidebarTitle) {
-                // Pega o campo 'tipoUsuario' que já vem pronto do backend (igual no principal.js)
-                // Se por acaso vier nulo, usa "Membro" como fallback
                 let userRole = user.tipoUsuario || "Membro";
                 
-                // Formatação bonita: Transforma "ALUNO" em "Aluno"
                 if (userRole && typeof userRole === 'string') {
-                    // Remove "ROLE_" se vier (ex: ROLE_ALUNO -> ALUNO)
                     userRole = userRole.replace('ROLE_', '').toLowerCase();
-                    // Capitaliza a primeira letra (aluno -> Aluno)
                     userRole = userRole.charAt(0).toUpperCase() + userRole.slice(1);
                 }
                 
@@ -358,12 +352,10 @@ document.addEventListener("DOMContentLoaded", () => {
                  }
             }
             
-            // Atualiza stats se disponíveis
             if(connectionsCount && window.userFriends) {
                 connectionsCount.textContent = window.userFriends.length;
             }
 
-            // Remove a classe de loading
             if (userInfoContainer) {
                 userInfoContainer.classList.add('loaded');
             }
@@ -467,10 +459,17 @@ document.addEventListener("DOMContentLoaded", () => {
         return card;
     }
 
+    // --- AQUI ESTÁ A ALTERAÇÃO ---
     function renderChatHeader() {
+        // Agora envolvemos o conteúdo em uma DIV clicável que leva ao perfil
         const content = activeConversation.usuarioId ? `
-            <img src="${activeConversation.avatar}" class="chat-group-avatar" alt="${activeConversation.nome}">
-            <div><h3 class="chat-group-title">${activeConversation.nome}</h3></div>
+            <div class="chat-header-profile-link" 
+                 style="display: flex; align-items: center; gap: 1rem; cursor: pointer;" 
+                 onclick="window.location.href='perfil.html?id=${activeConversation.usuarioId}'" 
+                 title="Ver perfil">
+                <img src="${activeConversation.avatar}" class="chat-group-avatar" alt="${activeConversation.nome}">
+                <div><h3 class="chat-group-title">${activeConversation.nome}</h3></div>
+            </div>
         ` : `<h3 class="chat-group-title">Selecione uma Conversa</h3>`;
 
         if (elements.chatHeaderContent) elements.chatHeaderContent.innerHTML = content;
