@@ -315,7 +315,6 @@ if (this.elements.form) {
     }
 
     function updateSidebarUserInfo() {
-    // Seleciona o container que possui o spinner
     const userInfoContainer = document.querySelector('.user-info');
 
     if (window.currentUser) {
@@ -323,18 +322,53 @@ if (this.elements.form) {
         const sidebarTitle = document.getElementById('sidebar-user-title');
         const sidebarImg = document.getElementById('sidebar-user-img');
         
-        if(sidebarName) sidebarName.textContent = window.currentUser.nome;
-        if(sidebarTitle) sidebarTitle.textContent = window.currentUser.cargo || 'Membro'; 
+        // 1. Define a imagem padrão de forma robusta
+        // Tenta pegar a global, se falhar, tenta montar a URL do backend, se falhar, usa um placeholder online
+        const defaultImage = window.defaultAvatarUrl || 
+                           (window.backendUrl ? `${window.backendUrl}/images/default-avatar.jpg` : '') || 
+                           'https://via.placeholder.com/80?text=User';
+
+        if (sidebarName) {
+            sidebarName.textContent = window.currentUser.nome || "Usuário";
+        }
         
-        if(sidebarImg && window.currentUser.fotoPerfil) {
-             if(typeof window.getAvatarUrl === 'function') {
-                 sidebarImg.src = window.getAvatarUrl(window.currentUser.fotoPerfil);
-             } else {
-                 sidebarImg.src = window.currentUser.fotoPerfil;
-             }
+        if (sidebarTitle) {
+            const role = window.currentUser.cargo || 
+                         window.currentUser.titulo || 
+                         window.currentUser.tipoUsuario || 
+                         'Membro da Comunidade';
+            sidebarTitle.textContent = role;
+        }
+        
+        if (sidebarImg) {
+            const foto = window.currentUser.fotoPerfil || window.currentUser.urlFotoPerfil;
+            
+            // 2. Configura o manipulador de erro ANTES de definir o src
+            // Isso garante que se a imagem quebrar (404), ele carrega a padrão
+            sidebarImg.onerror = function() {
+                // Evita loop infinito: só troca se a atual não for a default
+                if (this.src !== defaultImage) {
+                    this.src = defaultImage;
+                }
+            };
+
+            // 3. Define a imagem
+            if (foto) {
+                 if (typeof window.getAvatarUrl === 'function') {
+                     sidebarImg.src = window.getAvatarUrl(foto);
+                 } else if (foto.startsWith('http')) {
+                     sidebarImg.src = foto;
+                 } else {
+                     // Garante que não duplique a barra
+                     const cleanPath = foto.startsWith('/') ? foto : `/${foto}`;
+                     sidebarImg.src = `${window.backendUrl}/api/arquivos${cleanPath}`;
+                 }
+            } else {
+                // Se não tem foto no objeto do usuário, usa a default direto
+                sidebarImg.src = defaultImage;
+            }
         }
 
-        // IMPORTANTE: Remove a classe de loading para mostrar o perfil
         if (userInfoContainer) {
             userInfoContainer.classList.add('loaded');
         }
@@ -346,21 +380,47 @@ if (this.elements.form) {
 
     // --- CORREÇÃO MENU MOBILE ---
     function setupMobileMenu() {
-        const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
-        const sidebar = document.getElementById("sidebar");
-        const mobileOverlay = document.getElementById("mobile-overlay");
-        const sidebarClose = document.getElementById("sidebar-close");
+    const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+    const sidebar = document.getElementById("sidebar");
+    const mobileOverlay = document.getElementById("mobile-overlay");
+    const sidebarClose = document.getElementById("sidebar-close");
 
-        function toggleMenu() {
-            sidebar.classList.toggle('active');
-            mobileOverlay.classList.toggle('active');
-            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+    // Função única para alternar o estado
+    function toggleMenu(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation(); // Impede que o clique feche o menu imediatamente
         }
-
-        if (mobileMenuToggle) mobileMenuToggle.onclick = toggleMenu;
-        if (sidebarClose) sidebarClose.onclick = toggleMenu;
-        if (mobileOverlay) mobileOverlay.onclick = toggleMenu;
+        
+        // Usa a classe 'active' que está definida no seu projeto.css
+        const isActive = sidebar.classList.contains('active');
+        
+        if (isActive) {
+            sidebar.classList.remove('active');
+            if (mobileOverlay) mobileOverlay.classList.remove('active');
+            document.body.style.overflow = ''; // Libera a rolagem
+        } else {
+            sidebar.classList.add('active');
+            if (mobileOverlay) mobileOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Bloqueia a rolagem do fundo
+        }
     }
+
+    // Remove event listeners antigos para evitar duplicidade
+    if (mobileMenuToggle) {
+        const newToggle = mobileMenuToggle.cloneNode(true);
+        mobileMenuToggle.parentNode.replaceChild(newToggle, mobileMenuToggle);
+        newToggle.addEventListener('click', toggleMenu);
+    }
+
+    if (sidebarClose) {
+        sidebarClose.addEventListener('click', toggleMenu);
+    }
+
+    if (mobileOverlay) {
+        mobileOverlay.addEventListener('click', toggleMenu);
+    }
+}
 
     // Chama assim que o HTML estiver pronto
     setupMobileMenu();
