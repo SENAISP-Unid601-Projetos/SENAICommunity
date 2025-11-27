@@ -884,3 +884,174 @@
         height: 100px;
     }
 }
+
+/* ... (Mantenha todo o seu CSS anterior aqui) ... */
+
+/* =================================================================
+   ESTILOS DO NOVO MODAL DE LISTA E BOTÃO VER MAIS
+================================================================= */
+
+/* Botão "Ver Mais" */
+.btn-ver-mais {
+    grid-column: 1 / -1; /* Ocupa toda a largura da grid */
+    margin: 1rem auto 0 auto;
+    background-color: transparent;
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-ver-mais:hover {
+    background-color: var(--accent-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.3);
+}
+
+.btn-ver-mais:after {
+    content: '\f078'; /* Ícone seta para baixo (FontAwesome) */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+}
+
+/* Ajustes Específicos do Modal de Lista */
+.modal-content-lista {
+    width: 90%;
+    max-width: 600px; /* Um pouco mais largo que o padrão */
+    max-height: 85vh; /* Altura máxima */
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-body-lista {
+    padding: 1.5rem;
+    overflow-y: auto; /* Scroll vertical */
+    flex: 1; /* Ocupa o espaço restante */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Botão fechar (X) */
+.close-btn-lista {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close-btn-lista:hover {
+    color: var(--danger);
+}
+
+/* Scrollbar Bonita no Modal */
+.modal-body-lista::-webkit-scrollbar {
+    width: 8px;
+}
+.modal-body-lista::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+.modal-body-lista::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+}
+
+/* =================================================================
+   ESTILO DO ESTADO VAZIO (SEM AMIGOS)
+================================================================= */
+
+/* Container Principal */
+.empty-friends-state {
+    grid-column: 1 / -1; /* Ocupa toda a largura do grid */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    background: var(--bg-secondary);
+    border: 2px dashed var(--border-color); /* Borda tracejada mais grossa */
+    border-radius: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+/* Efeito ao passar o mouse na caixa inteira */
+.empty-friends-state:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-tertiary);
+}
+
+/* Ícone de Amigos (Fundo cinza circular) */
+.empty-friends-state i.fa-user-friends {
+    font-size: 2.5rem;
+    color: var(--accent-primary);
+    background: rgba(var(--accent-rgb), 0.1); /* Fundo colorido suave */
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+}
+
+/* Título */
+.empty-friends-state h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+/* Texto de descrição */
+.empty-friends-state p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    max-width: 350px;
+    line-height: 1.5;
+}
+
+/* --- O BOTÃO "ENCONTRAR PESSOAS" QUE VOCÊ QUERIA --- */
+.empty-friends-state .btn-primary {
+    background: linear-gradient(135deg, var(--accent-primary) 0%, #2563eb 100%); /* Degradê */
+    color: white;
+    border: none;
+    padding: 12px 32px; /* Botão mais gordinho */
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 50px; /* Bordas redondas (Pílula) */
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); /* Sombra azul brilhante */
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+/* Efeito ao passar o mouse no botão */
+.empty-friends-state .btn-primary:hover {
+    transform: translateY(-3px); /* Sobe um pouquinho */
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5); /* Sombra aumenta */
+    filter: brightness(1.1);
+}
+
+.empty-friends-state .btn-primary i {
+    font-size: 1.1rem;
+    background: none; /* Remove fundo do ícone dentro do botão */
+    color: white;
+    width: auto;
+    height: auto;
+    margin: 0;
+}
