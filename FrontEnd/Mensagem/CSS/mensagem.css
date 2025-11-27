@@ -80,6 +80,11 @@ body {
     overflow: hidden; /* Impede scroll duplo */
 }
 
+/* IMPORTANTE: Remove a barra lateral direita para o chat expandir */
+.right-sidebar {
+    display: none !important;
+}
+
 /* =================================================================
    SIDEBAR PRINCIPAL (IDÊNTICA A AMIZADES)
 ================================================================= */
@@ -279,7 +284,6 @@ body {
 
 /* --- WIDGET AMIGOS ONLINE --- */
 
-
 /* Container do Widget */
 .sidebar-widget .online-friends {
     background: var(--bg-secondary);
@@ -365,16 +369,9 @@ body {
     flex-shrink: 0;
     position: static; /* Garante que respeite o flexbox */
 }
-/* --- MAIN CONTENT --- */
-.main-content {
-    flex: 1; /* Ocupa todo o espaço restante */
-    padding: 2rem;
-    width: calc(100% - var(--sidebar-width)); /* Garante largura correta */
-    min-width: 0; /* Evita overflow em grids */
-}
 
 /* =================================================================
-   ÁREA PRINCIPAL (CHAT) - AQUI ESTAVA O PROBLEMA
+   ÁREA PRINCIPAL (CHAT) - CORRIGIDO
 ================================================================= */
 
 /* Elementos móveis (escondidos no desktop) */
@@ -385,14 +382,16 @@ body {
     display: none !important;
 }
 
-/* Conteúdo ao lado da sidebar */
+/* Conteúdo ao lado da sidebar (Corrigido para ocupar 100%) */
 .main-content {
     flex: 1; /* Ocupa todo o espaço restante */
     display: flex;
     flex-direction: column;
+    width: auto; /* Remove definições de largura fixa ou calculada */
     min-width: 0; /* Impede que o conteúdo estoure */
     height: 100%; /* Altura total do pai (.container) */
     padding: 0; /* Remove padding para o chat encostar nas bordas */
+    overflow: hidden;
 }
 
 /* Container do Chat (Lista de conversas + Janela de chat) */
@@ -851,3 +850,175 @@ body {
     border-top: 3px solid var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;
 }
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* =================================================================
+   CORREÇÃO DE ESPAÇO VAZIO (Adicione no final do mensagem.css)
+================================================================= */
+
+/* 1. Faz a barra lateral direita SUMIR completamente */
+.right-sidebar {
+    display: none !important;
+    width: 0 !important;
+}
+
+/* 2. Força o conteúdo principal a crescer e ocupar TUDO */
+.main-content {
+    flex: 1 !important;           /* Cresce para preencher o vazio */
+    width: auto !important;       /* Remove a trava de largura antiga */
+    max-width: none !important;   /* Remove limite de largura máxima */
+    padding: 0 !important;        /* Remove bordas brancas internas */
+    margin: 0 !important;         /* Remove margens externas */
+    display: flex !important;     /* Garante layout flexível */
+}
+
+/* 3. Garante que o chat dentro do conteúdo também estique */
+.chat-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* 4. Ajuste fino na área de mensagens para garantir altura total */
+.chat-main {
+    flex-grow: 1 !important;
+    width: 100% !important;
+}
+/* =================================================================
+   MODAL DE NOVA CONVERSA (Adicione ao final do mensagem.css)
+================================================================= */
+
+/* Fundo escuro do modal */
+.modal-overlay {
+    display: none; /* Escondido por padrão */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Caixa do modal */
+.modal-content {
+    background: var(--bg-secondary);
+    width: 90%;
+    max-width: 450px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh; /* Altura máxima para não estourar a tela */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* Cabeçalho do Modal */
+.modal-header {
+    padding: 1.2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 5px;
+    transition: color 0.2s;
+}
+
+.close-modal-btn:hover {
+    color: var(--danger);
+}
+
+/* Corpo do Modal */
+.modal-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden; /* Mantém a lista rolável dentro */
+}
+
+/* Input de Pesquisa no Modal */
+#user-search-input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#user-search-input:focus {
+    border-color: var(--accent-primary);
+}
+
+/* Lista de Usuários */
+.user-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-right: 5px; /* Espaço para scrollbar */
+}
+
+/* Item de Usuário (Amigo) */
+.user-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    background: transparent;
+}
+
+.user-list-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.user-list-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-color);
+}
+
+.user-list-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-list-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.user-list-status {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
