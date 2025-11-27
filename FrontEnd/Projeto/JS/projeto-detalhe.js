@@ -1391,7 +1391,7 @@ async function sendMessage() {
     try {
         let fileUrls = [];
 
-        // CORREÇÃO: Fazer upload dos arquivos se houver
+        // Fazer upload dos arquivos se houver
         if (selectedFiles.length > 0) {
             showLoading("Enviando arquivos...");
             fileUrls = await uploadFiles(selectedFiles);
@@ -1412,11 +1412,7 @@ async function sendMessage() {
             messageInput.value = '';
             clearSelectedFiles();
 
-            // NOVO: Fechar sidebar no mobile após enviar mensagem
-            if (window.innerWidth <= 768) {
-                setTimeout(toggleMobileSidebar, 300);
-            }
-
+        
         } else {
             // Fallback: enviar via API REST
             showNotification("Enviando via API...", "info");
@@ -1432,11 +1428,6 @@ async function sendMessage() {
 
             messageInput.value = '';
             clearSelectedFiles();
-
-            // NOVO: Fechar sidebar no mobile após enviar mensagem
-            if (window.innerWidth <= 768) {
-                setTimeout(toggleMobileSidebar, 300);
-            }
         }
 
     } catch (error) {

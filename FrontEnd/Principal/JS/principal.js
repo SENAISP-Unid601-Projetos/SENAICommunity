@@ -85,6 +85,7 @@ const backendUrl = "http://localhost:8080";
 const jwtToken = localStorage.getItem("token");
 const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
 const messageBadgeElement = document.getElementById("message-badge");
+const defaultProjectUrl = `${backendUrl}/images/default-project.jpg`;
 
 // Variáveis globais para que outros scripts (como mensagem.js) possam acessá-las
 let stompClient = null;
@@ -111,6 +112,7 @@ window.getAvatarUrl = function(fotoPerfil) {
     }
     return `${window.backendUrl}/api/arquivos/${fotoPerfil}`;
 }
+window.defaultProjectUrl = defaultProjectUrl;
 window.defaultAvatarUrl = defaultAvatarUrl;
 window.showNotification = showNotification;
 window.axios = axios; // Assume que Axios está carregado globalmente

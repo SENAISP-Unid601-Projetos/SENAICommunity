@@ -20,6 +20,7 @@ public class Projeto {
     private Long id;
 
     private String titulo;
+    @Lob
     private String descricao;
     private Date dataInicio;
     private Date dataEntrega;

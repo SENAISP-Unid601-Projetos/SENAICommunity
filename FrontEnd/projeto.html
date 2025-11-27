@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
     <link rel="stylesheet" href="Principal/CSS/principal.css">
     <link rel="stylesheet" href="Projeto/CSS/projeto.css">
 </head>
+
 <body>
     <div class="notification-center"></div>
 
@@ -161,7 +163,8 @@
                         <h1>Explore os Projetos da Comunidade</h1>
                         <p>Inspire-se, colabore e compartilhe suas criações com outros alunos e empresas.</p>
                     </div>
-                    <button class="btn-new-project" id="btn-new-project"><i class="fas fa-plus"></i> Publicar Projeto</button>
+                    <button class="btn-new-project" id="btn-new-project"><i class="fas fa-plus"></i> Publicar
+                        Projeto</button>
                 </div>
 
                 <div class="projetos-tabs">
@@ -214,7 +217,7 @@
         </main>
     </div>
 
-      <div id="edit-profile-modal" class="modal-overlay" style="display: none;">
+    <div id="edit-profile-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Editar Perfil</h3>
@@ -295,80 +298,83 @@
     </div>
 
     <!-- Modal de Novo Projeto -->
-<div id="novo-projeto-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-content new-project-content">
-        <div class="modal-header">
-            <h3>Criar Novo Projeto</h3>
-            <button class="close-modal-btn">&times;</button>
+    <div id="novo-projeto-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content new-project-content">
+            <div class="modal-header">
+                <h3>Criar Novo Projeto</h3>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+
+            <form id="novo-projeto-form">
+                <div class="project-cover-wrapper">
+                    <input type="file" id="proj-imagem" accept="image/*" hidden>
+                    <label for="proj-imagem" class="project-cover-label">
+                        <img id="proj-image-preview" src="http://localhost:8080/images/default-project.jpg"
+                            onerror="this.src='http://localhost:8080/images/default-project.jpg'"
+                             alt="Capa do Projeto">
+
+                        <div class="cover-overlay">
+                            <i class="fas fa-camera"></i>
+                            <span>Alterar Capa</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="proj-titulo">Título do Projeto</label>
+                        <input type="text" id="proj-titulo" required maxlength="100"
+                            placeholder="Ex: Sistema de Gestão Escolar">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="proj-categoria">Categoria</label>
+                            <select id="proj-categoria" required>
+                                <option value="">Selecione...</option>
+                                <option value="web">Desenvolvimento Web</option>
+                                <option value="mobile">Mobile</option>
+                                <option value="iot">IoT & Robótica</option>
+                                <option value="ia">Inteligência Artificial</option>
+                                <option value="dados">Ciência de Dados</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label for="proj-privacidade">Visibilidade</label>
+                            <select id="proj-privacidade">
+                                <option value="false">🌎 Público</option>
+                                <option value="true">🔒 Privado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="proj-tecnologias">Tecnologias <small>(separadas por vírgula)</small></label>
+                        <input type="text" id="proj-tecnologias" placeholder="Ex: React, Node.js, Arduino">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="proj-descricao">Descrição Detalhada</label>
+                        <textarea id="proj-descricao" rows="4" required maxlength="500"
+                            placeholder="Descreva o objetivo, funcionalidades e o que você precisa..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal-btn-action">Cancelar</button>
+                    <button type="submit" class="btn btn-primary btn-publish">
+                        <i class="fas fa-rocket"></i> Publicar Projeto
+                    </button>
+                </div>
+            </form>
         </div>
-        
-        <form id="novo-projeto-form">
-            <div class="project-cover-wrapper">
-                <input type="file" id="proj-imagem" accept="image/*" hidden>
-                <label for="proj-imagem" class="project-cover-label">
-                    <img id="proj-image-preview" 
-                         src="https://placehold.co/600x200/1e293b/cbd5e1?text=Adicionar+Capa+do+Projeto" 
-                         alt="Capa do Projeto">
-                    
-                    <div class="cover-overlay">
-                        <i class="fas fa-camera"></i>
-                        <span>Alterar Capa</span>
-                    </div>
-                </label>
-            </div>
-
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="proj-titulo">Título do Projeto</label>
-                    <input type="text" id="proj-titulo" required maxlength="100" placeholder="Ex: Sistema de Gestão Escolar">
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group half">
-                        <label for="proj-categoria">Categoria</label>
-                        <select id="proj-categoria" required>
-                            <option value="">Selecione...</option>
-                            <option value="web">Desenvolvimento Web</option>
-                            <option value="mobile">Mobile</option>
-                            <option value="iot">IoT & Robótica</option>
-                            <option value="ia">Inteligência Artificial</option>
-                            <option value="dados">Ciência de Dados</option>
-                        </select>
-                    </div>
-                    <div class="form-group half">
-                        <label for="proj-privacidade">Visibilidade</label>
-                        <select id="proj-privacidade">
-                            <option value="false">🌎 Público</option>
-                            <option value="true">🔒 Privado</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="proj-tecnologias">Tecnologias <small>(separadas por vírgula)</small></label>
-                    <input type="text" id="proj-tecnologias" placeholder="Ex: React, Node.js, Arduino">
-                </div>
-
-                <div class="form-group">
-                    <label for="proj-descricao">Descrição Detalhada</label>
-                    <textarea id="proj-descricao" rows="4" required maxlength="500" placeholder="Descreva o objetivo, funcionalidades e o que você precisa..."></textarea>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary close-modal-btn-action">Cancelar</button>
-                <button type="submit" class="btn btn-primary btn-publish">
-                    <i class="fas fa-rocket"></i> Publicar Projeto
-                </button>
-            </div>
-        </form>
     </div>
-</div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <script src="Principal/JS/principal.js"></script> 
+    <script src="Principal/JS/principal.js"></script>
     <script src="Projeto/JS/projeto.js"></script>
 </body>
+
 </html>
