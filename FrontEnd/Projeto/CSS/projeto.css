@@ -219,7 +219,7 @@
 
 /* --- WIDGET AMIGOS ONLINE --- */
 .sidebar-widget {
-    margin-top: 0 !important; /* IMPORTANTE: Fica colado no menu */
+    margin-top: 1.5rem; /* IMPORTANTE: Fica colado no menu */
     flex: 0 0 auto;
 }
 

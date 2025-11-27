@@ -962,25 +962,37 @@ function setupGlobalEventListeners() {
     });
   }
 
-  if (globalElements.logoutBtn) {
-    globalElements.logoutBtn.addEventListener("click", () => {
-      localStorage.clear();
-      window.location.href = "login.html";
-    });
-  }
 
   // --- Listeners de Modais de Perfil ---
   //
-  if (globalElements.editProfileBtn)
-    globalElements.editProfileBtn.addEventListener(
-      "click",
-      openEditProfileModal
-    );
-  if (globalElements.deleteAccountBtn)
-    globalElements.deleteAccountBtn.addEventListener(
-      "click",
-      openDeleteAccountModal
-    );
+if (globalElements.editProfileBtn) {
+    // Remove listeners antigos (cloneNode) para evitar abrir modal antigo
+    const newProfileBtn = globalElements.editProfileBtn.cloneNode(true);
+    globalElements.editProfileBtn.parentNode.replaceChild(newProfileBtn, globalElements.editProfileBtn);
+    globalElements.editProfileBtn = newProfileBtn; // Atualiza referência
+
+    globalElements.editProfileBtn.addEventListener("click", (e) => {
+        // Se quiser que seja um link padrão, nem precisa do preventDefault
+        // Mas se quiser garantir via JS:
+        e.preventDefault();
+        window.location.href = "perfil.html";
+    });
+  }
+
+  // 2. Botão SAIR (Logout)
+  if (globalElements.logoutBtn) {
+    // Remove listeners antigos
+    const newLogoutBtn = globalElements.logoutBtn.cloneNode(true);
+    globalElements.logoutBtn.parentNode.replaceChild(newLogoutBtn, globalElements.logoutBtn);
+    globalElements.logoutBtn = newLogoutBtn;
+
+    globalElements.logoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "login.html";
+    });
+  }
   if (globalElements.cancelEditProfileBtn)
     globalElements.cancelEditProfileBtn.addEventListener(
       "click",
