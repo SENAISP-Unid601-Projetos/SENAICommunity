@@ -58,6 +58,209 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   
+    initMobileFeatures();
+
+  // Adicione estas funções dentro do DOMContentLoaded em principal.js
+
+// Mobile sidebar toggle
+function setupMobileSidebar() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    
+    if (menuToggle && sidebar && sidebarOverlay) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('mobile-open');
+            sidebarOverlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+        });
+        
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        
+        // Fechar sidebar ao clicar em um link
+        sidebar.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                sidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+    }
+}
+
+// Mobile responsive adjustments
+function setupMobileResponsive() {
+    // Hide certain elements on mobile
+    const hideOnMobile = document.querySelectorAll('.d-none-mobile');
+    
+    function checkMobile() {
+        const isMobile = window.innerWidth <= 768;
+        hideOnMobile.forEach(el => {
+            el.style.display = isMobile ? 'none' : 'flex';
+        });
+        
+        // Adjust post actions for mobile
+        const postActions = document.querySelectorAll('.post-actions');
+        postActions.forEach(actions => {
+            if (isMobile) {
+                actions.style.flexDirection = 'row';
+                actions.style.justifyContent = 'space-around';
+            } else {
+                actions.style.flexDirection = 'row';
+                actions.style.justifyContent = 'space-around';
+            }
+        });
+    }
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+}
+
+// Enhanced mobile post creator
+function setupMobilePostCreator() {
+    const postTextarea = document.getElementById('post-creator-textarea');
+    const publishBtn = document.getElementById('publish-post-btn');
+    
+    if (postTextarea && publishBtn) {
+        postTextarea.addEventListener('input', function() {
+            // Auto-resize
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            
+            // Enable/disable button
+            const hasContent = this.value.trim().length > 0;
+            publishBtn.disabled = !hasContent;
+            publishBtn.style.opacity = hasContent ? '1' : '0.7';
+        });
+        
+        // Mobile file upload enhancement
+        const fileInput = document.getElementById('post-file-input');
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    showNotification(`${this.files.length} arquivo(s) selecionado(s)`, 'info');
+                }
+            });
+        }
+    }
+}
+
+// Mobile-optimized notifications
+function setupMobileNotifications() {
+    const notificationsIcon = document.getElementById('notifications-icon');
+    const notificationsPanel = document.getElementById('notifications-panel');
+    
+    if (notificationsIcon && notificationsPanel) {
+        notificationsIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // Centralize and adjust for mobile
+                notificationsPanel.style.position = 'fixed';
+                notificationsPanel.style.top = '70px';
+                notificationsPanel.style.left = '50%';
+                notificationsPanel.style.transform = 'translateX(-50%)';
+                notificationsPanel.style.width = '90%';
+                notificationsPanel.style.maxWidth = '400px';
+                notificationsPanel.style.maxHeight = '60vh';
+            }
+            
+            const isVisible = notificationsPanel.style.display === 'block';
+            notificationsPanel.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                markAllNotificationsAsRead();
+            }
+        });
+    }
+}
+
+// Touch-optimized carousel
+function setupMobileCarousel() {
+    // Add touch events to carousels
+    document.addEventListener('touchstart', handleTouchStart, false);        
+    document.addEventListener('touchmove', handleTouchMove, false);
+    
+    let xDown = null;                                                        
+    let yDown = null;
+    
+    function handleTouchStart(evt) {                                         
+        xDown = evt.touches[0].clientX;                                      
+        yDown = evt.touches[0].clientY;                                      
+    };                                                
+    
+    function handleTouchMove(evt) {
+        if (!xDown || !yDown) return;
+        
+        const xUp = evt.touches[0].clientX;
+        const yUp = evt.touches[0].clientY;
+        const xDiff = xDown - xUp;
+        const yDiff = yDown - yUp;
+        
+        if (Math.abs(xDiff) > Math.abs(yDiff)) {
+            if (xDiff > 0) {
+                // Swipe left - next
+                if (currentMediaIndex < currentMediaItems.length - 1) {
+                    nextMedia();
+                }
+            } else {
+                // Swipe right - previous
+                if (currentMediaIndex > 0) {
+                    prevMedia();
+                }
+            }
+        }
+        
+        xDown = null;
+        yDown = null;
+    };
+}
+
+// Enhanced loading states for mobile
+function showMobileLoadingState() {
+    const postsContainer = document.querySelector('.posts-container');
+    if (postsContainer && window.innerWidth <= 768) {
+        postsContainer.innerHTML = `
+            <div class="posts-loading" id="posts-loading">
+                <div class="post-skeleton">
+                    <div class="skeleton-avatar"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-line short"></div>
+                        <div class="skeleton-line medium"></div>
+                        <div class="skeleton-line long"></div>
+                    </div>
+                </div>
+                <div class="post-skeleton">
+                    <div class="skeleton-avatar"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-line short"></div>
+                        <div class="skeleton-line medium"></div>
+                        <div class="skeleton-line long"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Initialize all mobile features
+function initMobileFeatures() {
+    setupMobileSidebar();
+    setupMobileResponsive();
+    setupMobilePostCreator();
+    setupMobileNotifications();
+    setupMobileCarousel();
+    
+    // Show loading state initially on mobile
+    if (window.innerWidth <= 768) {
+        showMobileLoadingState();
+    }
+}
 
   function updateThemeIcon(theme) {
     const themeToggleIcon = document.querySelector(".theme-toggle i");
@@ -1064,6 +1267,7 @@ window.openEditCommentModal = (commentId, content) => {
 
 // Configuração dos Listeners de Modal (Executa ao carregar a página)
 document.addEventListener("DOMContentLoaded", () => {
+
     // Listener do Formulário de Edição de Post
     const editPostForm = document.getElementById("edit-post-form");
     if (editPostForm) {
@@ -1297,6 +1501,8 @@ window.highlightComment = async (commentId) => {
 // LÓGICA ESPECIALIZADA (Só executa se estiver na página principal)
 // =================================================================
 document.addEventListener("DOMContentLoaded", () => {
+
+  
   // 1. Verifica se estamos na página principal para carregar o feed
   const postsContainer = document.querySelector(".posts-container");
   if (!postsContainer) {
@@ -1331,7 +1537,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("search-input");
 
   // --- FUNÇÕES DE CARROSSEL ---
-
+  
   // Função para abrir o visualizador de mídias
   window.openMediaViewer = (mediaUrls, startIndex = 0) => {
       const modal = document.getElementById('media-viewer-modal');
@@ -1488,6 +1694,8 @@ window.scrollFeedCarousel = (postId, direction) => {
         });
     }
 };
+
+
 
 // Função que gera o HTML do carrossel para o Feed
 function renderFeedCarousel(mediaUrls, postId) {
@@ -1704,9 +1912,6 @@ function createPostElement(post) {
       : feedElements.postsContainer.appendChild(postElement);
   }
 
- /* SUBSTITUA a função 'fetchAndReplacePost' inteira por esta 
-   em CADA arquivo JS que a possua (principal.js, perfil.js)
-*/
 async function fetchAndReplacePost(postId) {
     const oldPostElement = document.getElementById(`post-${postId}`);
     
@@ -1785,11 +1990,7 @@ async function fetchAndReplacePost(postId) {
 }
 
   function handlePublicFeedUpdate(payload) {
-    // NÃO vamos mais ignorar. Precisamos da atualização para atualizar os contadores.
-    /*
-    if (payload.autorAcaoId && currentUser && payload.autorAcaoId == currentUser.id)
-      return; 
-    */
+    
     const postId = payload.postagem?.id || payload.id || payload.postagemId;
     if (payload.tipo === "remocao" && payload.postagemId) {
       const postElement = document.getElementById(`post-${payload.postagemId}`);
@@ -1842,6 +2043,8 @@ async function fetchAndReplacePost(postId) {
 
   // --- SETUP DE EVENT LISTENERS (Específicos do Feed) ---
   function setupFeedEventListeners() {
+
+    
     if (searchInput) searchInput.addEventListener("input", filterPosts);
 
     // Event listeners para o carrossel de mídias

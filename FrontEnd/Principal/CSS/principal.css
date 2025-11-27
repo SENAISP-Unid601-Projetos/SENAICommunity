@@ -3528,3 +3528,460 @@ html.acessibilidade-destacar-links .btn {
     border: 2px solid #58a6ff !important;
     color: #58a6ff !important;
 }
+
+/* =================================================================
+   RESPONSIVIDADE MOBILE - PRINCIPAL
+   ================================================================= */
+
+@media (max-width: 1200px) {
+    .container {
+        grid-template-columns: 250px 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    .right-sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+        padding: 0.5rem;
+        gap: 1rem;
+    }
+    
+    .topbar {
+        padding: 0.75rem 1rem;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+    
+    .search {
+        display: none;
+    }
+    
+    .menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        z-index: 2000;
+        transition: transform 0.3s ease;
+        background: var(--bg-primary);
+        overflow-y: auto;
+        padding: 1rem;
+    }
+    
+    .sidebar.mobile-open {
+        transform: translateX(280px);
+    }
+    
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1999;
+        display: none;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
+    
+    /* Ajustes do post creator */
+    .post-creator-card {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .post-creator-input-area {
+        gap: 0.75rem;
+    }
+    
+    .avatar-small {
+        width: 40px;
+        height: 40px;
+    }
+    
+    #post-creator-textarea {
+        font-size: 1rem;
+        min-height: 50px;
+    }
+    
+    .post-creator-actions {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .action-buttons-left {
+        justify-content: space-between;
+    }
+    
+    .post-creator-actions .action-btn,
+    .post-creator-actions .file-label {
+        flex: 1;
+        justify-content: center;
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .publish-btn {
+        width: 100%;
+        padding: 0.75rem;
+    }
+    
+    /* Ajustes dos posts */
+    .post {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .post-header {
+        align-items: flex-start;
+    }
+    
+    .post-author-details {
+        gap: 0.5rem;
+    }
+    
+    .post-author-avatar {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .post-author-info strong {
+        font-size: 0.9rem;
+        max-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .post-author-info span {
+        font-size: 0.75rem;
+    }
+    
+    .post-content {
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+    
+    .post-actions {
+        gap: 0.25rem;
+    }
+    
+    .post-actions .action-btn {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+        gap: 0.25rem;
+        min-height: 44px;
+    }
+    
+    .post-actions .action-btn .count {
+        font-size: 0.75rem;
+    }
+    
+    /* Ajustes dos comentários */
+    .comments-section {
+        padding-top: 0.75rem;
+    }
+    
+    .comment {
+        gap: 0.5rem;
+    }
+    
+    .comment-avatar img {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .comment-body {
+        padding: 0.5rem;
+    }
+    
+    .comment-author {
+        font-size: 0.8rem;
+    }
+    
+    .comment-content {
+        font-size: 0.85rem;
+    }
+    
+    .comment-actions-footer {
+        padding-left: 40px;
+        gap: 0.75rem;
+    }
+    
+    .action-btn-like,
+    .action-btn-reply {
+        font-size: 0.7rem;
+    }
+    
+    .like-count {
+        font-size: 0.7rem;
+    }
+    
+    .reply-form,
+    .comment-form {
+        padding-left: 40px;
+    }
+    
+    .comment-form input {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .comment-form button {
+        width: 35px;
+        height: 35px;
+    }
+    
+    /* Carrossel mobile */
+    .feed-carousel-wrapper {
+        aspect-ratio: 1 / 1;
+        max-height: 400px;
+    }
+    
+    .feed-carousel-btn {
+        width: 35px;
+        height: 35px;
+        opacity: 0.8;
+    }
+    
+    .feed-carousel-counter {
+        top: 10px;
+        right: 10px;
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+    
+    /* Notificações mobile */
+    .notifications-panel {
+        position: fixed;
+        top: 70px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 90% !important;
+        max-width: 400px !important;
+        max-height: 60vh;
+        z-index: 1001;
+    }
+    
+    /* Modais mobile */
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    #edit-post-modal .modal-content {
+        max-width: 95%;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Friends widget mobile */
+    .online-friends {
+        padding: 1rem;
+    }
+    
+    .friend-item {
+        padding: 0.4rem;
+    }
+    
+    .friend-item .avatar {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .friend-name {
+        font-size: 0.8rem;
+    }
+    
+    /* Hide right sidebar completely */
+    .right-sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .topbar {
+        padding: 0.5rem;
+    }
+    
+    .logo {
+        font-size: 1rem;
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .nav-icons {
+        gap: 0.25rem;
+    }
+    
+    .nav-icon, .theme-toggle {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .user span {
+        display: none !important;
+    }
+    
+    .user i.fa-chevron-down {
+        display: none !important;
+    }
+    
+    .profile-pic {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .post-creator-input-area {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .avatar-small {
+        align-self: flex-start;
+    }
+    
+    #post-creator-textarea {
+        width: 100%;
+        min-height: 60px;
+    }
+    
+    .post {
+        padding: 0.75rem;
+    }
+    
+    .post-author-info strong {
+        max-width: 100px;
+    }
+    
+    .post-actions .action-btn {
+        font-size: 0.75rem;
+        padding: 0.4rem;
+    }
+    
+    .comments-section {
+        padding-top: 0.5rem;
+    }
+    
+    .comment-replies {
+        margin-left: 15px;
+        padding-left: 15px;
+    }
+    
+    /* Ajustes finos para telas muito pequenas */
+    .container {
+        padding: 0.25rem;
+    }
+    
+    .main-content {
+        gap: 1rem;
+    }
+}
+
+/* Prevenir zoom iOS em inputs */
+@media (max-width: 768px) {
+    input, textarea, select {
+        font-size: 16px !important;
+    }
+}
+
+/* Loading states para mobile */
+@media (max-width: 768px) {
+    .posts-loading {
+        padding: 2rem 1rem;
+    }
+    
+    .post-skeleton {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+    
+    .skeleton-avatar {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .friend-skeleton {
+        padding: 0.4rem;
+    }
+    
+    .friend-skeleton .skeleton-avatar {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* Melhorias de usabilidade para touch */
+@media (max-width: 768px) {
+    .nav-icon, 
+    .theme-toggle, 
+    .post-options-btn,
+    .comment-options-btn,
+    .action-btn,
+    .publish-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .post-actions .action-btn {
+        min-height: 44px;
+    }
+    
+    /* Melhor contraste para mobile */
+    .post {
+        border: 1px solid var(--border-color);
+        margin-bottom: 0.75rem;
+    }
+    
+    .post-creator-card {
+        border: 1px solid var(--border-color);
+    }
+}
+
+/* Ajustes específicos para orientação paisagem */
+@media (max-width: 768px) and (orientation: landscape) {
+    .sidebar {
+        height: 100vh;
+        overflow-y: auto;
+    }
+    
+    .notifications-panel {
+        max-height: 50vh;
+    }
+    
+    .modal-content {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+}

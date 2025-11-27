@@ -1813,3 +1813,57 @@
         gap: 0;
     }
 }
+
+@media (max-width: 768px) {
+    /* 1. Ajuste do tamanho e scroll do modal */
+    .new-project-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        max-height: 90vh !important; /* Altura máxima segura */
+        display: flex;
+        flex-direction: column;
+        margin: auto;
+        border-radius: 12px;
+        overflow: hidden; /* Importante para o border-radius */
+    }
+
+    /* 2. Capa menor no mobile */
+    .project-cover-wrapper {
+        height: 140px;
+        flex-shrink: 0; /* Impede que a capa suma */
+    }
+
+    /* 3. Corpo do modal com scroll */
+    .new-project-content .modal-body {
+        padding: 1rem;
+        overflow-y: auto; /* Habilita rolagem interna */
+        flex-grow: 1; /* Ocupa o espaço disponível */
+    }
+
+    /* 4. Inputs ocupando largura total */
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .form-group.half {
+        width: 100%;
+    }
+
+    /* 5. CORREÇÃO DOS BOTÕES FUGINDO DA TELA */
+    .new-project-content .modal-footer {
+        flex-shrink: 0; /* Impede que o footer encolha */
+        flex-direction: column-reverse; /* Botão principal no topo, cancelar embaixo */
+        gap: 0.8rem;
+        padding: 1rem;
+    }
+
+    .new-project-content .modal-footer .btn {
+        width: 100%; /* Botões esticados */
+        margin: 0;
+        height: 48px; /* Altura boa para toque */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
