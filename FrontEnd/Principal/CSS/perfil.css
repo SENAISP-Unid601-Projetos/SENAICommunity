@@ -23,9 +23,36 @@ html, body {
 ================================================================= */
 .container {
     display: flex;
-    min-height: calc(100vh - var(--header-height));
+    min-height: calc(100vh - 80px); /* Ajuste conforme a altura do seu header */
     position: relative;
     background-color: var(--bg-primary);
+    
+    /* O SEGREDO ESTÁ AQUI: */
+    /* Isso impede que a sidebar estique até o fim das postagens */
+    align-items: flex-start; 
+}
+
+/* 2. Garanta que a sidebar tenha esses atributos */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    
+    /* FIXAÇÃO NA TELA */
+    position: sticky;           
+    top: 80px;  /* Deve ser a mesma altura do seu Header/Topbar */
+    
+    /* ALTURA FIXA PARA ROLAGEM INTERNA */
+    /* Altura da tela (100vh) menos a altura do header (80px) */
+    height: calc(100vh - 80px); 
+    
+    /* Habilita rolagem dentro do menu se a tela for pequena */
+    overflow-y: auto;
+    
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
 }
 
 .main-content {
@@ -38,18 +65,20 @@ html, body {
 }
 
 /* --- SIDEBAR (Desktop) --- */
-.sidebar {
-    width: var(--sidebar-width);
+
+
+/* Estilo da barra de rolagem (Chrome, Edge, Safari) */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
     background: var(--bg-secondary);
-    border-right: 1px solid var(--border-color);
-    position: sticky;
-    top: var(--header-height);
-    height: calc(100vh - var(--header-height));
-    overflow-y: auto;
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background-color: var(--bg-quaternary);
+    border-radius: 3px;
 }
 
 .sidebar-header {

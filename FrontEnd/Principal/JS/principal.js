@@ -1,5 +1,5 @@
 // =================================================================
-// 1. BLOCO DE ACESSIBILIDADE GLOBAL (COLE ISTO NO TOPO DO ARQUIVO)
+// 1. BLOCO DE ACESSIBILIDADE GLOBAL (COLE ISTE NO TOPO DO ARQUIVO)
 // =================================================================
 window.aplicarAcessibilidadeGlobal = function() {
 
@@ -168,63 +168,6 @@ function setupMobilePostCreator() {
     }
 }
 
-// Mobile-optimized notifications
-// Mobile-optimized notifications
-function setupMobileNotifications() {
-    const notificationsIcon = document.getElementById('notifications-icon');
-    const notificationsPanel = document.getElementById('notifications-panel');
-    
-    // Remove clones antigos para evitar múltiplos listeners
-    if (notificationsIcon) {
-        const newIcon = notificationsIcon.cloneNode(true);
-        notificationsIcon.parentNode.replaceChild(newIcon, notificationsIcon);
-        
-        // Re-seleciona o novo elemento e o painel (que pode ter se perdido na clonagem se estivesse dentro)
-        const currentIcon = document.getElementById('notifications-icon');
-        // O painel geralmente é filho do ícone ou irmão. Se for filho, precisamos pegá-lo de novo dentro do novo ícone
-        let currentPanel = document.getElementById('notifications-panel'); 
-        
-        // Se o painel sumiu (era filho), precisamos ter cuidado. 
-        // No seu HTML atual, o painel é FILHO do ícone. A clonagem profunda (true) preserva ele.
-        // Mas precisamos re-selecionar a referência ao painel dentro do novo ícone para garantir.
-        if (!currentPanel) {
-             currentPanel = currentIcon.querySelector('.notifications-panel');
-        }
-
-        currentIcon.addEventListener('click', (e) => {
-            e.stopPropagation(); // Impede fechar ao clicar
-            e.preventDefault();  // Previne comportamento padrão de link
-            
-            const isMobile = window.innerWidth <= 768;
-            
-            if (isMobile && currentPanel) {
-                // Força estilos inline para garantir visibilidade no mobile
-                currentPanel.style.position = 'fixed';
-                currentPanel.style.top = '70px';
-                currentPanel.style.left = '50%';
-                currentPanel.style.transform = 'translateX(-50%)';
-                currentPanel.style.width = '90%';
-                currentPanel.style.maxWidth = '380px';
-                currentPanel.style.maxHeight = '60vh';
-                currentPanel.style.zIndex = '9999';
-            }
-            
-            if (currentPanel) {
-                const isVisible = currentPanel.style.display === 'block';
-                currentPanel.style.display = isVisible ? 'none' : 'block';
-                
-                if (!isVisible && typeof window.markAllNotificationsAsRead === 'function') {
-                    window.markAllNotificationsAsRead();
-                }
-            }
-        });
-        
-        // Atualiza a referência global se necessário para outras funções
-        globalElements.notificationsIcon = currentIcon;
-        globalElements.notificationsPanel = currentPanel;
-    }
-}
-
 // Touch-optimized carousel
 function setupMobileCarousel() {
     // Add touch events to carousels
@@ -298,7 +241,7 @@ function initMobileFeatures() {
     setupMobileSidebar();
     setupMobileResponsive();
     setupMobilePostCreator();
-    setupMobileNotifications();
+    // setupMobileNotifications(); // REMOVIDO - CONFLITAVA COM O LISTENER GLOBAL
     setupMobileCarousel();
     
     // Show loading state initially on mobile
@@ -983,14 +926,28 @@ function setupGlobalEventListeners() {
     closeAllMenus();
   });
 
+  // CORREÇÃO DO BOTÃO DE NOTIFICAÇÕES
   if (globalElements.notificationsIcon) {
-    globalElements.notificationsIcon.addEventListener("click", (event) => {
-      event.stopPropagation();
-      const panel = globalElements.notificationsPanel;
-      const isVisible = panel.style.display === "block";
-      panel.style.display = isVisible ? "none" : "block";
-      if (!isVisible) markAllNotificationsAsRead(); //
-    });
+    // Remove qualquer listener anterior para evitar duplicação
+    globalElements.notificationsIcon.replaceWith(globalElements.notificationsIcon.cloneNode(true));
+    
+    // Re-seleciona o elemento após o clone
+    const currentNotificationsIcon = document.getElementById('notifications-icon');
+    const currentNotificationsPanel = document.getElementById('notifications-panel');
+    
+    if (currentNotificationsIcon) {
+        currentNotificationsIcon.addEventListener("click", (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            
+            const isVisible = currentNotificationsPanel.style.display === "block";
+            currentNotificationsPanel.style.display = isVisible ? "none" : "block";
+            
+            if (!isVisible) {
+                markAllNotificationsAsRead();
+            }
+        });
+    }
   }
 
   if (globalElements.userDropdownTrigger) {

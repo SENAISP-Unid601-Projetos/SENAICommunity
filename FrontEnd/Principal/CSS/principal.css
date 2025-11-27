@@ -2053,7 +2053,7 @@ a.user-card-link:hover h4 {
     /* Aplica a animação ao comentário */
     animation: flash-animation 1.5s ease-out;
 }
-/* Adicionar ao final de principal.css */
+/* Adicione estas regras ao final do seu arquivo CSS */
 
 /* --- Estilo para Botão "Ver Respostas" --- */
 .view-replies-container {
