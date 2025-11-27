@@ -182,7 +182,7 @@ body {
 
 .nav-icons {
   display: flex;
-  align-items: center;
+  align-items: last baseline;
   gap: 0.25rem;
 }
 

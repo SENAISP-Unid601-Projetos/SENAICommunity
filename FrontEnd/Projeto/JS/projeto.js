@@ -1,18 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     // Função utilitária para mostrar/ocultar modais
-function toggleModal(modalId, show) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        if (show) {
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('visible'), 10);
-        } else {
-            modal.classList.remove('visible');
-            setTimeout(() => modal.style.display = 'none', 300);
+    function toggleModal(modalId, show) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            if (show) {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('visible'), 10);
+            } else {
+                modal.classList.remove('visible');
+                setTimeout(() => modal.style.display = 'none', 300);
+            }
         }
     }
-}
 
     // --- GERENCIADOR DE PERFIL ---
     const ProfileManager = {
@@ -20,23 +20,23 @@ function toggleModal(modalId, show) {
             editBtn: document.getElementById('edit-profile-btn'),
             deleteBtn: document.getElementById('delete-account-btn'),
             logoutBtn: document.getElementById('logout-btn'),
-            
+
             editModal: document.getElementById('edit-profile-modal'),
             deleteModal: document.getElementById('delete-account-modal'),
-            
+
             editForm: document.getElementById('edit-profile-form'),
             deleteForm: document.getElementById('delete-account-form'),
-            
+
             // Campos de Edição
             editName: document.getElementById('edit-profile-name'),
             editBio: document.getElementById('edit-profile-bio'),
             editDob: document.getElementById('edit-profile-dob'),
             editPicInput: document.getElementById('edit-profile-pic-input'),
             editPicPreview: document.getElementById('edit-profile-pic-preview'),
-            
+
             cancelEditBtn: document.getElementById('cancel-edit-profile-btn'),
             cancelDeleteBtn: document.getElementById('cancel-delete-account-btn')
-            
+
         },
 
         init() {
@@ -107,7 +107,7 @@ function toggleModal(modalId, show) {
             if (this.elements.deleteForm) {
                 this.elements.deleteForm.addEventListener('submit', (e) => this.handleDeleteSubmit(e));
             }
-            
+
             // Fechar ao clicar fora
             window.addEventListener('click', (e) => {
                 if (e.target === this.elements.editModal || e.target === this.elements.deleteModal) {
@@ -118,11 +118,11 @@ function toggleModal(modalId, show) {
 
         openEditModal() {
             if (!window.currentUser) return;
-            
+
             // Preencher campos com dados atuais
             this.elements.editName.value = window.currentUser.nome || '';
             this.elements.editBio.value = window.currentUser.bio || '';
-            
+
             // Formatar data para input date (yyyy-MM-dd)
             if (window.currentUser.dataNascimento) {
                 const date = new Date(window.currentUser.dataNascimento);
@@ -131,7 +131,7 @@ function toggleModal(modalId, show) {
             }
 
             // Foto
-            const fotoUrl = window.currentUser.fotoPerfil 
+            const fotoUrl = window.currentUser.fotoPerfil
                 ? (window.currentUser.fotoPerfil.startsWith('http') ? window.currentUser.fotoPerfil : `${window.backendUrl}/api/arquivos/${window.currentUser.fotoPerfil}`)
                 : 'https://via.placeholder.com/150';
             this.elements.editPicPreview.src = fotoUrl;
@@ -161,11 +161,11 @@ function toggleModal(modalId, show) {
             formData.append('nome', this.elements.editName.value);
             formData.append('bio', this.elements.editBio.value);
             formData.append('dataNascimento', this.elements.editDob.value);
-            
+
             // Senha (apenas se preenchida)
             const password = document.getElementById('edit-profile-password').value;
             const confirmPassword = document.getElementById('edit-profile-password-confirm').value;
-            
+
             if (password) {
                 if (password !== confirmPassword) {
                     window.showNotification("As senhas não coincidem.", "error");
@@ -193,7 +193,7 @@ function toggleModal(modalId, show) {
 
                 window.showNotification("Perfil atualizado com sucesso!", "success");
                 this.closeModals();
-                
+
                 // Recarregar a página para atualizar fotos e nomes em tudo
                 setTimeout(() => window.location.reload(), 1000);
 
@@ -210,7 +210,7 @@ function toggleModal(modalId, show) {
             e.preventDefault();
             const password = document.getElementById('delete-confirm-password').value;
             const btn = this.elements.deleteForm.querySelector('button[type="submit"]');
-            
+
             if (!password) {
                 window.showNotification("Digite sua senha para confirmar.", "error");
                 return;
@@ -235,7 +235,7 @@ function toggleModal(modalId, show) {
             }
         }
     };
-    
+
     // Inicializa o Gerenciador de Perfil
     ProfileManager.init();
 
@@ -243,7 +243,7 @@ function toggleModal(modalId, show) {
     function setProfileLoading(isLoading) {
         const userInfo = document.querySelector('.user-info');
         const topbarUser = document.querySelector('.user-dropdown .user');
-        
+
         if (userInfo && topbarUser) {
             if (isLoading) {
                 userInfo.classList.remove('loaded');
@@ -268,10 +268,10 @@ function toggleModal(modalId, show) {
     function setGridLoading(gridId, isLoading) {
         const container = document.getElementById(gridId);
         if (!container) return;
-        
+
         const loadingElement = container.querySelector('.results-loading');
         const gridElement = container.querySelector('.projetos-grid');
-        
+
         if (loadingElement && gridElement) {
             if (isLoading) {
                 loadingElement.style.display = 'flex';
@@ -337,7 +337,7 @@ function toggleModal(modalId, show) {
     // --- RESTANTE DA LÓGICA DA PÁGINA ---
     document.addEventListener("globalScriptsLoaded", (e) => {
         const currentUser = window.currentUser;
-        
+
         const ProjetosPage = {
             state: {
                 allProjects: [],
@@ -493,7 +493,7 @@ function toggleModal(modalId, show) {
 
                 const grid = container.querySelector('.projetos-grid');
                 const loading = container.querySelector('.results-loading');
-                
+
                 if (loading) loading.style.display = 'none';
                 if (grid) {
                     grid.style.display = 'block';
@@ -583,11 +583,11 @@ function toggleModal(modalId, show) {
                                     </div>
                                     <div class="projeto-actions">
                                         ${isAuthor
-                                            ? '<button class="btn-entrar disabled" disabled>Criador</button>'
-                                            : isMember
-                                                ? '<button class="btn-entrar disabled" disabled>Já é membro</button>'
-                                                : `<button class="btn-entrar" onclick="ProjetosPage.entrarNoProjeto(${proj.id})">Entrar no Projeto</button>`
-                                        }
+                            ? '<button class="btn-entrar disabled" disabled>Criador</button>'
+                            : isMember
+                                ? '<button class="btn-entrar disabled" disabled>Já é membro</button>'
+                                : `<button class="btn-entrar" onclick="ProjetosPage.entrarNoProjeto(${proj.id})">Entrar no Projeto</button>`
+                        }
                                         ${detailsButton}
                                     </div>
                             </div>
@@ -723,7 +723,7 @@ function toggleModal(modalId, show) {
             async entrarNoProjeto(projetoId) {
                 const buttons = document.querySelectorAll(`[onclick="ProjetosPage.entrarNoProjeto(${projetoId})"]`);
                 buttons.forEach(btn => setButtonLoading(btn, true));
-                
+
                 try {
                     const response = await window.axios.post(`${window.backendUrl}/projetos/${projetoId}/entrar`, null, {
                         params: {
@@ -758,7 +758,7 @@ function toggleModal(modalId, show) {
             async solicitarEntradaProjeto(projetoId) {
                 const buttons = document.querySelectorAll(`[onclick="ProjetosPage.solicitarEntradaProjeto(${projetoId})"]`);
                 buttons.forEach(btn => setButtonLoading(btn, true));
-                
+
                 try {
                     const response = await window.axios.post(`${window.backendUrl}/projetos/${projetoId}/solicitar-entrada`, null, {
                         params: {
@@ -767,7 +767,7 @@ function toggleModal(modalId, show) {
                     });
 
                     window.showNotification("Solicitação de entrada enviada com sucesso!", "success");
-                    
+
                     // Atualizar o botão
                     buttons.forEach(btn => {
                         btn.textContent = "Solicitação Enviada";
@@ -788,7 +788,7 @@ function toggleModal(modalId, show) {
                 }
             },
 
-  showProjectPreview(projeto) {
+            showProjectPreview(projeto) {
                 // Remove modal anterior se existir
                 const existingModal = document.getElementById('dynamic-project-modal');
                 if (existingModal) existingModal.remove();
@@ -796,7 +796,7 @@ function toggleModal(modalId, show) {
                 // 1. Preparar Dados
                 const imageUrl = this.getProjectImageUrl(projeto.imagemUrl);
                 const statusClass = (projeto.status || '').toLowerCase().replace(/\s+/g, '');
-                
+
                 // Mapear Tecnologias
                 const techsHtml = (projeto.tecnologias || [])
                     .map(tech => `<span class="pm-tag">${tech}</span>`)
@@ -817,9 +817,9 @@ function toggleModal(modalId, show) {
                 // Lógica dos Botões de Ação (Entrar, Já é membro, etc)
                 const isMember = projeto.membros && projeto.membros.some(m => m.usuarioId === window.currentUser.id);
                 const isAuthor = projeto.autorId === window.currentUser.id;
-                
+
                 let actionButtonHtml = '';
-                
+
                 if (isAuthor) {
                     actionButtonHtml = `<button class="pm-btn pm-btn-secondary" disabled>Você é o Criador</button>`;
                 } else if (isMember) {
@@ -1020,14 +1020,38 @@ function toggleModal(modalId, show) {
             },
 
             handlers: {
-                openModal() {
-                    toggleModal('novo-projeto-modal', true);
-                },
+               openModal() {
+    const preview = document.getElementById('proj-image-preview');
+    
+    // Se não tiver src, ou se for o placeholder antigo, ou se a imagem quebrou (src vazio)
+    if (preview) {
+        // Define a imagem padrão do backend
+        if (!preview.src || preview.src.includes('placehold.co') || preview.src === window.location.href) {
+            preview.src = DEFAULT_COVER_IMAGE;
+        }
+        
+        // Garante que, se der erro ao carregar (ex: 404), volte para o padrão
+        preview.onerror = function() {
+            this.src = DEFAULT_COVER_IMAGE;
+        };
+    }
+    toggleModal('novo-projeto-modal', true);
+},
 
-                closeModal() {
-                    toggleModal('novo-projeto-modal', false);
-                },
-
+// Atualize o método handlers.closeModal
+closeModal() {
+    toggleModal('novo-projeto-modal', false);
+    
+    const form = document.getElementById('novo-projeto-form');
+    const preview = document.getElementById('proj-image-preview');
+    
+    if (form) form.reset();
+    
+    // Reseta para a imagem padrão do backend ao fechar
+    if (preview) {
+        preview.src = DEFAULT_COVER_IMAGE;
+    }
+},
                 async handleFormSubmit(e) {
                     e.preventDefault();
                     const form = this.elements.form;
@@ -1066,7 +1090,7 @@ function toggleModal(modalId, show) {
                         });
 
                         form.reset();
-                        this.handlers.closeModal.call(this);
+                      this.handlers.closeModal.call(this);
 
                         // Mostrar loading enquanto recarrega as listas
                         setGridLoading('meus-projetos-container', true);
@@ -1124,6 +1148,33 @@ function toggleModal(modalId, show) {
             },
 
             setupEventListeners() {
+
+                
+
+                const projImageInput = document.getElementById('proj-imagem');
+                const projImagePreview = document.getElementById('proj-image-preview');
+                const defaultCover = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
+                if (projImageInput && projImagePreview) {
+                    projImageInput.addEventListener('change', function (e) {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                projImagePreview.src = e.target.result;
+                            }
+                            reader.readAsDataURL(file);
+                        } else {
+                            projImagePreview.src = defaultCover;
+                        }
+                    });
+                }
+
+                // 2. Adicionar lógica de Cancelar botão secundário
+                const closeBtnAction = document.querySelector('.close-modal-btn-action');
+                if (closeBtnAction) {
+                    closeBtnAction.addEventListener('click', () => this.handlers.closeModal.call(this));
+                }
+
                 const { openModalBtn, closeModalBtn, modalOverlay, form, searchInput, categoryFilter } =
                     this.elements;
 
@@ -1293,11 +1344,11 @@ function toggleModal(modalId, show) {
                                     </div>
                                     <div class="projeto-actions">
                                         ${isAuthor
-                                            ? '<button class="btn-entrar disabled" disabled>Criador</button>'
-                                            : isMember
-                                                ? '<button class="btn-entrar disabled" disabled>Já é membro</button>'
-                                                : `<button class="btn-entrar" onclick="ProjetosPage.entrarNoProjeto(${proj.id})">Entrar no Projeto</button>`
-                                        }
+                            ? '<button class="btn-entrar disabled" disabled>Criador</button>'
+                            : isMember
+                                ? '<button class="btn-entrar disabled" disabled>Já é membro</button>'
+                                : `<button class="btn-entrar" onclick="ProjetosPage.entrarNoProjeto(${proj.id})">Entrar no Projeto</button>`
+                        }
                                         ${detailsButton}
                                     </div>
                             </div>

@@ -85,6 +85,7 @@ const backendUrl = "http://localhost:8080";
 const jwtToken = localStorage.getItem("token");
 const defaultAvatarUrl = `${backendUrl}/images/default-avatar.jpg`;
 const messageBadgeElement = document.getElementById("message-badge");
+const defaultProjectUrl = `${backendUrl}/images/default-project.jpg`;
 
 // Variáveis globais para que outros scripts (como mensagem.js) possam acessá-las
 let stompClient = null;
@@ -111,6 +112,7 @@ window.getAvatarUrl = function(fotoPerfil) {
     }
     return `${window.backendUrl}/api/arquivos/${fotoPerfil}`;
 }
+window.defaultProjectUrl = defaultProjectUrl;
 window.defaultAvatarUrl = defaultAvatarUrl;
 window.showNotification = showNotification;
 window.axios = axios; // Assume que Axios está carregado globalmente
@@ -1596,7 +1598,8 @@ function setupCarouselEventListeners(postElement, postId) {
     }
   }
 
- function createPostElement(post) {
+// Localize e substitua a função createPostElement no arquivo principal.js
+function createPostElement(post) {
     const postElement = document.createElement("div");
     postElement.className = "post";
     postElement.id = `post-${post.id}`;
@@ -1611,15 +1614,15 @@ function setupCarouselEventListeners(postElement, postId) {
     const dataFormatada = new Date(post.dataCriacao).toLocaleString("pt-BR");
     const isAuthor = currentUser && autorIdDoPost === currentUser.id;
     
+    // Link para o perfil do autor
+    const profileLink = `perfil.html?id=${autorIdDoPost}`;
+    
     let mediaHtml = "";
 
-    // --- LÓGICA MODIFICADA DE MÍDIA ---
     if (post.urlsMidia && post.urlsMidia.length > 0) {
         if (post.urlsMidia.length > 2) {
-            // SE MAIS DE 2 MÍDIAS: Usa o Carrossel Horizontal
             mediaHtml = renderFeedCarousel(post.urlsMidia, post.id);
         } else if (post.urlsMidia.length === 1) {
-            // Apenas uma mídia (comportamento original)
             const url = post.urlsMidia[0];
             const fullMediaUrl = url.startsWith("http") ? url : `${window.backendUrl}${url}`;
             const safeMediaArray = JSON.stringify(post.urlsMidia).replace(/"/g, '&quot;');
@@ -1634,7 +1637,6 @@ function setupCarouselEventListeners(postElement, postId) {
                              </div>`;
             }
         } else {
-            // Exatamente 2 mídias: Mantém o Grid (renderMediaGrid existente no seu código)
             mediaHtml = renderMediaGrid(post.urlsMidia);
         }
     }
@@ -1646,6 +1648,7 @@ function setupCarouselEventListeners(postElement, postId) {
         window.renderCommentWithReplies(comment, post.comentarios, post)
       )
       .join("");
+      
     let optionsMenu = "";
     if (isAuthor) {
       optionsMenu = `
@@ -1658,12 +1661,18 @@ function setupCarouselEventListeners(postElement, postId) {
                 </div>`;
     }
 
+    // AQUI ESTÁ A ALTERAÇÃO PRINCIPAL (Adição do <a>)
     postElement.innerHTML = `
             <div class="post-header">
-                <a href="perfil.html?id=${autorIdDoPost}" class="post-author-details-link">
+                <a href="${profileLink}" class="post-author-details-link">
                     <div class="post-author-details">
-                        <div class="post-author-avatar"><img src="${autorAvatar}" alt="${autorNome}" onerror="this.src='${defaultAvatarUrl}';"></div>
-                        <div class="post-author-info"><strong>${autorNome}</strong><span>${dataFormatada}</span></div>
+                        <div class="post-author-avatar">
+                            <img src="${autorAvatar}" alt="${autorNome}" onerror="this.src='${defaultAvatarUrl}';">
+                        </div>
+                        <div class="post-author-info">
+                            <strong>${autorNome}</strong>
+                            <span>${dataFormatada}</span>
+                        </div>
                     </div>
                 </a>
                 ${optionsMenu}
@@ -1671,29 +1680,13 @@ function setupCarouselEventListeners(postElement, postId) {
             <div class="post-content"><p>${post.conteudo}</p></div>
             ${mediaHtml}
             <div class="post-actions">
-                <button class="action-btn ${
-                  post.curtidoPeloUsuario ? "liked" : ""
-                }" onclick="window.toggleLike(event, ${
-      post.id
-    }, null)"><i class="fas fa-heart"></i> <span id="like-count-post-${
-      post.id
-    }">${post.totalCurtidas || 0}</span></button>
-                <button class="action-btn" onclick="window.toggleComments(${
-                  post.id
-                })"><i class="fas fa-comment"></i> <span>${
-      post.comentarios?.length || 0
-    }</span></button>
+                <button class="action-btn ${post.curtidoPeloUsuario ? "liked" : ""}" onclick="window.toggleLike(event, ${post.id}, null)"><i class="fas fa-heart"></i> <span id="like-count-post-${post.id}">${post.totalCurtidas || 0}</span></button>
+                <button class="action-btn" onclick="window.toggleComments(${post.id})"><i class="fas fa-comment"></i> <span>${post.comentarios?.length || 0}</span></button>
             </div>
-            <div class="comments-section" id="comments-section-${
-              post.id
-            }" style="display: none;">
+            <div class="comments-section" id="comments-section-${post.id}" style="display: none;">
                 <div class="comments-list">${commentsHtml}</div>
                 <div class="comment-form">
-                    <input type="text" id="comment-input-${
-                      post.id
-                    }" placeholder="Adicione um comentário..."><button onclick="window.sendComment(${
-      post.id
-    }, null)"><i class="fas fa-paper-plane"></i></button>
+                    <input type="text" id="comment-input-${post.id}" placeholder="Adicione um comentário..."><button onclick="window.sendComment(${post.id}, null)"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>`;
 
@@ -1701,7 +1694,7 @@ function setupCarouselEventListeners(postElement, postId) {
         setupCarouselEventListeners(postElement, post.id);
     }
     return postElement;
-  }
+}
 
   function showPublicPost(post, prepend = false) {
     //

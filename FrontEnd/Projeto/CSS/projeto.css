@@ -1671,3 +1671,145 @@
     .pm-footer { padding: 1rem 1.5rem; flex-direction: column; }
     .pm-btn { width: 100%; justify-content: center; }
 }
+
+/* =================================================================
+   ESTILO MODERNO: MODAL NOVO PROJETO
+================================================================= */
+
+/* Ajuste do Container do Modal */
+.new-project-content {
+    padding: 0; /* Remove padding padrão para a imagem encostar nas bordas */
+    max-width: 650px; /* Um pouco mais largo */
+    overflow: hidden; /* Garante que a imagem respeite as bordas arredondadas */
+}
+
+.new-project-content .modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+/* Área da Capa (Cover) */
+.project-cover-wrapper {
+    width: 100%;
+    height: 200px;
+    background-color: var(--bg-tertiary);
+    position: relative;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.project-cover-label {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: pointer;
+    position: relative;
+}
+
+.project-cover-label img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Garante que a imagem preencha sem distorcer */
+    transition: filter 0.3s ease;
+}
+
+/* Overlay ao passar o mouse na capa */
+.cover-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cover-overlay i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.cover-overlay span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.project-cover-label:hover .cover-overlay {
+    opacity: 1;
+}
+
+/* Corpo do Modal (Inputs) */
+.new-project-content .modal-body {
+    padding: 1.5rem;
+    padding-top: 1rem;
+}
+
+/* Grid para inputs lado a lado */
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+/* Inputs Estilizados */
+.new-project-content label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+}
+
+.new-project-content input,
+.new-project-content select,
+.new-project-content textarea {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.new-project-content input:focus,
+.new-project-content select:focus,
+.new-project-content textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+
+.new-project-content small {
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+/* Footer */
+.new-project-content .modal-footer {
+    padding: 1.25rem 1.5rem;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+/* Responsividade Mobile */
+@media (max-width: 768px) {
+    .project-cover-wrapper {
+        height: 150px; /* Menor no celular */
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
