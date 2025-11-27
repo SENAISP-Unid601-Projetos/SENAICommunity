@@ -89,15 +89,24 @@
     display: flex;
     flex-direction: column;
     
-    /* Fixa a sidebar enquanto rola a página */
-    position: sticky;
-    top: var(--header-height);
-    height: 100%;
+    /* ALTERAÇÃO: Mudamos de sticky para relative para respeitar o layout App */
+    position: relative; 
+    top: 0;
     
-    overflow-y: auto;
-    flex-shrink: 0; /* Impede a sidebar de encolher */
+    /* CORREÇÃO: Usar min-height garante que ela acompanhe o container pai */
+    min-height: 100%; 
+    height: auto;
+    
+    /* overflow-y: auto; -> Remover ou comentar se a sidebar for relative, 
+       pois ela vai crescer com a página e usar a rolagem principal */
+    overflow-y: visible; 
+    
+    flex-shrink: 0;
     z-index: 100;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-quaternary) var(--bg-secondary);
 }
 .sidebar-widget {
     margin-top: 1.5rem;
@@ -237,7 +246,7 @@
 
 /* Menu de Navegação */
 .sidebar-menu {
-    flex: 1;
+    flex: 0; /* ALTERADO DE 1 PARA 0 */
     padding: 1rem 0;
     display: flex;
     flex-direction: column;
