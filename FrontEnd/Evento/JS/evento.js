@@ -12,44 +12,74 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// --- FUNÇÃO: Gerencia a Responsividade (Menu Mobile) ---
+// --- FUNÇÃO: Gerencia a Responsividade (Menu Mobile) - VERSÃO ROBUSTA ---
 function initResponsiveFeatures() {
+  console.log("Iniciando recursos responsivos...");
+
+  // 1. Seleção precisa dos elementos pelo ID que está no seu HTML
   const elements = {
-      mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+      openBtn: document.getElementById('mobile-menu-toggle'), // O ID correto do seu HTML
       sidebar: document.getElementById('sidebar'),
-      sidebarClose: document.getElementById('sidebar-close'),
-      mobileOverlay: document.getElementById('mobile-overlay')
+      closeBtn: document.getElementById('sidebar-close'),
+      overlay: document.getElementById('mobile-overlay')
   };
 
-  function toggleMobileMenu() {
-      if(elements.sidebar) {
+  // 2. Verificação de segurança (Debug)
+  if (!elements.openBtn) console.error("ERRO: Botão 'mobile-menu-toggle' não encontrado!");
+  if (!elements.sidebar) console.error("ERRO: Sidebar não encontrada!");
+
+  // 3. Função única para Alternar (Abrir/Fechar)
+  function toggleMenu(e) {
+      if (e) {
+          e.preventDefault(); // Evita comportamentos padrão
+          e.stopPropagation(); // Impede que o clique passe para outros elementos
+      }
+
+      if (elements.sidebar) {
+          // Alterna a classe 'active' na sidebar e no overlay
           elements.sidebar.classList.toggle('active');
           
-          if(elements.mobileOverlay) {
-              elements.mobileOverlay.classList.toggle('active');
+          if (elements.overlay) {
+              elements.overlay.classList.toggle('active');
           }
+
+          // Trava o scroll do corpo do site quando o menu está aberto
+          const isOpen = elements.sidebar.classList.contains('active');
+          document.body.style.overflow = isOpen ? 'hidden' : '';
           
-          document.body.style.overflow = elements.sidebar.classList.contains('active') ? 'hidden' : '';
+          console.log("Menu alternado. Aberto?", isOpen);
       }
   }
 
-  if (elements.mobileMenuBtn) elements.mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-  if (elements.sidebarClose) elements.sidebarClose.addEventListener('click', toggleMobileMenu);
-  if (elements.mobileOverlay) elements.mobileOverlay.addEventListener('click', toggleMobileMenu);
+  // 4. Adicionar Event Listeners (Garante que o clique funcione)
+  
+  // Botão de Abrir (Hambúrguer)
+  if (elements.openBtn) {
+      // Removemos listener antigo para evitar duplicação (cloneNode)
+      const newOpenBtn = elements.openBtn.cloneNode(true);
+      elements.openBtn.parentNode.replaceChild(newOpenBtn, elements.openBtn);
+      newOpenBtn.addEventListener('click', toggleMenu);
+  }
 
-  const menuLinks = document.querySelectorAll('.menu a');
-  menuLinks.forEach(link => {
-      link.addEventListener('click', () => {
-          if (window.innerWidth <= 1024 && elements.sidebar.classList.contains('active')) {
-              toggleMobileMenu();
-          }
-      });
-  });
+  // Botão de Fechar (X)
+  if (elements.closeBtn) {
+      const newCloseBtn = elements.closeBtn.cloneNode(true);
+      elements.closeBtn.parentNode.replaceChild(newCloseBtn, elements.closeBtn);
+      newCloseBtn.addEventListener('click', toggleMenu);
+  }
 
+  // Clicar no Overlay (Fundo escuro)
+  if (elements.overlay) {
+      const newOverlay = elements.overlay.cloneNode(true);
+      elements.overlay.parentNode.replaceChild(newOverlay, elements.overlay);
+      newOverlay.addEventListener('click', toggleMenu);
+  }
+
+  // 5. Resetar ao redimensionar a tela (Desktop)
   window.addEventListener('resize', () => {
-      if (window.innerWidth > 1024 && elements.sidebar) {
+      if (window.innerWidth > 1024 && elements.sidebar && elements.sidebar.classList.contains('active')) {
           elements.sidebar.classList.remove('active');
-          if(elements.mobileOverlay) elements.mobileOverlay.classList.remove('active');
+          if (elements.overlay) elements.overlay.classList.remove('active');
           document.body.style.overflow = '';
       }
   });
@@ -146,6 +176,8 @@ async function initEventos() {
       eventosInteressados = [];
     }
   }
+
+  
 
   // --- WEB SOCKET (TEMPO REAL) ---
   function setupWebSocketListeners() {
