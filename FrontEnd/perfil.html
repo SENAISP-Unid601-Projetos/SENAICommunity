@@ -57,9 +57,12 @@
                 <span id="topbar-user-name">Carregando...</span>
                 <i class="fas fa-chevron-down"></i>
             </div>
+
             <div class="dropdown-menu">
-                <a href="#" id="edit-profile-btn"><i class="fas fa-user-edit"></i> Editar Perfil</a>
-                <a href="#" id="delete-account-btn" class="danger"><i class="fas fa-user-slash"></i> Excluir Conta</a>
+                <a href="perfil.html" id="edit-profile-btn"><i class="fas fa-user"></i> Meu Perfil</a>
+
+                <a href="configuracao.html"><i class="fas fa-cog"></i> Configurações</a>
+
                 <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
             </div>
         </div>
@@ -158,9 +161,9 @@
             </div>
 
             <div class="profile-page">
+
                 <div class="profile-header">
                     <div class="profile-banner" id="profile-banner">
-                        <!-- Banner será carregado via JS -->
                     </div>
                     <div class="profile-details">
                         <div class="profile-picture-container">
@@ -180,45 +183,60 @@
                     </div>
                 </div>
 
-                <div class="profile-body">
-                    <div class="widget-card info-card">
-                        <h3>Sobre</h3>
-                        <p id="profile-bio">Carregando bio...</p>
-                        <ul class="profile-metadata">
-                            <li><i class="fas fa-envelope"></i><span id="profile-email">Carregando...</span></li>
-                            <li><i class="fas fa-calendar-alt"></i>Nascido em&nbsp;<span id="profile-dob">...</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+                <div class="profile-content-grid">
 
-                <div class="profile-nav-tabs">
-                    <button class="tab-btn active" data-target="tab-posts">
-                        <i class="fas fa-th"></i> Postagens
-                    </button>
-                    <button class="tab-btn" data-target="tab-friends">
-                        <i class="fas fa-user-friends"></i> Amigos
-                        <span id="tab-friends-count" class="tab-count">0</span>
-                    </button>
-                    <button class="tab-btn" data-target="tab-projects">
-                        <i class="fas fa-project-diagram"></i> Projetos
-                        <span id="tab-projects-count" class="tab-count">0</span>
-                    </button>
-                </div>
+                    <aside class="profile-left-column">
+                        <div class="widget-card info-card">
+                            <h3>Sobre</h3>
+                            <p id="profile-bio" style="white-space: pre-wrap; margin-bottom: 1.5rem;">Carregando bio...
+                            </p>
 
-                <div id="tab-posts" class="tab-content active">
-                    <div id="profile-posts-container" style="margin-top: 1.5rem;">
-                    </div>
-                </div>
-                <div id="tab-friends" class="tab-content" style="display: none;">
-                    <div class="friends-grid" id="profile-friends-list">
-                        <p class="empty-state">Carregando amigos...</p>
-                    </div>
-                </div>
+                            <ul class="profile-metadata" style="flex-direction: column; gap: 0.8rem;">
+                                <li>
+                                    <i class="fas fa-envelope" style="width: 20px;"></i>
+                                    <span id="profile-email">Carregando...</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-birthday-cake" style="width: 20px;"></i>
+                                    Nascido em <span id="profile-dob">...</span>
+                                </li>
+                            </ul>
+                        </div>
 
-                <div id="tab-projects" class="tab-content" style="display: none;">
-                    <div class="projects-grid" id="profile-projects-list">
-                        <p class="empty-state">Nenhum projeto encontrado.</p>
+                    </aside>
+
+                    <div class="profile-right-column">
+
+                        <div class="profile-nav-tabs">
+                            <button class="tab-btn active" data-target="tab-posts">
+                                <i class="fas fa-th"></i> Postagens
+                            </button>
+                            <button class="tab-btn" data-target="tab-friends">
+                                <i class="fas fa-user-friends"></i> Amigos
+                                <span id="tab-friends-count" class="tab-count">0</span>
+                            </button>
+                            <button class="tab-btn" data-target="tab-projects">
+                                <i class="fas fa-project-diagram"></i> Projetos
+                                <span id="tab-projects-count" class="tab-count">0</span>
+                            </button>
+                        </div>
+
+                        <div id="tab-posts" class="tab-content active" style="padding: 0;">
+                            <div id="profile-posts-container">
+                            </div>
+                        </div>
+
+                        <div id="tab-friends" class="tab-content">
+                            <div id="profile-friends-list">
+                                <p class="empty-state">Carregando amigos...</p>
+                            </div>
+                        </div>
+
+                        <div id="tab-projects" class="tab-content">
+                            <div class="projects-grid" id="profile-projects-list">
+                                <p class="empty-state">Nenhum projeto encontrado.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

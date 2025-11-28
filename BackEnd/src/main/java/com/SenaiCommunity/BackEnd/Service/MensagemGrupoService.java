@@ -135,7 +135,9 @@ public class MensagemGrupoService {
                 .filter(membro -> !membro.getUsuario().getId().equals(autor.getId()))
                 .forEach(membro -> notificacaoService.criarNotificacao(
                         membro.getUsuario(),
-                        "Nova mensagem no projeto '" + projeto.getTitulo() + "': " + autor.getNome() + " disse..."
+                        "Nova mensagem no projeto '" + projeto.getTitulo() + "'",
+                        "MENSAGEM_PROJETO",
+                        projeto.getId() // ID Referencia = ID do Projeto
                 ));
 
         return toDTO(mensagemSalva);

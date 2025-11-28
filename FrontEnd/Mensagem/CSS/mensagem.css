@@ -80,6 +80,12 @@ body {
     overflow: hidden; /* Impede scroll duplo */
 }
 
+.empty-state{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* IMPORTANTE: Remove a barra lateral direita para o chat expandir */
 .right-sidebar {
     display: none !important;
