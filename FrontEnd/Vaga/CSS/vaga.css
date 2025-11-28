@@ -744,6 +744,12 @@
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- CORREÇÃO DE TAMANHO --- */
+  max-height: 90vh;       /* Limita a altura a 90% da tela */
+  display: flex;          /* Organiza o layout interno */
+  flex-direction: column; /* Coloca cabeçalho, corpo e rodapé em coluna */
+  overflow: hidden;       /* Garante que nada saia das bordas arredondadas */
 }
 
 @keyframes modalSlideIn {
@@ -857,6 +863,10 @@
 
 .vaga-details-body {
   padding: 1.5rem;
+  
+  /* --- CORREÇÃO DE ROLAGEM --- */
+  overflow-y: auto; /* Cria a barra de rolagem apenas aqui dentro */
+  flex: 1;          /* Faz essa parte ocupar todo o espaço sobrando */
 }
 
 .vaga-details-section {
@@ -1721,4 +1731,94 @@
         padding: 1rem;
         width: 100%;
     }
+}
+
+/* --- CORREÇÃO DO MODAL DE PUBLICAR VAGA --- */
+
+/* 1. Garante que o fundo do modal ocupe a tela toda e centralize corretamente */
+#modal-publicar-vaga, 
+.modal { 
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px !important; /* Espaço de respiro nas bordas */
+    box-sizing: border-box;
+}
+
+/* 2. Arruma a caixa branca (conteúdo) para não estourar a tela */
+#modal-publicar-vaga .modal-content,
+.modal-content {
+    max-height: 85vh !important; /* Altura máxima de 85% da tela */
+    width: 90% !important;
+    max-width: 600px !important; /* Largura ideal */
+    
+    overflow-y: auto !important; /* Cria a barra de rolagem interna */
+    
+    /* Remove centralização antiga que cortava o topo */
+    position: relative !important; 
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 0 auto !important;
+    
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+/* 3. Garante que a barra de rolagem fique bonita (opcional) */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+}
+
+/* --- ESTILO NOVO E MODERNO DO BOTÃO FECHAR --- */
+
+#modal-publicar-vaga .close,
+.modal .close {
+    position: absolute;
+    top: 15px; /* Distância do topo */
+    right: 15px; /* Distância da direita */
+    
+    width: 36px;
+    height: 36px;
+    
+    /* Cria a bolinha de fundo */
+    background-color: rgba(255, 255, 255, 0.1); 
+    border-radius: 50%;
+    
+    /* Centraliza o X perfeitamente */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Estilo da letra X */
+    color: var(--text-secondary);
+    font-size: 24px;
+    font-family: Arial, sans-serif; /* Garante um X bonito sem serifas */
+    font-weight: 400;
+    line-height: 1;
+    
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    z-index: 100; /* Garante que fique na frente de tudo */
+    backdrop-filter: blur(4px); /* Efeito de vidro (opcional) */
+}
+
+/* Efeito ao passar o mouse */
+#modal-publicar-vaga .close:hover,
+.modal .close:hover {
+    background-color: #ff4444; /* Fundo vermelho vivo */
+    color: white; /* X fica branco */
+    transform: scale(1.1) rotate(90deg); /* Cresce um pouco e gira */
+    box-shadow: 0 4px 10px rgba(255, 68, 68, 0.3);
+}
+
+/* Ajuste fino para o X ficar matematicamente no meio (às vezes a fonte desce um pouco) */
+#modal-publicar-vaga .close span,
+.modal .close span {
+    margin-top: -2px; 
 }
