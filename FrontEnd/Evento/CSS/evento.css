@@ -358,6 +358,7 @@ body {
     gap: 4px;
     padding-top: 0;
     padding-bottom: 0;
+    margin-bottom: 1.5rem;
 }
 
 .menu-item {
@@ -710,6 +711,7 @@ body {
   border-radius: 12px;
   padding: 1.5rem 1rem;
   margin-bottom: 1rem;
+  margin-left: 1.5rem;
 }
 
 .meus-eventos-card h3 {
@@ -1083,11 +1085,27 @@ body {
 }
 
 .modal-header {
-  padding: 1.5rem 1.25rem 1rem;
+  padding: 1.5rem 1.5rem 1rem;
   border-bottom: 1px solid var(--border-color);
+  /* Adicione estas propriedades para alinhar o X à direita */
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* Estilo do botão X */
+.close-modal-btn {
+  color: var(--text-secondary);
+  font-size: 1.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  transition: var(--transition);
+}
+
+.close-modal-btn:hover {
+  color: var(--error); /* Fica vermelho ao passar o mouse */
+  transform: scale(1.1);
 }
 
 .modal-header h3 {
@@ -1418,6 +1436,29 @@ body {
   .modal-footer .btn {
     flex: none;
     min-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Ajuste do tamanho do modal no celular */
+  .modal-content {
+    width: 85% !important; /* Ocupa 85% da largura (deixa bordas laterais) */
+    max-width: 380px;      /* Trava a largura máxima para não esticar demais */
+    margin: 15% auto;      /* Empurra o modal para baixo (15% do topo) */
+    max-height: 70vh;      /* Ocupa no máximo 70% da altura da tela */
+    border-radius: 15px;   /* Bordas mais arredondadas */
+  }
+
+  /* Ajuste do cabeçalho do modal */
+  .modal-header {
+    padding: 1rem;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+  }
+
+  /* Garante que o botão de fechar ou ações não fiquem colados */
+  .modal-footer {
+    padding: 1rem;
   }
 }
 
