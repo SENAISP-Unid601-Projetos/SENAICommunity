@@ -783,29 +783,61 @@ async function initEventos() {
 }
 
 // --- FUNÇÃO AUXILIAR: Sidebar do Usuário ---
+// --- FUNÇÃO AUXILIAR: Sidebar do Usuário (Atualizada e Robusta) ---
 function updateSidebarUserInfo() {
-    // 1. Seleciona o container que possui o spinner
-    const userInfoContainer = document.querySelector('.user-info');
+  const userInfoContainer = document.querySelector('.user-info');
 
-    if (window.currentUser) {
-        const sidebarName = document.getElementById('sidebar-user-name');
-        const sidebarTitle = document.getElementById('sidebar-user-title');
-        const sidebarImg = document.getElementById('sidebar-user-img');
-        
-        if(sidebarName) sidebarName.textContent = window.currentUser.nome;
-        if(sidebarTitle) sidebarTitle.textContent = window.currentUser.cargo || 'Membro'; 
-        
-        if(sidebarImg && window.currentUser.fotoPerfil) {
-             if(typeof window.getAvatarUrl === 'function') {
-                 sidebarImg.src = window.getAvatarUrl(window.currentUser.fotoPerfil);
-             } else {
-                 sidebarImg.src = window.currentUser.fotoPerfil;
-             }
-        }
+  if (window.currentUser) {
+      const sidebarName = document.getElementById('sidebar-user-name');
+      const sidebarTitle = document.getElementById('sidebar-user-title');
+      const sidebarImg = document.getElementById('sidebar-user-img');
+      
+      // 1. Define a imagem padrão de forma robusta
+      const defaultImage = window.defaultAvatarUrl || 
+                         (window.backendUrl ? `${window.backendUrl}/images/default-avatar.jpg` : '') || 
+                         'https://via.placeholder.com/80?text=User';
 
-        // 2. CORREÇÃO: Adiciona a classe 'loaded' para esconder o spinner
-        if (userInfoContainer) {
-            userInfoContainer.classList.add('loaded');
-        }
-    }
+      if (sidebarName) {
+          sidebarName.textContent = window.currentUser.nome || "Usuário";
+      }
+      
+      // 2. CORREÇÃO PRINCIPAL: Verifica múltiplos campos para o cargo
+      if (sidebarTitle) {
+          const role = window.currentUser.cargo || 
+                       window.currentUser.titulo || 
+                       window.currentUser.tipoUsuario || 
+                       'Membro da Comunidade';
+          sidebarTitle.textContent = role;
+      }
+      
+      if (sidebarImg) {
+          const foto = window.currentUser.fotoPerfil || window.currentUser.urlFotoPerfil;
+          
+          // Tratamento de erro de imagem
+          sidebarImg.onerror = function() {
+              if (this.src !== defaultImage) {
+                  this.src = defaultImage;
+              }
+          };
+
+          // Lógica de URL da imagem
+          if (foto) {
+               if (typeof window.getAvatarUrl === 'function') {
+                   sidebarImg.src = window.getAvatarUrl(foto);
+               } else if (foto.startsWith('http')) {
+                   sidebarImg.src = foto;
+               } else {
+                   const cleanPath = foto.startsWith('/') ? foto : `/${foto}`;
+                   sidebarImg.src = `${window.backendUrl}/api/arquivos${cleanPath}`;
+               }
+          } else {
+              sidebarImg.src = defaultImage;
+          }
+      }
+
+      // Esconde o spinner de carregamento
+      if (userInfoContainer) {
+          userInfoContainer.classList.add('loaded');
+      }
+  }
 }
