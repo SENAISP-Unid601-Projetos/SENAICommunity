@@ -1,8 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
     // -----------------------------------------------------------------
-    // AGUARDA O SCRIPT PRINCIPAL
+    // AGUARDA O SCRIPT PRINCIPAL (CARREGAMENTO DO USUÁRIO)
     // -----------------------------------------------------------------
     document.addEventListener("globalScriptsLoaded", (e) => {
+        const { currentUser } = e.detail; // Pega o usuário já carregado
+
         // --- VARIÁVEIS GLOBAIS ---
         let listaCompletaRecebidos = [];
         let listaCompletaEnviados = [];
@@ -15,15 +17,16 @@ document.addEventListener("DOMContentLoaded", () => {
             sentRequestsList: document.getElementById("sent-requests-list"),
             friendsList: document.getElementById("friends-list"),
             userInfoLoading: document.getElementById("user-info-loading"),
-            topbarUserLoading: document.getElementById("topbar-user-loading"),
-            userInfo: document.querySelector('.user-info'),
-            topbarUser: document.querySelector('.user-dropdown .user'),
+            
             // Seletores Mobile
             mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
             sidebar: document.getElementById('sidebar'),
             sidebarClose: document.getElementById('sidebar-close'),
             mobileOverlay: document.getElementById('mobile-overlay'),
+            
+            // Stats
             projectsCount: document.getElementById("projects-count"),
+            connectionsCount: document.getElementById("connections-count"), // Adicionado
             
             // Modal "Ver Mais"
             modalLista: document.getElementById("modal-lista-usuarios"),
@@ -33,96 +36,103 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         // -----------------------------------------------------------------
-        // CORREÇÃO: FUNÇÕES DE RESPONSIVIDADE
-        // -----------------------------------------------------------------
-        function ordenarAmigosPorOnline(lista) {
-            const onlineEmails = window.latestOnlineEmails || [];
-            
-            return lista.sort((a, b) => {
-                const aOnline = onlineEmails.includes(a.email);
-                const bOnline = onlineEmails.includes(b.email);
-
-                // Se A está online e B não, A vem primeiro (-1)
-                if (aOnline && !bOnline) return -1;
-                // Se B está online e A não, B vem primeiro (1)
-                if (!aOnline && bOnline) return 1;
-                // Se ambos tem o mesmo status, mantém ordem alfabética ou original
-                return 0;
-            });
-        }
-
-        // -----------------------------------------------------------------
-        // RESPONSIVIDADE
+        // 1. CORREÇÃO: MENU MOBILE
         // -----------------------------------------------------------------
         function initResponsiveFeatures() {
-            // 1. Botão de Abrir Menu (Clonagem para limpar eventos do principal.js)
+            // Função para abrir/fechar
+            const toggleMenu = (e) => {
+                if(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
+                // Toggle da classe no CSS
+                elements.sidebar.classList.toggle('mobile-open');
+                
+                // Toggle do Overlay
+                if (elements.sidebar.classList.contains('mobile-open')) {
+                    elements.mobileOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden'; // Trava scroll
+                } else {
+                    elements.mobileOverlay.classList.remove('active');
+                    document.body.style.overflow = ''; // Libera scroll
+                }
+            };
+
+            // Remove listeners antigos do principal.js clonando os botões
             if (elements.mobileMenuToggle) {
                 const newBtn = elements.mobileMenuToggle.cloneNode(true);
                 elements.mobileMenuToggle.parentNode.replaceChild(newBtn, elements.mobileMenuToggle);
                 elements.mobileMenuToggle = newBtn;
-                
-                elements.mobileMenuToggle.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    toggleMobileMenu();
-                });
+                elements.mobileMenuToggle.addEventListener('click', toggleMenu);
             }
 
-            // 2. CORREÇÃO AQUI: Botão de Fechar Menu (Clonagem também necessária)
             if (elements.sidebarClose) {
                 const newCloseBtn = elements.sidebarClose.cloneNode(true);
                 elements.sidebarClose.parentNode.replaceChild(newCloseBtn, elements.sidebarClose);
-                elements.sidebarClose = newCloseBtn; // Atualiza a referência
-
-                elements.sidebarClose.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleMobileMenu();
-                });
+                elements.sidebarClose = newCloseBtn;
+                elements.sidebarClose.addEventListener('click', toggleMenu);
             }
             
-            // 3. Overlay (Clicar fora para fechar)
+            // Overlay fecha o menu
             if (elements.mobileOverlay) {
-                // Remove listener antigo se existir (embora cloneNode não se aplique aqui facilmente, removemos e adicionamos)
-                elements.mobileOverlay.removeEventListener('click', toggleMobileMenu); 
-                elements.mobileOverlay.addEventListener('click', toggleMobileMenu);
+                const newOverlay = elements.mobileOverlay.cloneNode(true);
+                elements.mobileOverlay.parentNode.replaceChild(newOverlay, elements.mobileOverlay);
+                elements.mobileOverlay = newOverlay;
+                elements.mobileOverlay.addEventListener('click', toggleMenu);
             }
 
-            // 4. Fechar ao clicar em links do menu
-            const menuLinks = document.querySelectorAll('.menu-item');
+            // Fechar ao clicar em links do menu (Melhor UX no mobile)
+            const menuLinks = document.querySelectorAll('.sidebar .menu-item');
             menuLinks.forEach(link => {
                 link.addEventListener('click', () => {
-                    if (window.innerWidth <= 1024) { 
-                        toggleMobileMenu();
+                    if (window.innerWidth <= 1024 && elements.sidebar.classList.contains('mobile-open')) { 
+                        toggleMenu();
                     }
-
                 });
             });
-            window.addEventListener('resize', handleResize);
-        }
-
-        function toggleMobileMenu() {
-            // Verifica se está aberto
-            const isOpen = elements.sidebar.classList.contains('mobile-open');
             
-            if (isOpen) {
-                // FECHAR
-                elements.sidebar.classList.remove('mobile-open');
-                elements.mobileOverlay.classList.remove('active');
-                document.body.style.overflow = ''; // Libera o scroll
-            } else {
-                // ABRIR
-                elements.sidebar.classList.add('mobile-open');
-                elements.mobileOverlay.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Trava o scroll
+            // Resetar ao redimensionar a tela
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 1024) {
+                    elements.sidebar.classList.remove('mobile-open');
+                    elements.mobileOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+
+        // -----------------------------------------------------------------
+        // 2. CORREÇÃO: CONTADOR DE PROJETOS E CONEXÕES
+        // -----------------------------------------------------------------
+        function updateUserStats() {
+            // Usa os dados do currentUser que veio do GlobalScriptsLoaded (principal.js)
+            // Isso evita uma requisição extra desnecessária e garante o número correto.
+            
+            if (currentUser) {
+                // Atualiza Projetos
+                if (elements.projectsCount) {
+                    elements.projectsCount.textContent = currentUser.totalProjetos || "0";
+                }
+                
+                // Atualiza Conexões (temporariamente com o que tem no user, depois atualiza com a lista)
+                /* O fetchFriends() lá embaixo vai atualizar isso com precisão, 
+                   mas podemos por um placeholder aqui se o currentUser tiver esse campo */
             }
         }
 
-        function handleResize() {
-            if (window.innerWidth > 1024) {
-                elements.sidebar.classList.remove('mobile-open');
-                elements.mobileOverlay.classList.remove('active');
-                document.body.style.overflow = '';
-            }
+        // -----------------------------------------------------------------
+        // ORDENAÇÃO E FILTROS
+        // -----------------------------------------------------------------
+        function ordenarAmigosPorOnline(lista) {
+            const onlineEmails = window.latestOnlineEmails || [];
+            return lista.sort((a, b) => {
+                const aOnline = onlineEmails.includes(a.email);
+                const bOnline = onlineEmails.includes(b.email);
+                if (aOnline && !bOnline) return -1;
+                if (!aOnline && bOnline) return 1;
+                return 0;
+            });
         }
 
         // -----------------------------------------------------------------
@@ -130,7 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // -----------------------------------------------------------------
         function abrirModalLista(tipo) {
             if (!elements.modalLista) return;
-
             elements.modalListaContainer.innerHTML = ''; 
             elements.modalLista.style.display = 'flex'; 
             
@@ -146,12 +155,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 titulo = "Pedidos de Amizade Enviados";
                 renderRequests(listaAlvo, elements.modalListaContainer, 'sent');
             } else if (tipo === 'friends') {
-                // Ordena antes de mostrar no modal também
                 listaAlvo = ordenarAmigosPorOnline([...listaCompletaAmigos]); 
                 titulo = "Todas as Conexões";
                 renderFriends(listaAlvo, elements.modalListaContainer);
             }
-
             elements.modalListaTitulo.innerText = `${titulo} (${listaAlvo.length})`;
         }
 
@@ -165,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // -----------------------------------------------------------------
-        // RENDERIZAÇÃO INTELIGENTE (LIMITADA + ORDENADA)
+        // RENDERIZAÇÃO
         // -----------------------------------------------------------------
         function renderizarSecaoLimitada(listaCompleta, container, tipo) {
             if (!container) return;
@@ -185,13 +192,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // SE FOR AMIGOS, ORDENA: ONLINE PRIMEIRO
-            let listaProcessada = [...listaCompleta]; // Cria cópia para não alterar a original permanentemente
+            let listaProcessada = [...listaCompleta];
             if (tipo === 'friends') {
                 listaProcessada = ordenarAmigosPorOnline(listaProcessada);
             }
 
-            // Fatia a lista (Pega só os primeiros X itens)
             const itensParaMostrar = listaProcessada.slice(0, LIMITE_EXIBICAO);
 
             if (tipo === 'friends') {
@@ -210,18 +215,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // -----------------------------------------------------------------
-        // BUSCA DE DADOS
-        // -----------------------------------------------------------------
         function setProfileLoading(isLoading) {
-            if (elements.userInfo && elements.topbarUser) {
-                if (isLoading) {
-                    elements.userInfo.classList.remove('loaded');
-                    elements.topbarUser.classList.remove('loaded');
-                } else {
-                    elements.userInfo.classList.add('loaded');
-                    elements.topbarUser.classList.add('loaded');
-                }
+            if (elements.userInfoLoading) {
+                 // Controlado via CSS class no pai geralmente, ou display direto
+                 elements.userInfoLoading.style.display = isLoading ? 'flex' : 'none';
             }
         }
 
@@ -230,22 +227,16 @@ document.addEventListener("DOMContentLoaded", () => {
             if (isLoading) {
                 button.disabled = true;
                 button.classList.add('loading');
+                button.dataset.originalText = button.innerText;
+                button.innerText = "Processando...";
             } else {
                 button.disabled = false;
                 button.classList.remove('loading');
+                if(button.dataset.originalText) button.innerText = button.dataset.originalText;
             }
         }
 
-        async function fetchUserProjectsCount() {
-            if (!elements.projectsCount) return;
-            try {
-                const response = await window.axios.get(`${window.backendUrl}/projetos`);
-                elements.projectsCount.textContent = response.data.length || "0";
-            } catch (error) {
-                elements.projectsCount.textContent = "0";
-            }
-        }
-
+        // --- BUSCA DE DADOS ---
         async function fetchReceivedRequests() {
             if (!elements.receivedRequestsList) return;
             elements.receivedRequestsList.innerHTML = `<div class="results-loading"><div class="loading-spinner"></div></div>`;
@@ -270,10 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // -----------------------------------------------------------------
-        // FUNÇÕES DE RENDERIZAÇÃO
-        // RENDERIZADORES
-        // -----------------------------------------------------------------
+        // --- RENDERIZADORES DE CARD ---
         function renderRequests(requests, container, type) {
             requests.forEach((req) => {
                 const card = document.createElement("div");
@@ -344,13 +332,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     </button>
                 </div>
                 `;
-                // Animação suave na entrada
                 card.style.animation = `fadeIn 0.3s ease forwards ${index * 0.05}s`;
                 card.style.opacity = '0';
                 container.appendChild(card);
             });
             
-            // Adiciona estilo da animação dinamicamente se não existir
             if (!document.getElementById('fade-style')) {
                 const style = document.createElement('style');
                 style.id = 'fade-style';
@@ -359,9 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // -----------------------------------------------------------------
-        // FUNÇÕES DE AÇÃO GLOBAL
-        // -----------------------------------------------------------------
+        // --- AÇÕES GLOBAIS ---
         window.aceitar = async (amizadeId, buttonElement) => {
             setButtonLoading(buttonElement, true);
             try {
@@ -407,13 +391,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                     listaCompletaAmigos = listaCompletaAmigos.filter(f => f.idAmizade !== amizadeId);
                     
+                    // Atualiza contadores
+                    if(elements.connectionsCount) elements.connectionsCount.innerText = listaCompletaAmigos.length;
+
                     if(elements.modalLista.style.display === 'flex') {
                         abrirModalLista('friends');
                         renderizarSecaoLimitada(listaCompletaAmigos, elements.friendsList, 'friends');
                     } else {
                          renderizarSecaoLimitada(listaCompletaAmigos, elements.friendsList, 'friends');
                     }
-
                 } catch (err) {
                     window.showNotification("Erro ao remover amizade.", "error");
                     setButtonLoading(buttonElement, false);
@@ -421,50 +407,42 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
 
+        // --- INICIALIZAÇÃO DA PÁGINA ---
         function carregarDadosDaPagina() {
+            setProfileLoading(true);
+            updateUserStats(); // Usa o currentUser do evento global
 
-            if (elements.friendsList) {
-                // Não substitui o conteúdo se já houver cards, para evitar flash
-                if(elements.friendsList.children.length === 0) {
-                     elements.friendsList.innerHTML = `<div class="friends-loading"><div class="loading-spinner"></div></div>`; 
-                }
+            if (elements.friendsList && elements.friendsList.children.length === 0) {
+                 elements.friendsList.innerHTML = `<div class="friends-loading"><div class="loading-spinner"></div></div>`; 
             }
-            
-    setProfileLoading(true);
 
             fetchReceivedRequests();
             fetchSentRequests();
-            fetchUserProjectsCount();
             
-
+            // Pequeno delay para garantir que window.userFriends esteja populado pelo principal.js
             setTimeout(() => {
                 listaCompletaAmigos = window.userFriends || [];
                 renderizarSecaoLimitada(listaCompletaAmigos, elements.friendsList, 'friends');
+                if(elements.connectionsCount) elements.connectionsCount.innerText = listaCompletaAmigos.length;
                 setProfileLoading(false);
-            }, 1000);
+            }, 500);
         }
 
         initResponsiveFeatures();
         carregarDadosDaPagina();
         
-        // --- LISTENERS DE ATUALIZAÇÃO ---
-
-        // Quando a lista de amigos é atualizada pelo sistema
+        // Listeners de atualização automática (WebSocket do principal.js)
         document.addEventListener("friendsListUpdated", () => {
              listaCompletaAmigos = window.userFriends || [];
+             if(elements.connectionsCount) elements.connectionsCount.innerText = listaCompletaAmigos.length;
              renderizarSecaoLimitada(listaCompletaAmigos, elements.friendsList, 'friends');
-             
              if (elements.modalLista && elements.modalLista.style.display === 'flex' && elements.modalListaTitulo.innerText.includes('Conexões')) {
                 abrirModalLista('friends');
             }
         });
 
-        // Quando alguém entra/sai (status online muda)
         document.addEventListener("onlineStatusUpdated", () => {
-            // Re-renderiza a lista principal (que agora vai reordenar automaticamente)
             renderizarSecaoLimitada(listaCompletaAmigos, elements.friendsList, 'friends');
-
-            // Se o modal estiver aberto, atualiza ele também
             if (elements.modalLista && elements.modalLista.style.display === 'flex' && elements.modalListaTitulo.innerText.includes('Conexões')) {
                 abrirModalLista('friends');
             }

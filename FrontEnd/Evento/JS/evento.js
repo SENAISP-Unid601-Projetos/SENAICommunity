@@ -733,6 +733,13 @@ async function initEventos() {
         });
     }
 
+    const closeBtn = document.querySelector('.close-modal-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      eventoModal.style.display = 'none';
+    });
+  }
+
     // Modal de detalhes
     if (closeEventoDetailsBtn) {
       closeEventoDetailsBtn.addEventListener('click', closeEventoDetailsModal);
