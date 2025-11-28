@@ -792,74 +792,166 @@ body {
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0);} }
 
 /* =================================================================
-   RESPONSIVIDADE (MOBILE)
+   RESPONSIVIDADE (MOBILE) - CORREÇÃO DEFINITIVA
+   Cole isto no final do seu mensagem.css
 ================================================================= */
+
 @media (max-width: 1024px) {
     
+    .menu-toggle {
+        display: flex !important; /* O 'flex' centraliza o ícone */
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-size: 1.2rem;
+        position: relative; 
+        z-index: 10001; /* Fica acima de quase tudo */
+        pointer-events: auto; /* Força o recebimento de cliques */
+    }
+
+    /* 1. Força o layout de "App" (bloqueia scroll da página) */
+    html, body {
+        height: 100vh !important;
+        overflow: hidden !important;
+    }
+
+    /* 2. Sobrescreve a regra do principal.css que quebrava o flexbox */
+  .container {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100vw !important; /* Força largura da viewport */
+        max-width: 100vw !important;
+        height: calc(100vh - 70px) !important; /* Ajuste conforme seu header */
+        border: none !important;
+    }
+
+    /* 2. Garante que o conteúdo principal toque as bordas */
+    .main-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        border-radius: 0 !important;
+    }
+
+    .chat-card {
+        border-radius: 0 !important;
+        border: none !important;
+        height: 100% !important;
+        width: 100% !important;
+    }
+
+    /* 4. Força a sidebar de conversas a ocupar 100% da largura quando visível */
+    .chat-sidebar {
+        width: 100% !important;
+        min-width: 0 !important;
+        border-right: none !important;
+    }
+    
+    /* 5. Garante que a área de mensagens ocupe 100% quando aberta */
+    .chat-main {
+        width: 100% !important;
+    }
+
+    /* 4. Sidebar de Navegação (Menu Principal) */
     .sidebar {
-        position: fixed; top: 0; left: 0; height: 100vh; width: 85%; max-width: 320px;
-        transform: translateX(-100%); z-index: 1000; box-shadow: var(--shadow);
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        height: 100vh; 
+        width: 85%; 
+        max-width: 320px;
+        transform: translateX(-100%); 
+        z-index: 2000; 
+        box-shadow: var(--shadow);
         transition: transform 0.3s ease;
         border-right: none;
     }
     .sidebar.active { transform: translateX(0); }
     
-    .sidebar-header-mobile { 
-        display: flex !important; 
-        justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid var(--border-color);
-    }
-    .sidebar-title { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
-    .sidebar-close { display: block; background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; position: absolute; top: 15px; right: 15px; }
-
-    .menu-toggle { display: block !important; font-size: 1.4rem; color: var(--text-primary); cursor: pointer; margin-right: 1rem; }
-    
+    /* Overlay do Menu Principal */
     .mobile-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6);
-        z-index: 999; opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(2px);
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.6);
+        z-index: 1999; 
+        opacity: 0; visibility: hidden; transition: 0.3s; 
+        backdrop-filter: blur(2px);
     }
     .mobile-overlay.active { opacity: 1; visibility: visible; display: block !important; }
+
+    /* ============================================================
+       LÓGICA DE TROCA DE TELAS (LISTA <-> CONVERSA)
+       ============================================================ */
     
-    /* Layout Mobile do Chat */
-    .chat-container .chat-main { display: none; }
-    .chat-container .chat-sidebar { display: flex; width: 100%; border-right: none; }
-    .chat-container.chat-open .chat-sidebar { display: none; }
-    .chat-container.chat-open .chat-main { display: flex; }
-    
-    .back-to-list-btn { 
-        display: block !important; 
-        margin-right: 0.5rem; font-size: 1.2rem; background: none; border: none; color: var(--text-primary); 
+    .chat-container {
+        width: 100% !important;
+        height: 100% !important;
+        position: relative;
+    }
+
+    /* ESTADO 1: Lista de Conversas Visível (Padrão) */
+    .chat-container .chat-sidebar { 
+        display: flex !important; 
+        width: 100% !important; 
+        height: 100% !important;
+        border-right: none; 
+        z-index: 1;
     }
     
-    .message-group { max-width: 85%; }
-    .message-group:hover .message-actions { display: flex; }
+    .chat-container .chat-main { 
+        display: none !important; 
+    }
+
+    /* ESTADO 2: Conversa Aberta (Classe .chat-open adicionada via JS) */
+    .chat-container.chat-open .chat-sidebar { 
+        display: none !important; 
+    }
     
-    .sidebar .sidebar-header { display: none; } /* Esconde o header padrão da sidebar no mobile pois usamos o custom */
+    .chat-container.chat-open .chat-main { 
+        display: flex !important; 
+        width: 100% !important;
+        height: 100% !important;
+        z-index: 2;
+        background: var(--bg-primary);
+    }
+    
+    /* Ajustes do Header do Chat Mobile */
+    .chat-header-area {
+        padding: 0 1rem;
+        gap: 0.5rem;
+    }
+
+    /* Botão de Voltar (Seta) */
+    .back-to-list-btn { 
+        display: flex !important; 
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.5rem; 
+        font-size: 1.2rem; 
+        background: none; 
+        border: none; 
+        color: var(--text-primary); 
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+    }
+
+    /* Ajuste na área de mensagens para não estourar */
+    .chat-messages-area {
+        padding-bottom: 80px; /* Espaço para input */
+    }
+
+    /* Esconde elementos desnecessários no mobile */
+    .right-sidebar { display: none !important; }
+    
 }
 
-/* Modais e Estados Vazios */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center;
-    z-index: 2000; backdrop-filter: blur(2px);
+/* Garante que o botão de voltar suma no desktop */
+@media (min-width: 1025px) {
+    .back-to-list-btn {
+        display: none !important;
+    }
 }
-.modal-content {
-    background: var(--bg-secondary); padding: 1.5rem; border-radius: var(--card-radius);
-    width: 90%; max-width: 450px; border: 1px solid var(--border-color);
-}
-.user-list-item { padding: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-.user-list-item:hover { background: var(--bg-tertiary); }
-.user-list-item img { width: 32px; height: 32px; border-radius: 50%; }
-
-.empty-chat, .loading-state { text-align: center; color: var(--text-secondary); padding: 2rem; }
-.loading-spinner {
-    width: 40px; height: 40px; border: 3px solid var(--bg-tertiary);
-    border-top: 3px solid var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;
-}
-@keyframes spin { 100% { transform: rotate(360deg); } }
-
-/* =================================================================
-   CORREÇÃO DE ESPAÇO VAZIO (Adicione no final do mensagem.css)
-================================================================= */
 
 /* 1. Faz a barra lateral direita SUMIR completamente */
 .right-sidebar {
@@ -1027,4 +1119,340 @@ body {
 .user-list-status {
     font-size: 0.8rem;
     color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+    
+    /* 1. Força a exibição do Cabeçalho da Sidebar (Perfil do Usuário) */
+    .sidebar .sidebar-header {
+        display: flex !important; /* Mostra o elemento */
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem;
+        background-color: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+        position: relative;
+    }
+
+    /* 2. Garante que o Card do Usuário apareça */
+    .sidebar-user-card {
+        display: block !important;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    /* 3. Ajusta o botão de fechar (X) para ficar no canto certo */
+    .sidebar-close {
+        display: flex !important;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.2rem;
+        cursor: pointer;
+        z-index: 10;
+        width: 30px;
+        height: 30px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* 4. Ajustes visuais do Card de Perfil para Mobile */
+    .user-info {
+        background: transparent !important; /* Remove fundo duplo */
+        box-shadow: none !important;        /* Remove sombra interna */
+        border: none !important;            /* Remove borda interna */
+        padding: 0 !important;
+    }
+
+    /* 5. Garante que a Sidebar ocupe a altura correta e role */
+    .sidebar {
+        display: flex !important;
+        flex-direction: column;
+        height: 100vh !important;
+        background-color: var(--bg-primary);
+        z-index: 2000;
+        overflow-y: auto !important; /* Permite rolar se o menu for alto */
+        padding: 0 !important; /* Remove padding extra da sidebar container */
+    }
+
+    /* 6. Ajusta o Menu de Navegação abaixo do perfil */
+    .sidebar-menu {
+        padding: 1rem 0;
+        flex-shrink: 0; /* Impede que o menu encolha */
+    }
+}
+
+@media (max-width: 1024px) {
+    
+    /* === 1. Configuração da Sidebar (Menu Lateral) === */
+    /* 2. SIDEBAR (O Menu) */
+    .sidebar {
+        display: flex !important;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh !important;
+        width: 85%;
+        max-width: 320px;
+        
+        /* CORREÇÃO DA COR: Usa Secondary (mais claro) em vez de Primary */
+        background-color: var(--bg-secondary) !important; 
+        
+        /* CORREÇÃO DE Z-INDEX: Maior que o overlay */
+        z-index: 2000; 
+        
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+        border-right: 1px solid var(--border-color);
+        overflow-y: auto !important;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    /* 3. Header da Sidebar (Onde fica a foto e o X) */
+    .sidebar .sidebar-header {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        background-color: var(--bg-secondary); /* Garante consistência */
+        position: relative;
+        z-index: 2001;
+    }
+
+    .sidebar-user-card {
+        display: block !important;
+        width: 100%;
+    }
+
+    /* Removemos estilos internos para limpar o visual */
+    .user-info {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    /* === 3. Configuração do Botão "X" de Fechar === */
+    .sidebar-close {
+        display: flex !important;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 2002;
+        background: rgba(255, 255, 255, 0.1);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-primary);
+    }
+    .sidebar-close:hover {
+        background-color: var(--bg-tertiary);
+        color: var(--danger); /* Fica vermelho ao passar o mouse */
+    }
+
+    /* === 4. Configuração do Overlay (Fundo Escuro ao clicar fora) === */
+  .mobile-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6); /* Transparência correta */
+        z-index: 1999; /* Z-index ALTO, mas menor que a sidebar */
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease;
+        backdrop-filter: blur(2px);
+        display: none; /* Garante que não bloqueie cliques quando inativo */
+    }
+
+    .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+        display: block !important;
+    }
+
+}
+
+.container {
+    max-width: none !important;   /* Remove o limite de largura herdado (ex: 1600px) */
+    width: 100% !important;       /* Força largura total */
+    margin: 0 !important;         /* Remove margens laterais automáticas */
+    padding-right: 0 !important;  /* Remove padding interno da direita */
+    display: flex !important;     /* Garante Flexbox */
+    grid-template-columns: none !important; /* Mata o Grid do principal.css */
+}
+
+/* 2. Garante que a barra direita suma e não ocupe espaço */
+.right-sidebar {
+    display: none !important;
+    width: 0 !important;
+    flex: 0 !important;
+}
+
+/* 3. Estica o conteúdo principal (Chat) para preencher o vazio */
+.main-content {
+    flex: 1 !important;           /* Cresce para ocupar todo o espaço */
+    max-width: none !important;   /* Remove travas de largura */
+    width: auto !important;
+    margin-right: 0 !important;
+}
+
+/* 4. Garante que o container interno do chat acompanhe o esticamento */
+.chat-container {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+/* Fundo desfocado (Glassmorphism) */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 3000; /* Acima de tudo */
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.custom-modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+/* Caixa do Modal */
+.custom-modal-box {
+    background: var(--bg-secondary);
+    width: 90%;
+    max-width: 400px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+.custom-modal-overlay.active .custom-modal-box {
+    transform: scale(1);
+}
+
+/* Header */
+.custom-modal-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+}
+
+.custom-modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex; align-items: center; gap: 10px;
+}
+
+.text-danger { color: var(--danger) !important; }
+
+/* Body */
+.custom-modal-body {
+    padding: 1.5rem;
+}
+
+.custom-modal-body p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.custom-modal-body textarea {
+    width: 100%;
+    min-height: 100px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    resize: vertical;
+    outline: none;
+    transition: border 0.2s;
+}
+
+.custom-modal-body textarea:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+
+/* Footer (Botões) */
+.custom-modal-footer {
+    padding: 1rem 1.25rem;
+    background: var(--bg-tertiary);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Estilo dos Botões */
+.btn-modal {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+}
+.btn-ghost:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.btn-primary {
+    background: var(--accent-primary);
+    color: #fff;
+}
+.btn-primary:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: #fff;
+}
+.btn-danger:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Responsividade Extra */
+@media (max-width: 480px) {
+    .custom-modal-footer {
+        flex-direction: column-reverse; /* Botão de ação em cima no mobile */
+    }
+    .btn-modal {
+        width: 100%;
+        text-align: center;
+    }
 }

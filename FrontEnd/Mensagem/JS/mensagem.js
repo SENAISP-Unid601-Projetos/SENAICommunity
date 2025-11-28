@@ -4,13 +4,10 @@
 // --- FUNÇÃO GLOBAL PARA O BOTÃO "LER MAIS" ---
 window.toggleMessageReadMore = function(btn) {
     const textSpan = btn.previousElementSibling;
-    
     if (textSpan && textSpan.classList.contains('text-clamped')) {
-        // EXPANDIR
         textSpan.classList.remove('text-clamped');
         btn.textContent = 'Ler menos';
     } else if (textSpan) {
-        // RECOLHER
         textSpan.classList.add('text-clamped');
         btn.textContent = 'Ler mais';
     }
@@ -33,27 +30,35 @@ document.addEventListener("DOMContentLoaded", () => {
         recordAudioBtn: document.getElementById("record-audio-btn"),
         conversationSearch: document.getElementById("convo-search"),
         
-        // Modais
+        // Modais Antigos
         addGroupBtn: document.querySelector(".add-convo-btn"),
         addConvoModal: document.getElementById("add-convo-modal"),
         closeModalBtn: document.getElementById("close-modal-btn"),
         newConvoUserList: document.getElementById("new-convo-user-list"),
         userSearchInput: document.getElementById("user-search-input"),
         
-        // Responsividade
-        sidebar: document.getElementById('sidebar'),
-        mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
-        sidebarClose: document.getElementById('sidebar-close'),
-        mobileOverlay: document.getElementById('mobile-overlay'),
+        // Novos Modais (Modernos)
+        modalEdit: document.getElementById("custom-edit-modal"),
+        modalDelete: document.getElementById("custom-delete-modal"),
+        inputEdit: document.getElementById("custom-edit-input"),
+        btnCancelEdit: document.getElementById("btn-cancel-edit"),
+        btnConfirmEdit: document.getElementById("btn-confirm-edit"),
+        btnCancelDelete: document.getElementById("btn-cancel-delete"),
+        btnConfirmDelete: document.getElementById("btn-confirm-delete"),
+
+        // Botão de Voltar (Mobile)
         backToListBtn: document.getElementById('back-to-list-btn')
     };
+
+    // Variáveis temporárias para os modais
+    let currentMessageIdToEdit = null;
+    let currentMessageIdToDelete = null;
 
     // --- CORREÇÃO DO BOTÃO "EDITAR PERFIL" ---
     const editProfileBtnOld = document.getElementById("edit-profile-btn");
     if (editProfileBtnOld) {
         const editProfileBtnNew = editProfileBtnOld.cloneNode(true);
         editProfileBtnOld.parentNode.replaceChild(editProfileBtnNew, editProfileBtnOld);
-        
         editProfileBtnNew.addEventListener("click", (e) => {
             e.preventDefault();
             window.location.href = "perfil.html"; 
@@ -93,6 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateSidebarUserInfo();
         setupResponsiveListeners();
         setupChatEventListeners();
+        setupModalListeners(); // Inicializa os ouvintes dos novos modais
 
         // WebSocket Listeners
         if (stompClient) {
@@ -103,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // Carrega conversas e depois verifica URL
         await fetchConversations();
         checkStartChatParam();
     }
@@ -126,15 +131,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function formatMessageContent(text) {
         const LIMITE_CARACTERES = 350; 
-        
         if (!text) return "";
-        
         let safeText = escapeHtml(text).replace(/\n/g, '<br>');
-
         if (text.length <= LIMITE_CARACTERES) {
             return safeText;
         }
-
         return `
             <div class="message-text-body text-clamped">${safeText}</div>
             <button class="read-more-btn" onclick="toggleMessageReadMore(this)">Ler mais</button>
@@ -143,25 +144,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- RESPONSIVIDADE ---
     function setupResponsiveListeners() {
-        function toggleSidebar() {
-            if(elements.sidebar) {
-                elements.sidebar.classList.toggle('active');
-                if(elements.mobileOverlay) elements.mobileOverlay.classList.toggle('active');
-                document.body.style.overflow = elements.sidebar.classList.contains('active') ? 'hidden' : '';
+        const btnMenu = document.getElementById('mobile-menu-toggle');
+        const btnClose = document.getElementById('sidebar-close');
+        let overlay = document.getElementById('mobile-overlay');
+        const sidebar = document.getElementById('sidebar');
+
+        function toggleSidebar(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            if (sidebar && overlay) {
+                const isActive = sidebar.classList.contains('active');
+                if (isActive) {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = ''; 
+                } else {
+                    sidebar.classList.add('active');
+                    overlay.classList.add('active');
+                    document.body.style.overflow = 'hidden'; 
+                }
             }
         }
 
-        if(elements.mobileMenuToggle) elements.mobileMenuToggle.addEventListener('click', toggleSidebar);
-        if(elements.sidebarClose) elements.sidebarClose.addEventListener('click', toggleSidebar);
-        if(elements.mobileOverlay) elements.mobileOverlay.addEventListener('click', toggleSidebar);
-
-        if(elements.backToListBtn) {
-            elements.backToListBtn.addEventListener('click', () => {
-                if(elements.chatContainer) elements.chatContainer.classList.remove('chat-open');
-                activeConversation = { usuarioId: null, nome: null, avatar: null };
-                document.querySelectorAll(".convo-card").forEach(c => c.classList.remove("selected"));
-            });
+        if (btnMenu) {
+            const newBtn = btnMenu.cloneNode(true);
+            btnMenu.parentNode.replaceChild(newBtn, btnMenu);
+            newBtn.addEventListener('click', toggleSidebar);
         }
+        if (btnClose) {
+            const newClose = btnClose.cloneNode(true);
+            btnClose.parentNode.replaceChild(newClose, btnClose);
+            newClose.addEventListener('click', toggleSidebar);
+        }
+        if (overlay) {
+            const newOverlay = overlay.cloneNode(true);
+            overlay.parentNode.replaceChild(newOverlay, overlay);
+            overlay = newOverlay;
+            overlay.addEventListener('click', toggleSidebar);
+        }
+        
+        const menuLinks = document.querySelectorAll('.sidebar-menu .menu-item');
+        menuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                 if(window.innerWidth <= 1024) setTimeout(() => toggleSidebar(), 150);
+            });
+        });
     }
 
     function updateMessageBadge(count) {
@@ -175,9 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function fetchConversations() {
         try {
             if(elements.conversationsList) elements.conversationsList.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div></div>`;
-            
             const response = await axios.get(`${backendUrl}/api/chat/privado/minhas-conversas`);
-            
             conversas = response.data.map((c) => ({
                 ...c,
                 avatarUrl: c.fotoPerfilOutroUsuario && c.fotoPerfilOutroUsuario.startsWith("http")
@@ -185,14 +209,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     : `${window.backendUrl}${c.fotoPerfilOutroUsuario || "/images/default-avatar.jpg"}`,
                 unreadCount: unreadMessagesCount.get(c.outroUsuarioId) || 0
             }));
-
             sortConversations();
             renderConversationsList();
         } catch (error) {
             console.error("Erro conversas:", error);
-            if(elements.conversationsList) {
-                elements.conversationsList.innerHTML = `<div class="error-state"><p>Erro ao carregar conversas</p><button class="retry-btn" data-action="retry-conversations">Tentar novamente</button></div>`;
-            }
+            if(elements.conversationsList) elements.conversationsList.innerHTML = `<div class="error-state"><p>Erro ao carregar conversas</p><button class="retry-btn" data-action="retry-conversations">Tentar novamente</button></div>`;
         }
     }
 
@@ -208,7 +229,6 @@ document.addEventListener("DOMContentLoaded", () => {
     async function checkStartChatParam() {
         const urlParams = new URLSearchParams(window.location.search);
         const startChatUserId = urlParams.get('start_chat');
-        
         if (startChatUserId) {
             const userId = parseInt(startChatUserId, 10);
             const newUrl = window.location.pathname;
@@ -222,7 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
         otherUserId = parseInt(otherUserId, 10);
 
         let convoData = conversas.find((c) => c.outroUsuarioId === otherUserId);
-
         if (!convoData) {
             let targetUser = userFriends.find((f) => f.idUsuario === otherUserId);
             if (!targetUser) {
@@ -232,11 +251,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     targetUser = { idUsuario: u.id, nome: u.nome, fotoPerfil: u.urlFotoPerfil || u.fotoPerfil };
                 } catch (err) { console.error(err); return; }
             }
-
             const avatar = targetUser.fotoPerfil && targetUser.fotoPerfil.startsWith("http")
                 ? targetUser.fotoPerfil
                 : `${window.backendUrl}${targetUser.fotoPerfil || "/images/default-avatar.jpg"}`;
-
             convoData = {
                 outroUsuarioId: targetUser.idUsuario,
                 nomeOutroUsuario: targetUser.nome,
@@ -256,6 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
             avatar: convoData.avatarUrl || defaultAvatarUrl,
         };
 
+        // Adiciona classe para mostrar o chat no mobile
         if(elements.chatContainer) elements.chatContainer.classList.add('chat-open');
 
         renderChatHeader();
@@ -281,7 +299,6 @@ document.addEventListener("DOMContentLoaded", () => {
         elements.messageInput.focus();
     }
 
-    // --- MENSAGENS ---
     function getCacheKey(otherUserId) {
         if (!currentUser) return null;
         return [currentUser.id, otherUserId].sort((a, b) => a - b).join("-");
@@ -290,12 +307,10 @@ document.addEventListener("DOMContentLoaded", () => {
     async function fetchMessages(otherUserId) {
         const cacheKey = getCacheKey(otherUserId);
         if (!cacheKey) return;
-
         if (chatMessages.has(cacheKey)) {
             renderMessages(chatMessages.get(cacheKey));
             return;
         }
-
         try {
             const response = await axios.get(`${backendUrl}/api/chat/privado/historico/${otherUserId}`);
             chatMessages.set(cacheKey, response.data);
@@ -318,12 +333,9 @@ document.addEventListener("DOMContentLoaded", () => {
         elements.messageInput.focus();
     }
 
-    // --- FUNÇÃO AUXILIAR: Preencher Sidebar do Usuário (CORRIGIDA) ---
     function updateSidebarUserInfo() {
         const userInfoContainer = document.querySelector('.user-info');
-        
         const user = currentUser || window.currentUser;
-
         if (user) {
             const sidebarName = document.getElementById('sidebar-user-name');
             const sidebarTitle = document.getElementById('sidebar-user-title');
@@ -331,19 +343,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const connectionsCount = document.getElementById('connections-count');
             
             if(sidebarName) sidebarName.textContent = user.nome;
-            
-            // --- LÓGICA DE CARGO SIMPLIFICADA ---
             if(sidebarTitle) {
                 let userRole = user.tipoUsuario || "Membro";
-                
                 if (userRole && typeof userRole === 'string') {
                     userRole = userRole.replace('ROLE_', '').toLowerCase();
                     userRole = userRole.charAt(0).toUpperCase() + userRole.slice(1);
                 }
-                
                 sidebarTitle.textContent = userRole;
             }
-            
             if(sidebarImg && user.fotoPerfil) {
                  if(typeof window.getAvatarUrl === 'function') {
                      sidebarImg.src = window.getAvatarUrl(user.fotoPerfil);
@@ -351,21 +358,13 @@ document.addEventListener("DOMContentLoaded", () => {
                      sidebarImg.src = user.fotoPerfil;
                  }
             }
-            
-            if(connectionsCount && window.userFriends) {
-                connectionsCount.textContent = window.userFriends.length;
-            }
-
-            if (userInfoContainer) {
-                userInfoContainer.classList.add('loaded');
-            }
+            if(connectionsCount && window.userFriends) connectionsCount.textContent = window.userFriends.length;
+            if (userInfoContainer) userInfoContainer.classList.add('loaded');
         }
     }
 
-    // --- WEBSOCKET RECEIVER ---
     function onMessageReceived(payload) {
         const msg = JSON.parse(payload.body);
-
         if (msg.tipo === "remocao") {
             handleMessageRemoval(msg);
             return;
@@ -411,7 +410,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function handleMessageRemoval(msg) {
         const el = document.querySelector(`[data-message-id="${msg.id}"]`);
         if (el) el.remove();
-        
         const otherUserId = msg.remetenteId === currentUser.id ? msg.destinatarioId : msg.remetenteId;
         const key = getCacheKey(otherUserId);
         if (chatMessages.has(key)) {
@@ -420,7 +418,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- RENDERIZAÇÃO ---
     function renderConversationsList() {
         if (!elements.conversationsList) return;
         elements.conversationsList.innerHTML = "";
@@ -459,9 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return card;
     }
 
-    // --- AQUI ESTÁ A ALTERAÇÃO ---
     function renderChatHeader() {
-        // Agora envolvemos o conteúdo em uma DIV clicável que leva ao perfil
         const content = activeConversation.usuarioId ? `
             <div class="chat-header-profile-link" 
                  style="display: flex; align-items: center; gap: 1rem; cursor: pointer;" 
@@ -563,18 +558,14 @@ document.addEventListener("DOMContentLoaded", () => {
         isRecording = false;
         clearInterval(timerInterval);
         if(mediaRecorder) mediaRecorder.stream.getTracks().forEach(t => t.stop());
-        
         elements.recordAudioBtn.classList.remove('recording');
         elements.recordAudioBtn.innerHTML = `<i class="fas fa-microphone"></i>`;
         elements.messageInput.disabled = false;
         elements.messageInput.placeholder = `Escreva para ${activeConversation.nome}...`;
-
         const blob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
         if(blob.size < 1000) return;
-
         const formData = new FormData();
         formData.append('file', blob, `audio-${Date.now()}.webm`);
-
         try {
             const res = await axios.post(`${backendUrl}/api/chat/privado/upload`, formData);
             stompClient.send(`/app/privado/${activeConversation.usuarioId}`, {}, JSON.stringify({
@@ -583,7 +574,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { alert("Erro envio áudio"); }
     }
 
-    // --- EVENT LISTENERS ---
+    // --- SETUP LISTENERS E MODAIS ---
     function setupChatEventListeners() {
         if (elements.chatForm) elements.chatForm.addEventListener("submit", handleSendMessage);
         
@@ -594,7 +585,17 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // --- REDIRECIONAMENTO PERFIL ---
+        // =========================================================
+        // CORREÇÃO: BOTÃO DE VOLTAR NO MOBILE
+        // =========================================================
+        if (elements.backToListBtn) {
+            elements.backToListBtn.addEventListener("click", () => {
+                if (elements.chatContainer) {
+                    elements.chatContainer.classList.remove("chat-open");
+                }
+            });
+        }
+
         const sidebarHeader = document.querySelector('.sidebar-header');
         if (sidebarHeader) {
             sidebarHeader.style.cursor = 'pointer';
@@ -604,14 +605,20 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // CLIQUE NAS MENSAGENS
+        // Cliques nas mensagens (Editar/Excluir)
         if (elements.chatMessagesContainer) {
             elements.chatMessagesContainer.addEventListener("click", (e) => {
                 const editBtn = e.target.closest(".btn-edit-msg");
-                if (editBtn) { handleEditMessage(editBtn.dataset.messageId); return; }
+                if (editBtn) { 
+                    openEditModal(editBtn.dataset.messageId); 
+                    return; 
+                }
                 
                 const delBtn = e.target.closest(".btn-delete-msg");
-                if (delBtn) { handleDeleteMessage(delBtn.dataset.messageId); return; }
+                if (delBtn) { 
+                    openDeleteModal(delBtn.dataset.messageId); 
+                    return; 
+                }
 
                 const bubble = e.target.closest(".message-content");
                 if (bubble) {
@@ -678,12 +685,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderAvailableUsers() {
         const existing = conversas.map(c => c.outroUsuarioId);
         const available = userFriends.filter(f => !existing.includes(f.idUsuario || f.usuarioId));
-        
         if(available.length === 0) {
             elements.newConvoUserList.innerHTML = `<p style="padding:1rem; text-align:center; color:var(--text-secondary)">Nenhum novo contato disponível.</p>`;
             return;
         }
-
         elements.newConvoUserList.innerHTML = available.map(f => {
             const avatar = f.fotoPerfil && f.fotoPerfil.startsWith("http") ? f.fotoPerfil : `${backendUrl}${f.fotoPerfil || "/images/default-avatar.jpg"}`;
             return `
@@ -696,21 +701,83 @@ document.addEventListener("DOMContentLoaded", () => {
         }).join("");
     }
 
-    async function handleEditMessage(id) {
-        const el = document.querySelector(`[data-message-id="${id}"] .message-content`);
-        if(!el) return;
-        const oldTxt = el.textContent.replace('Ler mais', '').replace('Ler menos', '').trim();
-        const newTxt = prompt("Editar mensagem:", oldTxt);
-        if(newTxt && newTxt !== oldTxt) {
-            try {
-                await axios.put(`${backendUrl}/api/chat/privado/${id}`, newTxt, {headers:{"Content-Type":"text/plain"}});
-            } catch(e) { alert("Erro ao editar"); }
+    // =========================================================
+    // LÓGICA DOS NOVOS MODAIS (SUBSTITUINDO PROMPT/CONFIRM)
+    // =========================================================
+
+    function setupModalListeners() {
+        // Cancelar Edição
+        if (elements.btnCancelEdit) {
+            elements.btnCancelEdit.addEventListener("click", () => {
+                elements.modalEdit.classList.remove("active");
+                currentMessageIdToEdit = null;
+            });
         }
+        // Confirmar Edição
+        if (elements.btnConfirmEdit) {
+            elements.btnConfirmEdit.addEventListener("click", async () => {
+                const newTxt = elements.inputEdit.value.trim();
+                if (currentMessageIdToEdit && newTxt) {
+                    try {
+                        await axios.put(`${backendUrl}/api/chat/privado/${currentMessageIdToEdit}`, newTxt, {headers:{"Content-Type":"text/plain"}});
+                        elements.modalEdit.classList.remove("active");
+                    } catch(e) { 
+                        alert("Erro ao editar"); 
+                    }
+                }
+            });
+        }
+
+        // Cancelar Exclusão
+        if (elements.btnCancelDelete) {
+            elements.btnCancelDelete.addEventListener("click", () => {
+                elements.modalDelete.classList.remove("active");
+                currentMessageIdToDelete = null;
+            });
+        }
+        // Confirmar Exclusão
+        if (elements.btnConfirmDelete) {
+            elements.btnConfirmDelete.addEventListener("click", async () => {
+                if (currentMessageIdToDelete) {
+                    try { 
+                        await axios.delete(`${backendUrl}/api/chat/privado/${currentMessageIdToDelete}`);
+                        elements.modalDelete.classList.remove("active");
+                    } catch(e) { 
+                        alert("Erro ao excluir"); 
+                    }
+                }
+            });
+        }
+
+        // Fechar ao clicar fora (Backdrop)
+        [elements.modalEdit, elements.modalDelete].forEach(modal => {
+            if (modal) {
+                modal.addEventListener("click", (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove("active");
+                    }
+                });
+            }
+        });
     }
 
-    async function handleDeleteMessage(id) {
-        if(confirm("Excluir mensagem?")) {
-            try { await axios.delete(`${backendUrl}/api/chat/privado/${id}`); } catch(e) { alert("Erro ao excluir"); }
-        }
+    function openEditModal(id) {
+        const el = document.querySelector(`[data-message-id="${id}"] .message-content`);
+        if (!el) return;
+        
+        // Pega texto limpo (sem "Ler mais")
+        const oldTxt = el.textContent.replace('Ler mais', '').replace('Ler menos', '').trim();
+        
+        currentMessageIdToEdit = id;
+        elements.inputEdit.value = oldTxt;
+        elements.modalEdit.classList.add("active");
+        
+        // Foca no final do texto
+        setTimeout(() => elements.inputEdit.focus(), 100);
+    }
+
+    function openDeleteModal(id) {
+        currentMessageIdToDelete = id;
+        elements.modalDelete.classList.add("active");
     }
 });
