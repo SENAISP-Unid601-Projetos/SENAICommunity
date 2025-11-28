@@ -602,10 +602,18 @@ body {
 
 /* Main Content */
 .main-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  min-width: 0;
+    flex: 1;
+    /* Libera para ocupar a tela toda */
+    width: 100%;
+    max-width: 100%; /* Remove a trava de 1000px/1600px */
+    
+    padding: 1.5rem 2rem; /* Um pouco mais de espaço nas bordas */
+    margin: 0;
+    
+    /* Configuração crítica para o scroll funcionar */
+    overflow-y: auto; 
+    overflow-x: hidden;
+    height: 100%; 
 }
 
 .posts-container {

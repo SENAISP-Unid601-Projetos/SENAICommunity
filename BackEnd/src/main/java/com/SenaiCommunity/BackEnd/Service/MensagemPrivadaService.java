@@ -88,7 +88,9 @@ public class MensagemPrivadaService {
 
         notificacaoService.criarNotificacao(
                 destinatario,
-                "Você recebeu uma nova mensagem de " + remetente.getNome()
+                "Você recebeu uma nova mensagem de " + remetente.getNome(),
+                "MENSAGEM_PRIVADA",
+                remetente.getId() // ID Referencia = ID do usuário que enviou
         );
 
         notificarAtualizacaoContagemNaoLida(destinatario);
