@@ -293,18 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return mediaHtml;
     }
 
-    function setupMobileMenu() {
-        if (elements.mobileMenuToggle && elements.sidebar && elements.mobileOverlay && elements.sidebarClose) {
-            const toggleMenu = () => {
-                elements.sidebar.classList.toggle('active');
-                elements.mobileOverlay.classList.toggle('active');
-                document.body.style.overflow = elements.sidebar.classList.contains('active') ? 'hidden' : '';
-            };
-            elements.mobileMenuToggle.onclick = toggleMenu;
-            elements.sidebarClose.onclick = toggleMenu;
-            elements.mobileOverlay.onclick = toggleMenu;
-        }
-    }
+   
     function setupProfileMobileMenu() {
         if (elements.profileMobileMenuToggle) {
             elements.profileMobileMenuToggle.addEventListener('click', (e) => {
@@ -320,7 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function init() {
         if (!window.jwtToken) return;
         setProfileLoading(true);
-        setupMobileMenu();
+      
         setupProfileMobileMenu();
         setupEditProfileForm();
         setupProfileWebSocketListener();
@@ -610,25 +599,62 @@ document.addEventListener("DOMContentLoaded", () => {
             if (elements.profileFriendsList) elements.profileFriendsList.innerHTML = '<p class="empty-state">Não foi possível carregar amigos.</p>';
         }
     }
-    function renderProfileFriends(friends) {
-        if (!elements.profileFriendsList) return;
-        if (elements.tabFriendsCount) elements.tabFriendsCount.textContent = friends.length;
-        elements.profileFriendsList.innerHTML = '';
-        if (friends.length === 0) { elements.profileFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo encontrado.</p>'; return; }
-        friends.forEach(friend => {
-            const friendObj = friend.amigo || friend;
-            const friendId = friendObj.id || friendObj.idUsuario;
-            const friendName = friendObj.nome || friendObj.nomeUsuario;
-            const friendAvatar = friendObj.fotoPerfil || friendObj.urlFotoPerfil || defaultAvatarUrl;
-            const avatarUrl = friendAvatar.startsWith('http') ? friendAvatar : `${backendUrl}${friendAvatar.startsWith('/') ? '' : '/'}${friendAvatar}`;
+ // 2. Procure a função 'renderProfileFriends' e SUBSTITUA por esta nova versão:
+function renderProfileFriends(friends) {
+    if (!elements.profileFriendsList) return;
+    
+    // Atualiza contador
+    if (elements.tabFriendsCount) elements.tabFriendsCount.textContent = friends.length;
+    
+    elements.profileFriendsList.innerHTML = '';
+    
+    // Remove a classe de grid antiga e adiciona a de lista
+    elements.profileFriendsList.className = 'user-list'; 
+    elements.profileFriendsList.style.display = 'flex';
+    elements.profileFriendsList.style.flexDirection = 'column';
+    elements.profileFriendsList.style.gap = '10px';
 
-            const card = document.createElement('a');
-            card.href = `perfil.html?id=${friendId}`;
-            card.className = 'profile-card-item';
-            card.innerHTML = `<img src="${avatarUrl}" alt="${friendName}" class="profile-card-img" onerror="this.src='${defaultAvatarUrl}'"><div class="profile-card-title">${friendName}</div><div class="profile-card-subtitle">Amigo</div>`;
-            elements.profileFriendsList.appendChild(card);
-        });
+    if (friends.length === 0) { 
+        elements.profileFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo encontrado.</p>'; 
+        return; 
     }
+
+    friends.forEach(friend => {
+        // Normalização dos dados (igual você já tinha)
+        const friendObj = friend.amigo || friend;
+        const friendId = friendObj.id || friendObj.idUsuario;
+        const friendName = friendObj.nome || friendObj.nomeUsuario;
+        const friendAvatar = friendObj.fotoPerfil || friendObj.urlFotoPerfil || window.defaultAvatarUrl;
+        
+        // Garante URL correta
+        const avatarUrl = friendAvatar.startsWith('http') 
+            ? friendAvatar 
+            : `${window.backendUrl}/api/arquivos/${friendAvatar}`;
+
+        // CRIA O ELEMENTO NO ESTILO "AMIGOS ONLINE" (LISTA COMPACTA)
+        const item = document.createElement('div');
+        item.className = 'friend-item'; // Mesma classe do CSS principal
+        item.style.border = '1px solid var(--border-color)'; // Borda suave para separar
+        item.style.borderRadius = '8px';
+        item.style.padding = '10px';
+        item.style.backgroundColor = 'var(--bg-tertiary)';
+
+        item.innerHTML = `
+            <a href="perfil.html?id=${friendId}" class="friend-item-link" style="display: flex; align-items: center; gap: 1rem; width: 100%; text-decoration: none; color: inherit;">
+                <div class="avatar" style="width: 40px; height: 40px;">
+                    <img src="${avatarUrl}" alt="${friendName}" onerror="this.src='${window.defaultAvatarUrl}'" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                    <span class="friend-name" style="font-weight: 600; font-size: 0.95rem;">${friendName}</span>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Amigo</span>
+                </div>
+                <div class="status online" style="margin-left: auto;"></div>
+            </a>
+        `;
+        
+        elements.profileFriendsList.appendChild(item);
+    });
+}
     async function fetchProfileProjects(userId) {
         try {
             const response = await axios.get(`${backendUrl}/projetos/usuario/${userId}`);

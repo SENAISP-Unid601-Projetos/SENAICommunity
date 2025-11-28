@@ -85,16 +85,14 @@ html, body {
 /* --- CONTEÚDO PRINCIPAL (Com Rolagem Própria) --- */
 .main-content {
     flex: 1;
-    /* Ocupa todo o espaço restante */
-
-    /* Altura total do pai */
     height: 100%;
-
-    /* HABILITA ROLAGEM INDEPENDENTE AQUI (Onde está o perfil) */
+    
+    /* ALTERAÇÃO 1: Reduzi o padding de 2rem para 1rem nas laterais */
+    /* Isso aproxima o conteúdo do Menu Lateral */
+    padding: 1.5rem 1rem; 
+    
     overflow-y: auto;
     overflow-x: hidden;
-
-    padding: 2rem;
     width: 100%;
 }
 
@@ -750,4 +748,154 @@ html, body {
     align-items: center;
     justify-content: center;
     color: #fff;
+}
+
+.profile-page {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    
+    /* ALTERAÇÃO 2: Removido 'margin: 0 auto' e 'max-width' */
+    /* Isso faz o perfil ocupar a largura total disponível e encostar na esquerda */
+    margin: 0; 
+    max-width: 100%;
+    width: 100%;
+}
+
+/* O Cabeçalho (Capa + Foto) agora é um card independente */
+.profile-header {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 1.5rem; /* Espaço entre o topo e o conteúdo */
+}
+
+/* Novo Container de Layout (Grid) */
+.profile-content-grid {
+    display: grid;
+    /* Coluna Esquerda Fixa (350px) | Coluna Direita (Máximo 900px, depois sobra espaço vazio na direita) */
+    grid-template-columns: 350px minmax(0, 900px); 
+    gap: 1.5rem;
+    align-items: start;
+    width: 100%;
+    justify-content: start; /* Garante que o grid todo fique alinhado à esquerda */
+}
+
+/* Coluna da Esquerda (Onde fica o card Sobre) */
+.profile-left-column {
+    /* Faz o card acompanhar o scroll */
+    position: sticky;
+    top: 20px; /* Distância do topo ao rolar */
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Coluna da Direita (Onde ficam os posts e abas) */
+.profile-right-column {
+    min-width: 0; /* Evita que posts largos quebrem o grid */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Ajuste visual do Card Sobre para não ficar transparente */
+.widget-card.info-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    border-radius: 12px;
+    padding: 1.5rem;
+    z-index: 2; /* Garante que fique acima do fundo, mas abaixo de modais */
+}
+
+/* RESPONSIVIDADE: Se a tela for menor que 1100px, volta para uma coluna */
+@media (max-width: 1100px) {
+    .profile-content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-left-column {
+        position: static; /* Remove o sticky no mobile/tablet */
+        width: 100%;
+    }
+}
+
+/* --- NO ARQUIVO: FrontEnd/Principal/CSS/perfil.css --- */
+
+/* Correção da Lista de Amigos na Aba */
+#tab-friends {
+    padding: 0; /* Remove padding para ficar alinhado */
+}
+
+/* Garante que a lista ocupe a largura correta */
+.user-list {
+    width: 100%;
+}
+
+/* CORREÇÃO DO MENU MOBILE */
+@media (max-width: 768px) {
+    /* Menu Lateral (Gaveta) */
+    .sidebar {
+        position: fixed !important; /* Força fixed */
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 80%;
+        max-width: 300px;
+        background-color: var(--bg-secondary);
+        z-index: 9999 !important; /* Z-index altíssimo para ficar na frente de tudo */
+        
+        /* Estado inicial: escondido na esquerda */
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+        
+        display: flex !important; /* Garante que não esteja display:none */
+        flex-direction: column;
+    }
+
+    /* Classe que o JavaScript adiciona para abrir */
+    .sidebar.active {
+        transform: translateX(0) !important;
+    }
+
+    /* Fundo escuro quando o menu abre */
+    .mobile-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        z-index: 9998; /* Logo abaixo do menu */
+        
+        /* Controle de visibilidade */
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.3s;
+    }
+
+    .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* Garante que o botão de fechar apareça */
+    .sidebar-close {
+        display: block !important;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        cursor: pointer;
+        z-index: 10000;
+    }
 }

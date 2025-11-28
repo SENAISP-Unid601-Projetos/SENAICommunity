@@ -926,28 +926,39 @@ function setupGlobalEventListeners() {
     closeAllMenus();
   });
 
-  // CORREÇÃO DO BOTÃO DE NOTIFICAÇÕES
-  if (globalElements.notificationsIcon) {
-    // Remove qualquer listener anterior para evitar duplicação
-    globalElements.notificationsIcon.replaceWith(globalElements.notificationsIcon.cloneNode(true));
+  const notifIcon = document.getElementById('notifications-icon');
+  
+  if (notifIcon) {
+    // 1. Remove o elemento antigo e cria um novo clone LIMPO (sem eventos antigos)
+    const newIcon = notifIcon.cloneNode(true);
+    notifIcon.parentNode.replaceChild(newIcon, notifIcon);
     
-    // Re-seleciona o elemento após o clone
-    const currentNotificationsIcon = document.getElementById('notifications-icon');
-    const currentNotificationsPanel = document.getElementById('notifications-panel');
-    
-    if (currentNotificationsIcon) {
-        currentNotificationsIcon.addEventListener("click", (event) => {
-            event.stopPropagation();
-            event.preventDefault();
-            
-            const isVisible = currentNotificationsPanel.style.display === "block";
-            currentNotificationsPanel.style.display = isVisible ? "none" : "block";
-            
-            if (!isVisible) {
-                markAllNotificationsAsRead();
-            }
-        });
-    }
+    // 2. IMPORTANTE: Atualiza TODAS as referências globais para apontar para o NOVO elemento
+    // Se não fizermos isso, o código vai tentar colocar as notificações no painel antigo que foi deletado
+    globalElements.notificationsIcon = newIcon;
+    globalElements.notificationsPanel = newIcon.querySelector('#notifications-panel');
+    globalElements.notificationsList = newIcon.querySelector('#notifications-list');
+    globalElements.notificationsBadge = newIcon.querySelector('#notifications-badge');
+
+    // 3. Adiciona o evento de clique no NOVO ícone
+    globalElements.notificationsIcon.addEventListener("click", (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        
+        // Usa a referência global atualizada
+        const panel = globalElements.notificationsPanel;
+        const isVisible = panel.style.display === "block";
+        
+        // Fecha outros menus
+        closeAllMenus();
+        
+        // Alterna visibilidade
+        panel.style.display = isVisible ? "none" : "block";
+        
+        if (!isVisible) {
+            markAllNotificationsAsRead();
+        }
+    });
   }
 
   if (globalElements.userDropdownTrigger) {
