@@ -669,66 +669,115 @@ function renderNotifications(notifications) {
   });
 }
 
+/* --- No arquivo FrontEnd/Principal/JS/principal.js --- */
+
 function createNotificationElement(notification) {
-        const item = document.createElement('div');
-        item.className = 'notification-item';
-        item.id = `notification-item-${notification.id}`;
-        if (!notification.lida) item.classList.add('unread');
+    const item = document.createElement('div');
+    item.className = 'notification-item';
+    item.id = `notification-item-${notification.id}`;
+    if (!notification.lida) item.classList.add('unread');
+
+    const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
     
-        const data = new Date(notification.dataCriacao).toLocaleString('pt-BR');
-        let actionButtonsHtml = '';
-        let iconClass = 'fa-info-circle';
-        let notificationLink = '#'; // Link padrão
+    let actionButtonsHtml = '';
+    let iconClass = 'fa-info-circle'; // Ícone padrão
+    let notificationLink = '#'; 
 
-        // IDs vindos do Backend
-        const postId = notification.idReferencia;
-        const commentId = notification.idReferenciaSecundaria; 
+    // IDs vindos do Backend
+    const idRef = notification.idReferencia; // ID do Usuário (msg), Projeto ou Post
+    const idSec = notification.idReferenciaSecundaria; // ID do Comentário, se houver
 
-        if (notification.tipo === 'PEDIDO_AMIZADE') {
-            iconClass = 'fa-user-plus';
-            notificationLink = 'amizades.html'; // Link para amizades
-            if (!notification.lida) {
-                 actionButtonsHtml = `
-                  <div class="notification-actions">
-                     <button class="btn btn-sm btn-primary" onclick="window.aceitarSolicitacao(${notification.idReferencia}, ${notification.id})">Aceitar</button>
-                     <button class="btn btn-sm btn-secondary" onclick="window.recusarSolicitacao(${notification.idReferencia}, ${notification.id})">Recusar</button>
-                  </div>`;
-            }
-        } else if (notification.tipo === 'NOVO_COMENTARIO' || notification.tipo === 'CURTIDA_POST' || notification.tipo === 'CURTIDA_COMENTARIO') {
-            
-            if (notification.tipo.startsWith('CURTIDA')) {
-                iconClass = 'fa-heart';
-            } else {
-                iconClass = 'fa-comment';
-            }
+    // --- LÓGICA DE ÍCONES E LINKS POR TIPO ---
 
-            // Constrói o link para o post
-            // (Assumindo que a página de perfil também pode mostrar o post)
-            notificationLink = `principal.html?postId=${postId}`;
-
-            // Se for sobre um comentário, adiciona o hash
-            if (commentId) {
-                notificationLink += `#comment-${commentId}`;
-            }
+    // 1. PEDIDO DE AMIZADE
+    if (notification.tipo === 'PEDIDO_AMIZADE') {
+        iconClass = 'fa-user-plus';
+        notificationLink = 'amizades.html';
+        
+        if (!notification.lida) {
+             actionButtonsHtml = `
+              <div class="notification-actions">
+                 <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); window.aceitarSolicitacao(${idRef}, ${notification.id})">Aceitar</button>
+                 <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); window.recusarSolicitacao(${idRef}, ${notification.id})">Recusar</button>
+              </div>`;
         }
-    
-        item.innerHTML = `
-            <a href="${notificationLink}" class="notification-link" onclick="window.markNotificationAsRead(event, ${notification.id})">
-                <div class="notification-icon-wrapper"><i class="fas ${iconClass}"></i></div>
-                <div class="notification-content">
-                    <p>${notification.mensagem}</p>
-                    <span class="timestamp">${data}</span>
-                </div>
-            </a>
-            <div class="notification-actions-wrapper">${actionButtonsHtml}</div>
-        `;
-    
-        const actionsWrapper = item.querySelector('.notification-actions-wrapper');
-        if (actionsWrapper) {
-            actionsWrapper.addEventListener('click', e => e.stopPropagation());
-        }
-        return item;
+    } 
+    // 2. MENSAGEM PRIVADA (Novo)
+    else if (notification.tipo === 'MENSAGEM_PRIVADA' || notification.tipo === 'NOVA_MENSAGEM') {
+        iconClass = 'fa-envelope'; // Ícone de carta/envelope
+        // Redireciona para o chat e abre a conversa com o remetente
+        notificationLink = `mensagem.html?start_chat=${idRef}`;
     }
+    // 3. MENSAGEM DE PROJETO / ATUALIZAÇÃO DE PROJETO (Novo)
+    else if (notification.tipo === 'MENSAGEM_PROJETO' || notification.tipo === 'CONVITE_PROJETO' || notification.tipo === 'ATUALIZACAO_PROJETO') {
+        iconClass = 'fa-project-diagram'; // Ícone de projeto/diagrama
+        // Redireciona para os detalhes do projeto
+        notificationLink = `projeto-detalhe.html?id=${idRef}`;
+    }
+    // 4. INTERAÇÕES SOCIAIS (Comentários/Likes)
+    else if (notification.tipo === 'NOVO_COMENTARIO' || notification.tipo === 'CURTIDA_POST' || notification.tipo === 'CURTIDA_COMENTARIO') {
+        if (notification.tipo.startsWith('CURTIDA')) {
+            iconClass = 'fa-heart';
+        } else {
+            iconClass = 'fa-comment';
+        }
+        
+        notificationLink = `principal.html?postId=${idRef}`;
+        if (idSec) {
+            notificationLink += `#comment-${idSec}`;
+        }
+    }
+
+    // --- CRIAÇÃO DO HTML ---
+    // Usa a função handleNotificationClick que criamos no passo anterior
+    item.innerHTML = `
+        <a href="${notificationLink}" class="notification-link" onclick="window.handleNotificationClick(event, ${notification.id}, '${notificationLink}')">
+            <div class="notification-icon-wrapper">
+                <i class="fas ${iconClass}"></i>
+            </div>
+            <div class="notification-content">
+                <p>${notification.mensagem}</p>
+                <span class="timestamp">${data}</span>
+            </div>
+        </a>
+        <div class="notification-actions-wrapper">${actionButtonsHtml}</div>
+    `;
+
+    const actionsWrapper = item.querySelector('.notification-actions-wrapper');
+    if (actionsWrapper) {
+        actionsWrapper.addEventListener('click', e => e.stopPropagation());
+    }
+    
+    return item;
+}
+
+/* --- Adicionar no FrontEnd/Principal/JS/principal.js --- */
+
+window.handleNotificationClick = function(event, notificationId, targetUrl) {
+    // 1. Previne o comportamento padrão do link para controlarmos a ordem
+    event.preventDefault(); 
+
+    // 2. Remove visualmente a marcação de "não lida" imediatamente (UI Otimista)
+    const item = document.getElementById(`notification-item-${notificationId}`);
+    if(item) item.classList.remove('unread');
+    
+    // 3. Atualiza o contador de notificações (decrementa 1)
+    const badge = document.getElementById('notifications-badge');
+    if(badge) {
+        let count = parseInt(badge.textContent) || 0;
+        if(count > 0) badge.textContent = count - 1;
+        if(count - 1 <= 0) badge.style.display = 'none';
+    }
+
+    // 4. Envia requisição para o backend marcar como lida (sem await para não travar a navegação)
+    axios.put(`${window.backendUrl}/api/notificacoes/${notificationId}/ler`)
+        .catch(err => console.error("Erro ao marcar notificação:", err));
+
+    // 5. Redireciona o usuário para a página correta
+    if (targetUrl && targetUrl !== '#' && targetUrl !== 'null') {
+        window.location.href = targetUrl;
+    }
+};
 
 async function checkAndHighlightComment() {
     const urlParams = new URLSearchParams(window.location.search);
