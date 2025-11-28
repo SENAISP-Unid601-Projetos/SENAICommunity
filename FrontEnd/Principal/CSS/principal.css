@@ -4332,3 +4332,33 @@ html, body {
         z-index: 2000;
     }
 }
+
+/* Item base do menu */
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    border-left: 3px solid transparent; /* Borda invisível para não pular layout */
+    margin-bottom: 2px;
+}
+
+/* Efeito ao passar o mouse */
+.menu-item:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* ESTADO ATIVO (A PÁGINA SELECIONADA) */
+.menu-item.active {
+    background: linear-gradient(90deg, rgba(88, 166, 255, 0.1) 0%, transparent 100%);
+    color: var(--accent-primary);
+    border-left-color: var(--accent-primary);
+}
+
+/* Garante que o ícone também fique azul */
+.menu-item.active i {
+    color: var(--accent-primary);
+}

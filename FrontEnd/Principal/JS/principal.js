@@ -348,10 +348,40 @@ const globalElements = {
   deleteConfirmPassword: document.getElementById("delete-confirm-password"),
 };
 
+function highlightActiveSidebarItem() {
+    // 1. Pega o nome da página atual (ex: "amizades.html" ou "principal.html")
+    const currentPage = window.location.pathname.split("/").pop() || "principal.html";
+    
+    // 2. Seleciona todos os links do menu lateral
+    const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
+    
+    // 3. Remove a classe 'active' de todos e adiciona no correto
+    menuItems.forEach(item => {
+        // Remove active de todos primeiro
+        item.classList.remove('active');
+        
+        // Pega o href do link (ex: "amizades.html")
+        const itemHref = item.getAttribute('href');
+        
+        // Verifica se o link corresponde à página atual
+        if (itemHref === currentPage || (currentPage === "" && itemHref === "principal.html")) {
+            item.classList.add('active');
+        }
+        
+        // Caso especial: Se estiver em "buscar_amigos.html", destaca "Encontrar Pessoas"
+        if (currentPage === "buscar_amigos.html" && itemHref === "buscar_amigos.html") {
+             item.classList.add('active');
+        }
+    });
+}
+
 /**
  * Função de inicialização global. Carrega usuário, conecta WS, busca amigos e notificações.
  */
 async function initGlobal() {
+
+
+
   if (!jwtToken) {
     window.location.href = "login.html";
     return;
@@ -1341,6 +1371,8 @@ window.openEditCommentModal = (commentId, content) => {
 
 // Configuração dos Listeners de Modal (Executa ao carregar a página)
 document.addEventListener("DOMContentLoaded", () => {
+
+    highlightActiveSidebarItem();
 
     // Listener do Formulário de Edição de Post
     const editPostForm = document.getElementById("edit-post-form");
