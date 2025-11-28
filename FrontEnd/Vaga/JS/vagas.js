@@ -98,6 +98,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // -----------------------------------------------------------------
         // FUNÇÃO: Atualizar Sidebar do Usuário
         // -----------------------------------------------------------------
+        // -----------------------------------------------------------------
+        // FUNÇÃO: Atualizar Sidebar do Usuário (Corrigida)
+        // -----------------------------------------------------------------
         function updateSidebarUserInfo() {
             const userInfoContainer = document.querySelector('.user-info');
         
@@ -106,18 +109,45 @@ document.addEventListener("DOMContentLoaded", () => {
                 const sidebarTitle = document.getElementById('sidebar-user-title');
                 const sidebarImg = document.getElementById('sidebar-user-img');
                 
-                if(sidebarName) sidebarName.textContent = window.currentUser.nome;
-                if(sidebarTitle) sidebarTitle.textContent = window.currentUser.cargo || 'Membro'; 
+                // 1. Define imagem padrão
+                const defaultImage = window.defaultAvatarUrl || 
+                                   (window.backendUrl ? `${window.backendUrl}/images/default-avatar.jpg` : '') || 
+                                   'https://via.placeholder.com/80?text=User';
+
+                if(sidebarName) {
+                    sidebarName.textContent = window.currentUser.nome || "Usuário";
+                }
+
+                // 2. CORREÇÃO: Lógica robusta para o Cargo/Título
+                if(sidebarTitle) {
+                    const role = window.currentUser.cargo || 
+                                 window.currentUser.titulo || 
+                                 window.currentUser.tipoUsuario || 
+                                 'Membro da Comunidade';
+                    sidebarTitle.textContent = role;
+                } 
                 
-                if(sidebarImg && window.currentUser.fotoPerfil) {
-                     if(typeof window.getAvatarUrl === 'function') {
-                         sidebarImg.src = window.getAvatarUrl(window.currentUser.fotoPerfil);
-                     } else {
-                         sidebarImg.src = window.currentUser.fotoPerfil;
-                     }
+                if(sidebarImg) {
+                    const foto = window.currentUser.fotoPerfil || window.currentUser.urlFotoPerfil;
+
+                    sidebarImg.onerror = function() {
+                        if (this.src !== defaultImage) this.src = defaultImage;
+                    };
+
+                    if(foto) {
+                         if(typeof window.getAvatarUrl === 'function') {
+                             sidebarImg.src = window.getAvatarUrl(foto);
+                         } else if (foto.startsWith('http')) {
+                             sidebarImg.src = foto;
+                         } else {
+                             const cleanPath = foto.startsWith('/') ? foto : `/${foto}`;
+                             sidebarImg.src = `${window.backendUrl}/api/arquivos${cleanPath}`;
+                         }
+                    } else {
+                        sidebarImg.src = defaultImage;
+                    }
                 }
         
-                // Remove o loading
                 if (userInfoContainer) {
                     userInfoContainer.classList.add('loaded');
                 }
