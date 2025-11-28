@@ -1777,3 +1777,63 @@ textarea:focus-visible {
 .evento-card {
     min-width: 0 !important; /* Permite redução */
 }
+
+/* ========== CORREÇÃO SIDEBAR MOBILE ========== */
+@media (max-width: 1024px) {
+    .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        width: 85% !important;
+        max-width: 320px !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s ease-in-out !important;
+        z-index: 1000 !important;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.5) !important;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0) !important;
+    }
+    
+    .sidebar-close {
+        display: block !important;
+        position: absolute !important;
+        top: 15px !important;
+        right: 15px !important;
+        background: none !important;
+        border: none !important;
+        color: var(--text-secondary) !important;
+        font-size: 1.5rem !important;
+        cursor: pointer !important;
+        z-index: 1001 !important;
+    }
+    
+    .mobile-overlay {
+        display: block !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: rgba(0,0,0,0.6) !important;
+        z-index: 999 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: all 0.3s ease-in-out !important;
+        backdrop-filter: blur(2px) !important;
+    }
+    
+    .mobile-overlay.active {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Garante que o menu toggle está visível */
+    .menu-toggle {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+}
