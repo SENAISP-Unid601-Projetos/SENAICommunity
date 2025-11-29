@@ -1,77 +1,72 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Aplica as configurações assim que a página carrega
+/* =================================================================
+   LÓGICA DE CONFIGURAÇÕES (configuracao.js)
+   ================================================================= */
+
+// 1. Funções Globais (Disponíveis para o HTML)
+
+window.updateFontSize = function(size) {
+    localStorage.setItem('fontSize', size);
+    updateFontButtonsUI(size);
     if (window.aplicarAcessibilidadeGlobal) {
         window.aplicarAcessibilidadeGlobal();
     }
+};
 
-    // 2. Inicializa os botões visuais da página
-    initSettingsUI();
+window.abrirModalExclusao = function() {
+    const modal = document.getElementById('delete-account-modal');
+    const passwordInput = document.getElementById('delete-password');
+    if (modal) {
+        modal.style.display = 'flex';
+        if (passwordInput) {
+            passwordInput.value = '';
+            setTimeout(() => passwordInput.focus(), 100);
+        }
+    }
+};
 
-    // 3. Inicializa o Menu Mobile (Sidebar) <-- NOVO
-    initSidebarMobile();
+window.fecharModalExclusao = function() {
+    const modal = document.getElementById('delete-account-modal');
+    if (modal) modal.style.display = 'none';
+};
 
-   const logoutBtn = document.getElementById('logout-btn-modern');
-    let logoutTimeout;
+window.togglePasswordVisibility = function(fieldId) {
+    const input = document.getElementById(fieldId);
+    const icon = input.nextElementSibling;
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+};
 
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            const btnText = logoutBtn.querySelector('.btn-text');
-            
-            // Se já está confirmando (segundo clique), faz o logout
-            if (logoutBtn.classList.contains('confirming')) {
-                // Limpa o timer para não resetar
-                clearTimeout(logoutTimeout);
-                
-                // Feedback visual final
-                btnText.innerHTML = '<i class="fas fa-check"></i> Saindo...';
-                
-                // Lógica de sair
-                setTimeout(() => {
-                    localStorage.clear();
-                    window.location.href = 'login.html';
-                }, 500); // Pequeno delay para ver o "Saindo..."
-                
-            } else {
-                // Primeiro clique: Entra no modo de confirmação
-                logoutBtn.classList.add('confirming');
-                
-                // Troca o texto
-                const originalText = btnText.innerHTML;
-                btnText.innerHTML = 'Tem certeza?'; // Ou 'Clique para confirmar'
-                
-                // Inicia o timer de 3 segundos para cancelar
-                logoutTimeout = setTimeout(() => {
-                    logoutBtn.classList.remove('confirming');
-                    btnText.innerHTML = originalText; // Volta o texto original
-                }, 3000); // 3000ms = 3 segundos (mesmo tempo do CSS)
+// 2. Funções Auxiliares Internas
+
+function updateFontButtonsUI(size) {
+    document.querySelectorAll('.btn-font').forEach(btn => btn.classList.remove('active'));
+    // Seleciona o botão que chama a função com o tamanho específico
+    const activeBtn = document.querySelector(`.btn-font[onclick*="'${size}'"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+}
+
+function setupToggle(key, elementId) {
+    const toggle = document.getElementById(elementId);
+    if (toggle) {
+        // Carrega estado salvo ou false
+        toggle.checked = localStorage.getItem(key) === 'true';
+        
+        toggle.addEventListener('change', (e) => {
+            localStorage.setItem(key, e.target.checked);
+            // Aplica imediatamente
+            if (window.aplicarAcessibilidadeGlobal) {
+                window.aplicarAcessibilidadeGlobal();
             }
         });
     }
-});
-
-// --- NOVO: FUNÇÃO PARA O MENU MOBILE ---
-function initSidebarMobile() {
-    const menuToggle = document.querySelector('.menu-toggle');
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('mobile-open');
-            if (overlay) overlay.classList.toggle('active');
-        });
-    }
-
-    // Fecha ao clicar no fundo escuro
-    if (overlay) {
-        overlay.addEventListener('click', () => {
-            sidebar.classList.remove('mobile-open');
-            overlay.classList.remove('active');
-        });
-    }
 }
-
-// --- CONTROLE DOS BOTÕES DE ACESSIBILIDADE ---
 
 function initSettingsUI() {
     const currentSize = localStorage.getItem('fontSize') || 'medium';
@@ -83,29 +78,113 @@ function initSettingsUI() {
     setupToggle('highlightLinks', 'highlight-links-toggle');
 }
 
-function setupToggle(key, elementId) {
-    const toggle = document.getElementById(elementId);
-    if (toggle) {
-        toggle.checked = localStorage.getItem(key) === 'true';
-        toggle.addEventListener('change', (e) => {
-            localStorage.setItem(key, e.target.checked);
-            if (window.aplicarAcessibilidadeGlobal) {
-                window.aplicarAcessibilidadeGlobal();
-            }
+function initSidebarMobile() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (menuToggle && sidebar) {
+        // Remove listeners antigos para evitar duplicação (clone)
+        const newToggle = menuToggle.cloneNode(true);
+        menuToggle.parentNode.replaceChild(newToggle, menuToggle);
+
+        newToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidebar.classList.toggle('mobile-open');
+            if (overlay) overlay.classList.toggle('active');
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', () => {
+            if (sidebar) sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
         });
     }
 }
 
-window.updateFontSize = (size) => {
-    localStorage.setItem('fontSize', size);
-    updateFontButtonsUI(size);
+// Lógica de Exclusão de Conta (Backend)
+async function handleAccountDeletion(e) {
+    e.preventDefault();
+    
+    const passwordInput = document.getElementById('delete-password');
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    const originalText = confirmBtn.innerHTML;
+    
+    // Feedback Visual
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+
+    try {
+        // Recupera dados do usuário do localStorage (salvo no login)
+        const userJson = localStorage.getItem('user'); // Ou use window.currentUser se estiver disponível
+        let email = null;
+        
+        if (userJson) {
+            const user = JSON.parse(userJson);
+            email = user.email;
+        } else if (window.currentUser) {
+            email = window.currentUser.email;
+        }
+
+        if (!email) throw new Error("Usuário não identificado. Faça login novamente.");
+
+        // 1. Verifica a senha fazendo uma requisição de login
+        await axios.post(`${window.backendUrl}/autenticacao/login`, {
+            email: email,
+            senha: passwordInput.value
+        });
+
+        // 2. Se passou do login, deleta a conta
+        confirmBtn.innerHTML = '<i class="fas fa-trash"></i> Excluindo...';
+        await axios.delete(`${window.backendUrl}/usuarios/me`);
+
+        alert("Sua conta foi excluída com sucesso.");
+        localStorage.clear();
+        window.location.href = 'login.html';
+
+    } catch (error) {
+        console.error(error);
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalText;
+        
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            alert("Senha incorreta.");
+            passwordInput.value = '';
+            passwordInput.focus();
+        } else {
+            alert("Erro ao excluir conta: " + (error.message || "Tente novamente."));
+        }
+    }
+}
+
+// 3. Inicialização (DOMContentLoaded)
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Aplica acessibilidade se já estiver carregado
     if (window.aplicarAcessibilidadeGlobal) {
         window.aplicarAcessibilidadeGlobal();
     }
-};
 
-function updateFontButtonsUI(size) {
-    document.querySelectorAll('.btn-font').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.querySelector(`.btn-font[onclick*="'${size}'"]`);
-    if (activeBtn) activeBtn.classList.add('active');
-}
+    // Inicializa UI
+    initSettingsUI();
+    initSidebarMobile();
+
+    // Listener do botão de Logout normal (fora do modal)
+    const logoutBtnAction = document.getElementById('logout-btn-action');
+    if (logoutBtnAction) {
+        logoutBtnAction.addEventListener('click', () => {
+            if(confirm("Deseja realmente sair?")) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        });
+    }
+
+    // Listener do Formulário de Exclusão (dentro do modal)
+    const deleteForm = document.getElementById('delete-account-form');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', handleAccountDeletion);
+    }
+});

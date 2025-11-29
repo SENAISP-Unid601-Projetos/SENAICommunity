@@ -606,50 +606,42 @@ function renderProfileFriends(friends) {
     // Atualiza contador
     if (elements.tabFriendsCount) elements.tabFriendsCount.textContent = friends.length;
     
+    // Limpa e aplica a classe de GRID
     elements.profileFriendsList.innerHTML = '';
-    
-    // Remove a classe de grid antiga e adiciona a de lista
-    elements.profileFriendsList.className = 'user-list'; 
-    elements.profileFriendsList.style.display = 'flex';
-    elements.profileFriendsList.style.flexDirection = 'column';
-    elements.profileFriendsList.style.gap = '10px';
+    elements.profileFriendsList.className = 'friends-grid'; // Usa a nova classe CSS
+    elements.profileFriendsList.style.display = 'grid'; // Força o display grid
+    elements.profileFriendsList.style.gap = '1.5rem';
 
     if (friends.length === 0) { 
+        elements.profileFriendsList.style.display = 'flex'; // Volta para flex para centralizar msg
         elements.profileFriendsList.innerHTML = '<p class="empty-state">Nenhum amigo encontrado.</p>'; 
         return; 
     }
 
     friends.forEach(friend => {
-        // Normalização dos dados (igual você já tinha)
+        // Normalização dos dados
         const friendObj = friend.amigo || friend;
         const friendId = friendObj.id || friendObj.idUsuario;
         const friendName = friendObj.nome || friendObj.nomeUsuario;
-        const friendAvatar = friendObj.fotoPerfil || friendObj.urlFotoPerfil || window.defaultAvatarUrl;
         
-        // Garante URL correta
-        const avatarUrl = friendAvatar.startsWith('http') 
-            ? friendAvatar 
-            : `${window.backendUrl}/api/arquivos/${friendAvatar}`;
+        // Tratamento da imagem
+        let friendAvatar = friendObj.fotoPerfil || friendObj.urlFotoPerfil;
+        const avatarUrl = window.getAvatarUrl ? window.getAvatarUrl(friendAvatar) : 
+            (friendAvatar && friendAvatar.startsWith('http') ? friendAvatar : `${window.backendUrl}/api/arquivos/${friendAvatar}`);
 
-        // CRIA O ELEMENTO NO ESTILO "AMIGOS ONLINE" (LISTA COMPACTA)
-        const item = document.createElement('div');
-        item.className = 'friend-item'; // Mesma classe do CSS principal
-        item.style.border = '1px solid var(--border-color)'; // Borda suave para separar
-        item.style.borderRadius = '8px';
-        item.style.padding = '10px';
-        item.style.backgroundColor = 'var(--bg-tertiary)';
-
+        // Criação do CARD (Estrutura nova)
+        const item = document.createElement('a');
+        item.href = `perfil.html?id=${friendId}`;
+        item.className = 'profile-friend-card';
+        
         item.innerHTML = `
-            <a href="perfil.html?id=${friendId}" class="friend-item-link" style="display: flex; align-items: center; gap: 1rem; width: 100%; text-decoration: none; color: inherit;">
-                <div class="avatar" style="width: 40px; height: 40px;">
-                    <img src="${avatarUrl}" alt="${friendName}" onerror="this.src='${window.defaultAvatarUrl}'" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                </div>
-                <div style="display: flex; flex-direction: column;">
-                    <span class="friend-name" style="font-weight: 600; font-size: 0.95rem;">${friendName}</span>
-                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Amigo</span>
-                </div>
-                <div class="status online" style="margin-left: auto;"></div>
-            </a>
+            <img src="${avatarUrl}" alt="${friendName}" class="friend-card-avatar" onerror="this.src='${window.defaultAvatarUrl}'">
+            <div class="friend-card-info">
+                <span class="friend-card-name">${friendName}</span>
+                <span class="friend-card-status">
+                    <span class="status-indicator online"></span> Amigo
+                </span>
+            </div>
         `;
         
         elements.profileFriendsList.appendChild(item);
@@ -836,62 +828,101 @@ function createProfilePostElement(post) {
     }
     function setupCarouselModalEvents() { if (elements.mediaViewerModal) { elements.mediaViewerModal.addEventListener('click', (e) => { if (e.target === elements.mediaViewerModal) closeMediaViewer(); }); } }
     if (document.readyState === "complete" || document.readyState === "interactive") { init(); } else { window.addEventListener("load", init); }
+window.openModernProjectModal = (project) => {
+    // 1. Tratamento da Imagem
+    const imageUrl = project.imagemUrl
+        ? (project.imagemUrl.startsWith('http') ? project.imagemUrl : `${window.backendUrl}/api/arquivos/${project.imagemUrl}`)
+        : (window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`);
 
-    window.openModernProjectModal = (project) => {
-        const imageUrl = project.imagemUrl
-            ? (project.imagemUrl.startsWith('http') ? project.imagemUrl : `${backendUrl}${project.imagemUrl}`)
-            : 'https://via.placeholder.com/800x400/161b22/ffffff?text=Capa+do+Projeto';
-        const statusClass = (project.status || '').toLowerCase().replace(/\s+/g, '');
-        const techsHtml = (project.tecnologias || [])
-            .map(tech => `<span class="pm-tag">${tech}</span>`)
-            .join('') || '<span class="pm-tag" style="font-style:italic; opacity:0.7">Nenhuma tecnologia listada</span>';
-        const membersHtml = (project.membros || [])
-            .map(membro => {
-                const avatar = membro.usuarioFotoPerfil || membro.fotoPerfil;
-                const avatarUrl = avatar
-                    ? (avatar.startsWith('http') ? avatar : `${backendUrl}${avatar}`)
-                    : defaultAvatarUrl;
-                return `
-                  <div class="pm-member">
-                      <img src="${avatarUrl}" onerror="this.src='${defaultAvatarUrl}'">
-                      <span>${membro.usuarioNome || membro.nome}</span>
-                  </div>
-              `;
-            }).join('') || '<span style="color:var(--text-secondary)">Sem membros visíveis</span>';
+    // 2. Tratamento do Status
+    const statusText = project.status || 'Em Planejamento';
+    
+    // 3. Tecnologias
+    const techsHtml = (project.tecnologias || [])
+        .map(tech => `<span class="pm-tag">${tech}</span>`)
+        .join('') || '<span class="pm-tag" style="opacity:0.7">N/A</span>';
 
-        const modalHtml = `
-          <div class="project-modal-overlay" id="dynamic-project-modal">
-              <div class="project-modal-card">
-                  <div class="pm-hero" style="background-image: url('${imageUrl}');">
-                      <button class="pm-close-btn" onclick="document.getElementById('dynamic-project-modal').remove()"><i class="fas fa-times"></i></button>
+    // 4. Membros
+    const membersHtml = (project.membros || [])
+        .map(membro => {
+            const rawAvatar = membro.usuarioFotoPerfil || membro.fotoPerfil;
+            const avatarUrl = window.getAvatarUrl ? window.getAvatarUrl(rawAvatar) : 
+                (rawAvatar && rawAvatar.startsWith('http') ? rawAvatar : `${window.backendUrl}/api/arquivos/${rawAvatar}`);
+            
+            return `
+              <div class="pm-member">
+                  <img src="${avatarUrl}" onerror="this.src='${window.defaultAvatarUrl}'">
+                  <span>${membro.usuarioNome || membro.nome || 'Membro'}</span>
+              </div>
+          `;
+        }).join('') || '<span style="color:var(--text-secondary)">Sem membros visíveis</span>';
+
+    // 5. Estrutura HTML do Modal
+    const modalHtml = `
+      <div class="project-modal-overlay" id="dynamic-project-modal">
+          <div class="project-modal-card">
+              <div class="pm-hero" style="background-image: url('${imageUrl}');">
+                  <button class="pm-close-btn" onclick="document.getElementById('dynamic-project-modal').remove()">
+                    <i class="fas fa-times"></i>
+                  </button>
+              </div>
+              <div class="pm-content">
+                  <div class="pm-header">
+                    <span class="pm-status">${statusText}</span>
+                    <h2 class="pm-title">${project.titulo}</h2>
                   </div>
-                  <div class="pm-content">
-                      <div class="pm-header"><span class="pm-status ${statusClass}">${project.status || 'Em Planejamento'}</span><h2 class="pm-title">${project.titulo}</h2></div>
-                      <div class="pm-description">${project.descricao || "Este projeto não possui uma descrição detalhada."}</div>
-                      <div class="pm-grid">
-                          <div class="pm-info-item"><h4>Categoria</h4><span>${project.categoria || 'Geral'}</span></div>
-                          <div class="pm-info-item"><h4>Privacidade</h4><span>${project.grupoPrivado ? '<i class="fas fa-lock"></i> Privado' : '<i class="fas fa-globe"></i> Público'}</span></div>
-                          <div class="pm-info-item"><h4>Equipe</h4><span>${project.totalMembros || (project.membros?.length || 0)} Membros</span></div>
+                  
+                  <div class="pm-description">
+                    ${project.descricao || "Este projeto não possui uma descrição detalhada."}
+                  </div>
+                  
+                  <div class="pm-grid">
+                      <div class="pm-info-item">
+                        <h4>Categoria</h4>
+                        <span>${project.categoria || 'Geral'}</span>
                       </div>
-                      <div class="pm-section-title">Tecnologias Utilizadas</div><div class="pm-tags">${techsHtml}</div>
-                      <div class="pm-section-title">Equipe do Projeto</div><div class="pm-members">${membersHtml}</div>
+                      <div class="pm-info-item">
+                        <h4>Privacidade</h4>
+                        <span>${project.grupoPrivado ? '<i class="fas fa-lock"></i> Privado' : '<i class="fas fa-globe"></i> Público'}</span>
+                      </div>
+                      <div class="pm-info-item">
+                        <h4>Equipe</h4>
+                        <span>${project.totalMembros || (project.membros?.length || 0)} Membros</span>
+                      </div>
                   </div>
-                  <div class="pm-footer"><a href="projeto-detalhe.html?id=${project.id}" class="pm-btn">Ver Detalhes Completos <i class="fas fa-arrow-right"></i></a></div>
+                  
+                  <div class="pm-section-title">Tecnologias Utilizadas</div>
+                  <div class="pm-tags">${techsHtml}</div>
+                  
+                  <div class="pm-section-title">Equipe do Projeto</div>
+                  <div class="pm-members">${membersHtml}</div>
+              </div>
+              
+              <div class="pm-footer">
+                <a href="projeto-detalhe.html?id=${project.id}" class="pm-btn">
+                    Ver Detalhes Completos <i class="fas fa-arrow-right"></i>
+                </a>
               </div>
           </div>
-      `;
-        const existingModal = document.getElementById('dynamic-project-modal');
-        if (existingModal) existingModal.remove();
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        setTimeout(() => {
-            const modalOverlay = document.getElementById('dynamic-project-modal');
-            if (modalOverlay) {
-                modalOverlay.addEventListener('click', (e) => {
-                    if (e.target === modalOverlay) {
-                        modalOverlay.remove();
-                    }
-                });
-            }
-        }, 100);
-    };
+      </div>
+  `;
+
+    // 6. Inserção no DOM e Eventos
+    const existingModal = document.getElementById('dynamic-project-modal');
+    if (existingModal) existingModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Fechar ao clicar fora
+    setTimeout(() => {
+        const modalOverlay = document.getElementById('dynamic-project-modal');
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    modalOverlay.remove();
+                }
+            });
+        }
+    }, 100);
+};
 });

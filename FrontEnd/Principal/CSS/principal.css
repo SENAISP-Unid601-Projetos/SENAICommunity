@@ -3533,32 +3533,295 @@ body.reduce-motion *::after {
 }
 
 /* 3. Alto Contraste (Sobrescrevendo Variáveis) */
-html.acessibilidade-alto-contraste {
+hhtml.acessibilidade-alto-contraste {
+    /* Força cores de fundo e texto globais */
     --bg-primary: #000000 !important;
     --bg-secondary: #000000 !important;
     --bg-tertiary: #000000 !important;
     --bg-quaternary: #000000 !important;
-    --bg-hover: #333333 !important;
+    --bg-hover: #1a1a1a !important;
+    
     --text-primary: #ffffff !important;
-    --text-secondary: #ffff00 !important;
-    --text-tertiary: #00ff00 !important;
-    --accent-primary: #ffff00 !important; 
-    --accent-secondary: #ffcc00 !important;
-    --highlight: #ffff00 !important;
-    --border-color: #ffffff !important;
-    filter: contrast(130%) grayscale(100%);
+    --text-secondary: #ffff00 !important; /* Amarelo para destaque */
+    --text-tertiary: #00ff00 !important;  /* Verde para informações extras */
+    
+    --border-color: #ffffff !important;   /* Bordas brancas nítidas */
+    
+    /* Remove filtros globais que causam cinza */
+    filter: none !important;
 }
-html.acessibilidade-alto-contraste img {
-    filter: grayscale(100%);
-    border: 1px solid #fff;
+
+/* 1. Aplica bordas brancas e fundo preto em todos os cartões e containers */
+html.acessibilidade-alto-contraste {
+    /* Cores Base - Fundo Preto Absoluto */
+    --bg-primary: #000000 !important;
+    --bg-secondary: #000000 !important;
+    --bg-tertiary: #000000 !important;
+    --bg-quaternary: #1a1a1a !important; /* Ligeiramente mais claro para hover */
+    
+    /* Textos */
+    --text-primary: #ffffff !important;   /* Texto padrão: Branco */
+    --text-secondary: #ffff00 !important; /* Texto secundário: Amarelo Neon */
+    --text-tertiary: #00ff00 !important;  /* Detalhes: Verde Neon */
+    
+    /* Acentos */
+    --accent-primary: #ffff00 !important; /* Amarelo */
+    --accent-secondary: #ffdd00 !important;
+    --border-color: #ffffff !important;   /* Bordas Brancas finas */
+    --danger: #ff0000 !important;         /* Vermelho puro para erros */
+    
+    /* Remove sombras e filtros */
+    filter: none !important;
+    box-shadow: none !important;
 }
-html.acessibilidade-alto-contraste button,
-html.acessibilidade-alto-contraste input,
-html.acessibilidade-alto-contraste .btn {
-    border: 2px solid #fff !important;
-    background-color: #000 !important;
+
+/* 1. ESTRUTURA GERAL (Limpeza) */
+html.acessibilidade-alto-contraste * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+html.acessibilidade-alto-contraste body {
+    background-color: #000000 !important;
+}
+
+/* Bordas Brancas Finas para separar áreas */
+html.acessibilidade-alto-contraste .sidebar,
+html.acessibilidade-alto-contraste .topbar,
+html.acessibilidade-alto-contraste .post,
+html.acessibilidade-alto-contraste .widget-card,
+html.acessibilidade-alto-contraste .modal-content,
+html.acessibilidade-alto-contraste .user-info,
+html.acessibilidade-alto-contraste .search input,
+html.acessibilidade-alto-contraste textarea,
+html.acessibilidade-alto-contraste .dropdown-menu,
+html.acessibilidade-alto-contraste .friend-card,
+html.acessibilidade-alto-contraste .projeto-card,
+html.acessibilidade-alto-contraste .chat-sidebar,
+html.acessibilidade-alto-contraste .chat-header-area,
+html.acessibilidade-alto-contraste .chat-input-area {
+    background-color: #000000 !important;
+    border: 1px solid #ffffff !important;
+    border-radius: 4px !important;
+}
+
+/* 2. BOTÕES (CORREÇÃO CRÍTICA DE LEGIBILIDADE) */
+
+/* Botões Primários (Ação Principal) -> Fundo Amarelo, Texto PRETO */
+html.acessibilidade-alto-contraste .btn-primary,
+html.acessibilidade-alto-contraste .btn-entrar,
+html.acessibilidade-alto-contraste .publish-btn,
+html.acessibilidade-alto-contraste .btn-new-project,
+html.acessibilidade-alto-contraste button[type="submit"] {
+    background: #ffff00 !important;
+    background-color: #ffff00 !important;
+    color: #000000 !important; /* TEXTO PRETO OBRIGATÓRIO */
+    border: 2px solid #ffff00 !important;
+    font-weight: 800 !important;
+}
+
+/* Hover de Botões Primários -> Inverte */
+html.acessibilidade-alto-contraste .btn-primary:hover,
+html.acessibilidade-alto-contraste .btn-entrar:hover,
+html.acessibilidade-alto-contraste .publish-btn:hover {
+    background: #000000 !important;
     color: #ffff00 !important;
-    font-weight: bold;
+}
+
+/* Botões Secundários/Outline -> Fundo Preto, Borda/Texto Amarelo */
+html.acessibilidade-alto-contraste .btn-secondary,
+html.acessibilidade-alto-contraste .action-btn,
+html.acessibilidade-alto-contraste .btn-ver-detalhes,
+html.acessibilidade-alto-contraste .btn-ghost {
+    background: transparent !important;
+    border: 1px solid #ffff00 !important;
+    color: #ffff00 !important;
+}
+
+/* Hover de Botões Secundários */
+html.acessibilidade-alto-contraste .btn-secondary:hover,
+html.acessibilidade-alto-contraste .action-btn:hover {
+    background: #ffff00 !important;
+    color: #000000 !important;
+}
+
+/* Botões Desabilitados (Ex: "Criador", "Já é membro") */
+html.acessibilidade-alto-contraste button:disabled,
+html.acessibilidade-alto-contraste .btn.disabled,
+html.acessibilidade-alto-contraste .btn-entrar.disabled {
+    background: #333333 !important;
+    color: #ffffff !important;
+    border: 1px dashed #ffffff !important;
+    opacity: 1 !important; /* Mantém visível */
+    cursor: not-allowed;
+}
+
+/* 3. CHAT E MENSAGENS (CORREÇÃO DE LEGIBILIDADE) */
+
+/* Mensagem DELE (Esquerda) -> Fundo Preto, Borda Branca, Texto Branco */
+html.acessibilidade-alto-contraste .message-group.outro .message-content,
+html.acessibilidade-alto-contraste .message:not(.own) .message-bubble {
+    background-color: #000000 !important;
+    border: 1px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+/* Mensagem MINHA (Direita) -> Fundo Amarelo, TEXTO PRETO */
+html.acessibilidade-alto-contraste .message-group.me .message-content,
+html.acessibilidade-alto-contraste .message.own .message-bubble {
+    background-color: #ffff00 !important;
+    color: #000000 !important; /* TEXTO PRETO */
+    border: 2px solid #ffff00 !important;
+    font-weight: 600 !important;
+}
+
+/* Garante que links dentro da minha mensagem sejam pretos sublinhados */
+html.acessibilidade-alto-contraste .message.own .message-bubble a,
+html.acessibilidade-alto-contraste .message-group.me .message-content a {
+    color: #000000 !important;
+    text-decoration: underline !important;
+}
+
+/* 4. INPUTS E FORMULÁRIOS */
+html.acessibilidade-alto-contraste input,
+html.acessibilidade-alto-contraste textarea,
+html.acessibilidade-alto-contraste select {
+    background-color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+html.acessibilidade-alto-contraste input:focus,
+html.acessibilidade-alto-contraste textarea:focus {
+    border-color: #ffff00 !important; /* Borda amarela ao focar */
+    outline: none !important;
+}
+
+/* Placeholder (Texto de dica) */
+html.acessibilidade-alto-contraste ::placeholder {
+    color: #ffff00 !important; /* Amarelo para diferenciar do texto digitado */
+    opacity: 0.7;
+}
+
+/* 5. LINKS E MENU LATERAL */
+html.acessibilidade-alto-contraste a {
+    color: #ffff00 !important;
+    text-decoration: none !important;
+}
+
+/* Item de Menu Ativo */
+html.acessibilidade-alto-contraste .menu-item.active,
+html.acessibilidade-alto-contraste .menu-item.active i {
+    color: #ffff00 !important;
+    font-weight: bold !important;
+    border-left: 4px solid #ffff00 !important; /* Indicador lateral */
+    background: transparent !important; /* Remove degradê */
+}
+
+/* Hover no Menu */
+html.acessibilidade-alto-contraste .menu-item:hover {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+}
+
+/* 6. PROTEÇÃO DE MÍDIA (Imagens e Vídeos Coloridos) */
+html.acessibilidade-alto-contraste img,
+html.acessibilidade-alto-contraste video,
+html.acessibilidade-alto-contraste .avatar img,
+html.acessibilidade-alto-contraste .profile-pic img {
+    filter: none !important;
+    border: 1px solid #333 !important;
+    opacity: 1 !important;
+}
+
+/* 7. BADGES E STATUS (Bolinhas) */
+html.acessibilidade-alto-contraste .badge,
+html.acessibilidade-alto-contraste .status-dot,
+html.acessibilidade-alto-contraste .status {
+    border: 1px solid #ffffff !important; /* Adiciona borda branca para separar do fundo preto */
+}
+
+/* Mantém cores semânticas críticas apenas em ícones pequenos */
+html.acessibilidade-alto-contraste .status.online { background-color: #00ff00 !important; }
+html.acessibilidade-alto-contraste .badge { background-color: #ff0000 !important; color: white !important; }
+
+/* 8. TAGS DE PROJETO E CATEGORIAS */
+html.acessibilidade-alto-contraste .tech-tag,
+html.acessibilidade-alto-contraste .projeto-status {
+    background-color: #000000 !important;
+    border: 1px solid #ffff00 !important;
+    color: #ffff00 !important;
+}
+
+/* 1. CORREÇÃO DOS BALÕES DE COMENTÁRIOS */
+html.acessibilidade-alto-contraste .comment-body {
+    background-color: #000000 !important;  /* Fundo Preto */
+    border: 1px solid #ffffff !important;  /* Borda Branca fina */
+    color: #ffffff !important;             /* Texto Branco */
+    box-shadow: none !important;
+}
+
+/* Links dentro dos comentários (Nome e Menções) */
+html.acessibilidade-alto-contraste .comment-author-link,
+html.acessibilidade-alto-contraste .comment-content a,
+html.acessibilidade-alto-contraste .reply-tag {
+    color: #ffff00 !important; /* Amarelo */
+    text-decoration: underline !important;
+    font-weight: bold !important;
+}
+
+/* 2. CORREÇÃO DOS BOTÕES "ENVIAR MENSAGEM" E AÇÕES DE AMIZADE */
+/* Afeta: Tela de Buscar Amigos, Minhas Conexões e Cards de Usuário */
+
+html.acessibilidade-alto-contraste .btn-message,           /* Botão Enviar Mensagem (Buscar) */
+html.acessibilidade-alto-contraste .user-card-action .btn, /* Botões dentro dos cards */
+html.acessibilidade-alto-contraste .friend-actions .btn,   /* Ações de Amigos */
+html.acessibilidade-alto-contraste .request-actions .btn,  /* Ações de Solicitação */
+html.acessibilidade-alto-contraste .friend-action-btn {    /* Botões de ícone */
+    background: #ffff00 !important;       /* Fundo Amarelo Sólido (Remove gradientes) */
+    background-color: #ffff00 !important;
+    color: #000000 !important;            /* Texto PRETO Obrigatório */
+    border: 2px solid #ffff00 !important;
+    font-weight: 800 !important;
+    opacity: 1 !important;
+}
+
+/* Ícones dentro desses botões também devem ser pretos */
+html.acessibilidade-alto-contraste .btn-message i,
+html.acessibilidade-alto-contraste .user-card-action .btn i,
+html.acessibilidade-alto-contraste .friend-actions .btn i {
+    color: #000000 !important;
+}
+
+/* Estado Hover (Inverte as cores: Fundo Preto / Texto Amarelo) */
+html.acessibilidade-alto-contraste .btn-message:hover,
+html.acessibilidade-alto-contraste .user-card-action .btn:hover,
+html.acessibilidade-alto-contraste .friend-actions .btn:hover,
+html.acessibilidade-alto-contraste .request-actions .btn:hover,
+html.acessibilidade-alto-contraste .friend-action-btn:hover {
+    background: #000000 !important;
+    background-color: #000000 !important;
+    color: #ffff00 !important;
+    border-color: #ffff00 !important;
+}
+
+/* Ícones no Hover ficam amarelos */
+html.acessibilidade-alto-contraste .btn-message:hover i,
+html.acessibilidade-alto-contraste .user-card-action .btn:hover i {
+    color: #ffff00 !important;
+}
+
+/* 3. CORREÇÃO DE INPUTS DE CHAT E PESQUISA QUE ESTAVAM SUMINDO */
+html.acessibilidade-alto-contraste input[type="text"],
+html.acessibilidade-alto-contraste .search-box input {
+    background-color: #000000 !important;
+    border: 1px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+html.acessibilidade-alto-contraste ::placeholder {
+    color: #ffff00 !important; /* Placeholder Amarelo */
+    opacity: 0.8 !important;
 }
 
 /* 4. Fonte Legível (CORREÇÃO DOS ÍCONES) */
