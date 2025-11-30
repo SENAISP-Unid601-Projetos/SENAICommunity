@@ -126,6 +126,30 @@ async function initEventos() {
     await loadEventos();
     setupEventListeners();
     setupWebSocketListeners(); // Inicia escuta em tempo real
+    checkAndOpenUrlEvento();
+  }
+
+  function checkAndOpenUrlEvento() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventoIdParam = urlParams.get('id');
+
+    if (eventoIdParam) {
+        // Converte para número para comparar corretamente
+        const eventoId = parseInt(eventoIdParam);
+        
+        // Procura o evento na lista carregada (variável 'eventos' do escopo de initEventos)
+        const eventoAlvo = eventos.find(e => e.id === eventoId);
+
+        if (eventoAlvo) {
+            // Abre o modal de detalhes
+            openEventoDetailsModal(eventoAlvo);
+
+            // Opcional: Limpa a URL para que o modal não reabra se o usuário der F5
+             window.history.replaceState({}, document.title, "evento.html");
+        } else {
+            console.warn("Evento da notificação não encontrado na lista atual.");
+        }
+    }
   }
 
   // Verificar se o usuário é admin
@@ -667,47 +691,59 @@ async function initEventos() {
   }
 
   // Aplicar filtros
+// Aplicar filtros
   function applyFilters() {
-    const periodo = document.getElementById('filter-periodo').value;
-    const formato = document.getElementById('filter-formato').value;
-    const categoria = document.getElementById('filter-categoria').value;
-    const searchTerm = searchInput.value.toLowerCase();
+    // 1. Captura os valores dos elementos HTML (O erro ocorria porque estas linhas faltavam)
+    const periodoElement = document.getElementById('filter-periodo');
+    const formatoElement = document.getElementById('filter-formato');
+    const categoriaElement = document.getElementById('filter-categoria');
+    
+    // Verificação de segurança para evitar erros se o elemento não existir
+    const periodo = periodoElement ? periodoElement.value : 'proximos';
+    const formato = formatoElement ? formatoElement.value : 'todos';
+    const categoria = categoriaElement ? categoriaElement.value : 'todos';
+    
+    // Captura o termo de busca (garante que searchInput existe)
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+    // 2. Prepara a data de hoje formatada (YYYY-MM-DD) para comparação precisa
     const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    const hojeStr = `${ano}-${mes}-${dia}`; // Ex: "2025-11-30"
     
     let filteredEventos = eventos.filter(evento => {
-      // Parse manual para filtro também
-      let dataEvento = new Date();
-      if(evento.data) {
-          const [ano, mes, dia] = evento.data.split('-');
-          dataEvento = new Date(ano, mes - 1, dia);
-      }
+      // 3. Lógica de Filtro de Data
+      // A data vem do banco como "YYYY-MM-DD", então podemos comparar strings diretamente
+      const dataEventoStr = evento.data; 
 
-      const hojeInicioDoDia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-      
       const periodoMatch = periodo === 'proximos' ? 
-        dataEvento >= hojeInicioDoDia : 
-        dataEvento < hojeInicioDoDia;
-      
+        dataEventoStr >= hojeStr :  // Inclui hoje nos próximos
+        dataEventoStr < hojeStr;    // Passados são estritamente anteriores a hoje
+
+      // 4. Lógica de Outros Filtros
       const formatoMatch = formato === 'todos' || evento.formato === formato;
       const categoriaMatch = categoria === 'todos' || evento.categoria === categoria;
-      const searchMatch = evento.nome.toLowerCase().includes(searchTerm);
+      
+      // Busca por nome (proteção contra null)
+      const nomeEvento = evento.nome ? evento.nome.toLowerCase() : '';
+      const searchMatch = nomeEvento.includes(searchTerm);
 
       return periodoMatch && formatoMatch && categoriaMatch && searchMatch;
     });
 
-    // Ordenar eventos
+    // 5. Ordenação dos Resultados
     filteredEventos.sort((a, b) => {
-      const dataA = new Date(a.data);
-      const dataB = new Date(b.data);
-      
+      // Comparação simples de strings de data ISO funciona perfeitamente
       if (periodo === 'proximos') {
-        return dataA - dataB; 
+        return a.data.localeCompare(b.data); // Crescente (mais próximo primeiro)
       } else {
-        return dataB - dataA; 
+        return b.data.localeCompare(a.data); // Decrescente (mais recente primeiro)
       }
     });
 
-    // Renderizar
+    // 6. Renderizar na tela
     if (!eventosGrid) return;
     eventosGrid.innerHTML = '';
     

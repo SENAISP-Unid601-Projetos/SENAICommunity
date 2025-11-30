@@ -27,7 +27,13 @@ document.addEventListener("DOMContentLoaded", () => {
             sidebarClose: document.getElementById('sidebar-close'),
 
             // Botão da sidebar direita para abrir alerta
-            createAlertBtn: document.querySelector('.create-alert-btn') 
+            createAlertBtn: document.querySelector('.create-alert-btn'),
+            
+            // --- NOVOS ELEMENTOS MOBILE ALERTS ---
+            mobileAlertsBtn: document.getElementById('mobile-toggle-alerts-btn'),
+            rightSidebar: document.querySelector('.right-sidebar'),
+            mobileAlertsOverlay: document.getElementById('mobile-alerts-overlay'),
+            closeMobileAlertsBtn: document.getElementById('close-mobile-alerts')
         };
         
         // --- SELEÇÃO DE ELEMENTOS (Modais) ---
@@ -53,6 +59,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // Cache local para todas as vagas
         let allVagas = [];
         let currentVagaDetails = null;
+
+        // --- Variáveis para Alertas ---
+        const alertsListContainer = document.getElementById('user-alerts-list');
+        const openAlertModalBtn = document.getElementById('open-create-alert-modal-btn'); // ID atualizado no HTML
+        
+        // Variável para saber se estamos editando (null = criando)
+        let editingAlertId = null;
 
         // Mapeamentos para filtros
         const tipoContratacaoMap = { 'TODOS': '', 'TEMPO_INTEGRAL': 'Tempo Integral', 'MEIO_PERIODO': 'Meio Período', 'ESTAGIO': 'Estágio', 'TRAINEE': 'Trainee' };
@@ -82,7 +95,71 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (elements.sidebar) elements.sidebar.classList.remove('active');
                 if (elements.mobileOverlay) elements.mobileOverlay.classList.remove('active');
                 document.body.style.overflow = '';
+                
+                // Fechar também a sidebar direita (alertas) se estiver aberta
+                if (elements.rightSidebar && elements.rightSidebar.classList.contains('active')) {
+                    toggleMobileAlerts();
+                }
             }
+        }
+
+        // -----------------------------------------------------------------
+        // CONTROLE DOS ALERTAS MOBILE (BOTTOM SHEET) - CORRIGIDO
+        // -----------------------------------------------------------------
+
+        // 2. FUNÇÃO TOGGLE (Corrigida)
+        function toggleMobileAlerts() {
+            // Verifica se os elementos existem para evitar erros
+            if (!elements.rightSidebar) return;
+
+            const isActive = elements.rightSidebar.classList.contains('active');
+            
+            if (isActive) {
+                // FECHAR
+                elements.rightSidebar.classList.remove('active');
+                if (elements.mobileAlertsOverlay) {
+                    elements.mobileAlertsOverlay.classList.remove('active');
+                    setTimeout(() => {
+                        elements.mobileAlertsOverlay.style.display = 'none';
+                    }, 300);
+                }
+                document.body.style.overflow = ''; // Destrava o scroll
+            } else {
+                // ABRIR
+                if (elements.mobileAlertsOverlay) elements.mobileAlertsOverlay.style.display = 'block';
+                
+                setTimeout(() => {
+                    elements.rightSidebar.classList.add('active');
+                    if (elements.mobileAlertsOverlay) elements.mobileAlertsOverlay.classList.add('active');
+                }, 10);
+                
+                document.body.style.overflow = 'hidden'; // Trava o scroll
+            }
+        }
+
+        // 3. EVENT LISTENERS
+
+        // Botão "Gerenciar Alertas" (Topo)
+        if (elements.mobileAlertsBtn) {
+            elements.mobileAlertsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleMobileAlerts();
+            });
+        }
+
+        // Botão "X" (Fechar)
+        if (elements.closeMobileAlertsBtn) {
+            elements.closeMobileAlertsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (elements.rightSidebar && elements.rightSidebar.classList.contains('active')) {
+                    toggleMobileAlerts();
+                }
+            });
+        }
+
+        // Clicar no fundo escuro para fechar
+        if (elements.mobileAlertsOverlay) {
+            elements.mobileAlertsOverlay.addEventListener('click', toggleMobileAlerts);
         }
 
         // -----------------------------------------------------------------
@@ -145,16 +222,39 @@ document.addEventListener("DOMContentLoaded", () => {
         // FUNÇÕES DE BUSCA E RENDERIZAÇÃO
         // -----------------------------------------------------------------
         
-        async function fetchVagas() {
+    async function fetchVagas() {
             if (!elements.vagasListContainer) return;
             elements.vagasListContainer.innerHTML = '<div class="results-loading"><div class="loading-spinner"></div><p>Carregando vagas...</p></div>';
             try {
                 const response = await axios.get(`${backendUrl}/api/vagas`);
                 allVagas = response.data; // Armazena no cache
                 renderVagas(allVagas); // Renderiza todas as vagas
+
+                // --- NOVO: Verifica se deve abrir uma vaga específica via URL ---
+                checkAndOpenUrlVaga(); 
+
             } catch (error) {
                 console.error("Erro ao buscar vagas:", error);
                 elements.vagasListContainer.innerHTML = '<p class="sem-vagas" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Não foi possível carregar as vagas no momento.</p>';
+            }
+        }
+
+        function checkAndOpenUrlVaga() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const vagaIdParam = urlParams.get('id'); // Pega o ID da URL (?id=123)
+
+            if (vagaIdParam && allVagas.length > 0) {
+                const vagaId = parseInt(vagaIdParam);
+                
+                // Busca a vaga na lista que acabamos de carregar
+                const vagaAlvo = allVagas.find(v => v.id === vagaId);
+
+                if (vagaAlvo) {
+                    openVagaDetailsModal(vagaAlvo); // Abre o modal
+                    
+                    // Opcional: Limpa a URL para não reabrir ao atualizar a página (F5)
+                    // window.history.replaceState({}, document.title, "vaga.html");
+                }
             }
         }
 
@@ -534,40 +634,135 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // -----------------------------------------------------------------
-        // LÓGICA DE ALERTAS (ALUNO)
+        // FUNÇÕES DE ALERTAS
         // -----------------------------------------------------------------
-        if (elements.createAlertBtn) {
-            elements.createAlertBtn.addEventListener('click', () => {
-                alertModal.style.display = 'flex';
+
+        async function fetchAlerts() {
+            if (!alertsListContainer) return;
+            try {
+                const response = await axios.get(`${backendUrl}/api/alertas`);
+                renderAlerts(response.data);
+            } catch (error) {
+                console.error("Erro ao buscar alertas", error);
+                alertsListContainer.innerHTML = '<p style="font-size:0.8rem; color:var(--text-secondary)">Erro ao carregar.</p>';
+            }
+        }
+
+        function renderAlerts(alerts) {
+            alertsListContainer.innerHTML = '';
+
+            if (alerts.length === 0) {
+                alertsListContainer.innerHTML = '<p style="font-size:0.8rem; color:var(--text-secondary); text-align:center;">Você não tem alertas ativos.</p>';
+                return;
+            }
+
+            alerts.forEach(alert => {
+                const item = document.createElement('div');
+                item.className = 'alert-item';
+                
+                // Formata o nível para ficar bonito (JUNIOR -> Júnior)
+                const nivelFormatado = alert.nivel 
+                    ? alert.nivel.charAt(0).toUpperCase() + alert.nivel.slice(1).toLowerCase() 
+                    : 'Qualquer';
+
+                item.innerHTML = `
+                    <div class="alert-info">
+                        <strong>${alert.palavraChave}</strong>
+                        <span>(${nivelFormatado})</span>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="alert-btn alert-edit" title="Editar"><i class="fas fa-pencil-alt"></i></button>
+                        <button class="alert-btn alert-delete" title="Excluir"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+
+                // Event Listener: Editar
+                item.querySelector('.alert-edit').addEventListener('click', () => {
+                    openAlertModal(alert);
+                });
+
+                // Event Listener: Excluir
+                item.querySelector('.alert-delete').addEventListener('click', () => {
+                    if(confirm('Excluir este alerta?')) {
+                        handleDeleteAlert(alert.id);
+                    }
+                });
+
+                alertsListContainer.appendChild(item);
             });
         }
+
+        async function handleDeleteAlert(id) {
+            try {
+                await axios.delete(`${backendUrl}/api/alertas/${id}`);
+                showNotification("Alerta excluído.", "success");
+                fetchAlerts(); // Atualiza a lista
+            } catch (error) {
+                showNotification("Erro ao excluir alerta.", "error");
+            }
+        }
+
+        function openAlertModal(alert = null) {
+            const modalTitle = alertModal.querySelector('h3');
+            const submitBtn = alertForm.querySelector('button[type="submit"]');
+
+            if (alert) {
+                // Modo Edição
+                editingAlertId = alert.id;
+                modalTitle.innerHTML = '<i class="fas fa-edit"></i> Editar Alerta';
+                submitBtn.textContent = 'Salvar Alterações';
+                document.getElementById('alert-keyword').value = alert.palavraChave;
+                document.getElementById('alert-nivel').value = alert.nivel || "";
+            } else {
+                // Modo Criação
+                editingAlertId = null;
+                modalTitle.innerHTML = '<i class="fas fa-bell"></i> Novo Alerta de Vaga';
+                submitBtn.textContent = 'Criar Alerta';
+                alertForm.reset();
+            }
+            alertModal.style.display = 'flex';
+        }
+
+        // -----------------------------------------------------------------
+        // EVENT LISTENERS DE ALERTAS
+        // -----------------------------------------------------------------
         
-        if (cancelAlertBtn) cancelAlertBtn.addEventListener('click', () => alertModal.style.display = 'none');
+        if (openAlertModalBtn) {
+            openAlertModalBtn.addEventListener('click', () => openAlertModal(null));
+        }
+
+        if (cancelAlertBtn) {
+            cancelAlertBtn.addEventListener('click', () => alertModal.style.display = 'none');
+        }
 
         if (alertForm) {
             alertForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const btn = alertForm.querySelector('button');
+                const btn = alertForm.querySelector('button[type="submit"]');
+                btn.disabled = true;
                 
-                const alertData = {
+                const data = {
                     palavraChave: document.getElementById('alert-keyword').value,
                     nivel: document.getElementById('alert-nivel').value
                 };
 
                 try {
-                    btn.disabled = true;
-                    btn.textContent = "Criando...";
-                    // Chama o novo endpoint
-                    await axios.post(`${backendUrl}/api/alertas`, alertData);
+                    if (editingAlertId) {
+                        // PUT (Editar)
+                        await axios.put(`${backendUrl}/api/alertas/${editingAlertId}`, data);
+                        showNotification("Alerta atualizado!", "success");
+                    } else {
+                        // POST (Criar)
+                        await axios.post(`${backendUrl}/api/alertas`, data);
+                        showNotification("Alerta criado!", "success");
+                    }
                     
-                    showNotification("Alerta criado! Avisaremos você.", "success");
                     alertModal.style.display = 'none';
-                    alertForm.reset();
+                    fetchAlerts(); // Recarrega a lista lateral
                 } catch (error) {
-                    showNotification("Erro ao criar alerta.", "error");
+                    showNotification("Erro ao salvar alerta.", "error");
                 } finally {
                     btn.disabled = false;
-                    btn.textContent = "Criar Alerta";
                 }
             });
         }
@@ -627,7 +822,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
         
-        fetchVagas(); // Busca as vagas
+        // Inicialização
+        fetchAlerts(); // Busca os alertas ao carregar a página
+        fetchVagas();  // Busca as vagas
         setupVagasEventListeners(); // Configura os listeners
     });
 });

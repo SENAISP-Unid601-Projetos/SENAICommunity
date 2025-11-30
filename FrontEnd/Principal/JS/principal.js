@@ -729,6 +729,25 @@ function createNotificationElement(notification) {
 
     // --- LÓGICA DE ÍCONES E LINKS POR TIPO ---
 
+    if (notification.tipo === 'ALERTA_VAGA') {
+    iconClass = 'fa-briefcase'; // Ícone de maleta
+    notificationLink = `vaga.html?id=${idRef}`; 
+}
+
+    // 6. NOTIFICAÇÕES DE EVENTOS (Início, Fim e Lembrete)
+    else if (notification.tipo === 'EVENTO_INICIO') {
+        iconClass = 'fa-stopwatch'; // Ícone de cronômetro/urgência
+        notificationLink = `evento.html?id=${idRef}`; 
+    }
+    else if (notification.tipo === 'EVENTO_FIM') {
+        iconClass = 'fa-flag-checkered'; // Ícone de chegada/fim
+        notificationLink = `evento.html?id=${idRef}`;
+    }
+    else if (notification.tipo === 'EVENTO') { // Lembrete genérico ou confirmação
+        iconClass = 'fa-calendar-check'; // Ícone de calendário
+        notificationLink = `evento.html?id=${idRef}`;
+    }
+
     // 1. PEDIDO DE AMIZADE
     if (notification.tipo === 'PEDIDO_AMIZADE') {
         iconClass = 'fa-user-plus';

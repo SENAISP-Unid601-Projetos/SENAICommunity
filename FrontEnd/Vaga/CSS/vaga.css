@@ -1645,12 +1645,7 @@
         cursor: pointer;
     }
 
-    /* Ajuste para a sidebar direita do vaga.html */
-    .right-sidebar {
-        width: 100%;
-        padding: 1rem;
-        order: 3;
-    }
+  
     
     /* Garante que o conteúdo principal ocupe tudo */
     .main-content {
@@ -1747,4 +1742,240 @@
 #modal-publicar-vaga .close span,
 .modal .close span {
     margin-top: -2px; 
+}
+/* Container do item de alerta */
+.alert-item {
+    background: var(--bg-tertiary);
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem; /* Espaço entre o texto e os botões */
+    border: 1px solid var(--border-color);
+    margin-bottom: 0.5rem;
+    transition: background 0.2s;
+}
+
+.alert-item:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-secondary);
+}
+
+/* Container do texto (ocupa o espaço restante) */
+.alert-info {
+    display: flex;
+    flex-direction: column; /* Empilha Palavra-chave em cima, Nível embaixo */
+    justify-content: center;
+    flex: 1;      /* Ocupa todo o espaço disponível */
+    min-width: 0; /* MÁGICA: Permite que o flex item encolha abaixo do conteúdo */
+}
+
+/* A Palavra-chave (Negrito) */
+.alert-info strong {
+    color: var(--text-primary);
+    white-space: nowrap;       /* Não quebra linha */
+    overflow: hidden;          /* Esconde o excesso */
+    text-overflow: ellipsis;   /* Adiciona "..." */
+    display: block;            /* Comporta-se como bloco para respeitar largura */
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+/* O Nível (Texto menor) */
+.alert-info span {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Botões de ação (Lado direito) */
+.alert-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0; /* Impede que os botões sejam esmagados */
+}
+
+.alert-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    color: var(--text-secondary);
+}
+
+.alert-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.alert-edit:hover { color: var(--accent-primary); }
+.alert-delete:hover { color: var(--danger, #ef4444); }
+
+/* --- CORREÇÃO GERAL DE INPUTS (Visual da Imagem) --- */
+.search-vaga {
+    position: relative;
+    width: 100%;
+}
+
+.search-vaga i {
+    position: absolute;
+    left: 12px; /* Ajuste fino da posição do ícone */
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    z-index: 2;
+    font-size: 1rem;
+}
+
+.search-vaga input {
+    width: 100%;
+    padding: 0.8rem 1rem 0.8rem 2.8rem !important; /* Padding esquerdo maior para o ícone não cobrir o texto */
+    border-radius: 8px;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+/* Selects com altura igual ao input */
+.filters select {
+    padding: 0.8rem;
+    height: 45px; /* Altura fixa para alinhar */
+}
+
+
+/* --- ESTILOS MOBILE ESPECÍFICOS --- */
+.mobile-alerts-btn {
+    display: none; /* Escondido no Desktop */
+}
+
+@media (max-width: 1024px) {
+    
+    /* 1. Ajuste do Cabeçalho e Botão Mobile */
+    .vagas-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .mobile-alerts-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--accent-primary);
+        color: var(--accent-primary);
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%; /* Botão largura total */
+        transition: 0.2s;
+    }
+    
+    .mobile-alerts-btn:active {
+        transform: scale(0.98);
+        background-color: var(--accent-primary);
+        color: white;
+    }
+
+    /* 2. Transformar Right Sidebar em "Bottom Sheet" */
+   .right-sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        max-height: 85vh; /* Ocupa no máximo 85% da altura */
+        background-color: var(--bg-secondary);
+        z-index: 2000; /* Z-index bem alto para ficar acima de tudo */
+        
+        padding: 1.5rem;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+        
+        /* ESTADO INICIAL: ESCONDIDO */
+        transform: translateY(100%); /* Empurra 100% para baixo (para fora da tela) */
+        visibility: hidden; /* Garante que não receba cliques quando fechado */
+        opacity: 0;
+        
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                    opacity 0.3s ease, 
+                    visibility 0.3s;
+        
+        display: flex !important; /* Força display flex para organizar o conteúdo */
+        flex-direction: column;
+    }
+
+    /* ESTADO ATIVO: ABERTO */
+    .right-sidebar.active {
+        transform: translateY(0); /* Traz de volta para a posição original */
+        visibility: visible;
+        opacity: 1;
+    }
+
+    /* HANDLE (Barrinha cinza de "puxar") */
+    .right-sidebar::before {
+        content: '';
+        display: block;
+        width: 50px;
+        height: 6px;
+        background-color: var(--border-color);
+        margin: -5px auto 15px auto; /* Centraliza no topo */
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+
+    /* BOTÃO DE FECHAR (NOVO) */
+    .mobile-close-sidebar-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255,255,255,0.1);
+        border: none;
+        color: var(--text-secondary);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        display: flex; /* Flex para centralizar o X */
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2001;
+    }
+
+    /* Ajuste visual do card dentro do painel mobile */
+    .job-alerts-card {
+        border: none;
+        background: transparent;
+        padding: 0;
+    }
+
+    /* 3. Filtros Empilhados */
+    .filters-container {
+        padding: 1rem;
+    }
+    
+    .filters {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .filters select {
+        width: 100%;
+    }
+}
+
+/* Esconde o botão de fechar no Desktop */
+@media (min-width: 1025px) {
+    .mobile-close-sidebar-btn {
+        display: none;
+    }
 }

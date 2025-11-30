@@ -18,4 +18,5 @@ public class EventoSaidaDTO {
     private String imagemCapaUrl;
     private LocalTime horaInicio; // NOVO
     private LocalTime horaFim;
+    private int numeroInteressados;
 }

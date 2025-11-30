@@ -44,99 +44,99 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         setupEventListeners() {
-    // 1. Preview da Imagem no Modal (Ao selecionar arquivo)
-    if (this.elements.projImagemInput && this.elements.projImagePreview) {
-        this.elements.projImagemInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    this.elements.projImagePreview.src = ev.target.result;
+            // 1. Preview da Imagem no Modal (Ao selecionar arquivo)
+            if (this.elements.projImagemInput && this.elements.projImagePreview) {
+                this.elements.projImagemInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            this.elements.projImagePreview.src = ev.target.result;
+                        }
+                        reader.readAsDataURL(file);
+                    } else {
+                        // Se o usuário cancelar a seleção, volta para a imagem padrão
+                        this.elements.projImagePreview.src = DEFAULT_COVER_IMAGE;
+                    }
+                });
+            }
+
+            // 2. Botão "Publicar Projeto" (Abrir Modal)
+            if (this.elements.openModalBtn) {
+                this.elements.openModalBtn.addEventListener("click", () => this.handlers.openModal.call(this));
+            }
+
+            // 3. Botão "X" do Modal (Fechar)
+            if (this.elements.closeModalBtn) {
+                this.elements.closeModalBtn.addEventListener("click", () => this.handlers.closeModal.call(this));
+            }
+
+            // 4. Botão "Cancelar" do Modal (Fechar)
+            if (this.elements.closeModalBtnAction) {
+                this.elements.closeModalBtnAction.addEventListener("click", () => this.handlers.closeModal.call(this));
+            }
+
+            // 5. Submit do Formulário (Criar Projeto)
+            // Substitua o addEventListener antigo por isto:
+            if (this.elements.form) {
+                // Remove listeners antigos clonando o nó (Truque para limpar eventos duplicados)
+                const newForm = this.elements.form.cloneNode(true);
+                this.elements.form.parentNode.replaceChild(newForm, this.elements.form);
+                this.elements.form = newForm; // Atualiza a referência
+
+                // Adiciona o listener no novo formulário limpo
+                this.elements.form.addEventListener("submit", (e) => this.handlers.handleFormSubmit.call(this, e));
+
+                // Re-seleciona os inputs dentro do novo formulário para não perder a referência
+                this.elements.projTituloInput = document.getElementById("proj-titulo");
+                this.elements.projDescricaoInput = document.getElementById("proj-descricao");
+                this.elements.projImagemInput = document.getElementById("proj-imagem");
+                this.elements.projCategoriaInput = document.getElementById("proj-categoria");
+                this.elements.projTecnologiasInput = document.getElementById("proj-tecnologias");
+                this.elements.projPrivacidadeInput = document.getElementById("proj-privacidade");
+
+                // Re-ativa o preview da imagem no novo form
+                if (this.elements.projImagemInput) {
+                    this.elements.projImagemInput.addEventListener('change', (e) => {
+                        const file = e.target.files[0];
+                        const preview = document.getElementById('proj-image-preview');
+                        if (file && preview) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => preview.src = ev.target.result;
+                            reader.readAsDataURL(file);
+                        }
+                    });
                 }
-                reader.readAsDataURL(file);
-            } else {
-                // Se o usuário cancelar a seleção, volta para a imagem padrão
-                this.elements.projImagePreview.src = DEFAULT_COVER_IMAGE;
             }
-        });
-    }
 
-    // 2. Botão "Publicar Projeto" (Abrir Modal)
-    if (this.elements.openModalBtn) {
-        this.elements.openModalBtn.addEventListener("click", () => this.handlers.openModal.call(this));
-    }
-
-    // 3. Botão "X" do Modal (Fechar)
-    if (this.elements.closeModalBtn) {
-        this.elements.closeModalBtn.addEventListener("click", () => this.handlers.closeModal.call(this));
-    }
-
-    // 4. Botão "Cancelar" do Modal (Fechar)
-    if (this.elements.closeModalBtnAction) {
-        this.elements.closeModalBtnAction.addEventListener("click", () => this.handlers.closeModal.call(this));
-    }
-
-    // 5. Submit do Formulário (Criar Projeto)
-  // Substitua o addEventListener antigo por isto:
-if (this.elements.form) {
-    // Remove listeners antigos clonando o nó (Truque para limpar eventos duplicados)
-    const newForm = this.elements.form.cloneNode(true);
-    this.elements.form.parentNode.replaceChild(newForm, this.elements.form);
-    this.elements.form = newForm; // Atualiza a referência
-    
-    // Adiciona o listener no novo formulário limpo
-    this.elements.form.addEventListener("submit", (e) => this.handlers.handleFormSubmit.call(this, e));
-    
-    // Re-seleciona os inputs dentro do novo formulário para não perder a referência
-    this.elements.projTituloInput = document.getElementById("proj-titulo");
-    this.elements.projDescricaoInput = document.getElementById("proj-descricao");
-    this.elements.projImagemInput = document.getElementById("proj-imagem");
-    this.elements.projCategoriaInput = document.getElementById("proj-categoria");
-    this.elements.projTecnologiasInput = document.getElementById("proj-tecnologias");
-    this.elements.projPrivacidadeInput = document.getElementById("proj-privacidade");
-    
-    // Re-ativa o preview da imagem no novo form
-    if (this.elements.projImagemInput) {
-        this.elements.projImagemInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            const preview = document.getElementById('proj-image-preview');
-            if (file && preview) {
-                const reader = new FileReader();
-                reader.onload = (ev) => preview.src = ev.target.result;
-                reader.readAsDataURL(file);
+            // 6. Fechar ao clicar no fundo escuro (Overlay)
+            if (this.elements.modalOverlay) {
+                this.elements.modalOverlay.addEventListener("click", (e) => {
+                    if (e.target === this.elements.modalOverlay) {
+                        this.handlers.closeModal.call(this);
+                    }
+                });
             }
-        });
-    }
-}
 
-    // 6. Fechar ao clicar no fundo escuro (Overlay)
-    if (this.elements.modalOverlay) {
-        this.elements.modalOverlay.addEventListener("click", (e) => {
-            if (e.target === this.elements.modalOverlay) {
-                this.handlers.closeModal.call(this);
+            // 7. Filtros de Busca e Categoria (Funciona para todas as abas)
+            const runFilters = () => {
+                // Verifica qual aba está ativa e roda o filtro correspondente
+                if (this.state.currentTab === 'meus-projetos') {
+                    this.applyFilters();
+                } else if (this.state.currentTab === 'projetos-publicos') {
+                    this.filterPublicProjects();
+                } else if (this.state.currentTab === 'projetos-privados') {
+                    this.filterPrivateProjects();
+                }
+            };
+
+            if (this.elements.searchInput) {
+                this.elements.searchInput.addEventListener("input", runFilters);
             }
-        });
-    }
 
-    // 7. Filtros de Busca e Categoria (Funciona para todas as abas)
-    const runFilters = () => {
-        // Verifica qual aba está ativa e roda o filtro correspondente
-        if (this.state.currentTab === 'meus-projetos') {
-            this.applyFilters();
-        } else if (this.state.currentTab === 'projetos-publicos') {
-            this.filterPublicProjects();
-        } else if (this.state.currentTab === 'projetos-privados') {
-            this.filterPrivateProjects();
-        }
-    };
-
-    if (this.elements.searchInput) {
-        this.elements.searchInput.addEventListener("input", runFilters);
-    }
-
-    if (this.elements.categoryFilter) {
-        this.elements.categoryFilter.addEventListener("change", runFilters);
-    }
+            if (this.elements.categoryFilter) {
+                this.elements.categoryFilter.addEventListener("change", runFilters);
+            }
 
 
             // Fechar ao clicar fora
@@ -315,147 +315,147 @@ if (this.elements.form) {
     }
 
     function updateSidebarUserInfo() {
-    const userInfoContainer = document.querySelector('.user-info');
+        const userInfoContainer = document.querySelector('.user-info');
 
-    if (window.currentUser) {
-        const sidebarName = document.getElementById('sidebar-user-name');
-        const sidebarTitle = document.getElementById('sidebar-user-title');
-        const sidebarImg = document.getElementById('sidebar-user-img');
-        
-        // 1. Define a imagem padrão de forma robusta
-        // Tenta pegar a global, se falhar, tenta montar a URL do backend, se falhar, usa um placeholder online
-        const defaultImage = window.defaultAvatarUrl || 
-                           (window.backendUrl ? `${window.backendUrl}/images/default-avatar.jpg` : '') || 
-                           'https://via.placeholder.com/80?text=User';
+        if (window.currentUser) {
+            const sidebarName = document.getElementById('sidebar-user-name');
+            const sidebarTitle = document.getElementById('sidebar-user-title');
+            const sidebarImg = document.getElementById('sidebar-user-img');
 
-        if (sidebarName) {
-            sidebarName.textContent = window.currentUser.nome || "Usuário";
-        }
-        
-        if (sidebarTitle) {
-            const role = window.currentUser.cargo || 
-                         window.currentUser.titulo || 
-                         window.currentUser.tipoUsuario || 
-                         'Membro da Comunidade';
-            sidebarTitle.textContent = role;
-        }
-        
-        if (sidebarImg) {
-            const foto = window.currentUser.fotoPerfil || window.currentUser.urlFotoPerfil;
-            
-            // 2. Configura o manipulador de erro ANTES de definir o src
-            // Isso garante que se a imagem quebrar (404), ele carrega a padrão
-            sidebarImg.onerror = function() {
-                // Evita loop infinito: só troca se a atual não for a default
-                if (this.src !== defaultImage) {
-                    this.src = defaultImage;
+            // 1. Define a imagem padrão de forma robusta
+            // Tenta pegar a global, se falhar, tenta montar a URL do backend, se falhar, usa um placeholder online
+            const defaultImage = window.defaultAvatarUrl ||
+                (window.backendUrl ? `${window.backendUrl}/images/default-avatar.jpg` : '') ||
+                'https://via.placeholder.com/80?text=User';
+
+            if (sidebarName) {
+                sidebarName.textContent = window.currentUser.nome || "Usuário";
+            }
+
+            if (sidebarTitle) {
+                const role = window.currentUser.cargo ||
+                    window.currentUser.titulo ||
+                    window.currentUser.tipoUsuario ||
+                    'Membro da Comunidade';
+                sidebarTitle.textContent = role;
+            }
+
+            if (sidebarImg) {
+                const foto = window.currentUser.fotoPerfil || window.currentUser.urlFotoPerfil;
+
+                // 2. Configura o manipulador de erro ANTES de definir o src
+                // Isso garante que se a imagem quebrar (404), ele carrega a padrão
+                sidebarImg.onerror = function () {
+                    // Evita loop infinito: só troca se a atual não for a default
+                    if (this.src !== defaultImage) {
+                        this.src = defaultImage;
+                    }
+                };
+
+                // 3. Define a imagem
+                if (foto) {
+                    if (typeof window.getAvatarUrl === 'function') {
+                        sidebarImg.src = window.getAvatarUrl(foto);
+                    } else if (foto.startsWith('http')) {
+                        sidebarImg.src = foto;
+                    } else {
+                        // Garante que não duplique a barra
+                        const cleanPath = foto.startsWith('/') ? foto : `/${foto}`;
+                        sidebarImg.src = `${window.backendUrl}/api/arquivos${cleanPath}`;
+                    }
+                } else {
+                    // Se não tem foto no objeto do usuário, usa a default direto
+                    sidebarImg.src = defaultImage;
                 }
-            };
+            }
 
-            // 3. Define a imagem
-            if (foto) {
-                 if (typeof window.getAvatarUrl === 'function') {
-                     sidebarImg.src = window.getAvatarUrl(foto);
-                 } else if (foto.startsWith('http')) {
-                     sidebarImg.src = foto;
-                 } else {
-                     // Garante que não duplique a barra
-                     const cleanPath = foto.startsWith('/') ? foto : `/${foto}`;
-                     sidebarImg.src = `${window.backendUrl}/api/arquivos${cleanPath}`;
-                 }
-            } else {
-                // Se não tem foto no objeto do usuário, usa a default direto
-                sidebarImg.src = defaultImage;
+            if (userInfoContainer) {
+                userInfoContainer.classList.add('loaded');
             }
         }
-
-        if (userInfoContainer) {
-            userInfoContainer.classList.add('loaded');
-        }
     }
-}
 
     // Inicialmente mostrar loading nos perfis
     setProfileLoading(true);
 
     // --- CORREÇÃO MENU MOBILE ---
-   // --- CORREÇÃO DEFINITIVA MENU MOBILE (FECHAR AO CLICAR FORA) ---
-function setupMobileMenu() {
-    const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
-    const sidebar = document.getElementById("sidebar");
-    const mobileOverlay = document.getElementById("mobile-overlay");
-    const sidebarClose = document.getElementById("sidebar-close");
+    // --- CORREÇÃO DEFINITIVA MENU MOBILE (FECHAR AO CLICAR FORA) ---
+    function setupMobileMenu() {
+        const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+        const sidebar = document.getElementById("sidebar");
+        const mobileOverlay = document.getElementById("mobile-overlay");
+        const sidebarClose = document.getElementById("sidebar-close");
 
-    // Função única para ABRIR
-    function openMenu() {
-        if (sidebar) sidebar.classList.add('active');
-        if (mobileOverlay) mobileOverlay.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Trava a rolagem da página
-    }
-
-    // Função única para FECHAR
-    function closeMenu() {
-        if (sidebar) sidebar.classList.remove('active');
-        if (mobileOverlay) mobileOverlay.classList.remove('active');
-        document.body.style.overflow = ''; // Destrava a rolagem
-    }
-
-    // Função Toggle (Alternar)
-    function toggleMenu(e) {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
+        // Função única para ABRIR
+        function openMenu() {
+            if (sidebar) sidebar.classList.add('active');
+            if (mobileOverlay) mobileOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Trava a rolagem da página
         }
-        const isActive = sidebar.classList.contains('active');
-        isActive ? closeMenu() : openMenu();
-    }
 
-    // 1. Botão Hamburger (Abrir/Fechar)
-    if (mobileMenuToggle) {
-        const newToggle = mobileMenuToggle.cloneNode(true);
-        mobileMenuToggle.parentNode.replaceChild(newToggle, mobileMenuToggle);
-        newToggle.addEventListener('click', toggleMenu);
-    }
+        // Função única para FECHAR
+        function closeMenu() {
+            if (sidebar) sidebar.classList.remove('active');
+            if (mobileOverlay) mobileOverlay.classList.remove('active');
+            document.body.style.overflow = ''; // Destrava a rolagem
+        }
 
-    // 2. Botão "X" (Apenas Fechar)
-    if (sidebarClose) {
-        const newClose = sidebarClose.cloneNode(true);
-        sidebarClose.parentNode.replaceChild(newClose, sidebarClose);
-        newClose.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            closeMenu();
-        });
-    }
+        // Função Toggle (Alternar)
+        function toggleMenu(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            const isActive = sidebar.classList.contains('active');
+            isActive ? closeMenu() : openMenu();
+        }
 
-    // 3. OVERLAY / FUNDO ESCURO (AQUI ESTÁ O SEGREDO)
-    if (mobileOverlay) {
-        // Removemos qualquer evento anterior clonando o elemento
-        const newOverlay = mobileOverlay.cloneNode(true);
-        mobileOverlay.parentNode.replaceChild(newOverlay, mobileOverlay);
-        
-        // Adicionamos o evento de clique especificamente para fechar
-        newOverlay.addEventListener('click', (e) => {
-            // e.target === newOverlay garante que só fecha se clicar no fundo, 
-            // e não em algo dentro dele (embora o overlay geralmente esteja vazio)
-            if (e.target === newOverlay) {
+        // 1. Botão Hamburger (Abrir/Fechar)
+        if (mobileMenuToggle) {
+            const newToggle = mobileMenuToggle.cloneNode(true);
+            mobileMenuToggle.parentNode.replaceChild(newToggle, mobileMenuToggle);
+            newToggle.addEventListener('click', toggleMenu);
+        }
+
+        // 2. Botão "X" (Apenas Fechar)
+        if (sidebarClose) {
+            const newClose = sidebarClose.cloneNode(true);
+            sidebarClose.parentNode.replaceChild(newClose, sidebarClose);
+            newClose.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 closeMenu();
-            }
+            });
+        }
+
+        // 3. OVERLAY / FUNDO ESCURO (AQUI ESTÁ O SEGREDO)
+        if (mobileOverlay) {
+            // Removemos qualquer evento anterior clonando o elemento
+            const newOverlay = mobileOverlay.cloneNode(true);
+            mobileOverlay.parentNode.replaceChild(newOverlay, mobileOverlay);
+
+            // Adicionamos o evento de clique especificamente para fechar
+            newOverlay.addEventListener('click', (e) => {
+                // e.target === newOverlay garante que só fecha se clicar no fundo, 
+                // e não em algo dentro dele (embora o overlay geralmente esteja vazio)
+                if (e.target === newOverlay) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeMenu();
+                }
+            });
+        }
+
+        // 4. (Opcional) Fechar ao clicar em um link do menu
+        // Isso melhora a UX: clicou no link, o menu fecha e navega.
+        const menuLinks = sidebar.querySelectorAll('.menu-item');
+        menuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                // Pequeno delay para dar tempo visual do clique
+                setTimeout(closeMenu, 150);
+            });
         });
     }
-
-    // 4. (Opcional) Fechar ao clicar em um link do menu
-    // Isso melhora a UX: clicou no link, o menu fecha e navega.
-    const menuLinks = sidebar.querySelectorAll('.menu-item');
-    menuLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            // Pequeno delay para dar tempo visual do clique
-            setTimeout(closeMenu, 150);
-        });
-    });
-}
 
     // Chama assim que o HTML estiver pronto
     setupMobileMenu();
@@ -1027,17 +1027,20 @@ function setupMobileMenu() {
                 }, 100);
             },
 
+            // No arquivo projeto.js, atualize a função renderOnlineFriends para:
+
             renderOnlineFriends() {
                 if (!this.elements.onlineFriendsList) return;
 
                 const onlineFriends = (window.userFriends || []).filter(friend =>
                     (window.latestOnlineEmails || []).includes(friend.email)
                 );
+
                 this.elements.onlineFriendsList.innerHTML = "";
 
                 if (onlineFriends.length === 0) {
                     this.elements.onlineFriendsList.innerHTML =
-                        '<p class="empty-state">Nenhum amigo online</p>';
+                        '<p class="empty-state">Nenhum amigo online.</p>';
                     return;
                 }
 
@@ -1146,123 +1149,123 @@ function setupMobileMenu() {
                 });
             },
 
-    handlers: {
-    openModal() {
-        const preview = document.getElementById('proj-image-preview');
-        // Define a imagem padrão (usa a variável global do window ou um fallback)
-        const defaultImg = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
-        
-        if (preview) {
-            // Se não tiver src, ou se for placeholder, ou se estiver vazio
-            if (!preview.src || preview.src.includes('placehold.co') || preview.src === window.location.href) {
-                preview.src = defaultImg;
-            }
-            
-            // Garante que, se der erro ao carregar, volte para o padrão
-            preview.onerror = function() {
-                this.src = defaultImg;
-            };
-        }
-        toggleModal('novo-projeto-modal', true);
-    },
+            handlers: {
+                openModal() {
+                    const preview = document.getElementById('proj-image-preview');
+                    // Define a imagem padrão (usa a variável global do window ou um fallback)
+                    const defaultImg = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
 
-    closeModal() {
-        toggleModal('novo-projeto-modal', false);
-        
-        const form = document.getElementById('novo-projeto-form');
-        const preview = document.getElementById('proj-image-preview');
-        const defaultImg = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
-        
-        if (form) form.reset();
-        
-        // Reseta para a imagem padrão ao fechar
-        if (preview) {
-            preview.src = defaultImg;
-        }
-    },
+                    if (preview) {
+                        // Se não tiver src, ou se for placeholder, ou se estiver vazio
+                        if (!preview.src || preview.src.includes('placehold.co') || preview.src === window.location.href) {
+                            preview.src = defaultImg;
+                        }
 
-    async handleFormSubmit(e) {
-        e.preventDefault();
-        
-        const form = this.elements.form;
-        const btn = form.querySelector(".btn-publish");
-        
-        // Trava de segurança
-        if (btn.disabled || btn.dataset.processing === "true") return;
+                        // Garante que, se der erro ao carregar, volte para o padrão
+                        preview.onerror = function () {
+                            this.src = defaultImg;
+                        };
+                    }
+                    toggleModal('novo-projeto-modal', true);
+                },
 
-        // Ativa estado de carregamento
-        btn.dataset.processing = "true";
-        setButtonLoading(btn, true);
+                closeModal() {
+                    toggleModal('novo-projeto-modal', false);
 
-        const formData = new FormData();
-        formData.append("titulo", this.elements.projTituloInput.value);
-        formData.append("descricao", this.elements.projDescricaoInput.value);
-        formData.append("autorId", currentUser.id);
-        formData.append("maxMembros", 50);
-        
-        // Tratamento booleano
-        const isPrivate = this.elements.projPrivacidadeInput.value === 'true';
-        formData.append("grupoPrivado", isPrivate);
+                    const form = document.getElementById('novo-projeto-form');
+                    const preview = document.getElementById('proj-image-preview');
+                    const defaultImg = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
 
-        const categoria = this.elements.projCategoriaInput.value;
-        if (categoria) formData.append("categoria", categoria);
+                    if (form) form.reset();
 
-        const techsString = this.elements.projTecnologiasInput.value;
-        if (techsString) {
-            const tecnologias = techsString.split(',').map(tech => tech.trim()).filter(t => t.length > 0);
-            tecnologias.forEach(tech => formData.append("tecnologias", tech));
-        }
+                    // Reseta para a imagem padrão ao fechar
+                    if (preview) {
+                        preview.src = defaultImg;
+                    }
+                },
 
-        if (this.elements.projImagemInput.files[0]) {
-            formData.append("foto", this.elements.projImagemInput.files[0]);
-        }
+                async handleFormSubmit(e) {
+                    e.preventDefault();
 
-        try {
-            // 1. Envia para o Backend
-            await window.axios.post(`${window.backendUrl}/projetos`, formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+                    const form = this.elements.form;
+                    const btn = form.querySelector(".btn-publish");
 
-            // 2. Fecha o modal (Agora sem dar erro de ReferenceError)
-            this.handlers.closeModal.call(this);
-            
-            // 3. Notifica Sucesso
-            window.showNotification("Projeto criado com sucesso!", "success");
+                    // Trava de segurança
+                    if (btn.disabled || btn.dataset.processing === "true") return;
 
-            // 4. ATUALIZAÇÃO IMEDIATA
-            setGridLoading('meus-projetos-container', true);
-            
-            if(this.elements.searchInput) this.elements.searchInput.value = "";
-            if(this.elements.categoryFilter) this.elements.categoryFilter.value = "todos";
+                    // Ativa estado de carregamento
+                    btn.dataset.processing = "true";
+                    setButtonLoading(btn, true);
 
-            // Busca dados novos
-            await this.fetchMeusProjetos();
-            
-            // Muda aba
-            this.elements.tabButtons.forEach(b => b.classList.remove('active'));
-            const myTabBtn = document.querySelector('[data-tab="meus-projetos"]');
-            if(myTabBtn) myTabBtn.classList.add('active');
-            
-            this.state.currentTab = 'meus-projetos';
-            this.switchTab('meus-projetos');
+                    const formData = new FormData();
+                    formData.append("titulo", this.elements.projTituloInput.value);
+                    formData.append("descricao", this.elements.projDescricaoInput.value);
+                    formData.append("autorId", currentUser.id);
+                    formData.append("maxMembros", 50);
 
-        } catch (error) {
-            console.error("Erro ao criar projeto:", error);
-            let errorMessage = "Falha ao criar o projeto.";
-            
-            if (error.response && error.response.data) {
-                errorMessage = error.response.data.message || error.response.data;
-            } else if (typeof error.response?.data === 'string') {
-                 errorMessage = error.response.data;
-            }
+                    // Tratamento booleano
+                    const isPrivate = this.elements.projPrivacidadeInput.value === 'true';
+                    formData.append("grupoPrivado", isPrivate);
 
-            window.showNotification(errorMessage, "error");
-        } finally {
-            setButtonLoading(btn, false);
-            btn.dataset.processing = "false";
-        }
-    }
-},
+                    const categoria = this.elements.projCategoriaInput.value;
+                    if (categoria) formData.append("categoria", categoria);
+
+                    const techsString = this.elements.projTecnologiasInput.value;
+                    if (techsString) {
+                        const tecnologias = techsString.split(',').map(tech => tech.trim()).filter(t => t.length > 0);
+                        tecnologias.forEach(tech => formData.append("tecnologias", tech));
+                    }
+
+                    if (this.elements.projImagemInput.files[0]) {
+                        formData.append("foto", this.elements.projImagemInput.files[0]);
+                    }
+
+                    try {
+                        // 1. Envia para o Backend
+                        await window.axios.post(`${window.backendUrl}/projetos`, formData, {
+                            headers: { "Content-Type": "multipart/form-data" },
+                        });
+
+                        // 2. Fecha o modal (Agora sem dar erro de ReferenceError)
+                        this.handlers.closeModal.call(this);
+
+                        // 3. Notifica Sucesso
+                        window.showNotification("Projeto criado com sucesso!", "success");
+
+                        // 4. ATUALIZAÇÃO IMEDIATA
+                        setGridLoading('meus-projetos-container', true);
+
+                        if (this.elements.searchInput) this.elements.searchInput.value = "";
+                        if (this.elements.categoryFilter) this.elements.categoryFilter.value = "todos";
+
+                        // Busca dados novos
+                        await this.fetchMeusProjetos();
+
+                        // Muda aba
+                        this.elements.tabButtons.forEach(b => b.classList.remove('active'));
+                        const myTabBtn = document.querySelector('[data-tab="meus-projetos"]');
+                        if (myTabBtn) myTabBtn.classList.add('active');
+
+                        this.state.currentTab = 'meus-projetos';
+                        this.switchTab('meus-projetos');
+
+                    } catch (error) {
+                        console.error("Erro ao criar projeto:", error);
+                        let errorMessage = "Falha ao criar o projeto.";
+
+                        if (error.response && error.response.data) {
+                            errorMessage = error.response.data.message || error.response.data;
+                        } else if (typeof error.response?.data === 'string') {
+                            errorMessage = error.response.data;
+                        }
+
+                        window.showNotification(errorMessage, "error");
+                    } finally {
+                        setButtonLoading(btn, false);
+                        btn.dataset.processing = "false";
+                    }
+                }
+            },
 
             applyFilters() {
                 const search = this.elements.searchInput.value.toLowerCase();
@@ -1289,7 +1292,7 @@ function setupMobileMenu() {
 
             setupEventListeners() {
 
-                
+
 
                 const projImageInput = document.getElementById('proj-imagem');
                 const projImagePreview = document.getElementById('proj-image-preview');

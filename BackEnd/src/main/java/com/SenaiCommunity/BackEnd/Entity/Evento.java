@@ -30,6 +30,7 @@ public class Evento {
 
     @Column(nullable = false)
     private LocalDate data;
+    
 
     @Column
     private LocalTime horaInicio; // NOVO
@@ -53,6 +54,12 @@ public class Evento {
 
     @Column(name = "imagem_capa")
     private String imagemCapa;
+
+    @Column(nullable = false)
+    private boolean notificacaoInicioEnviada = false;
+
+    @Column(nullable = false)
+    private boolean notificacaoFimEnviada = false;
 
     // NOVO: Lista de interessados para notificações/lembretes
     @ManyToMany
