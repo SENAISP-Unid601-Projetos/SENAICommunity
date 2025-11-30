@@ -449,6 +449,107 @@
       </div>
     </div>
   </div>
+
+  <div id="edit-vaga-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Editar Vaga</h3>
+            <button class="close-modal-btn" id="cancel-edit-vaga-btn">&times;</button>
+        </div>
+        <form id="edit-vaga-form">
+            <input type="hidden" id="edit-vaga-id"> <div class="modal-body">
+                <div class="form-group">
+                    <label for="edit-vaga-titulo">Título da Vaga</label>
+                    <input type="text" id="edit-vaga-titulo" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-vaga-empresa">Empresa</label>
+                    <input type="text" id="edit-vaga-empresa" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-vaga-salario">Salário / Bolsa</label>
+                    <input type="text" id="edit-vaga-salario">
+                </div>
+                <div class="form-group">
+                    <label for="edit-vaga-descricao">Descrição</label>
+                    <textarea id="edit-vaga-descricao" rows="4" required></textarea>
+                </div>
+                <div class="form-group-row" style="display: flex; gap: 1rem;">
+                     <div class="form-group" style="flex: 1;">
+                        <label for="edit-vaga-requisitos">Requisitos (Linha por linha)</label>
+                        <textarea id="edit-vaga-requisitos" rows="4"></textarea>
+                    </div>
+                     <div class="form-group" style="flex: 1;">
+                        <label for="edit-vaga-beneficios">Benefícios (Linha por linha)</label>
+                        <textarea id="edit-vaga-beneficios" rows="4"></textarea>
+                    </div>
+                </div>
+                <div class="form-group-row" style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="edit-vaga-nivel">Nível</label>
+                        <select id="edit-vaga-nivel" required>
+                            <option value="JUNIOR">Júnior</option>
+                            <option value="PLENO">Pleno</option>
+                            <option value="SENIOR">Sênior</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="edit-vaga-localizacao">Localização</label>
+                        <select id="edit-vaga-localizacao" required>
+                            <option value="PRESENCIAL">Presencial</option>
+                            <option value="REMOTO">Remoto</option>
+                            <option value="HIBRIDO">Híbrido</option>
+                        </select>
+                    </div>
+                </div>
+                 <div class="form-group">
+                      <label for="edit-vaga-tipo">Tipo de Contratação</label>
+                      <select id="edit-vaga-tipo" required>
+                          <option value="ESTAGIO">Estágio</option>
+                          <option value="TRAINEE">Trainee</option>
+                          <option value="MEIO_PERIODO">Meio Período</option>
+                          <option value="TEMPO_INTEGRAL">Tempo Integral</option>
+                      </select>
+                  </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="create-alert-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 450px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-bell"></i> Novo Alerta de Vaga</h3>
+            <button class="close-modal-btn" id="cancel-alert-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                Receba uma notificação quando postarem uma vaga com seu perfil.
+            </p>
+            <form id="create-alert-form">
+                <div class="form-group">
+                    <label for="alert-keyword">Palavra-chave (Ex: Java, Design)</label>
+                    <input type="text" id="alert-keyword" placeholder="O que você procura?" required>
+                </div>
+                <div class="form-group">
+                    <label for="alert-nivel">Nível de Interesse</label>
+                    <select id="alert-nivel">
+                        <option value="">Qualquer Nível</option>
+                        <option value="JUNIOR">Júnior</option>
+                        <option value="PLENO">Pleno</option>
+                        <option value="SENIOR">Sênior</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Criar Alerta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
   
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>

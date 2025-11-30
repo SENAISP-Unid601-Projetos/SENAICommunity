@@ -24,7 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
             mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
             sidebar: document.getElementById('sidebar'),
             mobileOverlay: document.getElementById('mobile-overlay'),
-            sidebarClose: document.getElementById('sidebar-close')
+            sidebarClose: document.getElementById('sidebar-close'),
+
+            // Botão da sidebar direita para abrir alerta
+            createAlertBtn: document.querySelector('.create-alert-btn') 
         };
         
         // --- SELEÇÃO DE ELEMENTOS (Modais) ---
@@ -38,6 +41,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const saveVagaDetailsBtn = document.getElementById('save-vaga-details-btn');
         const contactVagaBtn = document.getElementById('contact-vaga-btn');
 
+        // --- NOVOS MODAIS ---
+        const editVagaModal = document.getElementById('edit-vaga-modal');
+        const editVagaForm = document.getElementById('edit-vaga-form');
+        const cancelEditVagaBtn = document.getElementById('cancel-edit-vaga-btn');
+        
+        const alertModal = document.getElementById('create-alert-modal');
+        const alertForm = document.getElementById('create-alert-form');
+        const cancelAlertBtn = document.getElementById('cancel-alert-btn');
+
         // Cache local para todas as vagas
         let allVagas = [];
         let currentVagaDetails = null;
@@ -50,29 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // -----------------------------------------------------------------
         // FUNÇÕES DE RESPONSIVIDADE (Copiado de amizades.js)
         // -----------------------------------------------------------------
-        function initResponsiveFeatures() {
-            if (elements.mobileMenuToggle) {
-                elements.mobileMenuToggle.addEventListener('click', toggleMobileMenu);
-            }
-            if (elements.sidebarClose) {
-                elements.sidebarClose.addEventListener('click', toggleMobileMenu);
-            }
-            if (elements.mobileOverlay) {
-                elements.mobileOverlay.addEventListener('click', toggleMobileMenu);
-            }
-
-            // Fecha o menu ao clicar em um link da sidebar
-            const menuLinks = document.querySelectorAll('.menu-item');
-            menuLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    if (window.innerWidth <= 1024) { // Ajustado para coincidir com o CSS mobile
-                        toggleMobileMenu();
-                    }
-                });
-            });
-
-            window.addEventListener('resize', handleResize);
-        }
+      
 
         function toggleMobileMenu() {
             if (elements.sidebar) elements.sidebar.classList.toggle('active');
@@ -95,9 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // -----------------------------------------------------------------
-        // FUNÇÃO: Atualizar Sidebar do Usuário
-        // -----------------------------------------------------------------
         // -----------------------------------------------------------------
         // FUNÇÃO: Atualizar Sidebar do Usuário (Corrigida)
         // -----------------------------------------------------------------
@@ -171,33 +158,56 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+        // -----------------------------------------------------------------
+        // ATUALIZAÇÃO: RENDERIZAÇÃO COM BOTÕES DE ADMIN
+        // -----------------------------------------------------------------
         function renderVagas(vagas) {
             if (!elements.vagasListContainer) return;
             elements.vagasListContainer.innerHTML = '';
 
+            // Verifica se usuário é Admin ou Professor
+            const userRole = (window.currentUser && window.currentUser.tipoUsuario) ? window.currentUser.tipoUsuario : '';
+            const isAdminOrProf = userRole === 'ADMIN' || userRole === 'PROFESSOR';
+
             if (!vagas || vagas.length === 0) {
-                elements.vagasListContainer.innerHTML = '<p class="sem-vagas" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Nenhuma vaga encontrada para os filtros selecionados.</p>';
+                elements.vagasListContainer.innerHTML = '<p class="sem-vagas">Nenhuma vaga encontrada.</p>';
                 return;
             }
 
             vagas.forEach(vaga => {
                 const vagaCard = document.createElement('div');
                 vagaCard.className = 'vaga-card';
-
-                // Mapeia os dados do DTO
+                
+                // Mapeamentos visuais
                 const tipoContratacao = tipoContratacaoMap[vaga.tipoContratacao] || vaga.tipoContratacao;
                 const localizacao = localizacaoMap[vaga.localizacao] || vaga.localizacao;
                 const nivel = nivelMap[vaga.nivel] || vaga.nivel;
 
+                // Botões de Ação (Só aparecem para Admin/Prof)
+                let adminActions = '';
+                if (isAdminOrProf) {
+                    adminActions = `
+                        <div class="vaga-admin-actions" style="display:flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <button class="btn-secondary btn-sm edit-vaga-btn" data-id="${vaga.id}" style="padding: 0.3rem 0.8rem; font-size: 0.75rem;">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn-secondary btn-sm delete-vaga-btn" data-id="${vaga.id}" style="padding: 0.3rem 0.8rem; font-size: 0.75rem; border-color: var(--danger); color: var(--danger);">
+                                <i class="fas fa-trash"></i> Excluir
+                            </button>
+                        </div>
+                    `;
+                }
+
                 vagaCard.innerHTML = `
                     <div class="vaga-card-header">
                         <div class="vaga-empresa-logo">
-                            <img src="https://placehold.co/100x100/58a6ff/ffffff?text=${vaga.empresa.substring(0, 2).toUpperCase()}" alt="Logo da ${vaga.empresa}">
+                            <img src="https://placehold.co/100x100/58a6ff/ffffff?text=${vaga.empresa.substring(0, 2).toUpperCase()}" alt="${vaga.empresa}">
                         </div>
                         <div class="vaga-info-principal">
                             <h2 class="vaga-titulo">${vaga.titulo}</h2>
                             <p class="vaga-empresa">${vaga.empresa}</p>
                             <div class="vaga-localidade"><i class="fas fa-map-marker-alt"></i> ${localizacao}</div>
+                            ${adminActions}
                         </div>
                         <button class="save-vaga-btn"><i class="far fa-bookmark"></i></button>
                     </div>
@@ -205,22 +215,46 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="tag tag-nivel">${nivel}</span>
                         <span class="tag tag-tipo">${tipoContratacao}</span>
                     </div>
-                    <div class="vaga-descricao">${vaga.descricao.substring(0, 150)}${vaga.descricao.length > 150 ? '...' : ''}</div>
+                    <div class="vaga-descricao">${vaga.descricao.substring(0, 150)}...</div>
                     <div class="vaga-card-footer">
-                        <span class="vaga-publicado">Publicado por ${vaga.autorNome} em ${new Date(vaga.dataPublicacao).toLocaleDateString()}</span>
+                        <span class="vaga-publicado">Por ${vaga.autorNome}</span>
                         <button class="vaga-candidatar-btn" data-vaga-id="${vaga.id}">Ver Detalhes</button>
                     </div>
                 `;
                 elements.vagasListContainer.appendChild(vagaCard);
             });
 
-            // Adiciona event listeners para os botões "Ver Detalhes"
+            // Listeners
+            setupCardListeners();
+        }
+
+        function setupCardListeners() {
+            // Ver Detalhes
             document.querySelectorAll('.vaga-candidatar-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const vagaId = e.target.getAttribute('data-vaga-id');
-                    const vaga = allVagas.find(v => v.id == vagaId);
-                    if (vaga) {
-                        openVagaDetailsModal(vaga);
+                    const vaga = allVagas.find(v => v.id == e.target.getAttribute('data-vaga-id'));
+                    if (vaga) openVagaDetailsModal(vaga);
+                });
+            });
+
+            // Editar Vaga
+            document.querySelectorAll('.edit-vaga-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // Previne abrir detalhes se clicar no editar
+                    e.stopPropagation(); 
+                    const id = e.currentTarget.getAttribute('data-id');
+                    const vaga = allVagas.find(v => v.id == id);
+                    if(vaga) openEditModal(vaga);
+                });
+            });
+
+            // Excluir Vaga
+            document.querySelectorAll('.delete-vaga-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = e.currentTarget.getAttribute('data-id');
+                    if(confirm("Tem certeza que deseja excluir esta vaga permanentemente?")) {
+                        handleDeleteVaga(id);
                     }
                 });
             });
@@ -425,6 +459,120 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // -----------------------------------------------------------------
+        // LÓGICA DE EDIÇÃO
+        // -----------------------------------------------------------------
+        function openEditModal(vaga) {
+            // Preenche o formulário com dados existentes
+            document.getElementById('edit-vaga-id').value = vaga.id;
+            document.getElementById('edit-vaga-titulo').value = vaga.titulo;
+            document.getElementById('edit-vaga-empresa').value = vaga.empresa;
+            document.getElementById('edit-vaga-salario').value = vaga.salario || '';
+            document.getElementById('edit-vaga-descricao').value = vaga.descricao;
+            
+            // Converte array de volta para texto (linha por linha)
+            document.getElementById('edit-vaga-requisitos').value = vaga.requisitos ? vaga.requisitos.join('\n') : '';
+            document.getElementById('edit-vaga-beneficios').value = vaga.beneficios ? vaga.beneficios.join('\n') : '';
+            
+            // Selects (Precisa coincidir com os ENUMs do backend)
+            document.getElementById('edit-vaga-nivel').value = vaga.nivel; // Ex: JUNIOR
+            document.getElementById('edit-vaga-localizacao').value = vaga.localizacao; // Ex: REMOTO
+            document.getElementById('edit-vaga-tipo').value = vaga.tipoContratacao; // Ex: ESTAGIO
+
+            editVagaModal.style.display = 'flex';
+        }
+
+        if(editVagaForm) {
+            editVagaForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('edit-vaga-id').value;
+                const btn = editVagaForm.querySelector('button[type="submit"]');
+                
+                // Constrói objeto (Mesma lógica do create)
+                const requisitosArray = document.getElementById('edit-vaga-requisitos').value.split('\n').map(i=>i.trim()).filter(i=>i!=='');
+                const beneficiosArray = document.getElementById('edit-vaga-beneficios').value.split('\n').map(i=>i.trim()).filter(i=>i!=='');
+
+                const data = {
+                    titulo: document.getElementById('edit-vaga-titulo').value,
+                    empresa: document.getElementById('edit-vaga-empresa').value,
+                    descricao: document.getElementById('edit-vaga-descricao').value,
+                    salario: document.getElementById('edit-vaga-salario').value,
+                    nivel: document.getElementById('edit-vaga-nivel').value,
+                    localizacao: document.getElementById('edit-vaga-localizacao').value,
+                    tipoContratacao: document.getElementById('edit-vaga-tipo').value,
+                    requisitos: requisitosArray,
+                    beneficios: beneficiosArray
+                };
+
+                try {
+                    btn.textContent = "Salvando...";
+                    await axios.put(`${backendUrl}/api/vagas/${id}`, data);
+                    showNotification("Vaga atualizada com sucesso!", "success");
+                    editVagaModal.style.display = 'none';
+                    fetchVagas(); // Recarrega lista
+                } catch (error) {
+                    showNotification("Erro ao atualizar vaga.", "error");
+                } finally {
+                    btn.textContent = "Salvar Alterações";
+                }
+            });
+        }
+        
+        if(cancelEditVagaBtn) cancelEditVagaBtn.addEventListener('click', () => editVagaModal.style.display = 'none');
+
+        // -----------------------------------------------------------------
+        // LÓGICA DE EXCLUSÃO
+        // -----------------------------------------------------------------
+        async function handleDeleteVaga(id) {
+            try {
+                await axios.delete(`${backendUrl}/api/vagas/${id}`);
+                showNotification("Vaga excluída.", "success");
+                fetchVagas();
+            } catch (error) {
+                console.error(error);
+                showNotification("Erro ao excluir vaga.", "error");
+            }
+        }
+
+        // -----------------------------------------------------------------
+        // LÓGICA DE ALERTAS (ALUNO)
+        // -----------------------------------------------------------------
+        if (elements.createAlertBtn) {
+            elements.createAlertBtn.addEventListener('click', () => {
+                alertModal.style.display = 'flex';
+            });
+        }
+        
+        if (cancelAlertBtn) cancelAlertBtn.addEventListener('click', () => alertModal.style.display = 'none');
+
+        if (alertForm) {
+            alertForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = alertForm.querySelector('button');
+                
+                const alertData = {
+                    palavraChave: document.getElementById('alert-keyword').value,
+                    nivel: document.getElementById('alert-nivel').value
+                };
+
+                try {
+                    btn.disabled = true;
+                    btn.textContent = "Criando...";
+                    // Chama o novo endpoint
+                    await axios.post(`${backendUrl}/api/alertas`, alertData);
+                    
+                    showNotification("Alerta criado! Avisaremos você.", "success");
+                    alertModal.style.display = 'none';
+                    alertForm.reset();
+                } catch (error) {
+                    showNotification("Erro ao criar alerta.", "error");
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Criar Alerta";
+                }
+            });
+        }
+
+        // -----------------------------------------------------------------
         // EVENT LISTENERS
         // -----------------------------------------------------------------
         function setupVagasEventListeners() {
@@ -470,9 +618,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // 1. ATUALIZA A SIDEBAR (Perfil)
         updateSidebarUserInfo();
 
-        // 2. INICIALIZA O MENU MOBILE (Agora usando a função robusta)
-        initResponsiveFeatures();
-
+   
         // Verifica permissão para mostrar o botão de criar vaga
         if (currentUser) { 
             const userRoles = currentUser.tipoUsuario ? [currentUser.tipoUsuario] : [];

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 import java.util.List;
 
@@ -24,12 +25,24 @@ public class VagaController {
         return ResponseEntity.ok(vagaService.listarTodas());
     }
 
-    // Endpoint RESTRITO para criar uma vaga
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     public ResponseEntity<VagaSaidaDTO> criarVaga(@RequestBody VagaEntradaDTO dto, Principal principal) {
-        // O Service agora vai lidar com requisitos, benefícios e salário que vêm dentro do 'dto'
         VagaSaidaDTO vagaCriada = vagaService.criar(dto, principal.getName());
         return ResponseEntity.status(201).body(vagaCriada);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
+    public ResponseEntity<VagaSaidaDTO> atualizarVaga(@PathVariable Long id, @RequestBody VagaEntradaDTO dto, Principal principal) throws AccessDeniedException {
+        return ResponseEntity.ok(vagaService.atualizar(id, dto, principal.getName()));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
+    public ResponseEntity<Void> excluirVaga(@PathVariable Long id, Principal principal) {
+        vagaService.excluir(id, principal.getName());
+        return ResponseEntity.noContent().build();
     }
 }

@@ -57,6 +57,7 @@
 /* --- USER CARD NA SIDEBAR --- */
 .sidebar-user-card { 
     margin-bottom: 0.5rem; 
+    
 }
 
 .user-info {
@@ -71,6 +72,7 @@
     position: relative;
     gap: 1rem;
     text-decoration: none;
+    
 }
 
 /* Link que envolve o card */
@@ -86,6 +88,7 @@
     width: 80px;
     height: 80px;
     margin-bottom: 0.5rem;
+    
 }
 
 .avatar-container img {
@@ -94,6 +97,7 @@
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--bg-tertiary);
+    
 }
 
 /* Status Online */
@@ -218,6 +222,7 @@
 /* --- WIDGET AMIGOS ONLINE --- */
 .sidebar-widget .online-friends {
     background: var(--bg-secondary);
+    
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1.5rem;
@@ -232,8 +237,9 @@
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border-color);
     text-transform: none;
+     display: flex; 
+    align-items:  start; 
 }
-
 
 
 /* RESPONSIVIDADE (Tablets e Mobile) */
@@ -369,6 +375,7 @@
     transition: transform 0.2s, box-shadow 0.2s;
     position: relative;
     overflow: hidden;
+    
 }
 
 .user-card:hover {
@@ -386,9 +393,14 @@
 
 .user-card-avatar {
     position: relative;
-    width: 56px;
-    height: 56px;
-    flex-shrink: 0;
+    width: 50px; 
+    height: 50px;
+    min-width: 50px;
+    min-height: 50px;
+    flex-shrink: 0; 
+    border-radius: 50%;
+    background-color: var(--bg-tertiary); /* Fundo caso a imagem não carregue */
+    
 }
 
 .user-card-avatar img {
@@ -397,6 +409,12 @@
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--bg-tertiary);
+    image-rendering: -webkit-optimize-contrast;
+    transform: translateZ(0); /* Ativa aceleração de hardware */
+    backface-visibility: hidden;
+    /* Um contorno transparente ajuda a suavizar o corte redondo */
+    outline: 1px solid transparent; 
+    border-radius: 50%;
 }
 
 /* Status Online */
@@ -1178,4 +1196,62 @@
         padding: 0.5rem 0.8rem;
         font-size: 0.8rem;
     }
+}
+
+/* --- CORREÇÃO DE Z-INDEX E MENU MOBILE --- */
+
+@media (max-width: 768px) {
+    .sidebar {
+        /* Garante que o menu fique acima do overlay e do conteúdo */
+        z-index: 2000 !important;
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        /* Garante transição suave */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* O Overlay deve ficar logo abaixo do menu, mas acima do conteúdo */
+    .mobile-overlay {
+        z-index: 1999 !important;
+    }
+
+    /* Garante que o botão de fechar dentro do menu seja visível */
+    .sidebar-close {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        z-index: 2001;
+    }
+}
+
+.card-header-info {
+    display: flex;
+    align-items: center;
+    /* Garante espaçamento entre o avatar e o texto */
+    gap: 15px; 
+}
+
+/* Define o tamanho fixo do container do avatar */
+.user-card-avatar {
+    position: relative;
+    /* Define larguras e alturas fixas para não colapsar */
+    width: 50px; 
+    height: 50px;
+    min-width: 50px; /* Importante para flexbox não esmagar */
+    min-height: 50px; /* Importante para flexbox não esmagar */
+    /* Impede que o flexbox diminua este elemento se faltar espaço */
+    flex-shrink: 0; 
+    border-radius: 50%;
+    background-color: #f0f2f5; /* Cor de fundo caso a imagem demore ou falhe */
+}
+
+/* Garante que a imagem ocupe 100% do container fixo acima */
+.user-card-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover; /* Garante que a imagem não distorça */
+    display: block; /* Remove espaços extras abaixo da imagem */
 }

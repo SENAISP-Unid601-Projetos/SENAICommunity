@@ -63,40 +63,50 @@ document.addEventListener("DOMContentLoaded", () => {
   // Adicione estas funções dentro do DOMContentLoaded em principal.js
 
 // Mobile sidebar toggle
-// Substitua a função setupMobileSidebar existente por esta versão corrigida
 function setupMobileSidebar() {
-    const menuToggle = document.getElementById('mobile-menu-toggle'); // ID específico
+    const menuToggle = document.getElementById('mobile-menu-toggle');
     const sidebar = document.getElementById('sidebar');
     const sidebarClose = document.getElementById('sidebar-close');
-    const sidebarOverlay = document.getElementById('mobile-overlay'); // ID específico
+    // Nota: O ID no HTML principal é 'mobile-overlay', verifique se está igual
+    const sidebarOverlay = document.getElementById('mobile-overlay'); 
 
     function toggleMenu() {
-        sidebar.classList.toggle('active');
-        sidebarOverlay.classList.toggle('active');
+        sidebar.classList.toggle('mobile-open'); 
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.toggle('active'); // O overlay geralmente usa active
+        }
+        
         // Previne scroll do corpo quando menu está aberto
-        document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+        document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
     }
 
+    // Remove event listeners antigos para evitar duplicação (cloneNode)
     if (menuToggle) {
-        menuToggle.addEventListener('click', (e) => {
+        const newToggle = menuToggle.cloneNode(true);
+        menuToggle.parentNode.replaceChild(newToggle, menuToggle);
+        newToggle.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleMenu();
         });
     }
 
     if (sidebarClose) {
-        sidebarClose.addEventListener('click', toggleMenu);
+        const newClose = sidebarClose.cloneNode(true);
+        sidebarClose.parentNode.replaceChild(newClose, sidebarClose);
+        newClose.addEventListener('click', toggleMenu);
     }
 
     if (sidebarOverlay) {
-        sidebarOverlay.addEventListener('click', toggleMenu);
+        const newOverlay = sidebarOverlay.cloneNode(true);
+        sidebarOverlay.parentNode.replaceChild(newOverlay, sidebarOverlay);
+        newOverlay.addEventListener('click', toggleMenu);
     }
     
-    // Fechar ao clicar em links (exceto dropdowns)
+    // Fechar ao clicar em links
     if (sidebar) {
         sidebar.querySelectorAll('.menu-item').forEach(link => {
             link.addEventListener('click', () => {
-                // Pequeno delay para visualização do clique
                 if (window.innerWidth <= 768) {
                     setTimeout(toggleMenu, 150);
                 }

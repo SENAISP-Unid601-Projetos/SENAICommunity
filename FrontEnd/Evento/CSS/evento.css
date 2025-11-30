@@ -305,17 +305,13 @@ body {
 /* 1. Container Principal */
 .container {
     display: flex;
-    min-height: 100vh;
-    position: relative;
+    flex-direction: row; /* Garante linha no desktop */
+    min-height: calc(100vh - 60px); /* Altura total menos header */
+    width: 100%;
     background-color: var(--bg-primary);
-    align-items: flex-start;
-    
-    /* ALTERAÇÃO AQUI: Mude de var(--header-height) para 0 */
-    padding-top: 0 !important; 
-    
-    margin-top: 0 !important;
-    padding-left: 0;
-    padding-right: 0;
+    position: relative;
+    /* Remove padding excessivo que pode descentralizar */
+    padding: 0; 
 }
 
 /* 2. Sidebar Fixa e Estilizada */
@@ -466,10 +462,16 @@ body {
 
 /* 5. Ajustes de Conteúdo Principal e Sidebar Direita */
 .main-content {
-    flex: 1;
-    padding: 1.5rem;
-    width: 100%;
-    min-width: 0;
+    flex: 1; /* Ocupa o espaço disponível entre as sidebars */
+    padding: 2rem; /* Espaço interno confortável */
+    
+    /* O SEGREDO DA CENTRALIZAÇÃO: */
+    width: 100%; 
+    max-width: 1200px; /* Impede que estique infinitamente em telas ultra-wide */
+    margin: 0 auto; /* Centraliza o bloco na tela */
+    
+    display: flex;
+    flex-direction: column;
 }
 
 .right-sidebar {
@@ -480,9 +482,13 @@ body {
 
 /* RESPONSIVIDADE */
 @media (max-width: 1024px) {
-    .container {
-        flex-direction: column;
-        padding: 0;
+  .container {
+        flex-direction: column; /* Em tablets/celulares, vira coluna */
+    }
+    
+    .main-content {
+        padding: 1rem;
+        max-width: 100%; /* No mobile usa 100% */
     }
 
     .sidebar {
@@ -500,7 +506,6 @@ body {
         font-size: 1.5rem; cursor: pointer;
     }
 
-    .main-content { padding: 1rem; width: 100%; }
     .right-sidebar { width: 100%; padding: 1rem; order: 3; }
 }
 
@@ -595,10 +600,12 @@ body {
 
 /* ========== GRID DE EVENTOS ========== */
 .eventos-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  padding: 0.5rem 0;
+    display: grid;
+    /* Cria colunas responsivas que se centralizam automaticamente */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+    gap: 1.5rem;
+    width: 100%;
+    margin-top: 1rem;
 }
 
 .evento-card {
@@ -1689,9 +1696,17 @@ textarea:focus-visible {
 
 /* ========== UTILITÁRIOS ========== */
 .no-events {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 3rem 1rem;
+    grid-column: 1 / -1; /* Ocupa toda a largura do grid */
+    display: flex;
+    flex-direction: column;
+    align-items: center;     /* Centraliza horizontalmente */
+    justify-content: center; /* Centraliza verticalmente */
+    min-height: 400px;       /* Dá altura para ficar bonito na tela */
+    text-align: center;
+    background-color: var(--bg-secondary); /* Opcional: destaque sutil */
+    border-radius: 12px;
+    border: 1px dashed var(--border-color);
+    margin-top: 2rem;
 }
 
 .no-events i {

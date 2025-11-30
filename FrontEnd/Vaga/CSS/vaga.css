@@ -37,35 +37,7 @@
 }
 
 /* --- ESTRUTURA DA SIDEBAR ESQUERDA --- */
-.sidebar {
-    width: var(--sidebar-width);
-    background: var(--bg-secondary);
-    border-right: 1px solid var(--border-color);
-    
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start !important; 
-    
-    position: sticky;
-    top: var(--header-height);
-    height: 100%;
-    
-    overflow-y: auto;
-    flex-shrink: 0;
-    z-index: 100;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
-.sidebar-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    position: relative;
-}
-
-.sidebar-close { display: none; }
-
-/* --- USER CARD --- */
-.sidebar-user-card { margin-bottom: 0.5rem; }
 
 .user-info {
     display: flex;
@@ -131,11 +103,7 @@
 .user-info.loaded .user-info-loading { opacity: 0; pointer-events: none; }
 
 /* --- MENU SIDEBAR --- */
-.sidebar-menu {
-    flex: 0 0 auto !important;
-    padding: 1rem 0;
-    display: flex; flex-direction: column; gap: 4px;
-}
+
 
 .menu-item {
     display: flex; align-items: center; gap: 1rem;
@@ -150,42 +118,7 @@
 }
 .menu-item i { width: 24px; text-align: center; }
 
-/* --- WIDGET AMIGOS --- */
-.sidebar-widget {
-    margin-top: 1.5rem;
-    
-}
-.sidebar-widget .online-friends {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px; padding: 1.5rem; box-shadow: none;
-        margin-top: 1.5rem;
 
-}
-.sidebar-widget .widget-title {
-    font-size: 1rem; font-weight: 600; color: var(--text-secondary);
-    margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);
-}
-.sidebar-widget .friend-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.6rem 0; width: 100%;
-}
-.sidebar-widget .friend-item-link {
-    display: flex; align-items: center; gap: 12px;
-    text-decoration: none; flex-grow: 1; min-width: 0; color: inherit;
-}
-.sidebar-widget .friend-item .avatar {
-    width: 36px; height: 36px; border-radius: 50%; overflow: hidden; margin: 0; flex-shrink: 0;
-}
-.sidebar-widget .friend-item .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.sidebar-widget .friend-name {
-    font-size: 0.95rem; font-weight: 500; color: var(--text-primary);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;
-}
-.sidebar-widget .friend-item .status.online {
-    width: 10px; height: 10px; border-radius: 50%; background-color: #22c55e;
-    margin-left: 10px; flex-shrink: 0;
-}
 
 /* --- Cabeçalho Vagas --- */
 .vagas-header {
@@ -286,14 +219,7 @@
 /* RESPONSIVIDADE (Mobile) */
 @media (max-width: 1024px) {
   .container { flex-direction: column; gap: 0; }
-  
-  .sidebar {
-    position: fixed; top: 0; left: 0; height: 100vh;
-    width: 85%; max-width: 320px;
-    transform: translateX(-100%); z-index: 1000; border-right: none;
-  }
-  .sidebar.active { transform: translateX(0); }
-  .sidebar-close { display: block; position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; }
+
 
   .main-content { padding: 1rem; width: 100%; }
   .right-sidebar { width: 100%; padding: 1rem; order: 3; }

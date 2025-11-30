@@ -28,23 +28,11 @@ html, body {
 
 /* Container Principal - Ocupa exatamente o espaço abaixo do header */
 .container {
-    display: flex !important;
-    /* Força Flex para ignorar Grids do principal.css */
-    flex-direction: row;
-    align-items: stretch;
-
-    /* A altura é 100% da tela MENOS a altura do cabeçalho */
-    height: calc(100vh - var(--header-height));
-    min-height: 0;
-    /* Importante para o Firefox respeitar o flex */
-
-    position: relative;
-    background-color: var(--bg-primary);
-    overflow: hidden;
-    /* O container não rola */
-    padding: 0 !important;
-    /* Removemos paddings externos */
+    display: grid !important;
+    grid-template-columns: 320px 1fr !important; /* 320px Sidebar + Resto da tela */
     max-width: 100% !important;
+    padding-right: 2rem !important; /* Espaço de respiro na direita */
+    gap: 1.5rem !important;
 }
 
 /* --- SIDEBAR ESQUERDA (Com Rolagem Própria) --- */
@@ -241,39 +229,55 @@ html, body {
     padding: 1.5rem;
 }
 
-.online-friends {
-    background: var(--bg-secondary);
-    border-radius: 12px;
+
+.sidebar-widget .online-friends {
+    /* Usa as mesmas variáveis e espaçamentos do card padrão */
+    background-color: var(--bg-secondary);
+    border-radius: 8px; /* Padrão --card-radius */
     border: 1px solid var(--border-color);
-    overflow: hidden;
+    padding: 1.25rem; /* Padding idêntico ao principal.css */
+    box-shadow: none;
+    overflow: visible; /* Permite ver tooltips se houver */
 }
 
-.widget-title {
-    padding: 1rem 1.2rem;
-    font-size: 0.95rem;
+.sidebar-widget .widget-title {
+    font-size: 1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border-color);
-    margin: 0;
+    color: var(--text-secondary);
+    
+    /* Removemos paddings e margens estranhas que estavam no perfil.css */
+    padding-left: 0;
+    padding-right: 0;
+    margin-top: 0;
 }
 
-.friend-list {
-    padding: 1.2rem;
+.sidebar-widget .friend-list {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    /* Remove o padding interno extra que causava desalinhamento */
+    padding: 0; 
+    gap: 0.5rem; /* Espaçamento padrão entre itens */
+}
+
+/* Força os itens a se comportarem como na principal, caso algo esteja sobrescrevendo */
+.sidebar-widget .friend-item {
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.sidebar-widget .friend-item:hover {
+    background-color: var(--bg-tertiary);
 }
 
 /* --- CARD PRINCIPAL DO PERFIL --- */
 .profile-page {
-    background-color: var(--bg-secondary);
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow);
-    /* Removemos overflow hidden aqui para não cortar tooltips ou sombras */
-    max-width: var(--container-max-width);
-    margin: 0 auto;
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
 }
 
 /* Banner */
@@ -776,14 +780,10 @@ html, body {
 /* Novo Container de Layout (Grid) */
 .profile-content-grid {
     display: grid;
-    /* Coluna Esquerda Fixa (350px) | Coluna Direita (Máximo 900px, depois sobra espaço vazio na direita) */
-    grid-template-columns: 350px minmax(0, 900px); 
-    gap: 1.5rem;
-    align-items: start;
+    grid-template-columns: 350px 1fr !important; 
+    gap: 2rem !important;
     width: 100%;
-    justify-content: start; /* Garante que o grid todo fique alinhado à esquerda */
 }
-
 /* Coluna da Esquerda (Onde fica o card Sobre) */
 .profile-left-column {
     /* Faz o card acompanhar o scroll */
@@ -797,10 +797,9 @@ html, body {
 
 /* Coluna da Direita (Onde ficam os posts e abas) */
 .profile-right-column {
-    min-width: 0; /* Evita que posts largos quebrem o grid */
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    margin-top: 1px;
+    width: 100%;
+    min-width: 0; /* Previne overflow */
 }
 
 /* Ajuste visual do Card Sobre para não ficar transparente */
@@ -1110,4 +1109,33 @@ html, body {
     padding-top: 1rem;
     border-top: 1px solid var(--border-color);
     background-color: var(--bg-secondary); /* Garante fundo sólido se passar por cima de algo */
+}
+
+@media (max-width: 1200px) {
+    .container {
+        padding-right: 1rem !important;
+    }
+    
+    .profile-content-grid {
+        /* Se a tela for média, diminui a coluna da esquerda para dar espaço ao conteúdo */
+        grid-template-columns: 300px 1fr !important; 
+        gap: 1rem !important;
+    }
+}
+
+/* RESPONSIVIDADE: Mobile (Mantém o comportamento de empilhar) */
+@media (max-width: 900px) {
+    .container {
+        display: block !important;
+    }
+    
+    .profile-content-grid {
+        grid-template-columns: 1fr !important; /* Empilha tudo */
+    }
+
+    .profile-left-column {
+        position: static !important;
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
 }

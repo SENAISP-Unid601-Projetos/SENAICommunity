@@ -379,47 +379,82 @@ if (this.elements.form) {
     setProfileLoading(true);
 
     // --- CORREÇÃO MENU MOBILE ---
-    function setupMobileMenu() {
+   // --- CORREÇÃO DEFINITIVA MENU MOBILE (FECHAR AO CLICAR FORA) ---
+function setupMobileMenu() {
     const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
     const sidebar = document.getElementById("sidebar");
     const mobileOverlay = document.getElementById("mobile-overlay");
     const sidebarClose = document.getElementById("sidebar-close");
 
-    // Função única para alternar o estado
+    // Função única para ABRIR
+    function openMenu() {
+        if (sidebar) sidebar.classList.add('active');
+        if (mobileOverlay) mobileOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Trava a rolagem da página
+    }
+
+    // Função única para FECHAR
+    function closeMenu() {
+        if (sidebar) sidebar.classList.remove('active');
+        if (mobileOverlay) mobileOverlay.classList.remove('active');
+        document.body.style.overflow = ''; // Destrava a rolagem
+    }
+
+    // Função Toggle (Alternar)
     function toggleMenu(e) {
         if (e) {
             e.preventDefault();
-            e.stopPropagation(); // Impede que o clique feche o menu imediatamente
+            e.stopPropagation();
         }
-        
-        // Usa a classe 'active' que está definida no seu projeto.css
         const isActive = sidebar.classList.contains('active');
-        
-        if (isActive) {
-            sidebar.classList.remove('active');
-            if (mobileOverlay) mobileOverlay.classList.remove('active');
-            document.body.style.overflow = ''; // Libera a rolagem
-        } else {
-            sidebar.classList.add('active');
-            if (mobileOverlay) mobileOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Bloqueia a rolagem do fundo
-        }
+        isActive ? closeMenu() : openMenu();
     }
 
-    // Remove event listeners antigos para evitar duplicidade
+    // 1. Botão Hamburger (Abrir/Fechar)
     if (mobileMenuToggle) {
         const newToggle = mobileMenuToggle.cloneNode(true);
         mobileMenuToggle.parentNode.replaceChild(newToggle, mobileMenuToggle);
         newToggle.addEventListener('click', toggleMenu);
     }
 
+    // 2. Botão "X" (Apenas Fechar)
     if (sidebarClose) {
-        sidebarClose.addEventListener('click', toggleMenu);
+        const newClose = sidebarClose.cloneNode(true);
+        sidebarClose.parentNode.replaceChild(newClose, sidebarClose);
+        newClose.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeMenu();
+        });
     }
 
+    // 3. OVERLAY / FUNDO ESCURO (AQUI ESTÁ O SEGREDO)
     if (mobileOverlay) {
-        mobileOverlay.addEventListener('click', toggleMenu);
+        // Removemos qualquer evento anterior clonando o elemento
+        const newOverlay = mobileOverlay.cloneNode(true);
+        mobileOverlay.parentNode.replaceChild(newOverlay, mobileOverlay);
+        
+        // Adicionamos o evento de clique especificamente para fechar
+        newOverlay.addEventListener('click', (e) => {
+            // e.target === newOverlay garante que só fecha se clicar no fundo, 
+            // e não em algo dentro dele (embora o overlay geralmente esteja vazio)
+            if (e.target === newOverlay) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeMenu();
+            }
+        });
     }
+
+    // 4. (Opcional) Fechar ao clicar em um link do menu
+    // Isso melhora a UX: clicou no link, o menu fecha e navega.
+    const menuLinks = sidebar.querySelectorAll('.menu-item');
+    menuLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            // Pequeno delay para dar tempo visual do clique
+            setTimeout(closeMenu, 150);
+        });
+    });
 }
 
     // Chama assim que o HTML estiver pronto
@@ -646,7 +681,7 @@ if (this.elements.form) {
 
                     let detailsButton = '';
                     if (isMember || isAuthor) {
-                        detailsButton = `<a href="projeto-detalhe.html?id=${proj.id}" class="btn-ver-detalhes">Acessar Área do Projeto</a>`;
+                        detailsButton = `<a href="projeto-detalhe.html?id=${proj.id}" class="btn-ver-detalhes">Acessar Projeto</a>`;
                     } else {
                         detailsButton = `<button class="btn-ver-detalhes" onclick="ProjetosPage.showProjectPreview(${JSON.stringify(proj).replace(/"/g, '&quot;')})">Ver Detalhes</button>`;
                     }
@@ -680,6 +715,7 @@ if (this.elements.form) {
                                 : `<button class="btn-entrar" onclick="ProjetosPage.entrarNoProjeto(${proj.id})">Entrar no Projeto</button>`
                         }
                                         ${detailsButton}
+                                    
                                     </div>
                             </div>
                         </div>`;
@@ -1420,7 +1456,7 @@ if (this.elements.form) {
 
                     let detailsButton = '';
                     if (isAuthor || isMember) {
-                        detailsButton = `<a href="projeto-detalhe.html?id=${proj.id}" class="btn-ver-detalhes">Acessar Área do Projeto</a>`;
+                        detailsButton = `<a href="projeto-detalhe.html?id=${proj.id}" class="btn-ver-detalhes">Acessar Projeto</a>`;
                     } else {
                         detailsButton = `<button class="btn-ver-detalhes" onclick="ProjetosPage.showProjectPreview(${JSON.stringify(proj).replace(/"/g, '&quot;')})">Ver Detalhes</button>`;
                     }
