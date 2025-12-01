@@ -1964,72 +1964,79 @@ textarea:focus-visible {
 ================================================================= */
 
 @media (max-width: 1024px) {
-  /* 1. Container vira coluna */
-  .container {
+  
+  /* 1. Força o Container a ser uma coluna Flex */
+  body .container {
+    display: flex !important;
     flex-direction: column !important;
   }
 
-  /* 2. Sidebar Direita vai para o TOPO (Ordem -1) */
-  .right-sidebar {
+  /* 2. Move a Sidebar Direita para o TOPO usando o ID específico */
+  #mobile-events-sidebar {
+    order: -1 !important; /* Manda para o topo */
     width: 100% !important;
-    order: -1 !important; /* O !important garante que suba */
-    padding: 0.5rem 1rem 0 1rem !important;
-    background-color: var(--bg-primary);
+    max-width: 100% !important;
+    padding: 0.5rem 1rem !important;
+    background-color: var(--bg-primary) !important;
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1rem;
-    flex-shrink: 0;
+    margin: 0 !important;
+    display: block !important; /* Garante visibilidade */
+    z-index: 99;
+    position: relative;
   }
 
-  /* 3. Remove estilos de "Caixa" para parecer nativo */
-  .meus-eventos-card {
+  /* 3. Estilo do Cartão "Container" (transparente no mobile) */
+  #mobile-events-sidebar .meus-eventos-card {
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
     margin: 0 !important;
+    box-shadow: none !important;
     width: 100%;
   }
 
-  /* Título menor e mais discreto */
-  .meus-eventos-card h3 {
+  /* Título da seção */
+  #mobile-events-sidebar h3 {
     font-size: 0.9rem;
-    margin-bottom: 0.5rem;
     color: var(--text-secondary);
+    margin-bottom: 0.5rem;
     border-bottom: none;
-    padding-bottom: 0;
   }
 
-  /* 4. TRANSFORMA A LISTA EM CARROSSEL HORIZONTAL */
+  /* 4. A LISTA HORIZONTAL (CARROSSEL) */
   #meus-eventos-lista {
     display: flex !important;
-    flex-direction: row !important; /* Força linha horizontal */
-    overflow-x: auto !important;    /* Permite rolar para o lado */
-    gap: 1rem;
-    padding-bottom: 10px; /* Espaço para o dedo não cobrir */
-    max-height: none !important;
+    flex-direction: row !important; /* Linha horizontal */
+    flex-wrap: nowrap !important;   /* Impede quebra de linha */
+    overflow-x: auto !important;    /* Habilita rolagem */
+    gap: 12px;
+    padding-bottom: 10px;
+    width: 100%;
     
-    /* Scroll suave */
-    scroll-behavior: smooth;
+    /* Scroll Suave */
     -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
     
-    /* Esconde barra de rolagem mas mantém funcionalidade */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE */
+    /* Esconde barra de rolagem visualmente */
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
   }
 
   #meus-eventos-lista::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
+    display: none;
   }
 
-  /* 5. CARD INDIVIDUAL NO MOBILE (Largura Fixa) */
+  /* 5. CARD INDIVIDUAL NO MOBILE */
   .mini-card {
-    min-width: 260px !important; /* Tamanho fixo para o carrossel */
-    max-width: 260px !important;
+    flex: 0 0 auto !important; /* IMPEDE O CARD DE ENCOLHER */
+    width: 260px !important;   /* Largura fixa */
+    max-width: 80vw !important; /* Não ultrapassa 80% da tela */
     background-color: var(--bg-secondary) !important;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-color) !important;
     margin: 0 !important;
     display: flex;
     align-items: center;
-    flex-shrink: 0; /* Impede que esmaguem */
+    gap: 10px;
   }
 }
 
