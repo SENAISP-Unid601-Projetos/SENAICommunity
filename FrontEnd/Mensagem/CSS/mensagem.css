@@ -1986,3 +1986,44 @@ body {
     display: flex !important;
   }
 }
+
+/* Wrapper para posicionar o badge relativo ao ícone */
+.sidebar-menu .menu-item .icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; /* Mantém a largura fixa do ícone original */
+  height: 24px;
+}
+
+/* Estilo do contador flutuante */
+#message-badge-sidebar {
+  position: absolute;
+  top: -6px; /* Sobe o badge */
+  right: -8px; /* Joga para a direita */
+
+  background-color: var(
+    --danger,
+    #f85149
+  ); /* Usa a variável de erro ou vermelho padrão */
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+
+  /* Garante o formato de bolinha */
+  border-radius: 10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+
+  /* Centraliza o número */
+  display: flex; /* O JS muda para 'flex' quando tem msg, mas deixamos aqui por garantia */
+  align-items: center;
+  justify-content: center;
+
+  /* Cria uma borda da cor do fundo para destacar o badge do ícone */
+  border: 2px solid var(--bg-secondary, #161b22);
+  box-sizing: content-box; /* Garante que a borda não coma o tamanho */
+  z-index: 10;
+}

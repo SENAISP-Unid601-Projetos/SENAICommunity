@@ -35,6 +35,8 @@ public class EventoService {
     @Autowired
     private NotificacaoService notificacaoService; // Para enviar confirmação do lembrete
 
+    private static final String IMAGEM_PADRAO = "/images/default-event.png";
+
     private Evento toEntity(EventoEntradaDTO dto) {
         Evento evento = new Evento();
         evento.setNome(dto.getNome());
@@ -66,8 +68,10 @@ public class EventoService {
             dto.setNumeroInteressados(0);
         }
 
-        if (evento.getImagemCapa() != null) {
+        if (evento.getImagemCapa() != null && !evento.getImagemCapa().isBlank()) {
             dto.setImagemCapaUrl(evento.getImagemCapa());
+        } else {
+            dto.setImagemCapaUrl(IMAGEM_PADRAO);
         }
         return dto;
     }
