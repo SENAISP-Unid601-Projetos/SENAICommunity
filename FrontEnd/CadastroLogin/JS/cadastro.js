@@ -220,16 +220,8 @@ function setupFormSubmission() {
     }
   });
 }
-
 function setupMobileOptimizations() {
-  const buttons = document.querySelectorAll("button, .btn, .toggle-password");
-  buttons.forEach((btn) => {
-    btn.addEventListener("touchstart", function (e) {
-      if (!this.classList.contains("no-prevent")) {
-        e.preventDefault();
-      }
-    });
-  });
+  // Removi o bloco que tinha o "e.preventDefault()", pois ele bloqueava o clique no celular
 
   if (window.innerWidth <= 768) {
     const firstInput = document.querySelector("input, select");

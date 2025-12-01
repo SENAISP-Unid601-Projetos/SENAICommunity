@@ -1,475 +1,591 @@
 :root {
-     /* Dark Theme Default */
-     --bg-primary: #0d1117;
-     --bg-secondary: #161b22;
-     --bg-tertiary: #21262d;
-     --bg-quaternary: #30363d;
-     --text-primary: #f0f6fc;
-     --text-secondary: #8b949e;
-     --text-tertiary: #6e7681;
-     --accent-primary: #58a6ff;
-     --accent-secondary: #1f6feb;
-     --highlight: #f85149;
-     --online: #3fb950;
-     --away: #d29922;  
-     --danger: #f85149;
-     --success: #238636;
-     --border-color: #30363d;
-     --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-     --card-radius: 12px;
-     --transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  /* Dark Theme Default */
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-quaternary: #30363d;
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+  --accent-primary: #58a6ff;
+  --accent-secondary: #1f6feb;
+  --highlight: #f85149;
+  --online: #3fb950;
+  --away: #d29922;
+  --danger: #f85149;
+  --success: #238636;
+  --border-color: #30363d;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --card-radius: 12px;
+  --transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 
 [data-theme="light"] {
-     --bg-primary: #ffffff;
-     --bg-secondary: #f6f8fa;
-     --bg-tertiary: #eaeef2;
-     --bg-quaternary: #d0d7de;
-     --text-primary: #24292f;
-     --text-secondary: #57606a;
-     --text-tertiary: #6e7781;
-     --accent-primary: #0969da;
-     --accent-secondary: #1f6feb;
-     --highlight: #cf222e;
-     --online: #2da44e;
-     --away: #bf8700;
-     --danger: #cf222e;
-     --success: #2da44e;
-     --border-color: #d0d7de;
-     --shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #eaeef2;
+  --bg-quaternary: #d0d7de;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --text-tertiary: #6e7781;
+  --accent-primary: #0969da;
+  --accent-secondary: #1f6feb;
+  --highlight: #cf222e;
+  --online: #2da44e;
+  --away: #bf8700;
+  --danger: #cf222e;
+  --success: #2da44e;
+  --border-color: #d0d7de;
+  --shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
 }
 
 /* Base Styles */
 * {
-     margin: 0;
-     padding: 0;
-     box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-     background-color: var(--bg-primary);
-     color: var(--text-primary);
-     line-height: 1.5;
-     transition: var(--transition);
-     overflow-x: hidden;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  transition: var(--transition);
+  overflow-x: hidden;
 }
 
 /* Tech Background - Fundo Dinâmico */
 .tech-background {
-     position: fixed;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 100%;
-     z-index: -1;
-     overflow: hidden;
-     background: linear-gradient(-45deg, var(--bg-primary), var(--bg-secondary), var(--bg-tertiary), var(--bg-quaternary));
-     background-size: 400% 400%;
-     animation: gradientBG 15s ease infinite;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  background: linear-gradient(
+    -45deg,
+    var(--bg-primary),
+    var(--bg-secondary),
+    var(--bg-tertiary),
+    var(--bg-quaternary)
+  );
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
 }
 
 /* Partículas flutuantes e Animações (código omitido por ser igual) */
-.particle { position: absolute; border-radius: 50%; background: rgba(88, 166, 255, 0.3); animation: float 15s infinite linear; z-index: -1; filter: blur(0.5px); }
-.highlight-particle { background: rgba(248, 81, 73, 0.4); animation: floatRed 12s infinite linear, glow 3s infinite ease-in-out; filter: blur(0.8px); }
-.small-particle { width: 3px; height: 3px; }
-.medium-particle { width: 5px; height: 5px; }
-.large-particle { width: 7px; height: 7px; }
-.particle-connection { position: absolute; background: rgba(88, 166, 255, 0.1); height: 1px; transform-origin: left center; z-index: -1; }
-@keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-@keyframes float { 0%, 100% { transform: translate(0, 0); opacity: 0.7; } 25% { transform: translate(-50px, -30px); opacity: 1; } 50% { transform: translate(20px, -50px); opacity: 0.7; } 75% { transform: translate(50px, 30px); opacity: 1; } }
-@keyframes floatRed { 0% { transform: translate(0, 0) scale(1); opacity: 0; } 20% { opacity: 1; transform: scale(1.1); } 50% { transform: scale(1.3); } 80% { opacity: 1; transform: scale(1.1); } 100% { transform: translate(100px, -100px) scale(1); opacity: 0; } }
-@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.2); opacity: 0.6; } }
-@keyframes glow { 0%, 100% { box-shadow: 0 0 5px rgba(88, 166, 255, 0.3); } 50% { box-shadow: 0 0 15px rgba(88, 166, 255, 0.5); } }
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(88, 166, 255, 0.3);
+  animation: float 15s infinite linear;
+  z-index: -1;
+  filter: blur(0.5px);
+}
+.highlight-particle {
+  background: rgba(248, 81, 73, 0.4);
+  animation: floatRed 12s infinite linear, glow 3s infinite ease-in-out;
+  filter: blur(0.8px);
+}
+.small-particle {
+  width: 3px;
+  height: 3px;
+}
+.medium-particle {
+  width: 5px;
+  height: 5px;
+}
+.large-particle {
+  width: 7px;
+  height: 7px;
+}
+.particle-connection {
+  position: absolute;
+  background: rgba(88, 166, 255, 0.1);
+  height: 1px;
+  transform-origin: left center;
+  z-index: -1;
+}
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.7;
+  }
+  25% {
+    transform: translate(-50px, -30px);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(20px, -50px);
+    opacity: 0.7;
+  }
+  75% {
+    transform: translate(50px, 30px);
+    opacity: 1;
+  }
+}
+@keyframes floatRed {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    transform: translate(100px, -100px) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.6;
+  }
+}
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(88, 166, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(88, 166, 255, 0.5);
+  }
+}
 
 /* --- Estilização do Campo de Upload de Imagem --- */
 
 .file-upload-wrapper {
-    width: 100%;
-    margin: 0.5rem 0;
-    position: relative;
+  width: 100%;
+  margin: 0.5rem 0;
+  position: relative;
 }
 
 .file-upload-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 150px;
-    border: 2px dashed var(--border-color);
-    border-radius: var(--card-radius);
-    cursor: pointer;
-    transition: var(--transition);
-    text-align: center;
-    padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 150px;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  padding: 1rem;
 }
 
 .file-upload-label:hover,
-.file-upload-label.drag-over { /* Estilo quando um arquivo é arrastado por cima */
-    border-color: var(--accent-primary);
-    background-color: var(--bg-tertiary);
+.file-upload-label.drag-over {
+  /* Estilo quando um arquivo é arrastado por cima */
+  border-color: var(--accent-primary);
+  background-color: var(--bg-tertiary);
 }
 
 #upload-instructions {
-    color: var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 #upload-instructions i {
-    font-size: 2.5rem;
-    margin-bottom: 0.75rem;
-    color: var(--text-tertiary);
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-tertiary);
 }
 
 #upload-instructions p {
-    font-size: 1rem;
+  font-size: 1rem;
 }
 
 #file-name {
-    font-size: 0.8rem;
-    color: var(--text-tertiary);
-    margin-top: 0.5rem;
-    word-break: break-all;
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  margin-top: 0.5rem;
+  word-break: break-all;
 }
 
 /* Estilo da Pré-visualização da Imagem */
 #image-preview {
-    width: 100%;
-    height: 150px;
-    object-fit: cover; /* Garante que a imagem cubra a área sem distorcer */
-    border-radius: var(--card-radius);
-    border: 1px solid var(--border-color);
+  width: 100%;
+  height: 150px;
+  object-fit: cover; /* Garante que a imagem cubra a área sem distorcer */
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
 }
 
 .image-preview-hidden {
-    display: none; /* Esconde a pré-visualização por padrão */
+  display: none; /* Esconde a pré-visualização por padrão */
 }
 
 /* Theme Toggle */
 .theme-toggle {
-     position: fixed;
-     bottom: 2rem;
-     right: 2rem;
-     width: 3rem;
-     height: 3rem;
-     border-radius: 50%;
-     display: flex;
-     align-items: center;
-     justify-content: center;
-     background-color: var(--bg-tertiary);
-     color: var(--text-primary);
-     cursor: pointer;
-     box-shadow: var(--shadow);
-     z-index: 100;
-     transition: var(--transition);
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  z-index: 100;
+  transition: var(--transition);
 }
 
 .theme-toggle:hover {
-     background-color: var(--bg-quaternary);
-     transform: scale(1.05);
+  background-color: var(--bg-quaternary);
+  transform: scale(1.05);
 }
 
 .theme-toggle i {
-     transition: var(--transition);
+  transition: var(--transition);
 }
 
 body::before {
-     content: '';
-     position: fixed;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 100%;
-     background-color: var(--bg-primary);
-     z-index: -2;
-     opacity: 0;
-     transition: opacity 0.5s ease;
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-primary);
+  z-index: -2;
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
 body.theme-changing::before {
-     opacity: 1;
+  opacity: 1;
 }
 
 /* Auth Container */
 .auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
 }
 
 .auth-card {
-    background-color: var(--bg-secondary);
-    border-radius: var(--card-radius);
-    box-shadow: var(--shadow);
-    width: 100%;
-    max-width: 420px;
-    padding: 2.5rem;
-    border: 1px solid var(--border-color);
-    transition: var(--transition);
-    position: relative;
-    overflow: hidden;
+  background-color: var(--bg-secondary);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 420px;
+  padding: 2.5rem;
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
 }
 
 .auth-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(to bottom, var(--highlight), var(--accent-primary));
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    var(--highlight),
+    var(--accent-primary)
+  );
 }
 
 /* Auth Header */
 .auth-header {
-    text-align: center;
-    margin-bottom: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
 }
 /* ... (regras do header omitidas por serem iguais) ... */
 
 /* Auth Form */
 .auth-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .input-group {
-    position: relative;
+  position: relative;
 }
 
 .input-group i {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-tertiary);
-    z-index: 2; /* Garante que o ícone fique sobre o campo */
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  z-index: 2; /* Garante que o ícone fique sobre o campo */
 }
 
 /* ✅ MODIFICAÇÃO: Seletor agora inclui 'input' e 'select' */
 .input-group input,
 .input-group select {
-    width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
-    background-color: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    color: var(--text-primary);
-    transition: var(--transition);
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem; /* Padroniza o tamanho da fonte */
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  transition: var(--transition);
+  font-family: "Inter", sans-serif;
+  font-size: 1rem; /* Padroniza o tamanho da fonte */
 }
 
 .input-group input:focus,
 .input-group select:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
 }
 
 /* ✅ NOVO: Estilos específicos para customizar o <select> */
 .input-group select {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    /* Seta customizada que funciona em temas claro e escuro */
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 16px 12px;
-    padding-right: 2.5rem; /* Espaço para a seta customizada */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /* Seta customizada que funciona em temas claro e escuro */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  padding-right: 2.5rem; /* Espaço para a seta customizada */
 }
 
 /* Cor do texto quando nenhuma opção foi selecionada */
 .input-group select:invalid {
-    color: var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 .toggle-password {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--text-tertiary);
-    cursor: pointer;
-    transition: var(--transition);
-    z-index: 2;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 2;
 }
 
 .toggle-password:hover {
-    color: var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 /* ===== RESPONSIVIDADE PARA CELULARES ===== */
 
 @media (max-width: 768px) {
-    /* Ajustes no container principal */
-    .auth-container {
-        padding: 1rem;
-        min-height: 100vh;
-        align-items: flex-start;
-    }
-    
-    .auth-card {
-        max-width: 100%;
-        padding: 1.5rem;
-        margin-top: 1rem;
-    }
-    
-    /* Header mais compacto */
-    .auth-header {
-        margin-bottom: 1.5rem;
-    }
-    
-    .auth-header h1 {
-        font-size: 1.5rem;
-    }
-    
-    .auth-header .subtext {
-        font-size: 0.9rem;
-    }
-    
-    /* Logo menor */
-    .logo {
-        font-size: 1.3rem;
-    }
-    
-    .logo i {
-        font-size: 1.5rem;
-    }
-    
-    /* Formulário com espaçamento reduzido */
-    .auth-form {
-        gap: 0.8rem;
-    }
-    
-    /* Inputs maiores para toque */
-    .input-group input,
-    .input-group select {
-        padding: 1rem 1rem 1rem 2.8rem;
-        font-size: 16px; /* Previne zoom no iOS */
-    }
-    
-    .input-group i {
-        left: 1rem;
-    }
-    
-    .toggle-password {
-        right: 1rem;
-        width: 2rem;
-        height: 2rem;
-    }
-    
-    /* Upload de imagem mais compacto */
-    .file-upload-label {
-        height: 120px;
-        padding: 0.8rem;
-    }
-    
-    #upload-instructions i {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    #upload-instructions p {
-        font-size: 0.9rem;
-    }
-    
-    #image-preview {
-        height: 120px;
-    }
-    
-    /* Botão principal maior */
-    .btn {
-        padding: 1rem;
-        font-size: 1rem;
-    }
-    
-    /* Terms checkbox ajustado */
-    .checkbox.terms {
-        font-size: 0.85rem;
-        line-height: 1.3;
-    }
-    
-    /* Footer ajustado */
-    .auth-footer p {
-        font-size: 0.9rem;
-    }
-    
-    /* Theme toggle reposicionado */
-    .theme-toggle {
-        bottom: 1rem;
-        right: 1rem;
-        width: 2.5rem;
-        height: 2.5rem;
-    }
+  /* Ajustes no container principal */
+  .auth-container {
+    padding: 1rem;
+    min-height: 100vh;
+    align-items: flex-start;
+  }
+
+  .auth-card {
+    max-width: 100%;
+    padding: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  /* Header mais compacto */
+  .auth-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .auth-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .auth-header .subtext {
+    font-size: 0.9rem;
+  }
+
+  /* Logo menor */
+  .logo {
+    font-size: 1.3rem;
+  }
+
+  .logo i {
+    font-size: 1.5rem;
+  }
+
+  /* Formulário com espaçamento reduzido */
+  .auth-form {
+    gap: 0.8rem;
+  }
+
+  /* Inputs maiores para toque */
+  .input-group input,
+  .input-group select {
+    padding: 1rem 1rem 1rem 2.8rem;
+    font-size: 16px; /* Previne zoom no iOS */
+  }
+
+  .input-group i {
+    left: 1rem;
+  }
+
+  .toggle-password {
+    right: 1rem;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  /* Upload de imagem mais compacto */
+  .file-upload-label {
+    height: 120px;
+    padding: 0.8rem;
+  }
+
+  #upload-instructions i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  #upload-instructions p {
+    font-size: 0.9rem;
+  }
+
+  #image-preview {
+    height: 120px;
+  }
+
+  /* Botão principal maior */
+  .btn {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  /* Terms checkbox ajustado */
+  .checkbox.terms {
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
+
+  /* Footer ajustado */
+  .auth-footer p {
+    font-size: 0.9rem;
+  }
+
+  /* Theme toggle reposicionado */
+  .theme-toggle {
+    bottom: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
 }
 
 @media (max-width: 480px) {
-    /* Ajustes para telas muito pequenas */
-    .auth-card {
-        padding: 1.2rem;
-    }
-    
-    .auth-header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .logo {
-        font-size: 1.1rem;
-    }
-    
-    .input-group input,
-    .input-group select {
-        padding: 0.9rem 0.9rem 0.9rem 2.5rem;
-    }
-    
-    .file-upload-label {
-        height: 100px;
-    }
-    
-    #upload-instructions i {
-        font-size: 1.7rem;
-    }
-    
-    #upload-instructions p {
-        font-size: 0.8rem;
-    }
-    
-    #upload-instructions span {
-        font-size: 0.75rem;
-    }
+  /* Ajustes para telas muito pequenas */
+  .auth-card {
+    padding: 1.2rem;
+  }
+
+  .auth-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+  }
+
+  .input-group input,
+  .input-group select {
+    padding: 0.9rem 0.9rem 0.9rem 2.5rem;
+  }
+
+  .file-upload-label {
+    height: 100px;
+  }
+
+  #upload-instructions i {
+    font-size: 1.7rem;
+  }
+
+  #upload-instructions p {
+    font-size: 0.8rem;
+  }
+
+  #upload-instructions span {
+    font-size: 0.75rem;
+  }
 }
 
 /* Prevenir zoom em inputs no iOS */
 @media (max-width: 768px) {
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="tel"],
-    select,
-    textarea {
-        font-size: 16px !important;
-    }
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Melhorias de acessibilidade para toque */
 @media (hover: none) and (pointer: coarse) {
-    .btn:hover {
-        transform: none;
-    }
-    
-    .theme-toggle:hover {
-        transform: none;
-    }
-    
-    .toggle-password {
-        min-width: 44px;
-        min-height: 44px;
-    }
+  .btn:hover {
+    transform: none;
+  }
+
+  .theme-toggle:hover {
+    transform: none;
+  }
+
+  .toggle-password {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+@media (max-width: 768px) {
+  /* Garante que o botão fique acima de outros elementos e clicável */
+  .btn-primary {
+    position: relative;
+    z-index: 10;
+    margin-bottom: 20px; /* Espaço extra para não colar no botão do Google */
+  }
+
+  /* Garante a área de toque correta */
+  .auth-form button[type="submit"] {
+    pointer-events: auto !important;
+  }
 }
