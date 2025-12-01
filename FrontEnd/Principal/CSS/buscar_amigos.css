@@ -375,6 +375,8 @@
     transition: transform 0.2s, box-shadow 0.2s;
     position: relative;
     overflow: hidden;
+    align-items: stretch !important; 
+    text-align: left !important; /* Garante que o texto não centralize */
     
 }
 
@@ -386,9 +388,11 @@
 
 /* Header do Card (Avatar + Info) */
 .card-header-info {
+    /* Garante que o container da foto e nome comece sempre da esquerda */
     display: flex;
     align-items: center;
-    gap: 1rem;
+    justify-content: flex-start !important; 
+    width: 100%;
 }
 
 .user-card-avatar {
@@ -431,8 +435,9 @@
 .status.offline { background-color: #94a3b8; }
 
 .user-card-info {
+    /* O texto ocupa o espaço restante, empurrando tudo para a esquerda */
     flex: 1;
-    min-width: 0;
+    min-width: 0; /* Importante para o corte do texto funcionar */
 }
 
 .user-card-info h4 {
