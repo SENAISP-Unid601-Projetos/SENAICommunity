@@ -1022,143 +1022,153 @@ function openDeleteAccountModal() {
 }
 
 // --- SETUP DE EVENT LISTENERS GLOBAIS ---
+/* Substitua toda a função setupGlobalEventListeners no final do principal.js */
+
 function setupGlobalEventListeners() {
-  document.body.addEventListener("click", (e) => {
-    if (
-      globalElements.notificationsPanel &&
-      !globalElements.notificationsPanel.contains(e.target) &&
-      !globalElements.notificationsIcon.contains(e.target)
-    ) {
-      globalElements.notificationsPanel.style.display = "none";
-    }
-    closeAllMenus();
-  });
-
-  const notifIcon = document.getElementById('notifications-icon');
-  
-  if (notifIcon) {
-    // 1. Remove o elemento antigo e cria um novo clone LIMPO (sem eventos antigos)
-    const newIcon = notifIcon.cloneNode(true);
-    notifIcon.parentNode.replaceChild(newIcon, notifIcon);
-    
-    // 2. IMPORTANTE: Atualiza TODAS as referências globais para apontar para o NOVO elemento
-    // Se não fizermos isso, o código vai tentar colocar as notificações no painel antigo que foi deletado
-    globalElements.notificationsIcon = newIcon;
-    globalElements.notificationsPanel = newIcon.querySelector('#notifications-panel');
-    globalElements.notificationsList = newIcon.querySelector('#notifications-list');
-    globalElements.notificationsBadge = newIcon.querySelector('#notifications-badge');
-
-    // 3. Adiciona o evento de clique no NOVO ícone
-    globalElements.notificationsIcon.addEventListener("click", (event) => {
-        event.stopPropagation();
-        event.preventDefault();
-        
-        // Usa a referência global atualizada
-        const panel = globalElements.notificationsPanel;
-        const isVisible = panel.style.display === "block";
-        
-        // Fecha outros menus
-        closeAllMenus();
-        
-        // Alterna visibilidade
-        panel.style.display = isVisible ? "none" : "block";
-        
-        if (!isVisible) {
-            markAllNotificationsAsRead();
-        }
-    });
-  }
-
-  if (globalElements.userDropdownTrigger) {
-    globalElements.userDropdownTrigger.addEventListener("click", (event) => {
-      event.stopPropagation();
-      const menu = globalElements.userDropdownTrigger.nextElementSibling;
-      if (menu && menu.classList.contains("dropdown-menu")) {
-        const isVisible = menu.style.display === "block";
-        closeAllMenus();
-        if (!isVisible) menu.style.display = "block";
-      }
-    });
-  }
-
-
-  // --- Listeners de Modais de Perfil ---
-  //
-if (globalElements.editProfileBtn) {
-    // Remove listeners antigos (cloneNode) para evitar abrir modal antigo
-    const newProfileBtn = globalElements.editProfileBtn.cloneNode(true);
-    globalElements.editProfileBtn.parentNode.replaceChild(newProfileBtn, globalElements.editProfileBtn);
-    globalElements.editProfileBtn = newProfileBtn; // Atualiza referência
-
-    globalElements.editProfileBtn.addEventListener("click", (e) => {
-        // Se quiser que seja um link padrão, nem precisa do preventDefault
-        // Mas se quiser garantir via JS:
-        e.preventDefault();
-        window.location.href = "perfil.html";
-    });
-  }
-
-  // 2. Botão SAIR (Logout)
-  if (globalElements.logoutBtn) {
-    // Remove listeners antigos
-    const newLogoutBtn = globalElements.logoutBtn.cloneNode(true);
-    globalElements.logoutBtn.parentNode.replaceChild(newLogoutBtn, globalElements.logoutBtn);
-    globalElements.logoutBtn = newLogoutBtn;
-
-    globalElements.logoutBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "login.html";
-    });
-  }
-  if (globalElements.cancelEditProfileBtn)
-    globalElements.cancelEditProfileBtn.addEventListener(
-      "click",
-      () => (globalElements.editProfileModal.style.display = "none")
-    );
-  if (globalElements.editProfilePicInput)
-    globalElements.editProfilePicInput.addEventListener("change", () => {
-      const file = globalElements.editProfilePicInput.files[0];
-      if (file)
-        globalElements.editProfilePicPreview.src = URL.createObjectURL(file);
-    });
-
-
-  // Deletar conta
-  if (globalElements.cancelDeleteAccountBtn)
-    globalElements.cancelDeleteAccountBtn.addEventListener(
-      "click",
-      () => (globalElements.deleteAccountModal.style.display = "none")
-    );
-  if (globalElements.deleteAccountForm)
-    globalElements.deleteAccountForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const password = globalElements.deleteConfirmPassword.value;
-      if (!password) {
-        showNotification(
-          "Por favor, digite sua senha para confirmar.",
-          "error"
-        );
-        return;
-      }
-      try {
-        await axios.post(`${backendUrl}/autenticacao/login`, {
-          email: currentUser.email,
-          senha: password,
-        });
+    // Fechar menus ao clicar fora
+    document.body.addEventListener("click", (e) => {
         if (
-          confirm("Você tem ABSOLUTA CERTEZA? Esta ação não pode ser desfeita.")
+            globalElements.notificationsPanel &&
+            !globalElements.notificationsPanel.contains(e.target) &&
+            !globalElements.notificationsIcon.contains(e.target)
         ) {
-          await axios.delete(`${backendUrl}/usuarios/me`);
-          alert("Sua conta foi excluída com sucesso.");
-          localStorage.clear();
-          window.location.href = "login.html";
+            globalElements.notificationsPanel.style.display = "none";
         }
-      } catch (error) {
-        showNotification("Senha incorreta. A conta não foi excluída.", "error");
-      }
+        closeAllMenus();
     });
+
+    // 1. Notificações
+    const notifIcon = document.getElementById('notifications-icon');
+    if (notifIcon && notifIcon.parentNode) { // Verificação de segurança adicionada
+        const newIcon = notifIcon.cloneNode(true);
+        notifIcon.parentNode.replaceChild(newIcon, notifIcon);
+        
+        globalElements.notificationsIcon = newIcon;
+        // Re-seleciona os filhos dentro do novo ícone clonado
+        globalElements.notificationsPanel = newIcon.querySelector('#notifications-panel');
+        globalElements.notificationsList = newIcon.querySelector('#notifications-list');
+        globalElements.notificationsBadge = newIcon.querySelector('#notifications-badge');
+
+        globalElements.notificationsIcon.addEventListener("click", (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            const panel = globalElements.notificationsPanel;
+            if (panel) {
+                const isVisible = panel.style.display === "block";
+                closeAllMenus();
+                panel.style.display = isVisible ? "none" : "block";
+                if (!isVisible) markAllNotificationsAsRead();
+            }
+        });
+    }
+
+    // 2. Dropdown de Usuário
+    if (globalElements.userDropdownTrigger) {
+        // Clonagem para remover listeners antigos
+        const oldTrigger = globalElements.userDropdownTrigger;
+        if(oldTrigger.parentNode) {
+            const newTrigger = oldTrigger.cloneNode(true);
+            oldTrigger.parentNode.replaceChild(newTrigger, oldTrigger);
+            globalElements.userDropdownTrigger = newTrigger;
+
+            newTrigger.addEventListener("click", (event) => {
+                event.stopPropagation();
+                const menu = newTrigger.nextElementSibling;
+                if (menu && menu.classList.contains("dropdown-menu")) {
+                    const isVisible = menu.style.display === "block";
+                    closeAllMenus();
+                    if (!isVisible) menu.style.display = "block";
+                }
+            });
+        }
+    }
+
+    // 3. Botão Editar Perfil (Menu Superior)
+    if (globalElements.editProfileBtn && globalElements.editProfileBtn.parentNode) {
+        const newProfileBtn = globalElements.editProfileBtn.cloneNode(true);
+        globalElements.editProfileBtn.parentNode.replaceChild(newProfileBtn, globalElements.editProfileBtn);
+        globalElements.editProfileBtn = newProfileBtn;
+
+        newProfileBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.location.href = "perfil.html";
+        });
+    }
+
+    // 4. Botão SAIR (Logout) - O ERRO ESTAVA AQUI GERALMENTE
+    if (globalElements.logoutBtn && globalElements.logoutBtn.parentNode) {
+        const newLogoutBtn = globalElements.logoutBtn.cloneNode(true);
+        globalElements.logoutBtn.parentNode.replaceChild(newLogoutBtn, globalElements.logoutBtn);
+        globalElements.logoutBtn = newLogoutBtn;
+
+        newLogoutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            window.location.href = "login.html";
+        });
+    }
+
+    // Modais de Perfil
+    if (globalElements.cancelEditProfileBtn) {
+        globalElements.cancelEditProfileBtn.addEventListener("click", () => {
+            if(globalElements.editProfileModal) globalElements.editProfileModal.style.display = "none";
+        });
+    }
+
+    if (globalElements.editProfilePicInput) {
+        globalElements.editProfilePicInput.addEventListener("change", () => {
+            const file = globalElements.editProfilePicInput.files[0];
+            if (file && globalElements.editProfilePicPreview) {
+                globalElements.editProfilePicPreview.src = URL.createObjectURL(file);
+            }
+        });
+    }
+
+    // Deletar conta
+    if (globalElements.cancelDeleteAccountBtn) {
+        globalElements.cancelDeleteAccountBtn.addEventListener("click", () => {
+            if(globalElements.deleteAccountModal) globalElements.deleteAccountModal.style.display = "none";
+        });
+    }
+
+    if (globalElements.deleteAccountForm) {
+        // Clone para limpar submit anterior
+        const oldForm = globalElements.deleteAccountForm;
+        if(oldForm.parentNode) {
+            const newForm = oldForm.cloneNode(true);
+            oldForm.parentNode.replaceChild(newForm, oldForm);
+            globalElements.deleteAccountForm = newForm;
+            
+            // Re-mapear inputs dentro do novo formulário se necessário, 
+            // mas como usamos IDs globais para input, podemos acessá-los direto.
+            
+            newForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const passwordInput = document.getElementById("delete-confirm-password");
+                const password = passwordInput ? passwordInput.value : "";
+                
+                if (!password) {
+                    showNotification("Por favor, digite sua senha para confirmar.", "error");
+                    return;
+                }
+                try {
+                    await axios.post(`${backendUrl}/autenticacao/login`, {
+                        email: currentUser.email,
+                        senha: password,
+                    });
+                    if (confirm("Você tem ABSOLUTA CERTEZA? Esta ação não pode ser desfeita.")) {
+                        await axios.delete(`${backendUrl}/usuarios/me`);
+                        alert("Sua conta foi excluída com sucesso.");
+                        localStorage.clear();
+                        window.location.href = "login.html";
+                    }
+                } catch (error) {
+                    showNotification("Senha incorreta. A conta não foi excluída.", "error");
+                }
+            });
+        }
+    }
 }
 
 // =================================================================

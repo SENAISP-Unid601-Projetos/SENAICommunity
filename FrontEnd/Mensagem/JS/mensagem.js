@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 
 // --- FUNÇÃO GLOBAL PARA O BOTÃO "LER MAIS" ---
-window.toggleMessageReadMore = function(btn) {
+window.toggleMessageReadMore = function (btn) {
     const textSpan = btn.previousElementSibling;
     if (textSpan && textSpan.classList.contains('text-clamped')) {
         textSpan.classList.remove('text-clamped');
@@ -16,27 +16,38 @@ window.toggleMessageReadMore = function(btn) {
 document.addEventListener("DOMContentLoaded", () => {
     // --- ELEMENTOS DO DOM ---
     const elements = {
+        chatOptionsBtn: document.getElementById("chat-options-btn"),
+        chatOptionsMenu: document.getElementById("chat-options-menu"),
+        optBlockUser: document.getElementById("opt-block-user"),
+        optDeleteChat: document.getElementById("opt-delete-chat"),
+
+        modalDeleteChat: document.getElementById("custom-delete-chat-modal"),
+        btnCancelChatDelete: document.getElementById("btn-cancel-chat-delete"),
+        btnConfirmChatDelete: document.getElementById("btn-confirm-chat-delete"),
+
+        chatInputArea: document.querySelector(".chat-input-area"),
+
         // Containers
         chatContainer: document.getElementById("chat-container"),
         conversationsList: document.getElementById("conversations-list"),
         chatHeader: document.getElementById("chat-header-area"),
-        chatHeaderContent: document.getElementById("chat-header-content"), 
+        chatHeaderContent: document.getElementById("chat-header-content"),
         chatMessagesContainer: document.getElementById("chat-messages-area"),
-        
+
         // Inputs
         messageInput: document.getElementById("chat-input"),
         chatForm: document.getElementById("chat-form"),
         chatSendBtn: document.getElementById("chat-send-btn"),
         recordAudioBtn: document.getElementById("record-audio-btn"),
         conversationSearch: document.getElementById("convo-search"),
-        
+
         // Modais Antigos
         addGroupBtn: document.querySelector(".add-convo-btn"),
         addConvoModal: document.getElementById("add-convo-modal"),
         closeModalBtn: document.getElementById("close-modal-btn"),
         newConvoUserList: document.getElementById("new-convo-user-list"),
         userSearchInput: document.getElementById("user-search-input"),
-        
+
         // Novos Modais (Modernos)
         modalEdit: document.getElementById("custom-edit-modal"),
         modalDelete: document.getElementById("custom-delete-modal"),
@@ -61,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
         editProfileBtnOld.parentNode.replaceChild(editProfileBtnNew, editProfileBtnOld);
         editProfileBtnNew.addEventListener("click", (e) => {
             e.preventDefault();
-            window.location.href = "perfil.html"; 
+            window.location.href = "perfil.html";
         });
     }
 
@@ -84,6 +95,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let stompClient;
     let backendUrl;
     let defaultAvatarUrl;
+    let isUserBlocked = false;
+
 
     /**
      * INICIALIZAÇÃO
@@ -119,18 +132,177 @@ document.addEventListener("DOMContentLoaded", () => {
             userFriends = window.userFriends;
             if (elements.addConvoModal.style.display === "flex") renderAvailableUsers();
         });
+
+        // 1. Abrir/Fechar Menu do Card
+        window.toggleConvoMenu = function (event, userId, userName) {
+            event.stopPropagation(); // Impede abrir a conversa
+            event.preventDefault();
+
+            // Fecha todos os outros menus abertos
+            document.querySelectorAll('.convo-dropdown-menu').forEach(menu => {
+                if (menu.id !== `convo-menu-${userId}`) menu.classList.remove('active');
+            });
+
+            const menu = document.getElementById(`convo-menu-${userId}`);
+            if (menu) {
+                menu.classList.toggle('active');
+            }
+        };
+
+        // Fechar menus ao clicar fora
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.convo-dropdown-menu').forEach(menu => menu.classList.remove('active'));
+        });
+
+        // 2. Lógica de Bloquear Usuário
+        window.handleBlockUser = async function (event, userId) {
+            event.stopPropagation();
+            if (!confirm("Tem certeza que deseja bloquear este usuário? Vocês não poderão mais trocar mensagens.")) return;
+
+            try {
+                // Ajuste a URL conforme seu BackEnd (Ex: /api/bloqueios ou /api/amizades/bloquear)
+                await axios.post(`${window.backendUrl}/usuarios/bloquear/${userId}`);
+
+                showNotification("Usuário bloqueado.", "success");
+                // Remove a conversa da lista visualmente
+                const card = document.querySelector(`.convo-card[data-user-id="${userId}"]`);
+                if (card) card.remove();
+
+                // Se a conversa estava aberta, limpa a tela
+                if (activeConversation.usuarioId === userId) {
+                    document.getElementById("chat-messages-area").innerHTML = '';
+                    document.getElementById("chat-header-content").innerHTML = '<h3>Selecione uma Conversa</h3>';
+                    activeConversation = {};
+                }
+            } catch (error) {
+                console.error(error);
+                showNotification("Erro ao bloquear usuário.", "error");
+            }
+        };
+
+        // 3. Lógica de Apagar Conversa (Opcional, já que coloquei no menu)
+        window.handleDeleteConversation = async function (event, userId) {
+            event.stopPropagation();
+            if (!confirm("Apagar todo o histórico desta conversa?")) return;
+
+            try {
+                await axios.delete(`${window.backendUrl}/api/chat/privado/conversa/${userId}`);
+                showNotification("Conversa apagada.", "success");
+                fetchConversations(); // Recarrega a lista
+            } catch (error) {
+                showNotification("Erro ao apagar conversa.", "error");
+            }
+        };
+
+        // 4. Lógica do Modal de Bloqueados
+        const blockedModal = document.getElementById('blocked-users-modal');
+        const openBlockedBtn = document.getElementById('open-blocked-modal-btn');
+        const closeBlockedBtn = document.getElementById('close-blocked-modal-btn');
+        const blockedList = document.getElementById('blocked-users-list');
+
+        if (openBlockedBtn) {
+            openBlockedBtn.addEventListener('click', () => {
+                fetchBlockedUsers();
+                blockedModal.style.display = 'flex';
+            });
+        }
+
+        if (closeBlockedBtn) {
+            closeBlockedBtn.addEventListener('click', () => {
+                blockedModal.style.display = 'none';
+            });
+        }
+
+        async function fetchBlockedUsers() {
+            blockedList.innerHTML = '<div class="loading-spinner"></div>';
+            try {
+                // Ajuste a URL conforme seu BackEnd
+                const response = await axios.get(`${window.backendUrl}/usuarios/bloqueados`);
+                renderBlockedUsers(response.data);
+            } catch (error) {
+                console.error(error);
+                blockedList.innerHTML = '<p class="error-text">Erro ao carregar bloqueados.</p>';
+            }
+        }
+        
+function renderBlockedUsers(users) {
+        const blockedList = document.getElementById('blocked-users-list');
+        if (!blockedList) return;
+        
+        blockedList.innerHTML = '';
+        
+        if (!users || users.length === 0) {
+            blockedList.innerHTML = `
+                <div style="text-align:center; padding: 2rem;">
+                    <i class="fas fa-check-circle" style="font-size: 2rem; color: var(--success); margin-bottom: 1rem;"></i>
+                    <p style="color:var(--text-secondary);">Sua lista de bloqueios está vazia.</p>
+                </div>`;
+            return;
+        }
+
+        users.forEach(user => {
+            const item = document.createElement('div');
+            item.className = 'user-list-item'; // Classe do CSS novo
+
+            // Tratamento de imagem robusto
+            const avatarUrl = user.fotoPerfil 
+                ? (user.fotoPerfil.startsWith('http') ? user.fotoPerfil : `${window.backendUrl}${user.fotoPerfil}`)
+                : window.defaultAvatarUrl;
+
+            item.innerHTML = `
+                <div class="user-info-area">
+                    <img src="${avatarUrl}" alt="${user.nome}" onerror="this.src='${window.defaultAvatarUrl}'">
+                    <span>${user.nome}</span>
+                </div>
+                
+                <div class="user-actions-area">
+                    <button class="btn-view" title="Ver Conversa Antiga" onclick="window.viewBlockedChat(${user.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    
+                    <button class="btn-unblock" onclick="window.handleUnblockUser(${user.id})">
+                        Desbloquear
+                    </button>
+                </div>
+            `;
+            blockedList.appendChild(item);
+        });
+    }
+
+    window.viewBlockedChat = function(userId) {
+        // 1. Fecha o modal de bloqueados
+        const blockedModal = document.getElementById('blocked-users-modal');
+        if(blockedModal) blockedModal.style.display = 'none';
+
+        // 2. Abre a conversa
+        // A função selectConversation já tem inteligência para buscar os dados do usuário
+        // se ele não estiver na lista lateral (que é o caso aqui).
+        selectConversation(userId);
+    };
+
+        window.handleUnblockUser = async function (userId) {
+            try {
+                // Ajuste a URL conforme seu BackEnd
+                await axios.delete(`${window.backendUrl}/usuarios/bloquear/${userId}`); // Ou POST /desbloquear
+                showNotification("Usuário desbloqueado.", "success");
+                fetchBlockedUsers(); // Recarrega a lista do modal
+                fetchConversations(); // Recarrega a lista de conversas (caso ele reapareça)
+            } catch (error) {
+                showNotification("Erro ao desbloquear.", "error");
+            }
+        };
     });
 
     // --- HELPER: FORMATAÇÃO DE TEXTO ---
     function escapeHtml(text) {
         if (!text) return "";
-        return text.replace(/[&<>"']/g, function(m) { 
-            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]; 
+        return text.replace(/[&<>"']/g, function (m) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
         });
     }
 
     function formatMessageContent(text) {
-        const LIMITE_CARACTERES = 350; 
+        const LIMITE_CARACTERES = 350;
         if (!text) return "";
         let safeText = escapeHtml(text).replace(/\n/g, '<br>');
         if (text.length <= LIMITE_CARACTERES) {
@@ -156,11 +328,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (isActive) {
                     sidebar.classList.remove('active');
                     overlay.classList.remove('active');
-                    document.body.style.overflow = ''; 
+                    document.body.style.overflow = '';
                 } else {
                     sidebar.classList.add('active');
                     overlay.classList.add('active');
-                    document.body.style.overflow = 'hidden'; 
+                    document.body.style.overflow = 'hidden';
                 }
             }
         }
@@ -181,11 +353,11 @@ document.addEventListener("DOMContentLoaded", () => {
             overlay = newOverlay;
             overlay.addEventListener('click', toggleSidebar);
         }
-        
+
         const menuLinks = document.querySelectorAll('.sidebar-menu .menu-item');
         menuLinks.forEach(link => {
             link.addEventListener('click', () => {
-                 if(window.innerWidth <= 1024) setTimeout(() => toggleSidebar(), 150);
+                if (window.innerWidth <= 1024) setTimeout(() => toggleSidebar(), 150);
             });
         });
     }
@@ -193,14 +365,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateMessageBadge(count) {
         const b1 = document.getElementById("message-badge");
         const b2 = document.getElementById("message-badge-sidebar");
-        if(b1) { b1.textContent = count; b1.style.display = count > 0 ? "flex" : "none"; }
-        if(b2) { b2.textContent = count; b2.style.display = count > 0 ? "flex" : "none"; }
+        if (b1) { b1.textContent = count; b1.style.display = count > 0 ? "flex" : "none"; }
+        if (b2) { b2.textContent = count; b2.style.display = count > 0 ? "flex" : "none"; }
     }
 
     // --- API & DADOS ---
     async function fetchConversations() {
         try {
-            if(elements.conversationsList) elements.conversationsList.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div></div>`;
+            if (elements.conversationsList) elements.conversationsList.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div></div>`;
             const response = await axios.get(`${backendUrl}/api/chat/privado/minhas-conversas`);
             conversas = response.data.map((c) => ({
                 ...c,
@@ -213,7 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderConversationsList();
         } catch (error) {
             console.error("Erro conversas:", error);
-            if(elements.conversationsList) elements.conversationsList.innerHTML = `<div class="error-state"><p>Erro ao carregar conversas</p><button class="retry-btn" data-action="retry-conversations">Tentar novamente</button></div>`;
+            if (elements.conversationsList) elements.conversationsList.innerHTML = `<div class="error-state"><p>Erro ao carregar conversas</p><button class="retry-btn" data-action="retry-conversations">Tentar novamente</button></div>`;
         }
     }
 
@@ -273,8 +445,10 @@ document.addEventListener("DOMContentLoaded", () => {
             avatar: convoData.avatarUrl || defaultAvatarUrl,
         };
 
+        await checkBlockStatus(otherUserId);
+
         // Adiciona classe para mostrar o chat no mobile
-        if(elements.chatContainer) elements.chatContainer.classList.add('chat-open');
+        if (elements.chatContainer) elements.chatContainer.classList.add('chat-open');
 
         renderChatHeader();
         document.querySelectorAll(".convo-card").forEach(c => c.classList.remove("selected"));
@@ -291,10 +465,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         showMessagesLoading();
         await fetchMessages(otherUserId);
-        
+
         elements.messageInput.disabled = false;
         elements.chatSendBtn.disabled = false;
-        if(elements.recordAudioBtn) elements.recordAudioBtn.disabled = false;
+        if (elements.recordAudioBtn) elements.recordAudioBtn.disabled = false;
         elements.messageInput.placeholder = `Escreva para ${activeConversation.nome}...`;
         elements.messageInput.focus();
     }
@@ -317,7 +491,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderMessages(response.data);
         } catch (error) {
             console.error(error);
-            if(elements.chatMessagesContainer) elements.chatMessagesContainer.innerHTML = `<div class="error-state"><p>Erro ao carregar mensagens</p></div>`;
+            if (elements.chatMessagesContainer) elements.chatMessagesContainer.innerHTML = `<div class="error-state"><p>Erro ao carregar mensagens</p></div>`;
         }
     }
 
@@ -325,7 +499,7 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         const content = elements.messageInput.value.trim();
         if (!content || !activeConversation.usuarioId || !stompClient?.connected) return;
-        
+
         stompClient.send(`/app/privado/${activeConversation.usuarioId}`, {}, JSON.stringify({
             conteudo: content, destinatarioId: activeConversation.usuarioId
         }));
@@ -341,9 +515,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const sidebarTitle = document.getElementById('sidebar-user-title');
             const sidebarImg = document.getElementById('sidebar-user-img');
             const connectionsCount = document.getElementById('connections-count');
-            
-            if(sidebarName) sidebarName.textContent = user.nome;
-            if(sidebarTitle) {
+
+            if (sidebarName) sidebarName.textContent = user.nome;
+            if (sidebarTitle) {
                 let userRole = user.tipoUsuario || "Membro";
                 if (userRole && typeof userRole === 'string') {
                     userRole = userRole.replace('ROLE_', '').toLowerCase();
@@ -351,14 +525,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 sidebarTitle.textContent = userRole;
             }
-            if(sidebarImg && user.fotoPerfil) {
-                 if(typeof window.getAvatarUrl === 'function') {
-                     sidebarImg.src = window.getAvatarUrl(user.fotoPerfil);
-                 } else {
-                     sidebarImg.src = user.fotoPerfil;
-                 }
+            if (sidebarImg && user.fotoPerfil) {
+                if (typeof window.getAvatarUrl === 'function') {
+                    sidebarImg.src = window.getAvatarUrl(user.fotoPerfil);
+                } else {
+                    sidebarImg.src = user.fotoPerfil;
+                }
             }
-            if(connectionsCount && window.userFriends) connectionsCount.textContent = window.userFriends.length;
+            if (connectionsCount && window.userFriends) connectionsCount.textContent = window.userFriends.length;
             if (userInfoContainer) userInfoContainer.classList.add('loaded');
         }
     }
@@ -378,9 +552,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const existingIndex = messages.findIndex(m => m.id === msg.id);
         if (existingIndex !== -1) {
-            messages[existingIndex] = msg; 
+            messages[existingIndex] = msg;
         } else {
-            messages.push(msg); 
+            messages.push(msg);
         }
 
         let convoIdx = conversas.findIndex(c => c.outroUsuarioId === otherUserId);
@@ -390,14 +564,14 @@ document.addEventListener("DOMContentLoaded", () => {
             convo.conteudoUltimaMensagem = msg.conteudo;
             convo.dataEnvioUltimaMensagem = msg.dataEnvio;
             convo.remetenteUltimaMensagemId = msg.remetenteId;
-            
+
             if (msg.destinatarioId === currentUser.id && activeConversation.usuarioId !== otherUserId) {
                 convo.unreadCount = (convo.unreadCount || 0) + 1;
                 unreadMessagesCount.set(otherUserId, convo.unreadCount);
             }
         } else {
-            fetchConversations(); 
-            return; 
+            fetchConversations();
+            return;
         }
         conversas.unshift(convo);
         renderConversationsList();
@@ -428,12 +602,16 @@ document.addEventListener("DOMContentLoaded", () => {
         conversas.forEach(c => elements.conversationsList.appendChild(createConversationCardElement(c)));
     }
 
+    /* Substitua a função createConversationCardElement existente por esta: */
     function createConversationCardElement(convo) {
-        const isActive = convo.outroUsuarioId === activeConversation.usuarioId;
+        const isActive = activeConversation && convo.outroUsuarioId === activeConversation.usuarioId;
         const card = document.createElement("div");
         card.className = `convo-card ${isActive ? "selected" : ""} ${convo.unreadCount > 0 ? "unread" : ""}`;
         card.dataset.userId = convo.outroUsuarioId;
         card.dataset.userName = convo.nomeOutroUsuario;
+
+        // Garante posição relativa para o dropdown funcionar
+        card.style.position = 'relative';
 
         let lastMsg = "Inicie a conversa...";
         let author = "";
@@ -451,8 +629,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="group-title">${convo.nomeOutroUsuario}</div>
                 <div class="group-last-msg">${author}${lastMsg}</div>
             </div>
+            
+            <button class="convo-options-btn" onclick="window.toggleConvoMenu(event, ${convo.outroUsuarioId}, '${convo.nomeOutroUsuario}')">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            
+            <div class="convo-dropdown-menu" id="convo-menu-${convo.outroUsuarioId}">
+                <button onclick="window.handleBlockUser(event, ${convo.outroUsuarioId})">
+                    <i class="fas fa-ban"></i> Bloquear
+                </button>
+                <button class="danger" onclick="window.handleDeleteConversation(event, ${convo.outroUsuarioId})">
+                    <i class="fas fa-trash"></i> Apagar Conversa
+                </button>
+            </div>
         `;
-        card.addEventListener("click", () => selectConversation(convo.outroUsuarioId));
+
+        // Clique no card abre a conversa (exceto se clicar no botão de opções)
+        card.addEventListener("click", (e) => {
+            if (!e.target.closest('.convo-options-btn') && !e.target.closest('.convo-dropdown-menu')) {
+                selectConversation(convo.outroUsuarioId);
+            }
+        });
+
         return card;
     }
 
@@ -480,9 +678,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         elements.chatMessagesContainer.innerHTML = messages.map(msg => {
             const isMe = msg.remetenteId === currentUser.id;
-            const time = new Date(msg.dataEnvio).toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
-            
-            let contentHtml = isAudioUrl(msg.conteudo) 
+            const time = new Date(msg.dataEnvio).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+            let contentHtml = isAudioUrl(msg.conteudo)
                 ? `<div class="audio-message"><audio controls src="${msg.conteudo}"></audio></div>`
                 : formatMessageContent(msg.conteudo);
 
@@ -510,7 +708,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function showMessagesLoading() {
-        if(elements.chatMessagesContainer) elements.chatMessagesContainer.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>Carregando...</p></div>`;
+        if (elements.chatMessagesContainer) elements.chatMessagesContainer.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>Carregando...</p></div>`;
     }
 
     function updateConversationUnreadCount(userId, count) {
@@ -530,10 +728,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- AUDIO ---
     function updateTimer() {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const min = String(Math.floor(elapsed / 60)).padStart(2,'0');
-        const sec = String(elapsed % 60).padStart(2,'0');
+        const min = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const sec = String(elapsed % 60).padStart(2, '0');
         const t = elements.recordAudioBtn.querySelector('.audio-timer');
-        if(t) t.textContent = `${min}:${sec}`;
+        if (t) t.textContent = `${min}:${sec}`;
     }
 
     async function startRecording() {
@@ -557,13 +755,13 @@ document.addEventListener("DOMContentLoaded", () => {
     async function uploadAudio() {
         isRecording = false;
         clearInterval(timerInterval);
-        if(mediaRecorder) mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        if (mediaRecorder) mediaRecorder.stream.getTracks().forEach(t => t.stop());
         elements.recordAudioBtn.classList.remove('recording');
         elements.recordAudioBtn.innerHTML = `<i class="fas fa-microphone"></i>`;
         elements.messageInput.disabled = false;
         elements.messageInput.placeholder = `Escreva para ${activeConversation.nome}...`;
         const blob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
-        if(blob.size < 1000) return;
+        if (blob.size < 1000) return;
         const formData = new FormData();
         formData.append('file', blob, `audio-${Date.now()}.webm`);
         try {
@@ -577,7 +775,51 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- SETUP LISTENERS E MODAIS ---
     function setupChatEventListeners() {
         if (elements.chatForm) elements.chatForm.addEventListener("submit", handleSendMessage);
-        
+
+        // Toggle Menu Dropdown
+        if (elements.chatOptionsBtn) {
+            elements.chatOptionsBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                elements.chatOptionsMenu.classList.toggle("show");
+            });
+        }
+
+        // Fechar dropdown ao clicar fora
+        document.addEventListener("click", (e) => {
+            if (elements.chatOptionsMenu && !elements.chatOptionsMenu.contains(e.target) && e.target !== elements.chatOptionsBtn) {
+                elements.chatOptionsMenu.classList.remove("show");
+            }
+        });
+
+        // Ação de Bloquear/Desbloquear
+        if (elements.optBlockUser) {
+            elements.optBlockUser.addEventListener("click", (e) => {
+                e.preventDefault();
+                toggleBlockUser();
+            });
+        }
+
+        // Ação de Excluir Conversa (Abre Modal)
+        if (elements.optDeleteChat) {
+            elements.optDeleteChat.addEventListener("click", (e) => {
+                e.preventDefault();
+                elements.chatOptionsMenu.classList.remove("show");
+                elements.modalDeleteChat.classList.add("active");
+            });
+        }
+
+        // Confirmar Exclusão de Conversa
+        if (elements.btnConfirmChatDelete) {
+            elements.btnConfirmChatDelete.addEventListener("click", deleteFullConversation);
+        }
+
+        // Cancelar Exclusão de Conversa
+        if (elements.btnCancelChatDelete) {
+            elements.btnCancelChatDelete.addEventListener("click", () => {
+                elements.modalDeleteChat.classList.remove("active");
+            });
+        }
+
         if (elements.recordAudioBtn) {
             elements.recordAudioBtn.addEventListener('click', () => {
                 if (!activeConversation.usuarioId) return alert("Selecione uma conversa.");
@@ -609,24 +851,24 @@ document.addEventListener("DOMContentLoaded", () => {
         if (elements.chatMessagesContainer) {
             elements.chatMessagesContainer.addEventListener("click", (e) => {
                 const editBtn = e.target.closest(".btn-edit-msg");
-                if (editBtn) { 
-                    openEditModal(editBtn.dataset.messageId); 
-                    return; 
+                if (editBtn) {
+                    openEditModal(editBtn.dataset.messageId);
+                    return;
                 }
-                
+
                 const delBtn = e.target.closest(".btn-delete-msg");
-                if (delBtn) { 
-                    openDeleteModal(delBtn.dataset.messageId); 
-                    return; 
+                if (delBtn) {
+                    openDeleteModal(delBtn.dataset.messageId);
+                    return;
                 }
 
                 const bubble = e.target.closest(".message-content");
                 if (bubble) {
-                    if(e.target.tagName === 'A' || e.target.classList.contains('read-more-btn')) return;
+                    if (e.target.tagName === 'A' || e.target.classList.contains('read-more-btn')) return;
                     const group = bubble.closest(".message-group");
                     if (group && group.classList.contains("me")) {
                         document.querySelectorAll('.message-group.active-actions').forEach(el => {
-                            if(el !== group) el.classList.remove('active-actions');
+                            if (el !== group) el.classList.remove('active-actions');
                         });
                         group.classList.toggle("active-actions");
                     }
@@ -650,20 +892,20 @@ document.addEventListener("DOMContentLoaded", () => {
             elements.addConvoModal.style.display = "flex";
         });
         if (elements.closeModalBtn) elements.closeModalBtn.addEventListener("click", () => elements.addConvoModal.style.display = "none");
-        
+
         if (elements.newConvoUserList) {
             elements.newConvoUserList.addEventListener("click", (e) => {
                 const item = e.target.closest(".user-list-item");
                 if (item) {
-                    const id = item.dataset.usuarioId || item.dataset.userId; 
-                    if(id) {
+                    const id = item.dataset.usuarioId || item.dataset.userId;
+                    if (id) {
                         elements.addConvoModal.style.display = "none";
                         selectConversation(id);
                     }
                 }
             });
         }
-        
+
         if (elements.userSearchInput) {
             elements.userSearchInput.addEventListener("input", (e) => {
                 const q = e.target.value.toLowerCase();
@@ -673,11 +915,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             });
         }
-        
+
         document.addEventListener('click', (e) => {
-            if(e.target.classList.contains('retry-btn')) {
+            if (e.target.classList.contains('retry-btn')) {
                 const action = e.target.dataset.action;
-                if(action === 'retry-conversations') fetchConversations();
+                if (action === 'retry-conversations') fetchConversations();
             }
         });
     }
@@ -685,7 +927,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderAvailableUsers() {
         const existing = conversas.map(c => c.outroUsuarioId);
         const available = userFriends.filter(f => !existing.includes(f.idUsuario || f.usuarioId));
-        if(available.length === 0) {
+        if (available.length === 0) {
             elements.newConvoUserList.innerHTML = `<p style="padding:1rem; text-align:center; color:var(--text-secondary)">Nenhum novo contato disponível.</p>`;
             return;
         }
@@ -719,10 +961,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 const newTxt = elements.inputEdit.value.trim();
                 if (currentMessageIdToEdit && newTxt) {
                     try {
-                        await axios.put(`${backendUrl}/api/chat/privado/${currentMessageIdToEdit}`, newTxt, {headers:{"Content-Type":"text/plain"}});
+                        await axios.put(`${backendUrl}/api/chat/privado/${currentMessageIdToEdit}`, newTxt, { headers: { "Content-Type": "text/plain" } });
                         elements.modalEdit.classList.remove("active");
-                    } catch(e) { 
-                        alert("Erro ao editar"); 
+                    } catch (e) {
+                        alert("Erro ao editar");
                     }
                 }
             });
@@ -739,11 +981,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (elements.btnConfirmDelete) {
             elements.btnConfirmDelete.addEventListener("click", async () => {
                 if (currentMessageIdToDelete) {
-                    try { 
+                    try {
                         await axios.delete(`${backendUrl}/api/chat/privado/${currentMessageIdToDelete}`);
                         elements.modalDelete.classList.remove("active");
-                    } catch(e) { 
-                        alert("Erro ao excluir"); 
+                    } catch (e) {
+                        alert("Erro ao excluir");
                     }
                 }
             });
@@ -764,14 +1006,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function openEditModal(id) {
         const el = document.querySelector(`[data-message-id="${id}"] .message-content`);
         if (!el) return;
-        
+
         // Pega texto limpo (sem "Ler mais")
         const oldTxt = el.textContent.replace('Ler mais', '').replace('Ler menos', '').trim();
-        
+
         currentMessageIdToEdit = id;
         elements.inputEdit.value = oldTxt;
         elements.modalEdit.classList.add("active");
-        
+
         // Foca no final do texto
         setTimeout(() => elements.inputEdit.focus(), 100);
     }
@@ -780,4 +1022,90 @@ document.addEventListener("DOMContentLoaded", () => {
         currentMessageIdToDelete = id;
         elements.modalDelete.classList.add("active");
     }
+
+    async function checkBlockStatus(userId) {
+        try {
+            const res = await axios.get(`${backendUrl}/usuarios/status-bloqueio/${userId}`);
+            const { euBloqueei, fuiBloqueado } = res.data;
+
+            isUserBlocked = euBloqueei; // Atualiza estado global
+            updateBlockUI(euBloqueei, fuiBloqueado);
+        } catch (e) {
+            console.error("Erro ao verificar bloqueio", e);
+        }
+    }
+
+    function updateBlockUI(euBloqueei, fuiBloqueado) {
+        const blockText = elements.optBlockUser.querySelector("span");
+        const blockIcon = elements.optBlockUser.querySelector("i");
+
+        if (euBloqueei) {
+            blockText.textContent = "Desbloquear Usuário";
+            blockIcon.className = "fas fa-check-circle";
+        } else {
+            blockText.textContent = "Bloquear Usuário";
+            blockIcon.className = "fas fa-ban";
+        }
+
+        if (euBloqueei || fuiBloqueado) {
+            elements.chatInputArea.classList.add("blocked");
+            elements.messageInput.disabled = true;
+            elements.chatSendBtn.disabled = true;
+            elements.messageInput.placeholder = euBloqueei
+                ? "Você bloqueou este usuário."
+                : "Você foi bloqueado por este usuário.";
+        } else {
+            elements.chatInputArea.classList.remove("blocked");
+            elements.messageInput.disabled = false;
+            elements.chatSendBtn.disabled = false;
+            elements.messageInput.placeholder = `Escreva para ${activeConversation.nome}...`;
+        }
+    }
+
+    async function toggleBlockUser() {
+        if (!activeConversation.usuarioId) return;
+
+        const action = isUserBlocked ? 'bloquear' : 'bloquear'; // O endpoint de delete é o mesmo path base
+        // Se isUserBlocked é true, vamos chamar o DELETE (desbloquear)
+        // Se isUserBlocked é false, vamos chamar o POST (bloquear)
+
+        try {
+            if (isUserBlocked) {
+                // Desbloquear
+                await axios.delete(`${backendUrl}/api/chat/privado/bloquear/${activeConversation.usuarioId}`);
+            } else {
+                // Bloquear
+                await axios.post(`${backendUrl}/api/chat/privado/bloquear/${activeConversation.usuarioId}`);
+            }
+            // Recarrega status
+            await checkBlockStatus(activeConversation.usuarioId);
+            elements.chatOptionsMenu.classList.remove("show"); // Fecha menu
+        } catch (e) {
+            alert("Erro ao alterar bloqueio.");
+        }
+    }
+
+    async function deleteFullConversation() {
+        if (!activeConversation.usuarioId) return;
+        try {
+            await axios.delete(`${backendUrl}/api/chat/privado/conversa/${activeConversation.usuarioId}`);
+            elements.modalDeleteChat.classList.remove("active");
+
+            // Remove da lista visualmente e limpa a tela
+            conversas = conversas.filter(c => c.outroUsuarioId !== activeConversation.usuarioId);
+            renderConversationsList();
+
+            // Volta para estado vazio ou fecha chat mobile
+            if (window.innerWidth <= 1024) {
+                elements.chatContainer.classList.remove("chat-open");
+            }
+            elements.chatMessagesContainer.innerHTML = `<div class="empty-chat">Conversa excluída.</div>`;
+            activeConversation = { usuarioId: null };
+            renderChatHeader();
+
+        } catch (e) {
+            alert("Erro ao excluir conversa.");
+        }
+    }
+
 });

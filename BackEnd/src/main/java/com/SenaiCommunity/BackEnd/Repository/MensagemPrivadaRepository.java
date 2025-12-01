@@ -2,6 +2,7 @@ package com.SenaiCommunity.BackEnd.Repository;
 
 import com.SenaiCommunity.BackEnd.Entity.MensagemPrivada;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -50,4 +51,11 @@ public interface MensagemPrivadaRepository extends JpaRepository<MensagemPrivada
     @Modifying // Necessário para indicar uma operação de escrita (UPDATE/DELETE)
     @Query("UPDATE MensagemPrivada m SET m.lida = true WHERE m.destinatario = :destinatario AND m.remetente = :remetente AND m.lida = false")
     void marcarComoLidas(@Param("destinatario") Usuario destinatario, @Param("remetente") Usuario remetente);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM MensagemPrivada m WHERE " +
+            "(m.remetente.id = :id1 AND m.destinatario.id = :id2) OR " +
+            "(m.remetente.id = :id2 AND m.destinatario.id = :id1)")
+    void deletarConversaEntreUsuarios(@Param("id1") Long id1, @Param("id2") Long id2);
 }

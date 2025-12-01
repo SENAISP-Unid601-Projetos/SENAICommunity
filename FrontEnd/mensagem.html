@@ -149,11 +149,22 @@
             <div class="chat-container" id="chat-container">
                 <aside class="chat-sidebar" id="chat-sidebar-area">
                     <div class="sidebar-header">
-                       
-
                         <h2>Mensagens</h2>
-                        <button class="add-convo-btn"><i class="fas fa-plus"></i></button>
+
+                        <div class="chat-sidebar-actions" style="display: flex; gap: 8px;">
+
+                            <button class="blocked-users-btn" id="open-blocked-modal-btn" title="Usuários Bloqueados"
+                                style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-secondary); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                                <i class="fas fa-user-slash" style="font-size: 0.9rem;"></i>
+                            </button>
+
+                            <button class="add-convo-btn" title="Nova Conversa"
+                                style="width: 36px; height: 36px; font-size: 1rem;">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
+
                     <div class="sidebar-search">
                         <input type="text" id="convo-search" placeholder="Buscar conversas...">
                         <i class="fas fa-search"></i>
@@ -170,6 +181,15 @@
                             </button>
 
                             <div id="chat-header-content" class="chat-header-content">
+                            </div>
+
+                            <div class="chat-options-dropdown">
+                               
+                                <div class="dropdown-content" id="chat-options-menu">
+                                    <a href="#" id="opt-block-user"><i class="fas fa-ban"></i> <span>Bloquear</span></a>
+                                    <a href="#" id="opt-delete-chat" class="text-danger"><i class="fas fa-trash"></i>
+                                        Excluir Conversa</a>
+                                </div>
                             </div>
                         </div>
                         <div class="chat-messages-area" id="chat-messages-area">
@@ -238,31 +258,100 @@
     </div>
 
     <div id="custom-edit-modal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <div class="custom-modal-header">
+                <h3><i class="fas fa-pen"></i> Editar Mensagem</h3>
+            </div>
+            <div class="custom-modal-body">
+                <textarea id="custom-edit-input" placeholder="Digite a nova mensagem..."></textarea>
+            </div>
+            <div class="custom-modal-footer">
+                <button id="btn-cancel-edit" class="btn-modal btn-ghost">Cancelar</button>
+                <button id="btn-confirm-edit" class="btn-modal btn-primary">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-delete-modal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <div class="custom-modal-header">
+                <h3 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Excluir Mensagem</h3>
+            </div>
+            <div class="custom-modal-body">
+                <p>Tem certeza que deseja apagar esta mensagem? Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="custom-modal-footer">
+                <button id="btn-cancel-delete" class="btn-modal btn-ghost">Cancelar</button>
+                <button id="btn-confirm-delete" class="btn-modal btn-danger">Sim, Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-delete-chat-modal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <div class="custom-modal-header">
+                <h3 class="text-danger"><i class="fas fa-trash-alt"></i> Apagar Histórico?</h3>
+            </div>
+            <div class="custom-modal-body">
+                <p>Isso apagará todas as mensagens desta conversa permanentemente para ambos. Deseja continuar?</p>
+            </div>
+            <div class="custom-modal-footer">
+                <button id="btn-cancel-chat-delete" class="btn-modal btn-ghost">Cancelar</button>
+                <button id="btn-confirm-chat-delete" class="btn-modal btn-danger">Sim, Apagar Tudo</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-sidebar-header-actions" style="display: flex; gap: 5px; padding: 10px;">
+        <button class="add-convo-btn" title="Nova Conversa"><i class="fas fa-plus"></i></button>
+
+        <button class="blocked-users-btn" id="open-blocked-modal-btn" title="Usuários Bloqueados"
+            style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-secondary); width: 40px; height: 40px; border-radius: 50%; cursor: pointer;">
+            <i class="fas fa-user-slash"></i>
+        </button>
+    </div>
+
+    <div id="blocked-users-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-slash"></i> Contatos Bloqueados</h3>
+                <button class="close-modal-btn" id="close-blocked-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="blocked-users-list" class="user-list"
+                    style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                    <p style="text-align:center; color: var(--text-secondary);">Carregando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-block-user-modal" class="custom-modal-overlay">
     <div class="custom-modal-box">
         <div class="custom-modal-header">
-            <h3><i class="fas fa-pen"></i> Editar Mensagem</h3>
+            <h3 class="text-danger"><i class="fas fa-user-slash"></i> Bloquear Usuário?</h3>
         </div>
         <div class="custom-modal-body">
-            <textarea id="custom-edit-input" placeholder="Digite a nova mensagem..."></textarea>
+            <p>Você não receberá mais mensagens deste usuário. A conversa será ocultada da sua lista.</p>
         </div>
         <div class="custom-modal-footer">
-            <button id="btn-cancel-edit" class="btn-modal btn-ghost">Cancelar</button>
-            <button id="btn-confirm-edit" class="btn-modal btn-primary">Salvar Alterações</button>
+            <button id="btn-cancel-block" class="btn-modal btn-ghost">Cancelar</button>
+            <button id="btn-confirm-block" class="btn-modal btn-danger">Sim, Bloquear</button>
         </div>
     </div>
 </div>
 
-<div id="custom-delete-modal" class="custom-modal-overlay">
+<div id="custom-delete-chat-modal" class="custom-modal-overlay">
     <div class="custom-modal-box">
         <div class="custom-modal-header">
-            <h3 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Excluir Mensagem</h3>
+            <h3 class="text-danger"><i class="fas fa-trash-alt"></i> Apagar Conversa?</h3>
         </div>
         <div class="custom-modal-body">
-            <p>Tem certeza que deseja apagar esta mensagem? Esta ação não pode ser desfeita.</p>
+            <p>Isso apagará todo o histórico de mensagens desta conversa permanentemente. Deseja continuar?</p>
         </div>
         <div class="custom-modal-footer">
-            <button id="btn-cancel-delete" class="btn-modal btn-ghost">Cancelar</button>
-            <button id="btn-confirm-delete" class="btn-modal btn-danger">Sim, Excluir</button>
+            <button id="btn-cancel-chat-delete" class="btn-modal btn-ghost">Cancelar</button>
+            <button id="btn-confirm-chat-delete" class="btn-modal btn-danger">Sim, Apagar Tudo</button>
         </div>
     </div>
 </div>

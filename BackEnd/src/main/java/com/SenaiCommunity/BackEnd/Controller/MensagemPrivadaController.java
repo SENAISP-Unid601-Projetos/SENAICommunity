@@ -53,6 +53,18 @@ public class MensagemPrivadaController {
         }
     }
 
+
+    @DeleteMapping("/conversa/{id}")
+    public ResponseEntity<?> excluirConversa(@PathVariable Long id, Principal principal) {
+        try {
+            mensagemPrivadaService.excluirConversaInteira(principal.getName(), id);
+            // Notifica remoção via socket se necessário, ou deixa o front atualizar
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @RestController
     @RequestMapping("/api/chat/privado")
     public static class MensagemPrivadaRestController {

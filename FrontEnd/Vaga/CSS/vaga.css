@@ -517,6 +517,12 @@
   color: var(--accent-primary);
 }
 
+/* Ícone de bookmark preenchido quando salvo */
+.save-vaga-btn.saved i {
+    font-weight: 900; /* Ícone sólido (Font Awesome Solid) */
+    color: var(--accent-primary);
+}
+
 /* Tags - DESIGN MELHORADO */
 .vaga-tags {
   display: flex;
@@ -741,11 +747,12 @@
   flex-shrink: 0;
 }
 
+/* Ajuste da imagem no Modal para aceitar fotos de perfil */
 .vaga-details-company-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 8px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px; /* Mantém arredondado */
 }
 
 .vaga-details-company-info {
@@ -1978,4 +1985,11 @@
     .mobile-close-sidebar-btn {
         display: none;
     }
+}
+
+/* Estilo para Vaga Salva (Contorno Específico) */
+.vaga-card.saved {
+    border: 2px solid var(--accent-primary); /* Borda Azul/Cor do tema */
+    box-shadow: 0 0 15px rgba(88, 166, 255, 0.15); /* Glow suave */
+    background: linear-gradient(to right, rgba(88, 166, 255, 0.03), transparent);
 }

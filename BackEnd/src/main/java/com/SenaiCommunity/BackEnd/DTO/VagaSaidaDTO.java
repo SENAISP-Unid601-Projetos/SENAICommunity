@@ -26,6 +26,9 @@ public class VagaSaidaDTO {
     private List<String> requisitos;
     private List<String> beneficios;
 
+    private Long autorId;
+    private String urlFotoAutor;
+
     public VagaSaidaDTO(Vaga vaga) {
         this.id = vaga.getId();
         this.titulo = vaga.getTitulo();
@@ -36,6 +39,13 @@ public class VagaSaidaDTO {
         this.tipoContratacao = vaga.getTipoContratacao();
         this.dataPublicacao = vaga.getDataPublicacao();
         this.autorNome = vaga.getAutor().getNome();
+
+        if (vaga.getAutor() != null) {
+            this.autorId = vaga.getAutor().getId();
+            this.autorNome = vaga.getAutor().getNome();
+            // Pega a foto do perfil do autor
+            this.urlFotoAutor = vaga.getAutor().getFotoPerfil();
+        }
 
         // Mapeando os novos campos
         this.salario = vaga.getSalario();

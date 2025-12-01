@@ -4,6 +4,7 @@ import com.SenaiCommunity.BackEnd.DTO.UsuarioAtualizacaoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioBuscaDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
+import com.SenaiCommunity.BackEnd.Service.MensagemPrivadaService;
 import com.SenaiCommunity.BackEnd.Service.UserStatusService;
 import com.SenaiCommunity.BackEnd.Service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -32,6 +34,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private MensagemPrivadaService mensagemPrivadaService;
 
     @GetMapping("/me")
     public ResponseEntity<UsuarioSaidaDTO> getMeuUsuario(Authentication authentication) {
@@ -84,5 +89,42 @@ public class UsuarioController {
     @GetMapping("/online")
     public ResponseEntity<Set<String>> getOnlineUsers() {
         return ResponseEntity.ok(userStatusService.getOnlineUsers());
+    }
+
+    @PostMapping("/bloquear/{id}")
+    public ResponseEntity<?> bloquearUsuario(@PathVariable Long id, Principal principal) {
+        try {
+            mensagemPrivadaService.bloquearUsuario(principal.getName(), id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Desbloquear Usuário
+    @DeleteMapping("/bloquear/{id}")
+    public ResponseEntity<?> desbloquearUsuario(@PathVariable Long id, Principal principal) {
+        try {
+            mensagemPrivadaService.desbloquearUsuario(principal.getName(), id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Listar Bloqueados (Para o Modal)
+    @GetMapping("/bloqueados")
+    public ResponseEntity<List<UsuarioSaidaDTO>> listarBloqueados(Principal principal) {
+        List<UsuarioSaidaDTO> bloqueados = mensagemPrivadaService.listarBloqueados(principal.getName());
+        return ResponseEntity.ok(bloqueados);
+    }
+
+
+
+    @GetMapping("/status-bloqueio/{id}")
+    public ResponseEntity<?> verificarStatusBloqueio(@PathVariable Long id, Principal principal) {
+        boolean euBloqueei = mensagemPrivadaService.verificarBloqueio(principal.getName(), id);
+        boolean fuiBloqueado = mensagemPrivadaService.fuiBloqueado(principal.getName(), id);
+        return ResponseEntity.ok(Map.of("euBloqueei", euBloqueei, "fuiBloqueado", fuiBloqueado));
     }
 }

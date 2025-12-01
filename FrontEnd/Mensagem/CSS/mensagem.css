@@ -1456,3 +1456,257 @@ body {
         text-align: center;
     }
 }
+
+/* Botão de Opções no Header */
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+.btn-icon:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* Dropdown Menu */
+.chat-options-dropdown {
+    position: relative;
+    margin-left: auto; /* Empurra para a direita */
+}
+
+.chat-options-dropdown .dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 45px;
+    background-color: var(--bg-secondary);
+    min-width: 180px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    z-index: 100;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+.chat-options-dropdown .dropdown-content.show {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+}
+
+.chat-options-dropdown .dropdown-content a {
+    padding: 12px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.chat-options-dropdown .dropdown-content a:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.chat-options-dropdown .dropdown-content a.text-danger {
+    color: var(--danger);
+}
+.chat-options-dropdown .dropdown-content a.text-danger:hover {
+    background-color: rgba(248, 81, 73, 0.1);
+}
+
+/* Estado de Input Bloqueado */
+.chat-input-area.blocked {
+    background-color: var(--bg-primary);
+    opacity: 0.7;
+    pointer-events: none; /* Impede clique */
+    filter: grayscale(1);
+}
+
+/* --- Botão de Opções DENTRO do Card de Conversa --- */
+.convo-card {
+    position: relative; /* Necessário para posicionar o botão */
+}
+
+/* O botão de três pontinhos */
+.convo-options-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: none; /* Escondido por padrão no Desktop */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5; /* Fica acima do clique do card */
+    transition: background 0.2s;
+}
+
+.convo-options-btn:hover {
+    background-color: var(--bg-quaternary);
+    color: var(--text-primary);
+}
+
+/* Mostra o botão ao passar o mouse no card */
+.convo-card:hover .convo-options-btn {
+    display: flex;
+}
+
+/* No Mobile, mostra sempre */
+@media (max-width: 768px) {
+    .convo-options-btn {
+        display: flex;
+    }
+}
+
+/* --- Menu Suspenso (Dropdown) do Card --- */
+.convo-dropdown-menu {
+    position: absolute;
+    right: 10px;
+    top: 40px; /* Ajuste conforme altura do card */
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    width: 160px;
+    display: none;
+    z-index: 100;
+    overflow: hidden;
+}
+
+.convo-dropdown-menu.active {
+    display: block;
+}
+
+.convo-dropdown-menu button {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.convo-dropdown-menu button:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.convo-dropdown-menu button.danger {
+    color: var(--danger);
+}
+
+/* --- Estilos da Lista de Bloqueados --- */
+#blocked-users-list .user-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-tertiary); /* Fundo leve para destacar */
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+#blocked-users-list .user-list-item:hover {
+    background-color: var(--bg-quaternary);
+}
+
+/* Área da esquerda (Avatar + Nome) */
+#blocked-users-list .user-info-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+    flex: 1; /* Ocupa o espaço disponível */
+}
+
+#blocked-users-list img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--bg-secondary);
+}
+
+#blocked-users-list span {
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px; /* Limite para não empurrar os botões */
+}
+
+/* Área da direita (Botões) */
+#blocked-users-list .user-actions-area {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espaço entre os botões */
+    flex-shrink: 0; /* Impede que os botões sejam esmagados */
+}
+
+/* Botão de Ver (Olho) */
+#blocked-users-list .btn-view {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#blocked-users-list .btn-view:hover {
+    background-color: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+}
+
+/* Botão de Desbloquear */
+#blocked-users-list .btn-unblock {
+    padding: 0 12px;
+    height: 36px;
+    background-color: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#blocked-users-list .btn-unblock:hover {
+    background-color: var(--danger);
+    color: white;
+}
+
+.blocked-users-btn:hover {
+    background-color: var(--bg-quaternary) !important;
+    color: var(--danger) !important; /* Fica vermelho ao passar o mouse */
+    border-color: var(--danger) !important;
+}

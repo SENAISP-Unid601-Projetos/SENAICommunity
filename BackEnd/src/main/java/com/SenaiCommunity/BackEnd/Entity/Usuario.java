@@ -51,4 +51,12 @@ public abstract class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Curtida> curtidas;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "usuario_bloqueios",
+            joinColumns = @JoinColumn(name = "bloqueador_id"),
+            inverseJoinColumns = @JoinColumn(name = "bloqueado_id")
+    )
+    private Set<Usuario> bloqueados = new HashSet<>();
+
 }
