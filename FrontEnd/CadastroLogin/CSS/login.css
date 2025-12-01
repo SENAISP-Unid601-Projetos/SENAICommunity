@@ -1,619 +1,636 @@
 /* --- Melhoria Global: Layout Mais Previsível --- */
-*, *::before, *::after {
-    box-sizing: border-box;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 /* Auth Container */
 .auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
 }
 
 .auth-card {
-    background-color: var(--bg-secondary);
-    border-radius: var(--card-radius);
-    box-shadow: var(--shadow);
-    width: 100%;  
-    max-width: 420px;
-    padding: 2.5rem;
-    border: 1px solid var(--border-color);
-    transition: var(--transition);
-    position: relative;
-    overflow: hidden;
+  background-color: var(--bg-secondary);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 420px;
+  padding: 2.5rem;
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
 }
 
 .auth-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(to bottom, var(--highlight), var(--accent-primary));
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    var(--highlight),
+    var(--accent-primary)
+  );
 }
 
 /* Auth Header */
 .auth-header {
-    text-align: center;
-    margin-bottom: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    font-size: 1.75rem;
-    font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  font-weight: 700;
 }
 
 .logo i {
-    color: var(--highlight);
+  color: var(--highlight);
 }
 
 .highlight {
-    color: var(--highlight);
+  color: var(--highlight);
 }
 
 .auth-header h1 {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .subtext {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
 }
 
 /* Auth Form */
 .auth-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .input-group {
-    position: relative;
+  position: relative;
 }
 
 .input-group i {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-tertiary);
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
 }
 
 .input-group input {
-    width: 100%;
-    padding: 0.75rem 3rem 0.75rem 2.5rem; /* Alterado de 1rem para 3rem na direita */
-    background-color: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    color: var(--text-primary);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 0 0 0px rgba(88, 166, 255, 0.2);
+  width: 100%;
+  padding: 0.75rem 3rem 0.75rem 2.5rem; /* Alterado de 1rem para 3rem na direita */
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 0 0 0px rgba(88, 166, 255, 0.2);
 }
 
 .input-group input:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2); /* Sombra final visível no foco */
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2); /* Sombra final visível no foco */
 }
 
 .toggle-password {
-    position: absolute;
-    right: 1px; /* Ajuste fino para desgrudar da borda (era 1rem/16px, 15px é similar mas garante o alinhamento visual) */
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--text-tertiary);
-    cursor: pointer;
-    transition: var(--transition);
-    z-index: 10; /* Garante que o botão fique sobre o input */
-    padding: 5px; /* Aumenta a área de clique sem mudar a posição visual */
+  position: absolute;
+  right: 1px; /* Ajuste fino para desgrudar da borda (era 1rem/16px, 15px é similar mas garante o alinhamento visual) */
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 10; /* Garante que o botão fique sobre o input */
+  padding: 5px; /* Aumenta a área de clique sem mudar a posição visual */
 }
 
 .toggle-password:hover {
-    color: var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 /* Password Strength */
 .password-strength {
-    margin-top: -0.5rem;
-    margin-bottom: 0.5rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .strength-meter {
-    height: 4px;
-    background-color: var(--bg-tertiary);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-bottom: 0.25rem;
+  height: 4px;
+  background-color: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
 }
 
 .strength-bar {
-    height: 100%;
-    width: 0%;
-    transition: var(--transition);
+  height: 100%;
+  width: 0%;
+  transition: var(--transition);
 }
 
-.strength-bar[data-strength="0"] { width: 25%; background-color: var(--danger); }
-.strength-bar[data-strength="1"] { width: 50%; background-color: var(--danger); }
-.strength-bar[data-strength="2"] { width: 75%; background-color: var(--away); }
-.strength-bar[data-strength="3"] { width: 100%; background-color: var(--success); }
+.strength-bar[data-strength="0"] {
+  width: 25%;
+  background-color: var(--danger);
+}
+.strength-bar[data-strength="1"] {
+  width: 50%;
+  background-color: var(--danger);
+}
+.strength-bar[data-strength="2"] {
+  width: 75%;
+  background-color: var(--away);
+}
+.strength-bar[data-strength="3"] {
+  width: 100%;
+  background-color: var(--success);
+}
 
 .strength-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.75rem;
-    color: var(--text-tertiary);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
 }
 
 /* Checkbox */
 .checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
 }
 
 .checkbox input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 0;
-    width: 0;
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
 }
 
 /* MELHORIA: Checkbox mais robusto com Flexbox */
 .checkmark {
-    display: flex; /* Para centralização perfeita do ícone */
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    background-color: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    transition: var(--transition);
+  display: flex; /* Para centralização perfeita do ícone */
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  transition: var(--transition);
 }
 
 .checkbox:hover .checkmark {
-    background-color: var(--bg-quaternary);
+  background-color: var(--bg-quaternary);
 }
 
 .checkbox input:checked ~ .checkmark {
-    background-color: var(--highlight);
-    border-color: var(--highlight);
+  background-color: var(--highlight);
+  border-color: var(--highlight);
 }
 
 .checkmark::after {
-    content: "";
-    display: none;
-    width: 4px;
-    height: 9px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg) translateY(-1px); /* Centralizado com Flexbox */
+  content: "";
+  display: none;
+  width: 4px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translateY(-1px); /* Centralizado com Flexbox */
 }
 
 .checkbox input:checked ~ .checkmark::after {
-    display: block;
+  display: block;
 }
 
 /* NOVO: Foco acessível para o checkbox */
 .checkbox input:focus-visible ~ .checkmark {
-    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
 }
 
 .terms {
-    margin: 0.5rem 0;
+  margin: 0.5rem 0;
 }
 
 /* Buttons */
 .btn {
-    padding: 0.75rem;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 /* MELHORIA: Botão com micro-interações e foco acessível */
 .btn-primary {
-    background-color: var(--highlight);
-    color: white;
-    border: none;
-    will-change: transform; /* Dica de otimização de animação */
+  background-color: var(--highlight);
+  color: white;
+  border: none;
+  will-change: transform; /* Dica de otimização de animação */
 }
 
 .btn-primary:hover {
-    background-color: var(--danger);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Efeito de elevação */
+  background-color: var(--danger);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Efeito de elevação */
 }
 
 /* NOVO: Foco visível apenas para navegação via teclado */
 .btn-primary:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--bg-secondary), 0 0 0 5px var(--accent-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--bg-secondary), 0 0 0 5px var(--accent-primary);
 }
-
 
 /* Auth Options */
 .auth-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5rem 0;
 }
 
 .text-link {
-    color: var(--accent-primary);
-    text-decoration: none;
-    font-size: 0.875rem;
-    transition: var(--transition);
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: var(--transition);
 }
 
 .text-link:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 /* Auth Footer */
 .auth-footer {
-    text-align: center;
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
 }
 
 /* --- NOVOS ESTILOS PARA LOGIN SOCIAL --- */
 .divider {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    margin: 1.5rem 0;
-    color: var(--text-tertiary);
-    font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
 }
 
 .divider::before,
 .divider::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid var(--border-color);
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .divider:not(:empty)::before {
-    margin-right: .5em;
+  margin-right: 0.5em;
 }
 
 .divider:not(:empty)::after {
-    margin-left: .5em;
+  margin-left: 0.5em;
 }
 
 /* Botão customizado do Google */
 .btn-google {
-    width: 100%; /* mesma largura do botão "Entrar" */
-    padding: 0.75rem; /* mesmo padding */
-    border-radius: 6px; /* mesma borda arredondada */
-    font-weight: 600;
-    cursor: pointer;
-    display: flex; /* ícone + texto alinhados */
-    align-items: center;
-    justify-content: center; /* centralizar conteúdo */
-    gap: 0.5rem; /* espaço entre ícone e texto */
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    transition: var(--transition);
-  }
-  
-  .btn-google:hover {
-    border-color: var(--accent-primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .btn-google img {
-    width: 20px;
-    height: 20px;
-  }
-  
+  width: 100%; /* mesma largura do botão "Entrar" */
+  padding: 0.75rem; /* mesmo padding */
+  border-radius: 6px; /* mesma borda arredondada */
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; /* ícone + texto alinhados */
+  align-items: center;
+  justify-content: center; /* centralizar conteúdo */
+  gap: 0.5rem; /* espaço entre ícone e texto */
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.btn-google:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-google img {
+  width: 20px;
+  height: 20px;
+}
+
 /* ===== RESPONSIVIDADE PARA CELULARES ===== */
 
 @media (max-width: 768px) {
-    /* CORREÇÃO: Container sempre centralizado */
-    .auth-container {
-        padding: 1rem;
-        min-height: 100vh;
-        align-items: center; /* ← Mude de flex-start para center */
-        display: flex;
-        justify-content: center;
-    }
-    
-    .auth-card {
-        max-width: 100%;
-        padding: 1.5rem;
-        margin-top: 0; /* ← Remove margin-top */
-        width: 100%;
-    }
-    
-    /* Header mais compacto */
-    .auth-header {
-        margin-bottom: 1.5rem;
-    }
-    
-    .auth-header h1 {
-        font-size: 1.5rem;
-    }
-    
-    .auth-header .subtext {
-        font-size: 0.9rem;
-    }
-    
-    /* Logo menor */
-    .logo {
-        font-size: 1.3rem;
-    }
-    
-    .logo i {
-        font-size: 1.5rem;
-    }
-    
-    /* Formulário com espaçamento reduzido */
-    .auth-form {
-        gap: 0.8rem;
-    }
-    
-    /* Inputs maiores para toque */
-    .input-group input {
-        padding: 1rem 1rem 1rem 2.8rem;
-        font-size: 16px; /* Previne zoom no iOS */
-    }
-    
-    .input-group i {
-        left: 1rem;
-    }
-    
-    .toggle-password {
-        right: 1rem;
-        width: 2rem;
-        height: 2rem;
-    }
-    
-    /* Auth options em coluna em telas pequenas */
-    .auth-options {
-        flex-direction: column;
-        gap: 0.8rem;
-        align-items: flex-start;
-    }
-    
-    .auth-options .checkbox {
-        font-size: 0.9rem;
-    }
-    
-    .auth-options .text-link {
-        font-size: 0.9rem;
-        align-self: flex-end;
-    }
-    
-    /* Botão principal maior */
-    .btn {
-        padding: 1rem;
-        font-size: 1rem;
-    }
-    
-    /* Divider ajustado */
-    .divider {
-        margin: 1rem 0;
-        font-size: 0.8rem;
-    }
-    
-    /* Botão do Google responsivo */
-    #google-signin-button {
-        width: 100%;
-    }
-    
-    #google-signin-button iframe {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-    
-    /* Footer ajustado */
-    .auth-footer p {
-        font-size: 0.9rem;
-    }
-    
-    /* Theme toggle reposicionado */
-    .theme-toggle {
-        bottom: 1rem;
-        right: 1rem;
-        width: 2.5rem;
-        height: 2.5rem;
-    }
+  /* CORREÇÃO: Container sempre centralizado */
+  .auth-container {
+    padding: 1rem;
+    min-height: 100vh;
+    align-items: center; /* ← Mude de flex-start para center */
+    display: flex;
+    justify-content: center;
+  }
+
+  .auth-card {
+    max-width: 100%;
+    padding: 1.5rem;
+    margin-top: 0; /* ← Remove margin-top */
+    width: 100%;
+  }
+
+  /* Header mais compacto */
+  .auth-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .auth-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .auth-header .subtext {
+    font-size: 0.9rem;
+  }
+
+  /* Logo menor */
+  .logo {
+    font-size: 1.3rem;
+  }
+
+  .logo i {
+    font-size: 1.5rem;
+  }
+
+  /* Formulário com espaçamento reduzido */
+  .auth-form {
+    gap: 0.8rem;
+  }
+
+  /* Inputs maiores para toque */
+  .input-group input {
+    padding: 1rem 1rem 1rem 2.8rem;
+    font-size: 16px; /* Previne zoom no iOS */
+  }
+
+  .input-group i {
+    left: 1rem;
+  }
+
+  .toggle-password {
+    right: 1rem;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  /* Auth options em coluna em telas pequenas */
+  .auth-options {
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: flex-start;
+  }
+
+  .auth-options .checkbox {
+    font-size: 0.9rem;
+  }
+
+  .auth-options .text-link {
+    font-size: 0.9rem;
+    align-self: flex-end;
+  }
+
+  /* Botão principal maior */
+  .btn {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  /* Divider ajustado */
+  .divider {
+    margin: 1rem 0;
+    font-size: 0.8rem;
+  }
+
+  /* Botão do Google responsivo */
+  #google-signin-button {
+    width: 100%;
+  }
+
+  #google-signin-button iframe {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Footer ajustado */
+  .auth-footer p {
+    font-size: 0.9rem;
+  }
+
+  /* Theme toggle reposicionado */
+  .theme-toggle {
+    bottom: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
 }
 
 @media (max-width: 480px) {
-    /* Ajustes para telas muito pequenas mantendo centralização */
-    .auth-container {
-        padding: 0.5rem; /* ← Menos padding em telas muito pequenas */
-    }
-    
-    .auth-card {
-        padding: 1.2rem;
-        margin: 0; /* ← Garante sem margens */
-    }
-    
-    .auth-header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .logo {
-        font-size: 1.1rem;
-    }
-    
-    .input-group input {
-        padding: 0.9rem 0.9rem 0.9rem 2.5rem;
-    }
-    
-    /* Auth options mais compacto */
-    .auth-options {
-        gap: 0.5rem;
-    }
-    
-    .auth-options .checkbox {
-        font-size: 0.85rem;
-    }
-    
-    .auth-options .text-link {
-        font-size: 0.85rem;
-    }
-    
-    .divider {
-        font-size: 0.75rem;
-        margin: 0.8rem 0;
-    }
+  /* Ajustes para telas muito pequenas mantendo centralização */
+  .auth-container {
+    padding: 0.5rem; /* ← Menos padding em telas muito pequenas */
+  }
+
+  .auth-card {
+    padding: 1.2rem;
+    margin: 0; /* ← Garante sem margens */
+  }
+
+  .auth-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+  }
+
+  .input-group input {
+    padding: 0.9rem 0.9rem 0.9rem 2.5rem;
+  }
+
+  /* Auth options mais compacto */
+  .auth-options {
+    gap: 0.5rem;
+  }
+
+  .auth-options .checkbox {
+    font-size: 0.85rem;
+  }
+
+  .auth-options .text-link {
+    font-size: 0.85rem;
+  }
+
+  .divider {
+    font-size: 0.75rem;
+    margin: 0.8rem 0;
+  }
 }
 
 /* CORREÇÃO EXTRA: Garantir centralização perfeita */
 @media (max-width: 768px) {
-    body, html {
-        height: 100%;
-    }
-    
-    .auth-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-    }
+  body,
+  html {
+    height: 100%;
+  }
+
+  .auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
 }
 
 /* Prevenir zoom em inputs no iOS */
 @media (max-width: 768px) {
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="tel"],
-    select,
-    textarea {
-        font-size: 16px !important;
-    }
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Melhorias de acessibilidade para toque */
 @media (hover: none) and (pointer: coarse) {
-    .btn:hover {
-        transform: none;
-    }
-    
-    .theme-toggle:hover {
-        transform: none;
-    }
-    
-    .toggle-password {
-        min-width: 44px;
-        min-height: 44px;
-    }
-    
-    .btn-google:hover {
-        transform: none;
-    }
+  .btn:hover {
+    transform: none;
+  }
+
+  .theme-toggle:hover {
+    transform: none;
+  }
+
+  .toggle-password {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .btn-google:hover {
+    transform: none;
+  }
 }
 
 /* Correção específica para o botão do Google em mobile */
 @media (max-width: 768px) {
-    /* Garante que o botão do Google seja responsivo */
-    .g_id_signin {
-        width: 100% !important;
-    }
-    
-    .g_id_signin > div {
-        width: 100% !important;
-    }
+  /* Garante que o botão do Google seja responsivo */
+  .g_id_signin {
+    width: 100% !important;
+  }
 
-    @media (max-width: 768px) {
+  .g_id_signin > div {
+    width: 100% !important;
+  }
+
+  @media (max-width: 768px) {
     .auth-options {
-        flex-direction: row; /* ← Mantém em linha */
-        justify-content: space-between; /* ← Distribui igualmente */
-        align-items: center; /* ← Centraliza verticalmente */
-        gap: 0.5rem;
-        margin: 0.5rem 0;
-        width: 100%;
+      flex-direction: row; /* ← Mantém em linha */
+      justify-content: space-between; /* ← Distribui igualmente */
+      align-items: center; /* ← Centraliza verticalmente */
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+      width: 100%;
     }
-    
-    .auth-options .checkbox {
-        font-size: 0.85rem;
-        margin: 0;
-        flex-shrink: 0; /* ← Impede que quebre linha */
-    }
-    
-    .auth-options .text-link {
-        font-size: 0.85rem;
-        margin: 0;
-        white-space: nowrap; /* ← Impede quebra de texto */
-        text-align: right;
-    }
-}
 
-@media (max-width: 480px) {
+    .auth-options .checkbox {
+      font-size: 0.85rem;
+      margin: 0;
+      flex-shrink: 0; /* ← Impede que quebre linha */
+    }
+
+    .auth-options .text-link {
+      font-size: 0.85rem;
+      margin: 0;
+      white-space: nowrap; /* ← Impede quebra de texto */
+      text-align: right;
+    }
+  }
+
+  @media (max-width: 480px) {
     .auth-options {
-        gap: 0.3rem;
+      gap: 0.3rem;
     }
-    
-    .auth-options .checkbox {
-        font-size: 0.8rem;
-    }
-    
-    .auth-options .text-link {
-        font-size: 0.8rem;
-    }
-}
 
-/* Melhoria para telas muito pequenas */
-@media (max-width: 360px) {
+    .auth-options .checkbox {
+      font-size: 0.8rem;
+    }
+
+    .auth-options .text-link {
+      font-size: 0.8rem;
+    }
+  }
+
+  /* Melhoria para telas muito pequenas */
+  @media (max-width: 360px) {
     .auth-options {
-        flex-wrap: nowrap; /* ← Garante que fique em uma linha */
+      flex-wrap: nowrap; /* ← Garante que fique em uma linha */
     }
-    
-    .auth-options .checkbox {
-        font-size: 0.75rem;
-    }
-    
-    .auth-options .text-link {
-        font-size: 0.75rem;
-    }
-}
 
-/* Garantir que não quebre linha em nenhum tamanho de tela */
-.auth-options {
+    .auth-options .checkbox {
+      font-size: 0.75rem;
+    }
+
+    .auth-options .text-link {
+      font-size: 0.75rem;
+    }
+  }
+
+  /* Garantir que não quebre linha em nenhum tamanho de tela */
+  .auth-options {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: nowrap;
     width: 100%;
-}
+  }
 
-.auth-options .checkbox {
+  .auth-options .checkbox {
     flex-shrink: 0;
-}
+  }
 
-.auth-options .text-link {
+  .auth-options .text-link {
     flex-shrink: 0;
     white-space: nowrap;
+  }
 }
-}
-  
