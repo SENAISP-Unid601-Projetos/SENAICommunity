@@ -57,7 +57,7 @@ function setupPasswordStrengthMeter() {
 }
 
 /**
- * Configura a área de upload de imagem com drag-drop e preview,
+ * Configura a área de upload de imagem
  */
 function setupImageUpload() {
     const dropZone = document.getElementById('drop-zone');
@@ -110,7 +110,7 @@ function setupImageUpload() {
 }
 
 /**
- * Configura a lógica de submissão do formulário de cadastro.
+ * Configura a lógica de submissão do formulário de cadastro manual.
  */
 function setupFormSubmission() {
     const registerForm = document.getElementById('registerForm');
@@ -124,12 +124,12 @@ function setupFormSubmission() {
 
         if (!dataNascimentoValor) {
             Swal.fire({ icon: 'error', title: 'Campo Obrigatório', text: 'Por favor, insira sua data de nascimento.' });
-            return; // Impede o envio
+            return; 
         }
 
         if (dataNascimentoValor.includes('_')) {
              Swal.fire({ icon: 'error', title: 'Data Incompleta', text: 'Por favor, preencha a data de nascimento (DD/MM/AAAA).' });
-             return; // Impede o envio
+             return; 
         }
         
         const [dia, mes, ano] = dataNascimentoValor.split('/');
@@ -173,8 +173,106 @@ function setupFormSubmission() {
     });
 }
 
+function setupMobileOptimizations() {
+    const buttons = document.querySelectorAll('button, .btn, .toggle-password');
+    buttons.forEach(btn => {
+        btn.addEventListener('touchstart', function(e) {
+            if (!this.classList.contains('no-prevent')) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    if (window.innerWidth <= 768) {
+        const firstInput = document.querySelector('input, select');
+        if (firstInput && firstInput.type !== 'hidden') {
+            setTimeout(() => firstInput.focus(), 300);
+        }
+    }
+}
+
 /**
- * Ponto de entrada principal para a página de cadastro.
+ * Sincroniza a visibilidade das duas senhas
+ */
+function setupDualPasswordToggle() {
+    const mainPasswordInput = document.getElementById('registerPassword');
+    const confirmPasswordInput = document.getElementById('confirmarSenha');
+    
+    const toggleBtn = document.getElementById('btnToggleBoth');
+
+    if (toggleBtn && mainPasswordInput && confirmPasswordInput) {
+        toggleBtn.addEventListener('click', function() {
+            setTimeout(() => {
+                confirmPasswordInput.type = mainPasswordInput.type;
+            }, 0);
+        });
+    }
+}
+
+/**
+ * ==========================================
+ * LÓGICA DO LOGIN COM GOOGLE (CORRIGIDA)
+ * ==========================================
+ */
+function handleCredentialResponse(response) {
+    console.log("Token do Google recebido:", response.credential);
+
+    // CORREÇÃO: URL alterada para coincidir com o LoginController.java
+    // O endpoint /autenticacao/login/google cria o usuário se não existir.
+    axios.post('http://localhost:8080/autenticacao/login/google', {
+        token: response.credential
+    })
+    .then(function (res) {
+        // Se deu certo, salvamos o token e redirecionamos
+        if(res.data.token) {
+            localStorage.setItem('token', res.data.token);
+        }
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Cadastro/Login realizado!',
+            text: 'Entrando no sistema...',
+            timer: 2000,
+            showConfirmButton: false
+        }).then(() => {
+            window.location.href = 'principal.html';
+        });
+    })
+    .catch(function (error) {
+        console.error('Erro no login Google:', error);
+        let msg = 'Falha ao autenticar com Google.';
+        if (error.response && error.response.data) {
+            // Se o backend retornar uma mensagem de erro simples (String)
+            msg = error.response.data;
+        }
+        Swal.fire({ icon: 'error', title: 'Erro', text: msg });
+    });
+}
+
+window.onload = function () {
+    if (window.google && google.accounts) {
+        google.accounts.id.initialize({
+            client_id: "1055449517512-gq7f7doogo5e8vmaq84vgrabsk1q5f5k.apps.googleusercontent.com",
+            callback: handleCredentialResponse
+        });
+
+        const googleBtnContainer = document.getElementById("google-signin-button");
+        if (googleBtnContainer) {
+            google.accounts.id.renderButton(
+                googleBtnContainer,
+                { 
+                    theme: "outline", 
+                    size: "large", 
+                    width: "100%", 
+                    text: "signup_with" 
+                }
+            );
+        }
+    }
+};
+
+/**
+ * Ponto de entrada principal
  */
 document.addEventListener('DOMContentLoaded', function() {
     setupDateMask();
@@ -185,27 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (typeof setupPasswordToggles === 'function') {
         setupPasswordToggles(); 
-    }  
-});
-
-// Adicione esta função no seu cadastro.js
-function setupMobileOptimizations() {
-    // Prevenir double-tap zoom em botões
-    const buttons = document.querySelectorAll('button, .btn, .toggle-password');
-    buttons.forEach(btn => {
-        btn.addEventListener('touchstart', function(e) {
-            if (!this.classList.contains('no-prevent')) {
-                e.preventDefault();
-            }
-        });
-    });
-    
-    // Focar no primeiro campo ao carregar a página (apenas em mobile)
-    if (window.innerWidth <= 768) {
-        const firstInput = document.querySelector('input, select');
-        if (firstInput && firstInput.type !== 'hidden') {
-            setTimeout(() => firstInput.focus(), 300);
-        }
     }
-}
-
+    
+    setupDualPasswordToggle();
+});

@@ -88,16 +88,15 @@
     color: var(--text-tertiary);
 }
 
-/* MELHORIA: Foco suave para os inputs */
 .input-group input {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    padding: 0.75rem 3rem 0.75rem 2.5rem; /* Alterado de 1rem para 3rem na direita */
     background-color: var(--bg-tertiary);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     color: var(--text-primary);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Transição suave */
-    box-shadow: 0 0 0 0px rgba(88, 166, 255, 0.2); /* Sombra inicial transparente */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 0 0 0px rgba(88, 166, 255, 0.2);
 }
 
 .input-group input:focus {
@@ -108,7 +107,7 @@
 
 .toggle-password {
     position: absolute;
-    right: 1rem;
+    right: 1px; /* Ajuste fino para desgrudar da borda (era 1rem/16px, 15px é similar mas garante o alinhamento visual) */
     top: 50%;
     transform: translateY(-50%);
     background: none;
@@ -116,6 +115,8 @@
     color: var(--text-tertiary);
     cursor: pointer;
     transition: var(--transition);
+    z-index: 10; /* Garante que o botão fique sobre o input */
+    padding: 5px; /* Aumenta a área de clique sem mudar a posição visual */
 }
 
 .toggle-password:hover {
