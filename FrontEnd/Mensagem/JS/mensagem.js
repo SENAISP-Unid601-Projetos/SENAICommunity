@@ -21,11 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
         optBlockUser: document.getElementById("opt-block-user"),
         optDeleteChat: document.getElementById("opt-delete-chat"),
 
-        // ELEMENTOS DOS MODAIS MODERNOS
-        modalBlockUser: document.getElementById("custom-block-user-modal"),
-        btnCancelBlock: document.getElementById("btn-cancel-block"),
-        btnConfirmBlock: document.getElementById("btn-confirm-block"),
-
         modalDeleteChat: document.getElementById("custom-delete-chat-modal"),
         btnCancelChatDelete: document.getElementById("btn-cancel-chat-delete"),
         btnConfirmChatDelete: document.getElementById("btn-confirm-chat-delete"),
@@ -70,10 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentMessageIdToEdit = null;
     let currentMessageIdToDelete = null;
 
-    // Variáveis de estado para saber QUEM bloquear/excluir
-    let pendingBlockUserId = null;
-    let pendingDeleteChatUserId = null;
-
     // --- CORREÇÃO DO BOTÃO "EDITAR PERFIL" ---
     const editProfileBtnOld = document.getElementById("edit-profile-btn");
     if (editProfileBtnOld) {
@@ -105,6 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let backendUrl;
     let defaultAvatarUrl;
     let isUserBlocked = false;
+
 
     /**
      * INICIALIZAÇÃO
@@ -162,28 +154,44 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelectorAll('.convo-dropdown-menu').forEach(menu => menu.classList.remove('active'));
         });
 
-        // 2. Lógica de Bloquear Usuário (MODAL)
-        window.handleBlockUser = function(event, userId) {
-            if(event) event.stopPropagation();
-            
-            // Fecha o menu dropdown
-            document.querySelectorAll('.convo-dropdown-menu').forEach(m => m.classList.remove('active'));
-            
-            // Abre o Modal Bonito
-            pendingBlockUserId = userId;
-            elements.modalBlockUser.classList.add("active");
+        // 2. Lógica de Bloquear Usuário
+        window.handleBlockUser = async function (event, userId) {
+            event.stopPropagation();
+            if (!confirm("Tem certeza que deseja bloquear este usuário? Vocês não poderão mais trocar mensagens.")) return;
+
+            try {
+                // Ajuste a URL conforme seu BackEnd (Ex: /api/bloqueios ou /api/amizades/bloquear)
+                await axios.post(`${window.backendUrl}/usuarios/bloquear/${userId}`);
+
+                showNotification("Usuário bloqueado.", "success");
+                // Remove a conversa da lista visualmente
+                const card = document.querySelector(`.convo-card[data-user-id="${userId}"]`);
+                if (card) card.remove();
+
+                // Se a conversa estava aberta, limpa a tela
+                if (activeConversation.usuarioId === userId) {
+                    document.getElementById("chat-messages-area").innerHTML = '';
+                    document.getElementById("chat-header-content").innerHTML = '<h3>Selecione uma Conversa</h3>';
+                    activeConversation = {};
+                }
+            } catch (error) {
+                console.error(error);
+                showNotification("Erro ao bloquear usuário.", "error");
+            }
         };
 
-        // 3. Lógica de Apagar Conversa (MODAL)
-        window.handleDeleteConversation = function(event, userId) {
-            if(event) event.stopPropagation();
-            
-            // Fecha menu
-            document.querySelectorAll('.convo-dropdown-menu').forEach(m => m.classList.remove('active'));
+        // 3. Lógica de Apagar Conversa (Opcional, já que coloquei no menu)
+        window.handleDeleteConversation = async function (event, userId) {
+            event.stopPropagation();
+            if (!confirm("Apagar todo o histórico desta conversa?")) return;
 
-            // Abre o Modal Bonito
-            pendingDeleteChatUserId = userId;
-            elements.modalDeleteChat.classList.add("active");
+            try {
+                await axios.delete(`${window.backendUrl}/api/chat/privado/conversa/${userId}`);
+                showNotification("Conversa apagada.", "success");
+                fetchConversations(); // Recarrega a lista
+            } catch (error) {
+                showNotification("Erro ao apagar conversa.", "error");
+            }
         };
 
         // 4. Lógica do Modal de Bloqueados
@@ -217,60 +225,60 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
         
-        function renderBlockedUsers(users) {
-            const blockedList = document.getElementById('blocked-users-list');
-            if (!blockedList) return;
-            
-            blockedList.innerHTML = '';
-            
-            if (!users || users.length === 0) {
-                blockedList.innerHTML = `
-                    <div style="text-align:center; padding: 2rem;">
-                        <i class="fas fa-check-circle" style="font-size: 2rem; color: var(--success); margin-bottom: 1rem;"></i>
-                        <p style="color:var(--text-secondary);">Sua lista de bloqueios está vazia.</p>
-                    </div>`;
-                return;
-            }
-
-            users.forEach(user => {
-                const item = document.createElement('div');
-                item.className = 'user-list-item'; // Classe do CSS novo
-
-                // Tratamento de imagem robusto
-                const avatarUrl = user.fotoPerfil 
-                    ? (user.fotoPerfil.startsWith('http') ? user.fotoPerfil : `${window.backendUrl}${user.fotoPerfil}`)
-                    : window.defaultAvatarUrl;
-
-                item.innerHTML = `
-                    <div class="user-info-area">
-                        <img src="${avatarUrl}" alt="${user.nome}" onerror="this.src='${window.defaultAvatarUrl}'">
-                        <span>${user.nome}</span>
-                    </div>
-                    
-                    <div class="user-actions-area">
-                        <button class="btn-view" title="Ver Conversa Antiga" onclick="window.viewBlockedChat(${user.id})">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        
-                        <button class="btn-unblock" onclick="window.handleUnblockUser(${user.id})">
-                            Desbloquear
-                        </button>
-                    </div>
-                `;
-                blockedList.appendChild(item);
-            });
+function renderBlockedUsers(users) {
+        const blockedList = document.getElementById('blocked-users-list');
+        if (!blockedList) return;
+        
+        blockedList.innerHTML = '';
+        
+        if (!users || users.length === 0) {
+            blockedList.innerHTML = `
+                <div style="text-align:center; padding: 2rem;">
+                    <i class="fas fa-check-circle" style="font-size: 2rem; color: var(--success); margin-bottom: 1rem;"></i>
+                    <p style="color:var(--text-secondary);">Sua lista de bloqueios está vazia.</p>
+                </div>`;
+            return;
         }
 
-        window.viewBlockedChat = function(userId) {
-            // 1. Fecha o modal de bloqueados
-            const blockedModal = document.getElementById('blocked-users-modal');
-            if(blockedModal) blockedModal.style.display = 'none';
+        users.forEach(user => {
+            const item = document.createElement('div');
+            item.className = 'user-list-item'; // Classe do CSS novo
 
-            // 2. Abre a conversa
-            // A função selectConversation já tem inteligência para buscar os dados do usuário
-            // se ele não estiver na lista lateral (que é o caso aqui).
-            selectConversation(userId);
-        };
+            // Tratamento de imagem robusto
+            const avatarUrl = user.fotoPerfil 
+                ? (user.fotoPerfil.startsWith('http') ? user.fotoPerfil : `${window.backendUrl}${user.fotoPerfil}`)
+                : window.defaultAvatarUrl;
+
+            item.innerHTML = `
+                <div class="user-info-area">
+                    <img src="${avatarUrl}" alt="${user.nome}" onerror="this.src='${window.defaultAvatarUrl}'">
+                    <span>${user.nome}</span>
+                </div>
+                
+                <div class="user-actions-area">
+                    <button class="btn-view" title="Ver Conversa Antiga" onclick="window.viewBlockedChat(${user.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    
+                    <button class="btn-unblock" onclick="window.handleUnblockUser(${user.id})">
+                        Desbloquear
+                    </button>
+                </div>
+            `;
+            blockedList.appendChild(item);
+        });
+    }
+
+    window.viewBlockedChat = function(userId) {
+        // 1. Fecha o modal de bloqueados
+        const blockedModal = document.getElementById('blocked-users-modal');
+        if(blockedModal) blockedModal.style.display = 'none';
+
+        // 2. Abre a conversa
+        // A função selectConversation já tem inteligência para buscar os dados do usuário
+        // se ele não estiver na lista lateral (que é o caso aqui).
+        selectConversation(userId);
+    };
 
         window.handleUnblockUser = async function (userId) {
             try {
@@ -283,107 +291,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 showNotification("Erro ao desbloquear.", "error");
             }
         };
-    });
-
-    // =========================================================
-    // 1. NOVA LÓGICA DE BLOQUEIO (MODAL)
-    // =========================================================
-
-    // Listener do Botão "Sim, Bloquear"
-    if (elements.btnConfirmBlock) {
-        elements.btnConfirmBlock.addEventListener("click", async () => {
-            if (!pendingBlockUserId) return;
-            
-            try {
-                // Executa a requisição
-                await axios.post(`${window.backendUrl}/usuarios/bloquear/${pendingBlockUserId}`);
-                
-                showNotification("Usuário bloqueado com sucesso.", "success");
-                
-                // Remove visualmente
-                const card = document.querySelector(`.convo-card[data-user-id="${pendingBlockUserId}"]`);
-                if (card) card.remove();
-
-                // Limpa chat se estiver aberto
-                if (activeConversation.usuarioId === pendingBlockUserId) {
-                    document.getElementById("chat-messages-area").innerHTML = '';
-                    document.getElementById("chat-header-content").innerHTML = '<h3>Selecione uma Conversa</h3>';
-                    activeConversation = {};
-                }
-            } catch (error) {
-                console.error(error);
-                showNotification("Erro ao bloquear usuário.", "error");
-            } finally {
-                // Fecha o modal e limpa estado
-                elements.modalBlockUser.classList.remove("active");
-                pendingBlockUserId = null;
-            }
-        });
-    }
-
-    // Listener do Botão "Cancelar"
-    if (elements.btnCancelBlock) {
-        elements.btnCancelBlock.addEventListener("click", () => {
-            elements.modalBlockUser.classList.remove("active");
-            pendingBlockUserId = null;
-        });
-    }
-
-    // =========================================================
-    // 2. NOVA LÓGICA DE EXCLUIR CONVERSA (MODAL)
-    // =========================================================
-
-    // Listener do Botão "Sim, Apagar Tudo"
-    if (elements.btnConfirmChatDelete) {
-        elements.btnConfirmChatDelete.addEventListener("click", async () => {
-            // Usa o ID pendente ou o ID da conversa ativa (caso venha do menu do header)
-            const targetId = pendingDeleteChatUserId || activeConversation.usuarioId;
-            
-            if (!targetId) return;
-
-            try {
-                await axios.delete(`${window.backendUrl}/api/chat/privado/conversa/${targetId}`);
-                
-                showNotification("Conversa apagada.", "success");
-                
-                // Atualiza UI
-                fetchConversations(); 
-                
-                // Se apagou a conversa aberta, limpa a tela
-                if (activeConversation.usuarioId === targetId) {
-                    document.getElementById("chat-messages-area").innerHTML = '<div class="empty-chat">Conversa excluída.</div>';
-                    // Opcional: fechar chat no mobile
-                    if (window.innerWidth <= 1024) {
-                        document.getElementById("chat-container").classList.remove("chat-open");
-                    }
-                }
-
-            } catch (error) {
-                showNotification("Erro ao apagar conversa.", "error");
-            } finally {
-                elements.modalDeleteChat.classList.remove("active");
-                pendingDeleteChatUserId = null;
-            }
-        });
-    }
-
-    // Listener do Botão "Cancelar"
-    if (elements.btnCancelChatDelete) {
-        elements.btnCancelChatDelete.addEventListener("click", () => {
-            elements.modalDeleteChat.classList.remove("active");
-            pendingDeleteChatUserId = null;
-        });
-    }
-
-    // FECHAR MODAIS AO CLICAR FORA (BACKDROP)
-    [elements.modalBlockUser, elements.modalDeleteChat].forEach(modal => {
-        if (modal) {
-            modal.addEventListener("click", (e) => {
-                if (e.target === modal) {
-                    modal.classList.remove("active");
-                }
-            });
-        }
     });
 
     // --- HELPER: FORMATAÇÃO DE TEXTO ---
@@ -901,7 +808,12 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // Cancelar Exclusão de Conversa (do menu header)
+        // Confirmar Exclusão de Conversa
+        if (elements.btnConfirmChatDelete) {
+            elements.btnConfirmChatDelete.addEventListener("click", deleteFullConversation);
+        }
+
+        // Cancelar Exclusão de Conversa
         if (elements.btnCancelChatDelete) {
             elements.btnCancelChatDelete.addEventListener("click", () => {
                 elements.modalDeleteChat.classList.remove("active");

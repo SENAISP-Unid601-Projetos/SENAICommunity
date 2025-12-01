@@ -77,6 +77,15 @@ function renderizarResultados(usuarios) {
             return;
         }
 
+        // --- FUNÇÃO AUXILIAR PARA LIMITAR TEXTO (NOVO) ---
+        function limitarTexto(texto, tamanhoMaximo) {
+            if (!texto) return "";
+            if (texto.length > tamanhoMaximo) {
+                return texto.substring(0, tamanhoMaximo) + "...";
+            }
+            return texto;
+        }
+
         usuarios.forEach((usuario) => {
             const userCard = document.createElement("div");
             userCard.className = "user-card";
@@ -84,6 +93,10 @@ function renderizarResultados(usuarios) {
             // Tenta pegar a URL da foto ou usa a padrão se for null/vazio
             const fotoUrl = window.getAvatarUrl(usuario.fotoPerfil);
             const statusClass = usuario.online ? "online" : "offline";
+
+            // --- APLICA A LIMITAÇÃO AQUI (NOVO) ---
+            const nomeExibido = limitarTexto(usuario.nome, 18); // Ajuste o 18 para o tamanho que preferir
+            const emailExibido = limitarTexto(usuario.email, 22); // Ajuste o 22 para o tamanho que preferir
 
             let actionButtonHtml = "";
 
@@ -110,7 +123,7 @@ function renderizarResultados(usuarios) {
              <i class="fas fa-comment-dots"></i> Enviar Mensagem
            </button>`;
 
-            // --- CORREÇÃO AQUI: Usa window.defaultAvatarUrl no erro ---
+            // --- HTML ATUALIZADO COM LIMITAÇÃO E TITLE ---
             userCard.innerHTML = `
           <div class="card-header-info">
             <div class="user-card-avatar">
@@ -123,10 +136,10 @@ function renderizarResultados(usuarios) {
               <div class="status ${statusClass}"></div>
             </div>
             <div class="user-card-info">
-              <a href="perfil.html?id=${usuario.id}" class="user-card-link">
-                <h4>${usuario.nome}</h4>
+              <a href="perfil.html?id=${usuario.id}" class="user-card-link" title="${usuario.nome}">
+                <h4>${nomeExibido}</h4>
               </a>
-              <p>${usuario.email}</p>
+              <p title="${usuario.email}">${emailExibido}</p>
             </div>
           </div>
           <div class="user-card-actions">

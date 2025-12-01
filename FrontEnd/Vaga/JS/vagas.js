@@ -287,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     openVagaDetailsModal(vagaAlvo); // Abre o modal
 
                     // Opcional: Limpa a URL para não reabrir ao atualizar a página (F5)
-                    window.history.replaceState({}, document.title, "vaga.html");
+                    // window.history.replaceState({}, document.title, "vaga.html");
                 }
             }
         }

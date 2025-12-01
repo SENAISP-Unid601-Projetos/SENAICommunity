@@ -723,22 +723,12 @@ body {
   width: fit-content;
 }
 
-/* Atualize a classe .evento-titulo existente */
 .evento-titulo {
   font-size: 1.2rem;
   font-weight: 600;
   margin: 0;
   line-height: 1.3;
   color: var(--text-primary);
-  
-  /* --- NOVO CÓDIGO PARA ABREVIAR --- */
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* Limita a no máximo 2 linhas */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  /* Altura fixa opcional para alinhar cards perfeitamente */
-  min-height: 2.6em; 
 }
 
 .evento-detalhe {
@@ -1862,6 +1852,7 @@ textarea:focus-visible {
         justify-content: center !important;
     }
 }
+
 /* =================================================================
    CORREÇÃO: MEUS EVENTOS (MINI CARDS)
 ================================================================= */
@@ -2039,4 +2030,5 @@ textarea:focus-visible {
     gap: 10px;
   }
 }
+
 
