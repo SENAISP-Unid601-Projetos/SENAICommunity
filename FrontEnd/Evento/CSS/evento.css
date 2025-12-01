@@ -723,12 +723,22 @@ body {
   width: fit-content;
 }
 
+/* Atualize a classe .evento-titulo existente */
 .evento-titulo {
   font-size: 1.2rem;
   font-weight: 600;
   margin: 0;
   line-height: 1.3;
   color: var(--text-primary);
+  
+  /* --- NOVO CÓDIGO PARA ABREVIAR --- */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limita a no máximo 2 linhas */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Altura fixa opcional para alinhar cards perfeitamente */
+  min-height: 2.6em; 
 }
 
 .evento-detalhe {
@@ -1851,5 +1861,175 @@ textarea:focus-visible {
         align-items: center !important;
         justify-content: center !important;
     }
+}
+/* =================================================================
+   CORREÇÃO: MEUS EVENTOS (MINI CARDS)
+================================================================= */
+
+/* Ajuste do Card Container na Sidebar */
+.meus-eventos-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  /* Remove margens estranhas que possam estar deslocando o elemento */
+  margin: 0 0 1rem 0; 
+  width: 100%;
+}
+
+.meus-eventos-card h3 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Lista scrollável caso tenha muitos eventos */
+#meus-eventos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 4px; /* Espaço para scrollbar não cobrir conteúdo */
+}
+
+/* O CARD DO EVENTO (Compacto) */
+.mini-card {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem;
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.mini-card:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--accent-primary);
+  transform: translateX(2px);
+}
+
+/* Imagem Pequena e Redonda/Quadrada */
+.mini-card-img {
+  width: 45px;       /* Tamanho fixo menor */
+  height: 45px;
+  border-radius: 8px;
+  object-fit: cover; /* Garante que a imagem não distorça */
+  flex-shrink: 0;    /* Impede a imagem de esmagar */
+  background-color: var(--bg-primary);
+}
+
+/* Container do Texto */
+.mini-card-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  min-width: 0; /* O SEGREDO: Isso permite que o flex item encolha e mostre os "..." */
+}
+
+/* Título com Truncamento (3 pontinhos) */
+/* Atualize a classe .mini-card-title */
+.mini-card-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.2rem;
+
+  /* --- NOVO CÓDIGO PARA ABREVIAR (1 LINHA) --- */
+  white-space: nowrap;      /* Impede quebra de linha */
+  overflow: hidden;         /* Esconde o excesso */
+  text-overflow: ellipsis;  /* Adiciona "..." no final */
+  display: block;           /* Garante comportamento de bloco */
+  max-width: 100%;
+}
+
+/* Data */
+.mini-card-date {
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* --- RESPONSIVIDADE MOBILE --- */
+/* =================================================================
+   CORREÇÃO DEFINITIVA: MOBILE MEUS EVENTOS (CARROUSEL NO TOPO)
+================================================================= */
+
+@media (max-width: 1024px) {
+  /* 1. Container vira coluna */
+  .container {
+    flex-direction: column !important;
+  }
+
+  /* 2. Sidebar Direita vai para o TOPO (Ordem -1) */
+  .right-sidebar {
+    width: 100% !important;
+    order: -1 !important; /* O !important garante que suba */
+    padding: 0.5rem 1rem 0 1rem !important;
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+  }
+
+  /* 3. Remove estilos de "Caixa" para parecer nativo */
+  .meus-eventos-card {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100%;
+  }
+
+  /* Título menor e mais discreto */
+  .meus-eventos-card h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  /* 4. TRANSFORMA A LISTA EM CARROSSEL HORIZONTAL */
+  #meus-eventos-lista {
+    display: flex !important;
+    flex-direction: row !important; /* Força linha horizontal */
+    overflow-x: auto !important;    /* Permite rolar para o lado */
+    gap: 1rem;
+    padding-bottom: 10px; /* Espaço para o dedo não cobrir */
+    max-height: none !important;
+    
+    /* Scroll suave */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Esconde barra de rolagem mas mantém funcionalidade */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE */
+  }
+
+  #meus-eventos-lista::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  /* 5. CARD INDIVIDUAL NO MOBILE (Largura Fixa) */
+  .mini-card {
+    min-width: 260px !important; /* Tamanho fixo para o carrossel */
+    max-width: 260px !important;
+    background-color: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color);
+    margin: 0 !important;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; /* Impede que esmaguem */
+  }
 }
 

@@ -310,7 +310,7 @@ async function initEventos() {
       </div>
       <div class="evento-conteudo">
         <span class="evento-categoria">${evento.categoria}</span>
-        <h2 class="evento-titulo">${evento.nome}</h2>
+        <h2 class="evento-titulo" title="${evento.nome}">${evento.nome}</h2>
         
         <div class="evento-detalhe">
              <i class="fas fa-clock"></i> ${horaInicio} - ${horaFim}
@@ -339,39 +339,60 @@ async function initEventos() {
   }
 
   // Atualizar lista "Meus Eventos"
+// Atualizar lista "Meus Eventos" com Design Melhorado e Clique
+// Função Corrigida para Renderizar Meus Eventos
   function updateMeusEventos() {
     if (!meusEventosLista) return;
     meusEventosLista.innerHTML = '';
     
+    // 1. Filtra e Ordena
     const eventosConfirmados = eventos.filter(evento => 
       eventosInteressados.includes(evento.id)
     );
+    
+    // Ordena: Eventos mais próximos primeiro
+    eventosConfirmados.sort((a, b) => a.data.localeCompare(b.data));
 
+    // 2. Estado Vazio
     if (eventosConfirmados.length === 0) {
-      meusEventosLista.innerHTML = '<p class="empty-message">Você ainda não definiu lembrete para nenhum evento.</p>';
+      meusEventosLista.innerHTML = `
+        <div style="text-align: center; padding: 1rem; opacity: 0.6;">
+            <p style="font-size: 0.85rem;">Nenhum evento salvo.</p>
+        </div>`;
       return;
     }
 
+    // 3. Renderiza Cards Compactos
     eventosConfirmados.forEach(evento => {
-      // Parse manual da data para o sidebar também
-      let dia = '--', mes = '---';
+      // Formata data simples (Ex: 15/03)
+      let dataFormatada = '--/--';
       if(evento.data) {
-        const [anoStr, mesStr, diaStr] = evento.data.split('-');
-        const dataObj = new Date(anoStr, mesStr - 1, diaStr);
-        dia = diaStr;
-        mes = dataObj.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+          const parts = evento.data.split('-'); // YYYY-MM-DD
+          dataFormatada = `${parts[2]}/${parts[1]}`;
       }
+
+      const imagemUrl = evento.imagemCapaUrl || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=100&q=80';
+
+      const card = document.createElement('div');
+      card.className = 'mini-card';
       
-      const item = document.createElement('div');
-      item.className = 'evento-confirmado-item';
-      item.innerHTML = `
-        <div class="evento-data" style="position: static; padding: 0.3rem; background: var(--bg-tertiary);">
-          <span>${dia}</span>
-          <span>${mes}</span>
+      // HTML Mais limpo
+      card.innerHTML = `
+        <img src="${imagemUrl}" alt="Capa" class="mini-card-img">
+        <div class="mini-card-info">
+            <div class="mini-card-title" title="${evento.nome}">${evento.nome}</div>
+            <div class="mini-card-date">
+                <i class="fas fa-calendar-alt"></i> ${dataFormatada} • ${evento.horaInicio.slice(0,5)}
+            </div>
         </div>
-        <span>${evento.nome}</span>
       `;
-      meusEventosLista.appendChild(item);
+
+      // Clique abre o modal
+      card.addEventListener('click', () => {
+          openEventoDetailsModal(evento);
+      });
+
+      meusEventosLista.appendChild(card);
     });
   }
 
