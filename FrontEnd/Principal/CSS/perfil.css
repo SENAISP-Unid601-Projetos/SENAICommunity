@@ -127,6 +127,7 @@ html, body {
     text-decoration: none;
     transition: 0.2s;
     border-left: 3px solid transparent;
+    gap: 1rem;
 }
 
 .menu-item:hover {
@@ -1137,5 +1138,115 @@ html, body {
         position: static !important;
         width: 100%;
         margin-bottom: 1.5rem;
+    }
+}
+
+/* 1. Destrava a largura do conteúdo principal para ocupar a tela toda */
+.main-content {
+    max-width: none !important; /* Sobrescreve o limite do feed */
+    margin: 0 !important;       /* Remove margens automáticas de centralização */
+    width: 100% !important;
+    padding: 1.5rem 2rem !important; /* Espaçamento interno mais amplo */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 2. Ajusta o Grid do Container Principal para não deixar buracos */
+.container {
+    display: flex !important; /* Muda para Flex para garantir preenchimento */
+    align-items: stretch;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow: hidden;
+    padding: 0 !important;
+}
+
+/* Sidebar Fixa na Esquerda */
+.sidebar {
+    width: 320px !important;
+    min-width: 320px !important;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border-color);
+}
+
+/* 3. Estica o Header do Perfil (Capa + Foto) */
+.profile-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.profile-header {
+    width: 100%;
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+/* 4. Ajuste fino da Foto e Texto (Para não ficarem distantes) */
+.profile-details {
+    display: flex;
+    align-items: flex-end; /* Alinha texto com o fundo da foto */
+    padding: 0 2rem 1.5rem 2rem;
+    margin-top: -60px; /* Puxa para cima da capa */
+}
+
+.profile-picture-container {
+    width: 160px;
+    height: 160px;
+    border: 5px solid var(--bg-secondary); /* Borda grossa para separar da capa */
+    background-color: var(--bg-secondary);
+    border-radius: 50%;
+    flex-shrink: 0;
+    z-index: 3;
+}
+
+.profile-info-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end; /* Alinha botões com o texto */
+    margin-left: 1.5rem;
+    padding-bottom: 10px; /* Pequeno ajuste para alinhar com a base da foto */
+    flex: 1;
+}
+
+/* 5. Grid de Conteúdo (Sobre + Posts) */
+.profile-content-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr !important; 
+    gap: 1.5rem !important;
+    width: 100%;
+    align-items: start;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 1200px) {
+    .profile-content-grid {
+        grid-template-columns: 300px 1fr !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .profile-content-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .profile-details {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: -80px;
+    }
+
+    .profile-info-actions {
+        flex-direction: column;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 1rem;
+        gap: 1rem;
     }
 }

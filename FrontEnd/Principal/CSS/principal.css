@@ -4672,10 +4672,12 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 24px; /* Largura do ícone */
+  justify-content: center; /* Centraliza o ícone na largura fixa */
+  width: 24px; /* Garante a mesma largura dos ícones normais (<i>) */
   height: 24px;
-  margin-right: 12px; /* Espaço entre ícone e texto */
+  
+  /* O erro estava aqui: remova ou zere a margem */
+  margin-right: 0 !important; 
 }
 
 /* Estilo do contador flutuante */
@@ -4705,6 +4707,7 @@ body {
   z-index: 10;
 }
 
-.sidebar-menu .menu-item i {
-  margin-right: 0; /* Remove margem do ícone pois o wrapper já tem */
-}s
+.sidebar-menu .menu-item .icon-wrapper i {
+    width: auto; /* Remove largura fixa interna para centralizar pelo flex do wrapper */
+    margin: 0;
+}
