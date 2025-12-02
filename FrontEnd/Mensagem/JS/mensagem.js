@@ -243,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    function renderBlockedUsers(users) {
+   function renderBlockedUsers(users) {
       const blockedList = document.getElementById("blocked-users-list");
       if (!blockedList) return;
 
@@ -260,14 +260,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       users.forEach((user) => {
         const item = document.createElement("div");
-        item.className = "user-list-item"; // Classe do CSS novo
+        item.className = "user-list-item"; // Mantém a classe de estilo
 
-        // Tratamento de imagem robusto
-        const avatarUrl = user.fotoPerfil
-          ? user.fotoPerfil.startsWith("http")
-            ? user.fotoPerfil
-            : `${window.backendUrl}${user.fotoPerfil}`
-          : window.defaultAvatarUrl;
+        const rawPhoto = user.urlFotoPerfil || user.fotoPerfil;
+        const avatarUrl = window.getAvatarUrl(rawPhoto);
 
         item.innerHTML = `
                 <div class="user-info-area">

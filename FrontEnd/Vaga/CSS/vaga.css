@@ -1993,3 +1993,91 @@
     box-shadow: 0 0 15px rgba(88, 166, 255, 0.15); /* Glow suave */
     background: linear-gradient(to right, rgba(88, 166, 255, 0.03), transparent);
 }
+
+/* Esconde o input file nativo */
+.hidden-file-input {
+    display: none !important;
+}
+
+/* Container da imagem que será clicável */
+.image-upload-container {
+    position: relative;
+    width: 150px; /* Tamanho fixo para o preview */
+    height: 150px;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px dashed #d1d5db; /* Borda tracejada indicando área de drop/clique */
+    background-color: #f9fafb;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+}
+
+.image-upload-container:hover {
+    border-color: #3b82f6; /* Cor de destaque ao passar o mouse */
+}
+
+/* A imagem em si */
+.image-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Garante que a imagem preencha o quadrado sem distorcer */
+    transition: opacity 0.3s ease;
+}
+
+/* Overlay escuro com ícone que aparece no hover */
+.image-upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0; /* Invisível por padrão */
+    transition: opacity 0.3s ease;
+    color: white;
+}
+
+/* Mostra o overlay e escurece a imagem ao passar o mouse */
+.image-upload-container:hover .image-upload-overlay {
+    opacity: 1;
+}
+.image-upload-container:hover .image-preview {
+    opacity: 0.6;
+}
+
+.image-upload-overlay i {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.image-upload-overlay span {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+
+/* =========================================
+   Estilo para o Botão Fechar (X) dos Modais
+   ========================================= */
+.modal-header .close-modal-btn {
+    font-size: 2rem;
+    font-weight: 300;
+    line-height: 1;
+    color: #9ca3af;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 8px;
+    transition: color 0.2s ease;
+    /* Remove contorno padrão de foco em alguns navegadores */
+    outline: none;
+}
+
+.modal-header .close-modal-btn:hover {
+    color: #1f2937; /* Cor mais escura no hover */
+}

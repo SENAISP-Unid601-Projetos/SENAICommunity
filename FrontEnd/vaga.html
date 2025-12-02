@@ -1,746 +1,647 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SENAI Community | Vagas</title>
-    <link
-      rel="icon"
-      href="img/LogoFavicon-removebg-preview.png2.png"
-      type="image/png"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="Principal/CSS/principal.css" />
-    <link rel="stylesheet" href="Vaga/CSS/vaga.css" />
-  </head>
-  <body>
-    <div class="mobile-overlay" id="mobile-overlay"></div>
 
-    <div class="notification-center"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SENAI Community | Vagas</title>
+  <link rel="icon" href="img/LogoFavicon-removebg-preview.png2.png" type="image/png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="Principal/CSS/principal.css" />
+  <link rel="stylesheet" href="Vaga/CSS/vaga.css" />
+</head>
 
-    <header class="topbar">
-      <div class="header-left">
-        <div class="menu-toggle" id="mobile-menu-toggle">
-          <i class="fas fa-bars"></i>
-        </div>
-        <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+<body>
+  <div class="mobile-overlay" id="mobile-overlay"></div>
+
+  <div class="notification-center"></div>
+
+  <header class="topbar">
+    <div class="header-left">
+      <div class="menu-toggle" id="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
       </div>
+      <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+    </div>
 
-      <div class="search">
-        <i class="fas fa-search"></i>
-        <input
-          type="text"
-          id="search-input"
-          placeholder="Pesquisar por autor ou conteúdo..."
-        />
-        <div class="search-results"></div>
-      </div>
+    <div class="search">
+      <i class="fas fa-search"></i>
+      <input type="text" id="search-input" placeholder="Pesquisar por autor ou conteúdo..." />
+      <div class="search-results"></div>
+    </div>
 
-      <nav class="nav-icons">
-        <div
-          class="nav-icon"
-          data-tooltip="Notificações"
-          id="notifications-icon"
-        >
-          <i class="fas fa-bell"></i>
-          <span class="badge" id="notifications-badge" style="display: none"
-            >0</span
-          >
-          <div class="notifications-panel" id="notifications-panel">
-            <div class="notifications-header">
-              <h3>Notificações</h3>
-            </div>
-            <div class="notifications-list" id="notifications-list">
-              <p class="empty-state">Nenhuma notificação nova.</p>
-            </div>
+    <nav class="nav-icons">
+      <div class="nav-icon" data-tooltip="Notificações" id="notifications-icon">
+        <i class="fas fa-bell"></i>
+        <span class="badge" id="notifications-badge" style="display: none">0</span>
+        <div class="notifications-panel" id="notifications-panel">
+          <div class="notifications-header">
+            <h3>Notificações</h3>
+          </div>
+          <div class="notifications-list" id="notifications-list">
+            <p class="empty-state">Nenhuma notificação nova.</p>
           </div>
         </div>
+      </div>
 
-        <div class="theme-toggle" data-tooltip="Alternar tema">
-          <i class="fas fa-moon"></i>
+      <div class="theme-toggle" data-tooltip="Alternar tema">
+        <i class="fas fa-moon"></i>
+      </div>
+    </nav>
+
+    <div class="user-dropdown">
+      <div class="user">
+        <div class="profile-pic">
+          <img src="https://via.placeholder.com/40" alt="Perfil" id="topbar-user-img" />
+          <div class="topbar-user-loading" id="topbar-user-loading">
+            <div class="loading-spinner"></div>
+          </div>
         </div>
+        <span id="topbar-user-name">Carregando...</span>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+
+      <div class="dropdown-menu">
+        <a href="perfil.html" id="edit-profile-btn"><i class="fas fa-user"></i> Meu Perfil</a>
+
+        <a href="configuracao.html"><i class="fas fa-cog"></i> Configurações</a>
+
+        <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user-card">
+          <a href="perfil.html" class="user-info-link">
+            <div class="user-info">
+              <div class="user-info-loading" id="user-info-loading">
+                <div class="loading-spinner"></div>
+              </div>
+
+              <div class="avatar-container">
+                <img src="https://via.placeholder.com/80" alt="Perfil" id="sidebar-user-img" />
+                <div class="status online"></div>
+              </div>
+
+              <div class="user-identity">
+                <h2 id="sidebar-user-name">Carregando...</h2>
+                <span class="user-role" id="sidebar-user-title">Carregando...</span>
+              </div>
+
+              <div class="user-stats">
+                <div class="stat-item">
+                  <strong id="connections-count">-</strong>
+                  <span class="stat-label">Conexões</span>
+                </div>
+                <div class="stat-item">
+                  <strong id="projects-count">-</strong>
+                  <span class="stat-label">Projetos</span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+        <button class="sidebar-close" id="sidebar-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-menu">
+        <a href="principal.html" class="menu-item">
+          <i class="fas fa-home"></i>
+          <span class="menu-text">Feed</span>
+        </a>
+        <a href="mensagem.html" class="menu-item">
+          <div class="icon-wrapper">
+            <i class="fas fa-comment-dots"></i>
+            <span class="badge" id="message-badge-sidebar" style="display: none">0</span>
+          </div>
+          <span class="menu-text">Mensagens</span>
+        </a>
+        <a href="projeto.html" class="menu-item">
+          <i class="fas fa-users"></i>
+          <span class="menu-text">Projetos</span>
+        </a>
+        <a href="vaga.html" class="menu-item active">
+          <i class="fas fa-briefcase"></i>
+          <span class="menu-text">Vagas</span>
+        </a>
+        <a href="evento.html" class="menu-item">
+          <i class="fas fa-calendar-check"></i>
+          <span class="menu-text">Eventos</span>
+        </a>
+        <a href="buscar_amigos.html" class="menu-item">
+          <i class="fas fa-user-plus"></i>
+          <span class="menu-text">Encontrar Pessoas</span>
+        </a>
+        <a href="amizades.html" class="menu-item">
+          <i class="fas fa-user-friends"></i>
+          <span class="menu-text">Minhas Conexões</span>
+        </a>
       </nav>
 
-      <div class="user-dropdown">
-        <div class="user">
-          <div class="profile-pic">
-            <img
-              src="https://via.placeholder.com/40"
-              alt="Perfil"
-              id="topbar-user-img"
-            />
-            <div class="topbar-user-loading" id="topbar-user-loading">
+      <div class="sidebar-widget">
+        <div class="widget-card online-friends" id="online-friends-widget">
+          <h3 class="widget-title">Amigos Online</h3>
+          <div class="friend-list" id="online-friends-list">
+            <div class="results-loading" style="padding: 1rem">
               <div class="loading-spinner"></div>
+              <p style="font-size: 0.8rem; margin-top: 0.5rem">
+                Carregando...
+              </p>
             </div>
           </div>
-          <span id="topbar-user-name">Carregando...</span>
-          <i class="fas fa-chevron-down"></i>
-        </div>
-
-        <div class="dropdown-menu">
-          <a href="perfil.html" id="edit-profile-btn"
-            ><i class="fas fa-user"></i> Meu Perfil</a
-          >
-
-          <a href="configuracao.html"
-            ><i class="fas fa-cog"></i> Configurações</a
-          >
-
-          <a href="#" id="logout-btn"
-            ><i class="fas fa-sign-out-alt"></i> Sair</a
-          >
         </div>
       </div>
-    </header>
+    </aside>
 
-    <div class="container">
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-          <div class="sidebar-user-card">
-            <a href="perfil.html" class="user-info-link">
-              <div class="user-info">
-                <div class="user-info-loading" id="user-info-loading">
-                  <div class="loading-spinner"></div>
-                </div>
+    <main class="main-content">
+      <div class="vagas-header">
+        <div class="header-content">
+          <h1>Encontre sua Próxima Oportunidade</h1>
+          <p>
+            Explore vagas de estágio e emprego em empresas de tecnologia
+            parceiras do SENAI.
+          </p>
 
-                <div class="avatar-container">
-                  <img
-                    src="https://via.placeholder.com/80"
-                    alt="Perfil"
-                    id="sidebar-user-img"
-                  />
-                  <div class="status online"></div>
-                </div>
-
-                <div class="user-identity">
-                  <h2 id="sidebar-user-name">Carregando...</h2>
-                  <span class="user-role" id="sidebar-user-title"
-                    >Carregando...</span
-                  >
-                </div>
-
-                <div class="user-stats">
-                  <div class="stat-item">
-                    <strong id="connections-count">-</strong>
-                    <span class="stat-label">Conexões</span>
-                  </div>
-                  <div class="stat-item">
-                    <strong id="projects-count">-</strong>
-                    <span class="stat-label">Projetos</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-          <button class="sidebar-close" id="sidebar-close">
-            <i class="fas fa-times"></i>
+          <button id="mobile-toggle-alerts-btn" class="mobile-alerts-btn">
+            <i class="fas fa-bell"></i> Gerenciar Alertas
           </button>
         </div>
-
-        <nav class="sidebar-menu">
-          <a href="principal.html" class="menu-item">
-            <i class="fas fa-home"></i>
-            <span class="menu-text">Feed</span>
-          </a>
-          <a href="mensagem.html" class="menu-item">
-            <div class="icon-wrapper">
-              <i class="fas fa-comment-dots"></i>
-              <span
-                class="badge"
-                id="message-badge-sidebar"
-                style="display: none"
-                >0</span
-              >
-            </div>
-            <span class="menu-text">Mensagens</span>
-          </a>
-          <a href="projeto.html" class="menu-item">
-            <i class="fas fa-users"></i>
-            <span class="menu-text">Projetos</span>
-          </a>
-          <a href="vaga.html" class="menu-item active">
-            <i class="fas fa-briefcase"></i>
-            <span class="menu-text">Vagas</span>
-          </a>
-          <a href="evento.html" class="menu-item">
-            <i class="fas fa-calendar-check"></i>
-            <span class="menu-text">Eventos</span>
-          </a>
-          <a href="buscar_amigos.html" class="menu-item">
-            <i class="fas fa-user-plus"></i>
-            <span class="menu-text">Encontrar Pessoas</span>
-          </a>
-          <a href="amizades.html" class="menu-item">
-            <i class="fas fa-user-friends"></i>
-            <span class="menu-text">Minhas Conexões</span>
-          </a>
-        </nav>
-
-        <div class="sidebar-widget">
-          <div class="widget-card online-friends" id="online-friends-widget">
-            <h3 class="widget-title">Amigos Online</h3>
-            <div class="friend-list" id="online-friends-list">
-              <div class="results-loading" style="padding: 1rem">
-                <div class="loading-spinner"></div>
-                <p style="font-size: 0.8rem; margin-top: 0.5rem">
-                  Carregando...
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <main class="main-content">
-        <div class="vagas-header">
-          <div class="header-content">
-            <h1>Encontre sua Próxima Oportunidade</h1>
-            <p>
-              Explore vagas de estágio e emprego em empresas de tecnologia
-              parceiras do SENAI.
-            </p>
-
-            <button id="mobile-toggle-alerts-btn" class="mobile-alerts-btn">
-              <i class="fas fa-bell"></i> Gerenciar Alertas
-            </button>
-          </div>
-          <button
-            id="btn-publicar-vaga"
-            class="criar-vaga-btn"
-            style="display: none"
-          >
-            <i class="fas fa-plus-circle"></i> Publicar Vaga
-          </button>
-        </div>
-
-        <div class="filters-container">
-          <div class="search-vaga">
-            <i class="fas fa-search"></i>
-            <input
-              type="text"
-              id="search-input-vagas"
-              placeholder="Cargo, empresa ou palavra-chave"
-            />
-          </div>
-          <div class="filters">
-            <select id="filter-tipo">
-              <option value="todos">Tipo de Vaga</option>
-              <option value="Tempo Integral">Tempo Integral</option>
-              <option value="Meio Período">Meio Período</option>
-              <option value="Estágio">Estágio</option>
-              <option value="Trainee">Trainee</option>
-            </select>
-            <select id="filter-local">
-              <option value="todos">Localização</option>
-              <option value="Remoto">Remoto</option>
-              <option value="Híbrido">Híbrido</option>
-              <option value="Presencial">Presencial</option>
-            </select>
-            <select id="filter-nivel">
-              <option value="todos">Nível</option>
-              <option value="Júnior">Júnior</option>
-              <option value="Pleno">Pleno</option>
-              <option value="Sênior">Sênior</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="vagas-list"></div>
-      </main>
-
-      <aside class="right-sidebar">
-        <button class="mobile-close-sidebar-btn" id="close-mobile-alerts">
-          &times;
+        <button id="btn-publicar-vaga" class="criar-vaga-btn" style="display: none">
+          <i class="fas fa-plus-circle"></i> Publicar Vaga
         </button>
-        <div class="job-alerts-card">
-          <h3><i class="fas fa-bell"></i> Seus Alertas</h3>
-          <p>Receba notificações de novas vagas.</p>
+      </div>
 
-          <div
-            id="user-alerts-list"
-            class="alerts-list"
-            style="
+      <div class="filters-container">
+        <div class="search-vaga">
+          <i class="fas fa-search"></i>
+          <input type="text" id="search-input-vagas" placeholder="Cargo, empresa ou palavra-chave" />
+        </div>
+        <div class="filters">
+          <select id="filter-tipo">
+            <option value="todos">Tipo de Vaga</option>
+            <option value="Tempo Integral">Tempo Integral</option>
+            <option value="Meio Período">Meio Período</option>
+            <option value="Estágio">Estágio</option>
+            <option value="Trainee">Trainee</option>
+          </select>
+          <select id="filter-local">
+            <option value="todos">Localização</option>
+            <option value="Remoto">Remoto</option>
+            <option value="Híbrido">Híbrido</option>
+            <option value="Presencial">Presencial</option>
+          </select>
+          <select id="filter-nivel">
+            <option value="todos">Nível</option>
+            <option value="Júnior">Júnior</option>
+            <option value="Pleno">Pleno</option>
+            <option value="Sênior">Sênior</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="vagas-list"></div>
+    </main>
+
+    <aside class="right-sidebar">
+      <button class="mobile-close-sidebar-btn" id="close-mobile-alerts">
+        &times;
+      </button>
+      <div class="job-alerts-card">
+        <h3><i class="fas fa-bell"></i> Seus Alertas</h3>
+        <p>Receba notificações de novas vagas.</p>
+
+        <div id="user-alerts-list" class="alerts-list" style="
               margin-bottom: 1rem;
               display: flex;
               flex-direction: column;
               gap: 0.5rem;
-            "
-          >
-            <div
-              class="loading-spinner"
-              style="width: 20px; height: 20px; border-width: 2px"
-            ></div>
-          </div>
-
-          <button class="create-alert-btn" id="open-create-alert-modal-btn">
-            <i class="fas fa-plus"></i> Novo Alerta
-          </button>
+            ">
+          <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 2px"></div>
         </div>
-      </aside>
-    </div>
 
-    <div id="edit-profile-modal" class="modal-overlay" style="display: none">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Editar Perfil</h3>
-          <button class="btn-secondary" id="cancel-edit-profile-btn">
-            Cancelar
-          </button>
+        <button class="create-alert-btn" id="open-create-alert-modal-btn">
+          <i class="fas fa-plus"></i> Novo Alerta
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <div id="edit-profile-modal" class="modal-overlay" style="display: none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Perfil</h3>
+        <button class="btn-secondary" id="cancel-edit-profile-btn">
+          Cancelar
+        </button>
+      </div>
+      <form id="edit-profile-form">
+        <div class="profile-pic-editor">
+          <label for="edit-profile-pic-input">
+            <img src="https://via.placeholder.com/150" id="edit-profile-pic-preview" alt="Preview" />
+            <div class="pic-editor-overlay">
+              <i class="fas fa-camera"></i>
+              <span>Alterar Foto</span>
+            </div>
+          </label>
+          <input type="file" id="edit-profile-pic-input" accept="image/*" style="display: none" />
         </div>
-        <form id="edit-profile-form">
-          <div class="profile-pic-editor">
-            <label for="edit-profile-pic-input">
-              <img
-                src="https://via.placeholder.com/150"
-                id="edit-profile-pic-preview"
-                alt="Preview"
-              />
-              <div class="pic-editor-overlay">
-                <i class="fas fa-camera"></i>
-                <span>Alterar Foto</span>
-              </div>
-            </label>
-            <input
-              type="file"
-              id="edit-profile-pic-input"
-              accept="image/*"
-              style="display: none"
-            />
-          </div>
 
-          <div class="form-group">
-            <label for="edit-profile-name">Nome Completo</label>
-            <input type="text" id="edit-profile-name" required />
-          </div>
+        <div class="form-group">
+          <label for="edit-profile-name">Nome Completo</label>
+          <input type="text" id="edit-profile-name" required />
+        </div>
 
-          <div class="form-group">
-            <label for="edit-profile-bio">Bio / Sobre</label>
-            <textarea id="edit-profile-bio" rows="3"></textarea>
-          </div>
+        <div class="form-group">
+          <label for="edit-profile-bio">Bio / Sobre</label>
+          <textarea id="edit-profile-bio" rows="3"></textarea>
+        </div>
 
-          <div class="form-group">
-            <label for="edit-profile-dob">Data de Nascimento</label>
-            <input type="date" id="edit-profile-dob" />
-          </div>
+        <div class="form-group">
+          <label for="edit-profile-dob">Data de Nascimento</label>
+          <input type="date" id="edit-profile-dob" />
+        </div>
 
-          <hr class="form-divider" />
-          <p
-            class="warning-text"
-            style="
+        <hr class="form-divider" />
+        <p class="warning-text" style="
               background: rgba(255, 255, 255, 0.05);
               border: none;
               color: var(--text-secondary);
-            "
-          >
-            Deixe as senhas em branco se não quiser alterá-las.
-          </p>
+            ">
+          Deixe as senhas em branco se não quiser alterá-las.
+        </p>
+
+        <div class="form-group">
+          <label for="edit-profile-password">Nova Senha</label>
+          <input type="password" id="edit-profile-password" placeholder="Nova senha" />
+        </div>
+
+        <div class="form-group">
+          <label for="edit-profile-password-confirm">Confirmar Nova Senha</label>
+          <input type="password" id="edit-profile-password-confirm" placeholder="Confirme a senha" />
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">
+            Salvar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="delete-account-modal" class="modal-overlay" style="display: none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="color: var(--danger)">Excluir Conta</h3>
+      </div>
+      <div class="modal-body">
+        <p class="warning-text">
+          <strong>ATENÇÃO:</strong> Esta ação é irreversível. Todos os seus
+          dados, conexões, mensagens e projetos serão apagados
+          permanentemente.
+        </p>
+        <form id="delete-account-form">
+          <div class="form-group">
+            <label for="delete-confirm-password">Digite sua senha para confirmar:</label>
+            <input type="password" id="delete-confirm-password" required placeholder="Sua senha atual" />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancel-delete-account-btn">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-danger">
+              Excluir Permanentemente
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="create-vaga-modal" class="modal-overlay" style="display: none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Publicar Nova Vaga</h3>
+        <button class="close-modal-btn" id="cancel-create-vaga-btn">
+          &times;
+        </button>
+      </div>
+      <form id="create-vaga-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="vaga-titulo">Título da Vaga</label>
+            <input type="text" id="vaga-titulo" required placeholder="Ex: Desenvolvedor(a) Java Jr." />
+          </div>
+          <div class="form-group">
+            <label for="vaga-empresa">Empresa</label>
+            <input type="text" id="vaga-empresa" required placeholder="Ex: Tech Solutions Inc." />
+          </div>
 
           <div class="form-group">
-            <label for="edit-profile-password">Nova Senha</label>
-            <input
-              type="password"
-              id="edit-profile-password"
-              placeholder="Nova senha"
-            />
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+              Logo da Empresa (Clique na imagem para alterar)
+            </label>
+
+            <div class="image-upload-container" onclick="document.getElementById('vaga-imagem').click()">
+              <img id="create-vaga-preview" class="image-preview" src="" alt="Preview da Logo">
+
+              <div class="image-upload-overlay">
+                <i class="fas fa-camera"></i>
+                <span>Alterar Foto</span>
+              </div>
+            </div>
+
+            <input type="file" id="vaga-imagem" class="hidden-file-input" accept="image/*">
+            <p style="font-size: 0.8rem; color: #6b7280; margin-top: 4px;">Formatos: PNG, JPG (Max. 2MB)</p>
           </div>
 
           <div class="form-group">
-            <label for="edit-profile-password-confirm"
-              >Confirmar Nova Senha</label
-            >
-            <input
-              type="password"
-              id="edit-profile-password-confirm"
-              placeholder="Confirme a senha"
-            />
+            <label for="vaga-salario">Salário / Bolsa (Opcional)</label>
+            <input type="text" id="vaga-salario" placeholder="Ex: R$ 2.500,00 ou A combinar" />
           </div>
 
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">
-              Salvar Alterações
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div id="delete-account-modal" class="modal-overlay" style="display: none">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 style="color: var(--danger)">Excluir Conta</h3>
-        </div>
-        <div class="modal-body">
-          <p class="warning-text">
-            <strong>ATENÇÃO:</strong> Esta ação é irreversível. Todos os seus
-            dados, conexões, mensagens e projetos serão apagados
-            permanentemente.
-          </p>
-          <form id="delete-account-form">
-            <div class="form-group">
-              <label for="delete-confirm-password"
-                >Digite sua senha para confirmar:</label
-              >
-              <input
-                type="password"
-                id="delete-confirm-password"
-                required
-                placeholder="Sua senha atual"
-              />
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                id="cancel-delete-account-btn"
-              >
-                Cancelar
-              </button>
-              <button type="submit" class="btn btn-danger">
-                Excluir Permanentemente
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <div id="create-vaga-modal" class="modal-overlay" style="display: none">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Publicar Nova Vaga</h3>
-          <button class="close-modal-btn" id="cancel-create-vaga-btn">
-            &times;
-          </button>
-        </div>
-        <form id="create-vaga-form">
-          <div class="modal-body">
-            <div class="form-group">
-              <label for="vaga-titulo">Título da Vaga</label>
-              <input
-                type="text"
-                id="vaga-titulo"
-                required
-                placeholder="Ex: Desenvolvedor(a) Java Jr."
-              />
-            </div>
-            <div class="form-group">
-              <label for="vaga-empresa">Empresa</label>
-              <input
-                type="text"
-                id="vaga-empresa"
-                required
-                placeholder="Ex: Tech Solutions Inc."
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="vaga-salario">Salário / Bolsa (Opcional)</label>
-              <input
-                type="text"
-                id="vaga-salario"
-                placeholder="Ex: R$ 2.500,00 ou A combinar"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="vaga-descricao">Descrição da Vaga</label>
-              <textarea
-                id="vaga-descricao"
-                rows="4"
-                required
-                placeholder="Fale sobre a vaga..."
-              ></textarea>
-            </div>
-
-            <div
-              class="form-group-row"
-              style="display: flex; gap: 1rem; flex-wrap: wrap"
-            >
-              <div class="form-group" style="flex: 1; min-width: 250px">
-                <label for="vaga-requisitos">Requisitos (Um por linha)</label>
-                <textarea
-                  id="vaga-requisitos"
-                  rows="4"
-                  placeholder="Java&#10;Spring Boot&#10;Inglês Intermediário"
-                ></textarea>
-              </div>
-              <div class="form-group" style="flex: 1; min-width: 250px">
-                <label for="vaga-beneficios">Benefícios (Um por linha)</label>
-                <textarea
-                  id="vaga-beneficios"
-                  rows="4"
-                  placeholder="Vale Refeição&#10;Home Office&#10;Gympass"
-                ></textarea>
-              </div>
-            </div>
-
-            <div class="form-group-row" style="display: flex; gap: 1rem">
-              <div class="form-group" style="flex: 1">
-                <label for="vaga-nivel">Nível</label>
-                <select id="vaga-nivel" required>
-                  <option value="JUNIOR">Júnior</option>
-                  <option value="PLENO">Pleno</option>
-                  <option value="SENIOR">Sênior</option>
-                </select>
-              </div>
-              <div class="form-group" style="flex: 1">
-                <label for="vaga-localizacao">Localização</label>
-                <select id="vaga-localizacao" required>
-                  <option value="PRESENCIAL">Presencial</option>
-                  <option value="REMOTO">Remoto</option>
-                  <option value="HIBRIDO">Híbrido</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="vaga-tipo">Tipo de Contratação</label>
-              <select id="vaga-tipo" required>
-                <option value="ESTAGIO">Estágio</option>
-                <option value="TRAINEE">Trainee</option>
-                <option value="MEIO_PERIODO">Meio Período</option>
-                <option value="TEMPO_INTEGRAL">Tempo Integral</option>
-              </select>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Publicar Vaga</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div id="vaga-details-modal" class="vaga-details-modal">
-      <div class="vaga-details-content">
-        <div class="vaga-details-header">
-          <button class="vaga-details-close" id="close-vaga-details-btn">
-            &times;
-          </button>
-          <div class="vaga-details-company">
-            <div class="vaga-details-company-logo">
-              <img id="details-company-logo" src="" alt="Logo da Empresa" />
-            </div>
-            <div class="vaga-details-company-info">
-              <h1 id="details-vaga-titulo">Título da Vaga</h1>
-              <h2 id="details-vaga-empresa">Nome da Empresa</h2>
-            </div>
-          </div>
-          <div class="vaga-details-meta">
-            <div class="meta-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <span id="details-vaga-localizacao">Local</span>
-            </div>
-            <div class="meta-item">
-              <i class="fas fa-chart-line"></i>
-              <span id="details-vaga-nivel">Nível</span>
-            </div>
-            <div class="meta-item">
-              <i class="fas fa-briefcase"></i>
-              <span id="details-vaga-tipo">Tipo</span>
-            </div>
-            <div class="meta-item">
-              <i class="fas fa-clock"></i>
-              <span id="details-vaga-data">Data</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="vaga-details-body">
-          <div class="vaga-details-section">
-            <h3>Descrição da Vaga</h3>
-            <div
-              class="vaga-description-content"
-              id="details-vaga-descricao"
-            ></div>
+          <div class="form-group">
+            <label for="vaga-descricao">Descrição da Vaga</label>
+            <textarea id="vaga-descricao" rows="4" required placeholder="Fale sobre a vaga..."></textarea>
           </div>
 
-          <div class="vaga-details-section">
-            <h3>Detalhes da Vaga</h3>
-            <div class="vaga-details-grid">
-              <div class="detail-card">
-                <h4>Nível</h4>
-                <p id="details-card-nivel">-</p>
-              </div>
-              <div class="detail-card">
-                <h4>Tipo</h4>
-                <p id="details-card-tipo">-</p>
-              </div>
-              <div class="detail-card">
-                <h4>Localização</h4>
-                <p id="details-card-localizacao">-</p>
-              </div>
-              <div class="detail-card">
-                <h4>Salário</h4>
-                <p id="details-card-salario">-</p>
-              </div>
+          <div class="form-group-row" style="display: flex; gap: 1rem; flex-wrap: wrap">
+            <div class="form-group" style="flex: 1; min-width: 250px">
+              <label for="vaga-requisitos">Requisitos (Um por linha)</label>
+              <textarea id="vaga-requisitos" rows="4"
+                placeholder="Java&#10;Spring Boot&#10;Inglês Intermediário"></textarea>
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 250px">
+              <label for="vaga-beneficios">Benefícios (Um por linha)</label>
+              <textarea id="vaga-beneficios" rows="4"
+                placeholder="Vale Refeição&#10;Home Office&#10;Gympass"></textarea>
             </div>
           </div>
 
-          <div class="vaga-details-section">
-            <h3>Requisitos</h3>
-            <ul class="requirements-list" id="details-vaga-requisitos"></ul>
-          </div>
-
-          <div class="vaga-details-section">
-            <h3>Benefícios</h3>
-            <div class="benefits-grid" id="details-vaga-beneficios"></div>
-          </div>
-        </div>
-
-        <div class="vaga-details-footer">
-          <div class="vaga-publish-info">
-            Publicado por <strong id="details-vaga-autor">Autor</strong> em
-            <span id="details-vaga-data-completa">Data</span>
-          </div>
-          <div class="vaga-details-actions">
-            <button class="btn-secondary" id="save-vaga-details-btn">
-              <i class="far fa-bookmark"></i> Salvar Vaga
-            </button>
-            <a
-              href="#"
-              class="btn-contact"
-              id="contact-vaga-btn"
-              target="_blank"
-            >
-              <i class="fas fa-paper-plane"></i> Entrar em Contato
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="edit-vaga-modal" class="modal-overlay" style="display: none">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Editar Vaga</h3>
-          <button class="close-modal-btn" id="cancel-edit-vaga-btn">
-            &times;
-          </button>
-        </div>
-        <form id="edit-vaga-form">
-          <input type="hidden" id="edit-vaga-id" />
-          <div class="modal-body">
-            <div class="form-group">
-              <label for="edit-vaga-titulo">Título da Vaga</label>
-              <input type="text" id="edit-vaga-titulo" required />
-            </div>
-            <div class="form-group">
-              <label for="edit-vaga-empresa">Empresa</label>
-              <input type="text" id="edit-vaga-empresa" required />
-            </div>
-            <div class="form-group">
-              <label for="edit-vaga-salario">Salário / Bolsa</label>
-              <input type="text" id="edit-vaga-salario" />
-            </div>
-            <div class="form-group">
-              <label for="edit-vaga-descricao">Descrição</label>
-              <textarea id="edit-vaga-descricao" rows="4" required></textarea>
-            </div>
-            <div class="form-group-row" style="display: flex; gap: 1rem">
-              <div class="form-group" style="flex: 1">
-                <label for="edit-vaga-requisitos"
-                  >Requisitos (Linha por linha)</label
-                >
-                <textarea id="edit-vaga-requisitos" rows="4"></textarea>
-              </div>
-              <div class="form-group" style="flex: 1">
-                <label for="edit-vaga-beneficios"
-                  >Benefícios (Linha por linha)</label
-                >
-                <textarea id="edit-vaga-beneficios" rows="4"></textarea>
-              </div>
-            </div>
-            <div class="form-group-row" style="display: flex; gap: 1rem">
-              <div class="form-group" style="flex: 1">
-                <label for="edit-vaga-nivel">Nível</label>
-                <select id="edit-vaga-nivel" required>
-                  <option value="JUNIOR">Júnior</option>
-                  <option value="PLENO">Pleno</option>
-                  <option value="SENIOR">Sênior</option>
-                </select>
-              </div>
-              <div class="form-group" style="flex: 1">
-                <label for="edit-vaga-localizacao">Localização</label>
-                <select id="edit-vaga-localizacao" required>
-                  <option value="PRESENCIAL">Presencial</option>
-                  <option value="REMOTO">Remoto</option>
-                  <option value="HIBRIDO">Híbrido</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="edit-vaga-tipo">Tipo de Contratação</label>
-              <select id="edit-vaga-tipo" required>
-                <option value="ESTAGIO">Estágio</option>
-                <option value="TRAINEE">Trainee</option>
-                <option value="MEIO_PERIODO">Meio Período</option>
-                <option value="TEMPO_INTEGRAL">Tempo Integral</option>
-              </select>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">
-              Salvar Alterações
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div id="create-alert-modal" class="modal-overlay" style="display: none">
-      <div class="modal-content" style="max-width: 450px">
-        <div class="modal-header">
-          <h3><i class="fas fa-bell"></i> Novo Alerta de Vaga</h3>
-          <button class="close-modal-btn" id="cancel-alert-btn">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p style="color: var(--text-secondary); margin-bottom: 1rem">
-            Receba uma notificação quando postarem uma vaga com seu perfil.
-          </p>
-          <form id="create-alert-form">
-            <div class="form-group">
-              <label for="alert-keyword"
-                >Palavra-chave (Ex: Java, Design)</label
-              >
-              <input
-                type="text"
-                id="alert-keyword"
-                placeholder="O que você procura?"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="alert-nivel">Nível de Interesse</label>
-              <select id="alert-nivel">
-                <option value="">Qualquer Nível</option>
+          <div class="form-group-row" style="display: flex; gap: 1rem">
+            <div class="form-group" style="flex: 1">
+              <label for="vaga-nivel">Nível</label>
+              <select id="vaga-nivel" required>
                 <option value="JUNIOR">Júnior</option>
                 <option value="PLENO">Pleno</option>
                 <option value="SENIOR">Sênior</option>
               </select>
             </div>
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-primary">
-                Criar Alerta
-              </button>
+            <div class="form-group" style="flex: 1">
+              <label for="vaga-localizacao">Localização</label>
+              <select id="vaga-localizacao" required>
+                <option value="PRESENCIAL">Presencial</option>
+                <option value="REMOTO">Remoto</option>
+                <option value="HIBRIDO">Híbrido</option>
+              </select>
             </div>
-          </form>
+          </div>
+
+          <div class="form-group">
+            <label for="vaga-tipo">Tipo de Contratação</label>
+            <select id="vaga-tipo" required>
+              <option value="ESTAGIO">Estágio</option>
+              <option value="TRAINEE">Trainee</option>
+              <option value="MEIO_PERIODO">Meio Período</option>
+              <option value="TEMPO_INTEGRAL">Tempo Integral</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Publicar Vaga</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="vaga-details-modal" class="vaga-details-modal">
+    <div class="vaga-details-content">
+      <div class="vaga-details-header">
+        <button class="vaga-details-close" id="close-vaga-details-btn">
+          &times;
+        </button>
+        <div class="vaga-details-company">
+          <div class="vaga-details-company-logo">
+            <img id="details-company-logo" src="" alt="Logo da Empresa" />
+          </div>
+          <div class="vaga-details-company-info">
+            <h1 id="details-vaga-titulo">Título da Vaga</h1>
+            <h2 id="details-vaga-empresa">Nome da Empresa</h2>
+          </div>
+        </div>
+        <div class="vaga-details-meta">
+          <div class="meta-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span id="details-vaga-localizacao">Local</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-chart-line"></i>
+            <span id="details-vaga-nivel">Nível</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-briefcase"></i>
+            <span id="details-vaga-tipo">Tipo</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-clock"></i>
+            <span id="details-vaga-data">Data</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="vaga-details-body">
+        <div class="vaga-details-section">
+          <h3>Descrição da Vaga</h3>
+          <div class="vaga-description-content" id="details-vaga-descricao"></div>
+        </div>
+
+        <div class="vaga-details-section">
+          <h3>Detalhes da Vaga</h3>
+          <div class="vaga-details-grid">
+            <div class="detail-card">
+              <h4>Nível</h4>
+              <p id="details-card-nivel">-</p>
+            </div>
+            <div class="detail-card">
+              <h4>Tipo</h4>
+              <p id="details-card-tipo">-</p>
+            </div>
+            <div class="detail-card">
+              <h4>Localização</h4>
+              <p id="details-card-localizacao">-</p>
+            </div>
+            <div class="detail-card">
+              <h4>Salário</h4>
+              <p id="details-card-salario">-</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="vaga-details-section">
+          <h3>Requisitos</h3>
+          <ul class="requirements-list" id="details-vaga-requisitos"></ul>
+        </div>
+
+        <div class="vaga-details-section">
+          <h3>Benefícios</h3>
+          <div class="benefits-grid" id="details-vaga-beneficios"></div>
+        </div>
+      </div>
+
+      <div class="vaga-details-footer">
+        <div class="vaga-publish-info">
+          Publicado por <strong id="details-vaga-autor">Autor</strong> em
+          <span id="details-vaga-data-completa">Data</span>
+        </div>
+        <div class="vaga-details-actions">
+          <button class="btn-secondary" id="save-vaga-details-btn">
+            <i class="far fa-bookmark"></i> Salvar Vaga
+          </button>
+          <a href="#" class="btn-contact" id="contact-vaga-btn" target="_blank">
+            <i class="fas fa-paper-plane"></i> Entrar em Contato
+          </a>
         </div>
       </div>
     </div>
+  </div>
 
-    <div id="mobile-alerts-overlay" class="mobile-overlay"></div>
+  <div id="edit-vaga-modal" class="modal-overlay" style="display: none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Vaga</h3>
+        <button class="close-modal-btn" id="cancel-edit-vaga-btn">
+          &times;
+        </button>
+      </div>
+      <form id="edit-vaga-form">
+        <input type="hidden" id="edit-vaga-id" />
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="edit-vaga-titulo">Título da Vaga</label>
+            <input type="text" id="edit-vaga-titulo" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-vaga-empresa">Empresa</label>
+            <input type="text" id="edit-vaga-empresa" required />
+          </div>
+          <div class="form-group">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+              Logo da Empresa (Clique na imagem para alterar)
+            </label>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <script src="Principal/JS/principal.js"></script>
-    <script src="Vaga/JS/vagas.js"></script>
-  </body>
+            <div class="image-upload-container" onclick="document.getElementById('edit-vaga-imagem').click()">
+              <img id="edit-vaga-preview" class="image-preview" src="" alt="Preview da Logo">
+
+              <div class="image-upload-overlay">
+                <i class="fas fa-camera"></i>
+                <span>Alterar Foto</span>
+              </div>
+            </div>
+
+            <input type="file" id="edit-vaga-imagem" class="hidden-file-input" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label for="edit-vaga-salario">Salário / Bolsa</label>
+            <input type="text" id="edit-vaga-salario" />
+          </div>
+          <div class="form-group">
+            <label for="edit-vaga-descricao">Descrição</label>
+            <textarea id="edit-vaga-descricao" rows="4" required></textarea>
+          </div>
+          <div class="form-group-row" style="display: flex; gap: 1rem">
+            <div class="form-group" style="flex: 1">
+              <label for="edit-vaga-requisitos">Requisitos (Linha por linha)</label>
+              <textarea id="edit-vaga-requisitos" rows="4"></textarea>
+            </div>
+            <div class="form-group" style="flex: 1">
+              <label for="edit-vaga-beneficios">Benefícios (Linha por linha)</label>
+              <textarea id="edit-vaga-beneficios" rows="4"></textarea>
+            </div>
+          </div>
+          <div class="form-group-row" style="display: flex; gap: 1rem">
+            <div class="form-group" style="flex: 1">
+              <label for="edit-vaga-nivel">Nível</label>
+              <select id="edit-vaga-nivel" required>
+                <option value="JUNIOR">Júnior</option>
+                <option value="PLENO">Pleno</option>
+                <option value="SENIOR">Sênior</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex: 1">
+              <label for="edit-vaga-localizacao">Localização</label>
+              <select id="edit-vaga-localizacao" required>
+                <option value="PRESENCIAL">Presencial</option>
+                <option value="REMOTO">Remoto</option>
+                <option value="HIBRIDO">Híbrido</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-vaga-tipo">Tipo de Contratação</label>
+            <select id="edit-vaga-tipo" required>
+              <option value="ESTAGIO">Estágio</option>
+              <option value="TRAINEE">Trainee</option>
+              <option value="MEIO_PERIODO">Meio Período</option>
+              <option value="TEMPO_INTEGRAL">Tempo Integral</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">
+            Salvar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="create-alert-modal" class="modal-overlay" style="display: none">
+    <div class="modal-content" style="max-width: 450px">
+      <div class="modal-header">
+        <h3><i class="fas fa-bell"></i> Novo Alerta de Vaga</h3>
+        <button class="close-modal-btn" id="cancel-alert-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-secondary); margin-bottom: 1rem">
+          Receba uma notificação quando postarem uma vaga com seu perfil.
+        </p>
+        <form id="create-alert-form">
+          <div class="form-group">
+            <label for="alert-keyword">Palavra-chave (Ex: Java, Design)</label>
+            <input type="text" id="alert-keyword" placeholder="O que você procura?" required />
+          </div>
+          <div class="form-group">
+            <label for="alert-nivel">Nível de Interesse</label>
+            <select id="alert-nivel">
+              <option value="">Qualquer Nível</option>
+              <option value="JUNIOR">Júnior</option>
+              <option value="PLENO">Pleno</option>
+              <option value="SENIOR">Sênior</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">
+              Criar Alerta
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="mobile-alerts-overlay" class="mobile-overlay"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <script src="Principal/JS/principal.js"></script>
+  <script src="Vaga/JS/vagas.js"></script>
+</body>
+
 </html>

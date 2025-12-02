@@ -17,4 +17,5 @@ public class VagaEntradaDTO {
     private String salario;
     private List<String> requisitos;
     private List<String> beneficios;
+
 }

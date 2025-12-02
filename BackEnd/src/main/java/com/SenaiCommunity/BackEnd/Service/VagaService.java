@@ -13,7 +13,9 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,15 +35,18 @@ public class VagaService {
 
     @Autowired
     private NotificacaoService notificacaoService;
-    //
 
     @Autowired
     private FiltroProfanidadeService filtroProfanidade;
 
-    @Transactional
-    public VagaSaidaDTO criar(VagaEntradaDTO dto, String autorEmail) {
+    @Autowired
+    private ArquivoMidiaService midiaService;
 
-        // ... (Validação de profanidade mantida) ...
+    private static final String IMAGEM_PADRAO = "/images/default-job.png";
+
+    @Transactional
+    public VagaSaidaDTO criar(VagaEntradaDTO dto, String autorEmail, MultipartFile imagem) {
+
         if (filtroProfanidade.contemProfanidade(dto.getTitulo()) ||
                 filtroProfanidade.contemProfanidade(dto.getDescricao()) ||
                 filtroProfanidade.contemProfanidade(dto.getEmpresa())) {
@@ -62,6 +67,15 @@ public class VagaService {
 
         if (dto.getRequisitos() != null) vaga.setRequisitos(dto.getRequisitos());
         if (dto.getBeneficios() != null) vaga.setBeneficios(dto.getBeneficios());
+
+        if (imagem != null && !imagem.isEmpty()) {
+            try {
+                String url = midiaService.upload(imagem);
+                vaga.setImagemUrl(url);
+            } catch (IOException e) {
+                throw new RuntimeException("Erro ao fazer upload da imagem da vaga", e);
+            }
+        }
 
         vaga.setDataPublicacao(LocalDateTime.now());
         vaga.setAutor(autor);
@@ -113,7 +127,7 @@ public class VagaService {
     }
 
     @Transactional
-    public VagaSaidaDTO atualizar(Long id, VagaEntradaDTO dto, String usuarioEmail) throws AccessDeniedException {
+    public VagaSaidaDTO atualizar(Long id, VagaEntradaDTO dto, String usuarioEmail, MultipartFile imagem) throws AccessDeniedException {
         Vaga vaga = vagaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Vaga não encontrada"));
 
@@ -125,6 +139,17 @@ public class VagaService {
       }
 
         mapearDtoParaEntidade(dto, vaga);
+        if (imagem != null && !imagem.isEmpty()) {
+            try {
+                if (vaga.getImagemUrl() != null && vaga.getImagemUrl().contains("cloudinary")) {
+                    midiaService.deletar(vaga.getImagemUrl());
+                }
+                String url = midiaService.upload(imagem);
+                vaga.setImagemUrl(url);
+            } catch (IOException e) {
+                throw new RuntimeException("Erro ao atualizar imagem da vaga", e);
+            }
+        }
         return new VagaSaidaDTO(vagaRepository.save(vaga));
     }
 

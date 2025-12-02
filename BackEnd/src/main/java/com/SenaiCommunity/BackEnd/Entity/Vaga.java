@@ -24,8 +24,9 @@ public class Vaga {
 
     private String empresa;
 
-    // --- NOVOS CAMPOS ---
     private String salario;
+
+    private String imagemUrl;
 
     @ElementCollection
     @CollectionTable(name = "vaga_requisitos", joinColumns = @JoinColumn(name = "vaga_id"))
@@ -36,7 +37,6 @@ public class Vaga {
     @CollectionTable(name = "vaga_beneficios", joinColumns = @JoinColumn(name = "vaga_id"))
     @Column(name = "beneficio")
     private List<String> beneficios = new ArrayList<>();
-    // --------------------
 
     @Enumerated(EnumType.STRING)
     private LocalizacaoVaga localizacao;

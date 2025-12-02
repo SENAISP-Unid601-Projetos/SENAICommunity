@@ -4,9 +4,11 @@ import com.SenaiCommunity.BackEnd.DTO.VagaEntradaDTO;
 import com.SenaiCommunity.BackEnd.DTO.VagaSaidaDTO;
 import com.SenaiCommunity.BackEnd.Service.VagaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
 import java.security.Principal;
@@ -25,18 +27,27 @@ public class VagaController {
         return ResponseEntity.ok(vagaService.listarTodas());
     }
 
-
-    @PostMapping
+    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
-    public ResponseEntity<VagaSaidaDTO> criarVaga(@RequestBody VagaEntradaDTO dto, Principal principal) {
-        VagaSaidaDTO vagaCriada = vagaService.criar(dto, principal.getName());
+    public ResponseEntity<VagaSaidaDTO> criarVaga(
+            @RequestPart("vaga") VagaEntradaDTO dto,
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem,
+            Principal principal) {
+
+        // Passa o DTO e a Imagem para o Service
+        VagaSaidaDTO vagaCriada = vagaService.criar(dto, principal.getName(), imagem);
         return ResponseEntity.status(201).body(vagaCriada);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
-    public ResponseEntity<VagaSaidaDTO> atualizarVaga(@PathVariable Long id, @RequestBody VagaEntradaDTO dto, Principal principal) throws AccessDeniedException {
-        return ResponseEntity.ok(vagaService.atualizar(id, dto, principal.getName()));
+    public ResponseEntity<VagaSaidaDTO> atualizarVaga(
+            @PathVariable Long id,
+            @RequestPart("vaga") VagaEntradaDTO dto,
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem,
+            Principal principal) throws AccessDeniedException {
+
+        return ResponseEntity.ok(vagaService.atualizar(id, dto, principal.getName(), imagem));
     }
 
     @DeleteMapping("/{id}")

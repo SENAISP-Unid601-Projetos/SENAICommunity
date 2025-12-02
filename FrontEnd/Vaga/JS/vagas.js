@@ -10,6 +10,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const backendUrl = window.backendUrl;
         const showNotification = window.showNotification;
 
+        // --- DEFINIÇÃO DA IMAGEM DEFAULT  ---
+        const defaultJobUrl = `${backendUrl}/images/default-job.png`;
+
+        // Função auxiliar para tratar URL
+        function getJobImageUrl(url) {
+            if (!url || url.trim() === '') return defaultJobUrl;
+            return url.startsWith('http') ? url : `${backendUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+        }
+
         // --- SELEÇÃO DE ELEMENTOS (Atualizada para incluir Mobile) ---
         const elements = {
             vagasListContainer: document.querySelector('.vagas-list'),
@@ -56,6 +65,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const alertForm = document.getElementById('create-alert-form');
         const cancelAlertBtn = document.getElementById('cancel-alert-btn');
 
+        // --- NOVOS SELETORES DE IMAGEM ---
+        const createVagaImgInput = document.getElementById('vaga-imagem');
+        const createVagaPreview = document.getElementById('create-vaga-preview');
+        const createPreviewContainer = document.getElementById('create-preview-container');
+
+        const editVagaImgInput = document.getElementById('edit-vaga-imagem');
+        const editVagaPreview = document.getElementById('edit-vaga-preview');
+        const editPreviewContainer = document.getElementById('edit-preview-container');
+
         // -----------------------------------------------------------------
         // FUNÇÕES DE SALVAMENTO LOCAL (LocalStorage) - ADICIONE ISTO AQUI
         // -----------------------------------------------------------------
@@ -66,6 +84,29 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (e) {
                 return [];
             }
+        }
+
+        // Função auxiliar para formatar moeda (R$) enquanto digita
+        function formatarMoedaInput(evento) {
+            const input = evento.target;
+
+            // 1. Remove tudo que não for dígito
+            let valor = input.value.replace(/\D/g, '');
+
+            // 2. Se estiver vazio, limpa o campo
+            if (valor === '') {
+                input.value = '';
+                return;
+            }
+
+            // 3. Converte para número (dividindo por 100 para considerar os centavos)
+            const numero = parseFloat(valor) / 100;
+
+            // 4. Formata usando a API nativa do navegador para BRL
+            input.value = numero.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
         }
 
         function isVagaSaved(id) {
@@ -109,7 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // FUNÇÕES DE RESPONSIVIDADE (Copiado de amizades.js)
         // -----------------------------------------------------------------
 
-
         function toggleMobileMenu() {
             if (elements.sidebar) elements.sidebar.classList.toggle('active');
             if (elements.mobileOverlay) elements.mobileOverlay.classList.toggle('active');
@@ -135,7 +175,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         }
-
 
         // -----------------------------------------------------------------
         // CONTROLE DOS ALERTAS MOBILE (BOTTOM SHEET) - CORRIGIDO
@@ -169,6 +208,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 document.body.style.overflow = 'hidden'; // Trava o scroll
             }
+        }
+
+        // -----------------------------------------------------------------
+        // PREVIEW DE IMAGEM (Criar)
+        // -----------------------------------------------------------------
+        if (createVagaImgInput) {
+            createVagaImgInput.addEventListener('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    createVagaPreview.src = URL.createObjectURL(file);
+                    createPreviewContainer.style.display = 'block';
+                } else {
+                    createVagaPreview.src = '';
+                    createPreviewContainer.style.display = 'none';
+                }
+            });
+        }
+
+        // -----------------------------------------------------------------
+        // PREVIEW DE IMAGEM (Editar)
+        // -----------------------------------------------------------------
+        if (editVagaImgInput) {
+            editVagaImgInput.addEventListener('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    editVagaPreview.src = URL.createObjectURL(file);
+                }
+            });
         }
 
         // 3. EVENT LISTENERS
@@ -334,6 +401,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 const nivel = nivelMap[vaga.nivel] || vaga.nivel;
                 const autorAvatar = window.getAvatarUrl(vaga.urlFotoAutor);
 
+                // TRATAMENTO DA IMAGEM DA VAGA
+                // Se a vaga tem imagemUrl, usa ela. Se não, usa a default.
+                const jobImage = getJobImageUrl(vaga.imagemUrl);
+
                 // Ícone do botão de salvar no card
                 const bookmarkIconClass = isVagaSaved(vaga.id) ? 'fas' : 'far'; // fas = solido, far = regular
                 const bookmarkBtnClass = isVagaSaved(vaga.id) ? 'saved' : '';
@@ -356,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 vagaCard.innerHTML = `
                     <div class="vaga-card-header">
                         <div class="vaga-empresa-logo">
-                            <img src="${autorAvatar}" alt="Foto de ${vaga.autorNome}" onerror="this.src='${window.defaultAvatarUrl}'">
+                            <img src="${jobImage}" alt="${vaga.empresa}" onerror="this.src='${defaultJobUrl}'">
                         </div>
                         
                         <div class="vaga-info-principal">
@@ -500,7 +571,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (isSaved) {
                 btn.innerHTML = '<i class="fas fa-bookmark"></i> Vaga Salva';
-                btn.classList.add('saved'); 
+                btn.classList.add('saved');
             } else {
                 btn.innerHTML = '<i class="far fa-bookmark"></i> Salvar Vaga';
                 btn.classList.remove('saved');
@@ -510,17 +581,16 @@ document.addEventListener("DOMContentLoaded", () => {
         // 2. Substitui a antiga handleSaveVaga para usar a lógica real de salvar
         function handleSaveVaga() {
             if (!currentVagaDetails) return;
-            
-        
-            handleToggleSave(currentVagaDetails.id); 
+
+            handleToggleSave(currentVagaDetails.id);
         }
 
         // 3. Função Centralizada de Toggle (Caso não tenha adicionado ainda)
         function handleToggleSave(vagaId) {
             const isNowSaved = toggleSaveVagaId(vagaId);
-            
+
             // Notificação visual
-            if(isNowSaved) {
+            if (isNowSaved) {
                 showNotification("Vaga salva na sua lista!", "success");
             } else {
                 showNotification("Vaga removida dos salvos.", "info");
@@ -548,12 +618,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const localizacao = localizacaoMap[vaga.localizacao] || vaga.localizacao;
             const nivel = nivelMap[vaga.nivel] || vaga.nivel;
 
-            // --- FOTO DO AUTOR NO MODAL ---
-            const autorAvatar = window.getAvatarUrl(vaga.urlFotoAutor);
-            document.getElementById('details-company-logo').src = autorAvatar;
+            // --- FOTO NO MODAL ---
+            const jobImage = getJobImageUrl(vaga.imagemUrl);
+            const logoImg = document.getElementById('details-company-logo');
+            logoImg.src = jobImage;
             // Fallback caso a imagem quebre
-            document.getElementById('details-company-logo').onerror = function () {
-                this.src = window.defaultAvatarUrl;
+            logoImg.onerror = function () {
+                this.src = defaultJobUrl;
             };
 
             // Preenche dados de texto (Mantido)
@@ -616,27 +687,28 @@ document.addEventListener("DOMContentLoaded", () => {
             return `https://${empresaSlug}.com/carreiras/${tituloSlug}-${vaga.id}`;
         }
 
-        function handleSaveVaga() {
-            if (!currentVagaDetails) return;
-
-            showNotification(`Vaga "${currentVagaDetails.titulo}" salva com sucesso!`, "success");
-
-            // Aqui você pode implementar a lógica para salvar a vaga para o usuário
-            saveVagaDetailsBtn.innerHTML = '<i class="fas fa-bookmark"></i> Vaga Salva';
-            saveVagaDetailsBtn.disabled = true;
-        }
-
         // -----------------------------------------------------------------
         // FUNÇÕES DO MODAL DE CRIAÇÃO
         // -----------------------------------------------------------------
 
         function openCreateVagaModal() {
             if (createVagaModal) createVagaModal.style.display = 'flex';
+            if (createVagaImgInput) createVagaImgInput.value = '';
+
+            // Define a imagem de preview como a default definida no início do arquivo
+            if (createVagaPreview) {
+                // Use a variável defaultJobUrl que definimos lá no começo do DOMContentLoaded
+                createVagaPreview.src = defaultJobUrl;
+            }
         }
 
         function closeCreateVagaModal() {
-            if (createVagaModal) createVagaModal.style.display = 'none';
             if (createVagaForm) createVagaForm.reset();
+            // Resetar preview
+            if (createVagaImgInput) createVagaImgInput.value = '';
+            if (createVagaPreview) createVagaPreview.src = defaultJobUrl;
+            if (createVagaModal) createVagaModal.style.display = 'none';
+            if (createPreviewContainer) createPreviewContainer.style.display = 'none';
         }
 
         async function handleCreateVagaSubmit(e) {
@@ -670,8 +742,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     beneficios: beneficiosArray
                 };
 
+                // CRIAÇÃO DO FORMDATA (Para enviar JSON + Arquivo)
+                const formData = new FormData();
+                // O backend espera @RequestPart("vaga")
+                formData.append("vaga", new Blob([JSON.stringify(vagaData)], { type: "application/json" }));
+
+                // O backend espera @RequestPart("imagem")
+                if (createVagaImgInput && createVagaImgInput.files[0]) {
+                    formData.append("imagem", createVagaImgInput.files[0]);
+                }
+
                 // Envia para o backend (o token já está no axios graças ao principal.js)
-                await axios.post(`${backendUrl}/api/vagas`, vagaData);
+                await axios.post(`${backendUrl}/api/vagas`, formData);
 
                 closeCreateVagaModal();
                 showNotification("Vaga publicada com sucesso!", "success");
@@ -711,6 +793,35 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('edit-vaga-localizacao').value = vaga.localizacao; // Ex: REMOTO
             document.getElementById('edit-vaga-tipo').value = vaga.tipoContratacao; // Ex: ESTAGIO
 
+
+            const salarioInput = document.getElementById('edit-vaga-salario');
+
+            if (vaga.salario) {
+
+                let valorLimpo = vaga.salario.toString().replace(/\D/g, '');
+
+                if (valorLimpo) {
+                    const numero = parseFloat(valorLimpo) / 100;
+                    salarioInput.value = numero.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL'
+                    });
+                } else {
+                    salarioInput.value = vaga.salario;
+                }
+            } else {
+                salarioInput.value = '';
+            }
+
+            const currentImg = getJobImageUrl(vaga.imagemUrl);
+
+            if (editVagaPreview) {
+                editVagaPreview.src = currentImg;
+                editVagaPreview.onerror = function () { this.src = defaultJobUrl; };
+            }
+
+            if (editVagaImgInput) editVagaImgInput.value = '';
+
             editVagaModal.style.display = 'flex';
         }
 
@@ -724,7 +835,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const requisitosArray = document.getElementById('edit-vaga-requisitos').value.split('\n').map(i => i.trim()).filter(i => i !== '');
                 const beneficiosArray = document.getElementById('edit-vaga-beneficios').value.split('\n').map(i => i.trim()).filter(i => i !== '');
 
-                const data = {
+                const vagaData = {
                     titulo: document.getElementById('edit-vaga-titulo').value,
                     empresa: document.getElementById('edit-vaga-empresa').value,
                     descricao: document.getElementById('edit-vaga-descricao').value,
@@ -738,7 +849,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 try {
                     btn.textContent = "Salvando...";
-                    await axios.put(`${backendUrl}/api/vagas/${id}`, data);
+
+                    // FORMDATA PARA EDIÇÃO
+                    const formData = new FormData();
+                    formData.append("vaga", new Blob([JSON.stringify(vagaData)], { type: "application/json" }));
+
+                    if (editVagaImgInput && editVagaImgInput.files[0]) {
+                        formData.append("imagem", editVagaImgInput.files[0]);
+                    }
+
+                    // PUT com FormData
+                    await axios.put(`${backendUrl}/api/vagas/${id}`, formData);
+
                     showNotification("Vaga atualizada com sucesso!", "success");
                     editVagaModal.style.display = 'none';
                     fetchVagas(); // Recarrega lista
@@ -913,6 +1035,16 @@ document.addEventListener("DOMContentLoaded", () => {
             // Listener do Modal de Criação
             if (elements.createVagaBtn) {
                 elements.createVagaBtn.addEventListener('click', openCreateVagaModal);
+
+            }
+
+            const createSalarioInput = document.getElementById('vaga-salario');
+            if (createSalarioInput) {
+                createSalarioInput.addEventListener('input', formatarMoedaInput);
+            }
+            const editSalarioInput = document.getElementById('edit-vaga-salario');
+            if (editSalarioInput) {
+                editSalarioInput.addEventListener('input', formatarMoedaInput);
             }
             if (cancelCreateVagaBtn) {
                 cancelCreateVagaBtn.addEventListener('click', closeCreateVagaModal);
@@ -945,7 +1077,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 1. ATUALIZA A SIDEBAR (Perfil)
         updateSidebarUserInfo();
-
 
         // Verifica permissão para mostrar o botão de criar vaga
         if (currentUser) {
