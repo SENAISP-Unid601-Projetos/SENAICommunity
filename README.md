@@ -141,7 +141,12 @@ Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) par
 
 <div align="center">
   <br>
-  <sub>Desenvolvido por <a href="https://github.com/GabrielPiscke">Gabriel Piscke</a></sub>
+  <sub>Desenvolvido por <a href="https://github.com/GabrielPiscke">Gabriel Piscke</a>
+  <a href="https://github.com/YuriSantxz07">Yuri Santos</a>
+  <a href="https://github.com/ViniciusDev00">Vinicius Biancolini</a>
+  <a href="https://github.com/Matheusslb">Matheus Brito</a>
+  <a href="https://github.com/MiguelGallo1227">Miguel Gallo</a>
+  </sub>
 </div>
 
 
