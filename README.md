@@ -159,18 +159,52 @@ Contribuições são o que fazem a comunidade open source um lugar incrível par
 
 ---
 
-👥 Autores
-<table> <tr> <td align="center"> <a href="https://github.com/GabrielPiscke"> <img src="https://www.google.com/search?q=https://github.com/GabrielPiscke.png" width="100px;" alt="Foto do Gabriel Piscke"/>
+<h2>👥 Autores</h2>
 
-<sub> <b>Gabriel Piscke</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/YuriSantxz07"> <img src="https://www.google.com/search?q=https://github.com/YuriSantxz07.png" width="100px;" alt="Foto do Yuri Santos"/>
-
-<sub> <b>Yuri Santos</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/ViniciusDev00"> <img src="https://www.google.com/search?q=https://github.com/ViniciusDev00.png" width="100px;" alt="Foto do Vinicius Biancolini"/>
-
-<sub> <b>Vinicius Biancolini</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/Matheusslb"> <img src="https://www.google.com/search?q=https://github.com/Matheusslb.png" width="100px;" alt="Foto do Matheus Brito"/>
-
-<sub> <b>Matheus Brito</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/MiguelGallo1227"> <img src="https://www.google.com/search?q=https://github.com/MiguelGallo1227.png" width="100px;" alt="Foto do Miguel Gallo"/>
-
-<sub> <b>Miguel Gallo</b> </sub> </a> </td> </tr> </table>
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/GabrielPiscke">
+        <img src="https://avatars.githubusercontent.com/u/108602414?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Gabriel Piscke"/><br>
+        <sub>
+          <b>Gabriel Piscke</b>
+        </sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/YuriSantxz07">
+        <img src="https://avatars.githubusercontent.com/u/108602379?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Yuri Santos"/><br>
+        <sub>
+          <b>Yuri Santos</b>
+        </sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/ViniciusDev00">
+        <img src="https://avatars.githubusercontent.com/u/108602422?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Vinicius Biancolini"/><br>
+        <sub>
+          <b>Vinicius Biancolini</b>
+        </sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Matheusslb">
+        <img src="https://avatars.githubusercontent.com/u/108602434?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Matheus Brito"/><br>
+        <sub>
+          <b>Matheus Brito</b>
+        </sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/MiguelGallo1227">
+        <img src="https://avatars.githubusercontent.com/u/108602402?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Miguel Gallo"/><br>
+        <sub>
+          <b>Miguel Gallo</b>
+        </sub>
+      </a>
+    </td>
+  </tr>
+</table>
 
 
 
