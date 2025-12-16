@@ -197,7 +197,7 @@ Contribuições são o que fazem a comunidade open source um lugar incrível par
     </td>
     <td align="center">
       <a href="https://github.com/MiguelGallo1227">
-        <img src="https://avatars.githubusercontent.com/u/108602402?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Miguel Gallo"/><br>
+        <img src="https://avatars.githubusercontent.com/u/186326783?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Miguel Gallo"/><br>
         <sub>
           <b>Miguel Gallo</b>
         </sub>
