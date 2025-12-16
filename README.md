@@ -135,10 +135,6 @@ Contribuições são o que fazem a comunidade open source um lugar incrível par
 
 ---
 
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais informações.
-
 <div align="center">
   <br>
   <sub>Desenvolvido por <a href="https://github.com/GabrielPiscke">Gabriel Piscke</a>
