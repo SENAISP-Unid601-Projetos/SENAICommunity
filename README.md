@@ -25,7 +25,7 @@
 [Tecnologias](#-tecnologias) •
 [Instalação](#-como-rodar-o-projeto) •
 [API](#-documentação-da-api) •
-[Equipe](#-autores)
+[Equipe](#-desenvolvedores)
 
 </div>
 
@@ -158,7 +158,7 @@ Contribuições são o que fazem a comunidade open source um lugar incrível par
 5.  Abra um **Pull Request**
 
 ---
-<h2>👥 Desenvolvedores</h2>
+## 👥 Desenvolvedores
 
 <table border="0">
   <tr>
