@@ -160,55 +160,22 @@ Contribuições são o que fazem a comunidade open source um lugar incrível par
 ---
 ## 👥 Desenvolvedores
 
-<table border="0">
-  <tr>
-    <td align="center">
-      <a href="https://github.com/GabrielPiscke">
-        <img src="https://avatars.githubusercontent.com/u/185540777?v=4" width="100px;" style="border-radius: 50%;" alt="Gabriel Piscke"/>
-      </a>
-      <br>
-      <sub>
-        <b>Gabriel Piscke</b>
-      </sub>
-    </td>
-    <td align="center">
-      <a href="https://github.com/YuriSantxz07">
-        <img src="https://avatars.githubusercontent.com/u/185539590?v=4" width="100px;" style="border-radius: 50%;" alt="Yuri Santos"/>
-      </a>
-      <br>
-      <sub>
-        <b>Yuri Santos</b>
-      </sub>
-    </td>
-    <td align="center">
-      <a href="https://github.com/ViniciusDev00">
-        <img src="https://avatars.githubusercontent.com/u/185539340?v=4" width="100px;" style="border-radius: 50%;" alt="Vinicius Biancolini"/>
-      </a>
-      <br>
-      <sub>
-        <b>Vinicius Biancolini</b>
-      </sub>
-    </td>
-    <td align="center">
-      <a href="https://github.com/Matheusslb">
-        <img src="https://avatars.githubusercontent.com/u/185539094?v=4" width="100px;" style="border-radius: 50%;" alt="Matheus Brito"/>
-      </a>
-      <br>
-      <sub>
-        <b>Matheus Brito</b>
-      </sub>
-    </td>
-    <td align="center">
-      <a href="https://github.com/MiguelGallo1227">
-        <img src="https://avatars.githubusercontent.com/u/186326783?v=4" width="100px;" style="border-radius: 50%;" alt="Miguel Gallo"/>
-      </a>
-      <br>
-      <sub>
-        <b>Miguel Gallo</b>
-      </sub>
-    </td>
-  </tr>
-</table>
+<table border="0"> <tr> <td align="center"> <a href="https://github.com/GabrielPiscke"> <img src="https://avatars.githubusercontent.com/u/185540777?v=4" width="100px;" alt="Foto do Gabriel Piscke" style="border-radius: 50%;" />
+
+
+<sub> <b>Gabriel Piscke</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/YuriSantxz07"> <img src="https://avatars.githubusercontent.com/u/185539590?v=4" width="100px;" alt="Foto do Yuri Santos" style="border-radius: 50%;" />
+
+
+<sub> <b>Yuri Santos</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/ViniciusDev00"> <img src="https://avatars.githubusercontent.com/u/185539340?v=4" width="100px;" alt="Foto do Vinicius Biancolini" style="border-radius: 50%;" />
+
+
+<sub> <b>Vinicius Biancolini</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/Matheusslb"> <img src="https://avatars.githubusercontent.com/u/185539094?v=4" width="100px;" alt="Foto do Matheus Brito" style="border-radius: 50%;" />
+
+
+<sub> <b>Matheus Brito</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/MiguelGallo1227"> <img src="https://avatars.githubusercontent.com/u/186326783?v=4" width="100px;" alt="Foto do Miguel Gallo" style="border-radius: 50%;" />
+
+
+<sub> <b>Miguel Gallo</b> </sub> </a> </td> </tr> </table>
 
 
 
