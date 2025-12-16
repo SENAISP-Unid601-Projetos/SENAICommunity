@@ -137,6 +137,7 @@ docker build -t senaicommunity-backend .
 # Rodar o container (com variáveis de ambiente)
 docker run -p 8080:8080 --env-file .env senaicommunity-backend
 ```
+
 ---
 
 ## 📖 Documentação da API
@@ -144,6 +145,32 @@ docker run -p 8080:8080 --env-file .env senaicommunity-backend
 Com o Back-end rodando, você pode acessar a documentação interativa (Swagger UI). Lá você consegue visualizar todos os endpoints, modelos de dados (schemas) e testar as requisições em tempo real.
 
 🔗 **Acesse:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+---
+
+## 🔮 Melhorias Futuras & Roadmap
+
+Este projeto é um organismo vivo. Abaixo detalho os próximos passos estratégicos para evoluir a arquitetura do **Senai Community**, focando em escalabilidade e experiência do desenvolvedor:
+
+### 🛠️ Evolução Técnica (Back-end)
+- [ ] **Migração de Banco de Dados:** Implementar **Flyway** ou **Liquibase** para versionamento de schema do banco (substituindo o atual `ddl-auto=update`), garantindo integridade em produção.
+- [ ] **Sistema de Notificações Externas:** Adicionar a dependência `spring-boot-starter-mail` para implementar recuperação de senha e alertas de vagas via E-mail.
+- [ ] **Testes de Integração:** Expandir a suíte de testes (atualmente focada em `BackEndApplicationTests`) para cobrir fluxos completos de Controller e Service utilizando **Mockito** e banco H2 em memória.
+- [ ] **Monitoramento (Actuator):** Integrar o **Spring Boot Actuator** + **Prometheus** para expor métricas de saúde da API e consumo de memória.
+
+### 🎨 Modernização do Front-end
+- [ ] **Adoção de Framework Reativo:** Refatorar a estrutura atual de HTML/JS Vanilla (`FrontEnd/Vaga/JS`, `FrontEnd/Projeto/JS`, etc.) para **React.js** ou **Vue.js**, criando componentes reutilizáveis.
+- [ ] **Build Tooling:** Implementar **Vite** ou **Webpack** para otimizar e minificar os assets (CSS/JS) que hoje são servidos estaticamente.
+- [ ] **Acessibilidade Aprimorada:** Revisar o HTML para incluir atributos ARIA e garantir navegação sem mouse (WCAG 2.1).
+
+### ☁️ DevOps & Infraestrutura
+- [ ] **Orquestração de Containers:** Criar um arquivo `docker-compose.yml` para subir a aplicação + MySQL + Redis (para cache) com um único comando.
+- [ ] **Pipeline CI/CD:** Configurar workflows do **GitHub Actions** para buildar o projeto Java e rodar os testes automaticamente a cada Push.
+
+### 🚀 Novas Funcionalidades de Negócio
+- [ ] **Gerador de Currículos PDF:** Implementar biblioteca (como *iText* ou *OpenPDF*) para que alunos exportem seus perfis como currículos formatados.
+- [ ] **Chamadas de Vídeo:** Evoluir o Chat WebSocket atual para suportar WebRTC, permitindo entrevistas simuladas na plataforma.
+- [ ] **Recomendação Inteligente:** Criar algoritmo para cruzar as `skills` do Aluno com os requisitos da `Vaga`, ordenando as oportunidades por compatibilidade.
 
 ---
 
@@ -158,6 +185,7 @@ Contribuições são o que fazem a comunidade open source um ótimo lugar para a
 5.  Abra um **Pull Request**
 
 ---
+
 ## 👥 Desenvolvedores
 
 <table border="0">
