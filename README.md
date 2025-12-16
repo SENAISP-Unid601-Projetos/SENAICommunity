@@ -141,7 +141,7 @@ Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) par
 
 <div align="center">
   <br>
-  <sub>Desenvolvido por <a href="[https://github.com/seu-usuario](https://github.com/GabrielPiscke)">Gabriel Piscke</a></sub>
+  <sub>Desenvolvido por <a href="https://github.com/GabrielPiscke">Gabriel Piscke</a></sub>
 </div>
 
 
