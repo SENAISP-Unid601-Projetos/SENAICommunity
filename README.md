@@ -4,13 +4,17 @@
 
 **Conectando alunos, professores e o mercado de trabalho em um único ecossistema.**
 
-![STATUS](http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge)
-![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![Spring](https://img.shields.io/badge/Spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![STATUS](https://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge)
+![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring](https://img.shields.io/badge/Spring_Boot-3.4.5-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
-[Funcionalidades](#-funcionalidades) • [Tecnologias](#-tecnologias) • [Instalação](#-como-rodar-o-projeto) • [API](#-documentação-da-api)
+[📄 Sobre](#-sobre-o-projeto) •
+[🚀 Funcionalidades](#-funcionalidades) •
+[🛠️ Tecnologias](#️-tecnologias-utilizadas) •
+[💻 Instalação](#-como-rodar-o-projeto) •
+[📖 API](#-documentação-da-api)
 
 </div>
 
@@ -18,129 +22,138 @@
 
 ## 📄 Sobre o Projeto
 
-O **Senai Community** é uma plataforma full-stack desenvolvida para revolucionar a interação acadêmica e profissional dentro do ambiente SENAI. O sistema combina elementos de **redes sociais** com ferramentas robustas de **gestão de carreira**, criando um ambiente onde alunos podem expor seus portfólios, encontrar vagas de estágio e colaborar em tempo real com professores e empresas.
+O **Senai Community** é uma plataforma **full-stack** criada para fortalecer a interação acadêmica e profissional dentro do ecossistema **SENAI**.
+
+O sistema une conceitos de **rede social**, **gestão de carreira** e **comunicação em tempo real**, permitindo que:
+
+- Alunos divulguem projetos e portfólios  
+- Professores acompanhem, orientem e divulguem eventos  
+- Empresas publiquem vagas e encontrem talentos  
+
+Tudo em um ambiente moderno, seguro e integrado.
 
 ---
 
 ## 🚀 Funcionalidades
 
-O sistema é modular e abrange diversas áreas de interação, garantindo uma experiência completa para o usuário.
+O sistema é modular, escalável e orientado à experiência do usuário.
 
-### 💬 Social & Comunicação (Real-Time)
-* **Chat via WebSocket (STOMP):** Mensagens privadas e em grupo com entrega instantânea.
-* **Feed Interativo:** Postagens ricas com suporte a uploads de mídia (imagens via Cloudinary), curtidas e comentários.
-* **Networking:** Sistema completo de solicitação, aceitação e listagem de amigos.
-* **🛡️ Filtro de Profanidade:** Moderação automática que monitora e bloqueia conteúdo impróprio em textos e comentários.
+### 💬 Social & Comunicação (Tempo Real)
+- **Chat via WebSocket (STOMP)** — mensagens privadas e em grupo
+- **Feed Interativo** — postagens com imagens (Cloudinary), curtidas e comentários
+- **Sistema de Amizades** — solicitações, aceitação e listagem
+- **🛡️ Filtro de Profanidade** — moderação automática de textos e comentários
 
 ### 🎓 Acadêmico & Projetos
-* **Vitrine de Projetos:** Espaço para alunos cadastrarem projetos, detalharem stacks tecnológicas e recrutarem membros.
-* **Gestão de Eventos:** Calendário acadêmico com workshops e eventos agendáveis.
-* **Perfis Especializados:** Funcionalidades distintas e adaptadas para **Alunos** e **Professores**.
+- **Vitrine de Projetos** — divulgação de projetos, stacks e recrutamento de membros
+- **Gestão de Eventos** — calendário acadêmico com workshops e palestras
+- **Perfis Especializados** — funcionalidades distintas para **Alunos** e **Professores**
 
 ### 💼 Carreira & Mercado
-* **Portal de Vagas:** Mural exclusivo para divulgação de oportunidades de estágio e emprego.
-* **🔔 Alertas Inteligentes:** Sistema `AlertaVaga` que notifica usuários automaticamente sobre novas oportunidades compatíveis com seu perfil.
+- **Portal de Vagas** — oportunidades de estágio e emprego
+- **🔔 Alertas Inteligentes** — notificações automáticas com base no perfil do usuário
 
 ### 🔒 Segurança & Infraestrutura
-* **Login Social:** Integração com **Google OAuth2**.
-* **Segurança Stateless:** Proteção total das rotas via **JWT (JSON Web Token)**.
-* **Cloud Upload:** Armazenamento otimizado de imagens na nuvem.
+- **Autenticação JWT (Stateless)**
+- **Login Social com Google OAuth2**
+- **Upload de Imagens na Nuvem (Cloudinary)**
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-### Back-end (Java 21 + Spring Boot 3.4.5)
--   **Spring Web:** API RESTful robusta.
--   **Spring Security + OAuth2:** Autenticação moderna e segura.
--   **Spring Data JPA:** Persistência de dados eficiente.
--   **Spring WebSocket:** Comunicação bidirecional em tempo real.
--   **Bean Validation:** Garantia de integridade dos dados.
--   **OpenAPI (Swagger UI):** Documentação viva da API.
--   **Lombok:** Código limpo e menos verboso.
+### 🔙 Back-end
+- **Java 21**
+- **Spring Boot 3.4.5**
+- Spring Web (REST API)
+- Spring Security + OAuth2
+- Spring Data JPA
+- Spring WebSocket
+- Bean Validation
+- OpenAPI (Swagger)
+- Lombok
 
-### Infraestrutura & Dados
--   **MySQL:** Banco de dados relacional.
--   **Docker:** Containerização para padronização de ambiente.
--   **Maven:** Gerenciamento de dependências.
+### 🗄️ Infraestrutura & Dados
+- **MySQL**
+- **Docker**
+- **Maven**
 
-### Front-end
--   **HTML5 / CSS3 / JavaScript (Vanilla):** Interface leve, desacoplada e responsiva, focada em performance.
+### 🎨 Front-end
+- **HTML5**
+- **CSS3**
+- **JavaScript (Vanilla)**  
+Interface leve, desacoplada e responsiva.
 
 ---
 
 ## 💻 Como Rodar o Projeto
 
-### Pré-requisitos
-Antes de começar, você precisará ter instalado em sua máquina:
-* [Java JDK 21](https://www.oracle.com/java/technologies/downloads/#java21)
-* [Maven](https://maven.apache.org/)
-* [MySQL Server](https://dev.mysql.com/downloads/installer/)
-* [Docker](https://www.docker.com/) (Opcional, mas recomendado)
+### 🔧 Pré-requisitos
+- Java JDK 21  
+- Maven  
+- MySQL  
+- Docker (opcional, recomendado)
 
-### 1. Clonar o Repositório
+---
+
+### 1️⃣ Clonar o Repositório
 ```bash
-git clone [https://github.com/seu-usuario/SenaiCommunity.git](https://github.com/seu-usuario/SenaiCommunity.git)
+git clone https://github.com/seu-usuario/SenaiCommunity.git
 cd SenaiCommunity
+2️⃣ Configurar Variáveis de Ambiente
+Crie um arquivo .env na raiz do projeto ou configure as variáveis no sistema:
 
+Variável	Descrição	Exemplo
+MYSQLHOST	Host do banco	localhost
+MYSQLPORT	Porta do banco	3306
+MYSQLDATABASE	Nome do schema	senaicommunity_db
+MYSQLUSER	Usuário	root
+MYSQLPASSWORD	Senha	sua_senha
+JWT_SECRET	Chave JWT	chave_super_secreta
+CLOUDINARY_CLOUD_NAME	Cloudinary	minha_nuvem
+CLOUDINARY_API_KEY	API Key	123456
+CLOUDINARY_API_SECRET	API Secret	abc-xyz
+GOOGLE_CLIENT_ID	OAuth Client ID	*.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET	OAuth Secret	GOCSPX-...
+PORT	Porta da aplicação	8080
 
-### 2. Configurar Variáveis de Ambiente
-Por segurança, o projeto não contém credenciais no código. Crie um arquivo `.env` na raiz ou configure as variáveis no seu sistema operacional baseando-se na tabela abaixo:
-
-| Variável | Descrição | Exemplo |
-| :--- | :--- | :--- |
-| `MYSQLHOST` | Endereço do Banco | `localhost` |
-| `MYSQLPORT` | Porta do Banco | `3306` |
-| `MYSQLDATABASE` | Nome do Schema | `senaicommunity_db` |
-| `MYSQLUSER` | Usuário do Banco | `root` |
-| `MYSQLPASSWORD` | Senha do Banco | `sua_senha` |
-| `JWT_SECRET` | Chave de assinatura JWT | `uma_chave_super_secreta_256bit` |
-| `CLOUDINARY_CLOUD_NAME` | Cloud Name | `minha_nuvem` |
-| `CLOUDINARY_API_KEY` | API Key | `123456789` |
-| `CLOUDINARY_API_SECRET` | API Secret | `abc-123-xyz` |
-| `GOOGLE_CLIENT_ID` | Client ID (Google) | `....apps.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | Client Secret (Google) | `GOCSPX-....` |
-| `PORT` | Porta da Aplicação | `8080` |
-
-### 3. Executando o Back-end
-
-#### Opção A: Via Docker (Recomendado 🐳)
-```bash
+3️⃣ Executar o Back-end
+🐳 Opção A — Docker (Recomendado)
+bash
+Copiar código
 cd BackEnd
 
-# Construir a imagem
 docker build -t senaicommunity-backend .
-
-# Rodar o container (com variáveis de ambiente)
 docker run -p 8080:8080 --env-file .env senaicommunity-backend
+📖 Documentação da API
+Com a aplicação em execução, acesse a documentação interativa:
 
----
+🔗 Swagger UI:
+http://localhost:8080/swagger-ui.html
 
-## 📖 Documentação da API
+Nela você pode:
 
-Com o Back-end rodando, você pode acessar a documentação interativa (Swagger UI). Lá você consegue visualizar todos os endpoints, modelos de dados (schemas) e testar as requisições em tempo real.
+Visualizar endpoints
 
-🔗 **Acesse:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+Ver modelos de dados
 
----
+Testar requisições em tempo real
 
-## 🤝 Contribuição
+🤝 Contribuição
+Contribuições são bem-vindas 💙
 
-Contribuições são o que fazem a comunidade open source um lugar incrível para aprender, inspirar e criar. Qualquer contribuição que você fizer será **muito apreciada**.
+Faça um Fork
 
-1.  Faça um **Fork** do projeto
-2.  Crie uma para sua Feature (`git checkout -b feature/minha-feature`)
-3.  Faça o Commit das suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4.  Faça o Push para a Branch (`git push origin feature/minha-feature`)
-5.  Abra um **Pull Request**
+Crie uma branch (feature/minha-feature)
 
----
+Commit suas alterações
 
-## 📄 Licença
+Faça o push
 
-Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais informações.
+Abra um Pull Request
 
-<div align="center">
-  <br>
-  <sub>Desenvolvido por <a href="https://github.com/seu-usuario">Seu Nome</a></sub>
-</div>
+📄 Licença
+Este projeto está licenciado sob a MIT License.
+Veja o arquivo LICENSE para mais detalhes.
+
+<div align="center"> <sub>Desenvolvido por <a href="https://github.com/seu-usuario">Seu Nome</a></sub> </div> ```
