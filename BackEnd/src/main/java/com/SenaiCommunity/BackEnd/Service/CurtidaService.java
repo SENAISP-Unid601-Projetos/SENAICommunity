@@ -10,6 +10,7 @@ import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,7 @@ public class CurtidaService {
     private NotificacaoService notificacaoService;
 
     @Transactional
+    @CacheEvict(value = "feed-postagens", allEntries = true)
     public Long toggleCurtida(String username, Long postagemId, Long comentarioId) {
         Usuario usuario = usuarioRepository.findByEmail(username)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));

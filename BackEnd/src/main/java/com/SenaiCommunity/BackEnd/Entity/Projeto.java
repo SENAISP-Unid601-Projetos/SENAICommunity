@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -20,6 +21,7 @@ public class Projeto {
     private Long id;
 
     private String titulo;
+    @Lob
     private String descricao;
     private Date dataInicio;
     private Date dataEntrega;
@@ -29,6 +31,11 @@ public class Projeto {
     private LocalDateTime dataCriacao;
     private Integer maxMembros = 50; // Limite de membros no grupo
     private Boolean grupoPrivado = false; // Se true, apenas por convite
+    private String categoria;
+    private String videoDescricaoUrl;
+
+    @ElementCollection
+    private List<String> tecnologias;
 
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL)
     private List<MensagemGrupo> mensagens;
@@ -38,9 +45,11 @@ public class Projeto {
     private Usuario autor; // Criador do projeto (sempre ADMIN)
 
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     private List<ProjetoMembro> membros;
 
     @OneToMany(mappedBy = "projeto", cascade = CascadeType.ALL)
+    @BatchSize(size = 20)
     private List<ConviteProjeto> convites;
 
     // Manter compatibilidade com código existente

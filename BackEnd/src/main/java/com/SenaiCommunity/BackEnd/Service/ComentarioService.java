@@ -11,6 +11,7 @@ import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ public class  ComentarioService {
      * Cria um novo comentário, associa ao autor e à postagem, e o salva no banco.
      */
     @Transactional
+    @CacheEvict(value = "feed-postagens", allEntries = true)
     public ComentarioSaidaDTO criarComentario(Long postagemId, String autorUsername, ComentarioEntradaDTO dto) {
         Usuario autor = usuarioRepository.findByEmail(autorUsername)
                 .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
@@ -107,6 +109,7 @@ public class  ComentarioService {
      * Edita o conteúdo de um comentário existente, verificando a permissão do autor.
      */
     @Transactional
+    @CacheEvict(value = "feed-postagens", allEntries = true)
     public ComentarioSaidaDTO editarComentario(Long comentarioId, String username, String novoConteudo) {
         Comentario comentario = comentarioRepository.findById(comentarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Comentário não encontrado"));
@@ -131,6 +134,7 @@ public class  ComentarioService {
      * Exclui um comentário, verificando se o solicitante é o autor do comentário ou o autor da postagem.
      */
     @Transactional
+    @CacheEvict(value = "feed-postagens", allEntries = true)
     public ComentarioSaidaDTO excluirComentario(Long comentarioId, String username) {
         Comentario comentario = comentarioRepository.findById(comentarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Comentário não encontrado"));
@@ -152,6 +156,7 @@ public class  ComentarioService {
 
 
     @Transactional
+    @CacheEvict(value = "feed-postagens", allEntries = true)
     public ComentarioSaidaDTO destacarComentario(Long comentarioId, String username) {
         Comentario comentario = comentarioRepository.findById(comentarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Comentário não encontrado"));

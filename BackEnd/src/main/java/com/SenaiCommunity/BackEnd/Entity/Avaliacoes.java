@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 
@@ -26,10 +27,12 @@ public class Avaliacoes {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
+    @ToString.Exclude
     private Usuario usuario;
 
     @ManyToOne
     @JoinColumn(name = "projeto_id")
+    @ToString.Exclude
     private Projeto projeto;
 
 }

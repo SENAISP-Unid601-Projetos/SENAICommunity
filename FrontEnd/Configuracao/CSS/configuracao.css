@@ -1,0 +1,334 @@
+/* Container Geral */
+.config-container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.config-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* Estilo dos Cards de Configuração */
+.config-section {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.config-header {
+    background-color: var(--bg-tertiary);
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.config-header i {
+    font-size: 1.5rem;
+    color: var(--accent-primary);
+}
+
+.config-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.config-body {
+    padding: 0;
+}
+
+/* Itens de Configuração */
+.config-item {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s;
+}
+
+.config-item:last-child {
+    border-bottom: none;
+}
+
+.config-item:hover {
+    background-color: var(--bg-hover);
+}
+
+.config-info h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.config-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* ZONA DE PERIGO */
+.danger-zone {
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.danger-header {
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.danger-header i {
+    color: var(--danger);
+}
+
+.text-danger {
+    color: var(--danger) !important;
+}
+
+/* Botões */
+.btn-danger {
+    background-color: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-danger:hover {
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-quaternary);
+}
+
+/* Switches e Controles de Fonte (Mantidos e Ajustados) */
+.switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-quaternary); transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--accent-primary); }
+input:checked + .slider:before { transform: translateX(24px); }
+
+/* Responsividade */
+@media (max-width: 600px) {
+    .config-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .config-item button, 
+    .config-item .switch, 
+    .font-size-controls {
+        align-self: flex-start;
+        margin-top: 0.5rem;
+    }
+}
+
+/* =================================================================
+   ESTILOS DA SIDEBAR (Igual à Principal)
+   ================================================================= */
+
+/* Container do Menu */
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+    gap: 2px;
+}
+
+/* Item do Menu */
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    border-left: 3px solid transparent;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.menu-item i {
+    width: 24px;
+    text-align: center;
+    margin-right: 12px;
+    font-size: 1.1rem;
+}
+
+/* Hover */
+.menu-item:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* Item Ativo (Azul com degradê) */
+.menu-item.active {
+    background: linear-gradient(90deg, rgba(88, 166, 255, 0.1) 0%, transparent 100%);
+    color: var(--accent-primary);
+    border-left-color: var(--accent-primary);
+}
+
+.menu-item.active i {
+    color: var(--accent-primary);
+}
+
+/* Divisor de Menu */
+.menu-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 0.5rem 1.5rem;
+    opacity: 0.5;
+}
+
+/* Ajustes do Card de Usuário */
+.avatar-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 0.5rem;
+}
+
+.avatar-container img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--bg-tertiary);
+}
+
+.avatar-container .status {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+}
+
+.user-identity {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.user-role {
+    font-size: 0.75rem;
+    background: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.user-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+    width: 100%;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-item strong {
+    color: var(--accent-primary);
+    font-size: 1.1rem;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Botões de Fonte */
+.font-size-controls {
+    display: flex;
+    gap: 0.75rem; /* Um pouco mais de espaço entre eles */
+    background-color: var(--bg-primary);
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    align-items: center; /* Centraliza verticalmente */
+}
+
+.btn-font {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    /* Removemos width/height fixos globais para definir por tamanho */
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1; /* Garante que a letra fique no meio */
+}
+
+.btn-font:hover { 
+    background-color: var(--bg-quaternary); 
+    color: var(--text-primary); 
+}
+
+.btn-font.active { 
+    background-color: var(--accent-primary); 
+    color: white; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Tamanhos Progressivos (Escadinha) */
+.btn-font.small { 
+    font-size: 13px; 
+    width: 32px;
+    height: 32px;
+}
+
+.btn-font.medium { 
+    font-size: 18px; 
+    width: 40px;
+    height: 40px;
+}
+
+.btn-font.large { 
+    font-size: 26px; /* Bem maior para dar destaque */
+    width: 48px;
+    height: 48px;
+}

@@ -1,25 +1,127 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
 import com.SenaiCommunity.BackEnd.DTO.ProjetoDTO;
+import com.SenaiCommunity.BackEnd.DTO.SolicitacaoEntradaDTO;
 import com.SenaiCommunity.BackEnd.Entity.ProjetoMembro;
 import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
+import com.SenaiCommunity.BackEnd.Service.ArquivoMidiaService;
 import com.SenaiCommunity.BackEnd.Service.ProjetoService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/projetos")
+@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR') or hasRole('ADMIN')")
 public class ProjetoController {
 
     @Autowired
     private ProjetoService projetoService;
+
+    @Autowired
+    private ArquivoMidiaService midiaService;
+
+    @DeleteMapping("/solicitacoes/{solicitacaoId}/cancelar")
+    public ResponseEntity<?> cancelarSolicitacao(
+            @PathVariable Long solicitacaoId,
+            @RequestParam Long usuarioId) { // ID do usuário que quer cancelar o PRÓPRIO pedido
+        try {
+            projetoService.cancelarSolicitacao(solicitacaoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Solicitação cancelada com sucesso."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{projetoId}/sair")
+    public ResponseEntity<?> sairDoProjeto(
+            @PathVariable Long projetoId,
+            @RequestParam Long usuarioId) {
+        try {
+            projetoService.sairDoProjeto(projetoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Você saiu do projeto."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{projetoId}/solicitar-entrada")
+    public ResponseEntity<?> solicitarEntrada(
+            @PathVariable Long projetoId,
+            @RequestParam Long usuarioId) {
+        try {
+            projetoService.solicitarEntrada(projetoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Solicitação enviada com sucesso! O dono do projeto foi notificado."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    // Endpoint para o Dono/Admin ver quem quer entrar
+    @GetMapping("/{projetoId}/solicitacoes")
+    public ResponseEntity<?> listarSolicitacoes(
+            @PathVariable Long projetoId,
+            @RequestParam Long usuarioId) { // ID de quem está tentando ver a lista (o dono)
+        try {
+            List<SolicitacaoEntradaDTO> lista = projetoService.listarSolicitacoesPendentes(projetoId, usuarioId);
+            return ResponseEntity.ok(lista);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro ao buscar solicitações: " + e.getMessage());
+        }
+    }
+
+    // Endpoint para Aceitar
+    @PostMapping("/solicitacoes/{solicitacaoId}/aprovar")
+    public ResponseEntity<?> aprovarSolicitacao(
+            @PathVariable Long solicitacaoId,
+            @RequestParam Long usuarioId) { // ID do dono que está aprovando
+        try {
+            projetoService.aprovarSolicitacaoEntrada(solicitacaoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Solicitação aprovada! Novo membro adicionado."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    // Endpoint para Recusar
+    @PostMapping("/solicitacoes/{solicitacaoId}/recusar")
+    public ResponseEntity<?> recusarSolicitacao(
+            @PathVariable Long solicitacaoId,
+            @RequestParam Long usuarioId) { // ID do dono que está recusando
+        try {
+            projetoService.recusarSolicitacaoEntrada(solicitacaoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Solicitação recusada com sucesso."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
 
     @GetMapping
     public ResponseEntity<List<ProjetoDTO>> listarTodos() {
@@ -33,6 +135,38 @@ public class ProjetoController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/publicos")
+    public ResponseEntity<List<ProjetoDTO>> listarProjetosPublicos() {
+        List<ProjetoDTO> lista = projetoService.listarProjetosPublicos();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/privados")
+    public ResponseEntity<List<ProjetoDTO>> listarProjetosPrivados() {
+        List<ProjetoDTO> lista = projetoService.listarProjetosPrivados();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<ProjetoDTO>> listarProjetosDoUsuario(@PathVariable Long usuarioId) {
+        List<ProjetoDTO> projetos = projetoService.listarProjetosDoUsuario(usuarioId);
+        return ResponseEntity.ok(projetos);
+    }
+
+    @PostMapping("/{projetoId}/entrar")
+    public ResponseEntity<?> entrarEmProjetoPublico(
+            @PathVariable Long projetoId,
+            @RequestParam Long usuarioId) {
+        try {
+            projetoService.entrarEmProjetoPublico(projetoId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Você entrou no projeto com sucesso!"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
+
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> criar(
@@ -43,46 +177,46 @@ public class ProjetoController {
             @RequestParam Long autorId,
             @RequestParam(required = false) List<Long> professorIds,
             @RequestParam(required = false) List<Long> alunoIds,
-            @RequestPart(required = false) MultipartFile foto) {
+            @RequestPart(required = false) MultipartFile foto,
+            @RequestPart(required = false) MultipartFile videoDescricao,
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) List<String> tecnologias) {
+
         try {
-            if (foto != null && !foto.isEmpty()) {
-                System.out.println("[DEBUG] Recebendo upload de imagem: " + foto.getOriginalFilename());
+            // Validações básicas
+            if (titulo == null || titulo.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Título é obrigatório");
             }
 
             ProjetoDTO dto = new ProjetoDTO();
-            dto.setTitulo(titulo);
-            dto.setDescricao(descricao);
-            dto.setMaxMembros(maxMembros);
-            dto.setGrupoPrivado(grupoPrivado);
+            dto.setTitulo(titulo.trim());
+            dto.setDescricao(descricao != null ? descricao.trim() : "");
+            dto.setMaxMembros(maxMembros != null ? maxMembros : 10);
+            dto.setGrupoPrivado(grupoPrivado != null ? grupoPrivado : false);
             dto.setAutorId(autorId);
             dto.setProfessorIds(professorIds);
             dto.setAlunoIds(alunoIds);
+            dto.setCategoria(categoria);
+            dto.setTecnologias(tecnologias);
 
-
-            ProjetoDTO salvo = projetoService.salvar(dto, foto);
+            ProjetoDTO salvo = projetoService.salvar(dto, foto, videoDescricao);
 
             return ResponseEntity.ok(Map.of(
-                    "message", "Projeto criado com sucesso! Convites enviados automaticamente para professores e alunos.",
+                    "message", "Projeto criado com sucesso!",
                     "projeto", salvo
             ));
-        }catch (ConteudoImproprioException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", e.getMessage()));
 
         } catch (Exception e) {
-            System.err.println("[ERROR] Erro ao criar projeto: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Erro ao criar projeto: " + e.getMessage());
+            return ResponseEntity.internalServerError()
+                    .body("Erro ao criar projeto: " + e.getMessage());
         }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProjetoDTO> atualizar(@PathVariable Long id, @RequestBody ProjetoDTO dto) {
         dto.setId(id);
-        // Esta chamada passa 'null' para a foto, o que é correto para
-        // uma atualização que não altera a imagem.
-        ProjetoDTO atualizado = projetoService.salvar(dto, null);
+
+        ProjetoDTO atualizado = projetoService.salvar(dto, null, null);
         return ResponseEntity.ok(atualizado);
     }
 
@@ -103,6 +237,18 @@ public class ProjetoController {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Erro interno: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{projetoId}/membros")
+    public ResponseEntity<List<ProjetoDTO.MembroDTO>> getMembrosProjeto(@PathVariable Long projetoId) {
+        try {
+            ProjetoDTO projetoDTO = projetoService.buscarPorId(projetoId);
+            return ResponseEntity.ok(projetoDTO.getMembros());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -172,18 +318,48 @@ public class ProjetoController {
         }
     }
 
-    @PutMapping("/{projetoId}/info")
+    @PutMapping(value = "/{projetoId}/info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> atualizarInfoGrupo(
             @PathVariable Long projetoId,
             @RequestParam(required = false) String titulo,
             @RequestParam(required = false) String descricao,
-            @RequestParam(required = false) String imagemUrl,
+            @RequestParam(required = false) MultipartFile foto,
+            @RequestParam(required = false) MultipartFile videoDescricao,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Integer maxMembros,
             @RequestParam(required = false) Boolean grupoPrivado,
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) String tecnologias,
             @RequestParam Long adminId) {
+
         try {
-            projetoService.atualizarInfoGrupo(projetoId, titulo, descricao, imagemUrl, status, maxMembros, grupoPrivado, adminId);
+            // CORREÇÃO: Processar tecnologias se fornecidas
+            List<String> tecnologiasList = null;
+            if (tecnologias != null && !tecnologias.trim().isEmpty()) {
+                try {
+                    tecnologiasList = new ObjectMapper().readValue(tecnologias, new TypeReference<List<String>>() {});
+                } catch (Exception e) {
+                    // Fallback: tentar como lista separada por vírgulas
+                    tecnologiasList = Arrays.stream(tecnologias.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .collect(Collectors.toList());
+                }
+            }
+
+            // CORREÇÃO: Se uma foto foi enviada, fazer upload e obter URL
+            String novaImagemUrl = null;
+            if (foto != null && !foto.isEmpty()) {
+                try {
+                    novaImagemUrl = midiaService.upload(foto);
+                } catch (IOException e) {
+                    return ResponseEntity.badRequest().body("Erro ao fazer upload da foto: " + e.getMessage());
+                }
+            }
+
+            projetoService.atualizarInfoGrupo(projetoId, titulo, descricao, novaImagemUrl,videoDescricao,
+                    status, maxMembros, grupoPrivado, categoria,
+                    tecnologiasList, adminId);
             return ResponseEntity.ok(Map.of("message", "Informações do grupo atualizadas com sucesso!"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

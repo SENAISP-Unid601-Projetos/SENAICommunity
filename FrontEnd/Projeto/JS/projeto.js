@@ -1,253 +1,1683 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // -----------------------------------------------------------------
-  // AGUARDA O SCRIPT PRINCIPAL
-  // -----------------------------------------------------------------
-  document.addEventListener("globalScriptsLoaded", (e) => {
-    const currentUser = window.currentUser;
-    const ProjetosPage = {
-      // --- ESTADO (Específico da Página) ---
-      state: {
-        allProjects: [],
-        myProjects: [],
-      },
+    const DEFAULT_COVER_IMAGE = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
 
-      // --- ELEMENTOS (Específicos da Página) ---
-      elements: {
-        // Elementos da página
-        grid: document.getElementById("projetos-grid"),
-        searchInput: document.getElementById("project-search-input"),
-
-        modalOverlay: document.getElementById("novo-projeto-modal"),
-        openModalBtn: document.getElementById("btn-new-project"),
-        closeModalBtn: document.querySelector(
-          ".modal-content .close-modal-btn"
-        ),
-        form: document.getElementById("novo-projeto-form"),
-        projTituloInput: document.getElementById("proj-titulo"),
-        projDescricaoInput: document.getElementById("proj-descricao"),
-        projImagemInput: document.getElementById("proj-imagem"),
-        modalUserAvatar: document.getElementById("modal-user-avatar"),
-        modalUserName: document.getElementById("modal-user-name"),
-        connectionsCount: document.getElementById("connections-count"),
-        projectsCount: document.getElementById("projects-count"),
-      },
-
-      // -----------------------------------------------------------------
-      // INICIALIZAÇÃO (Específica da Página)
-      // -----------------------------------------------------------------
-      async init() {
-        if (!currentUser) {
-          console.error("Página de Projetos: Usuário não carregado.");
-          return;
+    // Função utilitária para mostrar/ocultar modais
+    function toggleModal(modalId, show) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            if (show) {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('visible'), 10);
+            } else {
+                modal.classList.remove('visible');
+                setTimeout(() => modal.style.display = 'none', 300);
+            }
         }
+    }
 
-        if (this.elements.connectionsCount) {
-          this.elements.connectionsCount.textContent =
-            window.userFriends?.length || "0";
-        }
-        await this.fetchProjetos();
-        this.setupEventListeners();
-        document.addEventListener("friendsListUpdated", () => {
-          if (this.elements.connectionsCount) {
-            this.elements.connectionsCount.textContent =
-              window.userFriends?.length || "0";
-          }
-        });
-      },
+    // --- GERENCIADOR DE PERFIL ---
+    const ProfileManager = {
+        elements: {
+            editBtn: document.getElementById('edit-profile-btn'),
+            deleteBtn: document.getElementById('delete-account-btn'),
+            logoutBtn: document.getElementById('logout-btn'),
 
-      // -----------------------------------------------------------------
-      // FUNÇÕES DE BUSCA E RENDERIZAÇÃO (Específicas da Página)
-      // -----------------------------------------------------------------
-      async fetchProjetos() {
-        if (!this.elements.grid) return;
-        try {
-          const response = await window.axios.get(
-            `${window.backendUrl}/projetos`
-          );
-          this.state.allProjects = response.data;
-          this.handlers.applyFilters.call(this);
-        } catch (error) {
-          console.error("Erro ao buscar projetos:", error);
-          this.elements.grid.innerHTML = `<p>Não foi possível carregar os projetos.</p>`;
-        }
-      },
+            editModal: document.getElementById('edit-profile-modal'),
+            deleteModal: document.getElementById('delete-account-modal'),
 
-      /**
-       * Renderiza os projetos filtrados no grid.
-       */
-      render() {
-        const grid = this.elements.grid;
-        if (!grid) return;
-        grid.innerHTML = "";
+            editForm: document.getElementById('edit-profile-form'),
+            deleteForm: document.getElementById('delete-account-form'),
 
-        const projetosParaRenderizar = this.state.myProjects;
+            // Campos de Edição
+            editName: document.getElementById('edit-profile-name'),
+            editBio: document.getElementById('edit-profile-bio'),
+            editDob: document.getElementById('edit-profile-dob'),
+            editPicInput: document.getElementById('edit-profile-pic-input'),
+            editPicPreview: document.getElementById('edit-profile-pic-preview'),
 
-        if (this.elements.projectsCount) {
-          this.elements.projectsCount.textContent =
-            projetosParaRenderizar.length;
-        }
-
-        if (projetosParaRenderizar.length === 0) {
-          grid.innerHTML = `<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Você ainda não participa de nenhum projeto.</p>`;
-          return;
-        }
-
-        projetosParaRenderizar.forEach((proj) => {
-          const card = document.createElement("div");
-          card.className = "projeto-card";
-
-          const imageUrl =
-            proj.imagemUrl && proj.imagemUrl.startsWith("http")
-              ? proj.imagemUrl
-              : proj.imagemUrl
-              ? `${window.backendUrl}${proj.imagemUrl}`
-              : "https://placehold.co/600x400/161b22/ffffff?text=Projeto";
-
-          const membrosHtml = (proj.membros || [])
-            .map((membro) => {
-              const avatarUrl =
-                membro.usuarioFotoPerfil &&
-                membro.usuarioFotoPerfil.startsWith("http")
-                  ? membro.usuarioFotoPerfil
-                  : `${window.backendUrl}${
-                      membro.usuarioFotoPerfil || "/images/default-avatar.jpg"
-                    }`;
-              return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}">`;
-            })
-            .join("");
-
-          card.innerHTML = `
-                        <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
-                        <div class="projeto-conteudo">
-                            <h3>${proj.titulo}</h3>
-                            <p>${
-                              proj.descricao ||
-                              "Este projeto não possui uma descrição."
-                            }</p>
-                            <div class="projeto-membros">${membrosHtml}</div>
-                        </div>`;
-          grid.appendChild(card);
-        });
-      },
-
-      // -----------------------------------------------------------------
-      // HANDLERS E AÇÕES (Específicos da Página)
-      // -----------------------------------------------------------------
-      handlers: {
-        openModal() {
-          if (currentUser) {
-            this.elements.modalUserName.textContent = currentUser.nome;
-            const avatarUrl =
-              currentUser.urlFotoPerfil &&
-              currentUser.urlFotoPerfil.startsWith("http")
-                ? currentUser.urlFotoPerfil
-                : `${window.backendUrl}${
-                    currentUser.urlFotoPerfil || "/images/default-avatar.jpg"
-                  }`;
-            this.elements.modalUserAvatar.src = avatarUrl;
-          }
-          this.elements.modalOverlay?.classList.add("visible");
+            cancelEditBtn: document.getElementById('cancel-edit-profile-btn'),
+            cancelDeleteBtn: document.getElementById('cancel-delete-account-btn')
         },
 
-        closeModal() {
-          this.elements.modalOverlay?.classList.remove("visible");
+        init() {
+            this.setupEventListeners();
         },
 
-        /**
-         * Manipula o envio do formulário de novo projeto.
-         */
-        async handleFormSubmit(e) {
-          e.preventDefault();
-          const form = this.elements.form;
-          const btn = form.querySelector(".btn-publish");
-          btn.disabled = true;
-          btn.textContent = "Publicando...";
+        setupEventListeners() {
+            // 1. Preview da Imagem no Modal (Ao selecionar arquivo)
+            if (this.elements.projImagemInput && this.elements.projImagePreview) {
+                this.elements.projImagemInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            this.elements.projImagePreview.src = ev.target.result;
+                        }
+                        reader.readAsDataURL(file);
+                    } else {
+                        // Se o usuário cancelar a seleção, volta para a imagem padrão
+                        this.elements.projImagePreview.src = DEFAULT_COVER_IMAGE;
+                    }
+                });
+            }
 
-          const formData = new FormData();
-          formData.append("titulo", this.elements.projTituloInput.value);
-          formData.append("descricao", this.elements.projDescricaoInput.value);
-          formData.append("autorId", currentUser.id);
-          formData.append("maxMembros", 50);
-          formData.append("grupoPrivado", false);
+            // 2. Botão "Publicar Projeto" (Abrir Modal)
+            if (this.elements.openModalBtn) {
+                this.elements.openModalBtn.addEventListener("click", () => this.handlers.openModal.call(this));
+            }
 
-          if (this.elements.projImagemInput.files[0]) {
-            formData.append("foto", this.elements.projImagemInput.files[0]);
-          }
+            // 3. Botão "X" do Modal (Fechar)
+            if (this.elements.closeModalBtn) {
+                this.elements.closeModalBtn.addEventListener("click", () => this.handlers.closeModal.call(this));
+            }
 
-          try {
-            await window.axios.post(`${window.backendUrl}/projetos`, formData, {
-              headers: { "Content-Type": "multipart/form-data" },
+            // 4. Botão "Cancelar" do Modal (Fechar)
+            if (this.elements.closeModalBtnAction) {
+                this.elements.closeModalBtnAction.addEventListener("click", () => this.handlers.closeModal.call(this));
+            }
+
+            // 5. Submit do Formulário (Criar Projeto)
+            // Substitua o addEventListener antigo por isto:
+            if (this.elements.form) {
+                // Remove listeners antigos clonando o nó (Truque para limpar eventos duplicados)
+                const newForm = this.elements.form.cloneNode(true);
+                this.elements.form.parentNode.replaceChild(newForm, this.elements.form);
+                this.elements.form = newForm; // Atualiza a referência
+
+                // Adiciona o listener no novo formulário limpo
+                this.elements.form.addEventListener("submit", (e) => this.handlers.handleFormSubmit.call(this, e));
+
+                // Re-seleciona os inputs dentro do novo formulário para não perder a referência
+                this.elements.projTituloInput = document.getElementById("proj-titulo");
+                this.elements.projDescricaoInput = document.getElementById("proj-descricao");
+                this.elements.projImagemInput = document.getElementById("proj-imagem");
+                this.elements.projCategoriaInput = document.getElementById("proj-categoria");
+                this.elements.projTecnologiasInput = document.getElementById("proj-tecnologias");
+                this.elements.projPrivacidadeInput = document.getElementById("proj-privacidade");
+
+                // Re-ativa o preview da imagem no novo form
+                if (this.elements.projImagemInput) {
+                    this.elements.projImagemInput.addEventListener('change', (e) => {
+                        const file = e.target.files[0];
+                        const preview = document.getElementById('proj-image-preview');
+                        if (file && preview) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => preview.src = ev.target.result;
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
+            }
+
+            // 6. Fechar ao clicar no fundo escuro (Overlay)
+            if (this.elements.modalOverlay) {
+                this.elements.modalOverlay.addEventListener("click", (e) => {
+                    if (e.target === this.elements.modalOverlay) {
+                        this.handlers.closeModal.call(this);
+                    }
+                });
+            }
+
+            // 7. Filtros de Busca e Categoria (Funciona para todas as abas)
+            const runFilters = () => {
+                // Verifica qual aba está ativa e roda o filtro correspondente
+                if (this.state.currentTab === 'meus-projetos') {
+                    this.applyFilters();
+                } else if (this.state.currentTab === 'projetos-publicos') {
+                    this.filterPublicProjects();
+                } else if (this.state.currentTab === 'projetos-privados') {
+                    this.filterPrivateProjects();
+                }
+            };
+
+            if (this.elements.searchInput) {
+                this.elements.searchInput.addEventListener("input", runFilters);
+            }
+
+            if (this.elements.categoryFilter) {
+                this.elements.categoryFilter.addEventListener("change", runFilters);
+            }
+
+            // Fechar ao clicar fora
+            window.addEventListener('click', (e) => {
+                if (e.target === this.elements.editModal || e.target === this.elements.deleteModal) {
+                    this.closeModals();
+                }
             });
-            form.reset();
-            this.handlers.closeModal.call(this);
-            await this.fetchProjetos();
-          } catch (error) {
-           let errorMessage = "Falha ao criar o projeto.";
-            if (error.response && error.response.data && error.response.data.message) {
-                // Pega a mensagem de "Conteúdo impróprio..."
-                errorMessage = error.response.data.message;
-              }
-              window.showNotification(errorMessage, "error");
-          } finally {
-            btn.disabled = false;
-            btn.textContent = "Publicar Projeto";
-          }
         },
 
-        /**
-         * Filtra os projetos visíveis com base na busca e se o usuário é membro.
-         */
-        applyFilters() {
-          const search = this.elements.searchInput.value.toLowerCase();
-          if (!currentUser) return;
-          this.state.myProjects = this.state.allProjects.filter((proj) => {
-            const isMember = proj.membros.some(
-              (membro) => membro.usuarioId === currentUser.id
-            );
-            const searchMatch = (proj.titulo || "")
-              .toLowerCase()
-              .includes(search);
-            return isMember && searchMatch;
-          });
+        openEditModal() {
+            if (!window.currentUser) return;
 
-          this.render();
+            // Preencher campos com dados atuais
+            this.elements.editName.value = window.currentUser.nome || '';
+            this.elements.editBio.value = window.currentUser.bio || '';
+
+            // Formatar data para input date (yyyy-MM-dd)
+            if (window.currentUser.dataNascimento) {
+                const date = new Date(window.currentUser.dataNascimento);
+                const formatted = date.toISOString().split('T')[0];
+                this.elements.editDob.value = formatted;
+            }
+
+            // Foto
+            const fotoUrl = window.currentUser.fotoPerfil
+                ? (window.currentUser.fotoPerfil.startsWith('http') ? window.currentUser.fotoPerfil : `${window.backendUrl}/api/arquivos/${window.currentUser.fotoPerfil}`)
+                : 'https://via.placeholder.com/150';
+            this.elements.editPicPreview.src = fotoUrl;
+
+            this.elements.editModal.classList.add('visible');
+            this.elements.editModal.style.display = 'flex';
         },
-      },
 
-      // -----------------------------------------------------------------
-      // EVENT LISTENERS (Específicos da Página)
-      // -----------------------------------------------------------------
-      setupEventListeners() {
-        const { openModalBtn, closeModalBtn, modalOverlay, form, searchInput } =
-          this.elements;
-        if (openModalBtn)
-          openModalBtn.addEventListener(
-            "click",
-            this.handlers.openModal.bind(this)
-          );
-        if (closeModalBtn)
-          closeModalBtn.addEventListener(
-            "click",
-            this.handlers.closeModal.bind(this)
-          );
-        if (form)
-          form.addEventListener("submit", (e) =>
-            this.handlers.handleFormSubmit.call(this, e)
-          );
-        if (searchInput)
-          searchInput.addEventListener(
-            "input",
-            this.handlers.applyFilters.bind(this)
-          );
-        if (modalOverlay) {
-          modalOverlay.addEventListener("click", (e) => {
-            if (e.target === modalOverlay) this.handlers.closeModal.call(this);
-          });
+        closeModals() {
+            if (this.elements.editModal) {
+                this.elements.editModal.classList.remove('visible');
+                this.elements.editModal.style.display = 'none';
+            }
+            if (this.elements.deleteModal) {
+                this.elements.deleteModal.classList.remove('visible');
+                this.elements.deleteModal.style.display = 'none';
+            }
+        },
+
+        async handleEditSubmit(e) {
+            e.preventDefault();
+            const btn = this.elements.editForm.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            setButtonLoading(btn, true);
+
+            const formData = new FormData();
+            formData.append('nome', this.elements.editName.value);
+            formData.append('bio', this.elements.editBio.value);
+            formData.append('dataNascimento', this.elements.editDob.value);
+
+            // Senha (apenas se preenchida)
+            const password = document.getElementById('edit-profile-password').value;
+            const confirmPassword = document.getElementById('edit-profile-password-confirm').value;
+
+            if (password) {
+                if (password !== confirmPassword) {
+                    window.showNotification("As senhas não coincidem.", "error");
+                    setButtonLoading(btn, false);
+                    btn.textContent = originalText;
+                    return;
+                }
+                formData.append('senha', password);
+            }
+
+            // Foto
+            if (this.elements.editPicInput.files[0]) {
+                formData.append('foto', this.elements.editPicInput.files[0]);
+            }
+
+            try {
+                const response = await window.axios.put(`${window.backendUrl}/usuarios/${window.currentUser.id}`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+
+                // Atualizar currentUser no localStorage e na memória
+                const updatedUser = { ...window.currentUser, ...response.data };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                window.currentUser = updatedUser;
+
+                window.showNotification("Perfil atualizado com sucesso!", "success");
+                this.closeModals();
+
+                // Recarregar a página para atualizar fotos e nomes em tudo
+                setTimeout(() => window.location.reload(), 1000);
+
+            } catch (error) {
+                console.error(error);
+                window.showNotification("Erro ao atualizar perfil.", "error");
+            } finally {
+                setButtonLoading(btn, false);
+                btn.textContent = originalText;
+            }
+        },
+
+        async handleDeleteSubmit(e) {
+            e.preventDefault();
+            const password = document.getElementById('delete-confirm-password').value;
+            const btn = this.elements.deleteForm.querySelector('button[type="submit"]');
+
+            if (!password) {
+                window.showNotification("Digite sua senha para confirmar.", "error");
+                return;
+            }
+
+            setButtonLoading(btn, true);
+
+            try {
+                await window.axios.delete(`${window.backendUrl}/usuarios/${window.currentUser.id}`, {
+                    data: { senha: password }
+                });
+
+                window.showNotification("Conta excluída. Até logo!", "success");
+                localStorage.clear();
+                setTimeout(() => window.location.href = 'login.html', 1500);
+
+            } catch (error) {
+                console.error(error);
+                window.showNotification("Erro ao excluir conta. Verifique sua senha.", "error");
+                setButtonLoading(btn, false);
+                btn.textContent = "Excluir Permanentemente";
+            }
         }
-      },
     };
 
-    // --- INICIALIZAÇÃO DA PÁGINA ---
-    ProjetosPage.init();
-  });
+    // Inicializa o Gerenciador de Perfil
+    ProfileManager.init();
+
+    // --- FUNÇÕES DE CARREGAMENTO (PADRÃO BUSCAR_AMIGOS) ---
+    function setProfileLoading(isLoading) {
+        const userInfo = document.querySelector('.user-info');
+        const topbarUser = document.querySelector('.user-dropdown .user');
+
+        if (userInfo && topbarUser) {
+            if (isLoading) {
+                userInfo.classList.remove('loaded');
+                topbarUser.classList.remove('loaded');
+            } else {
+                userInfo.classList.add('loaded');
+                topbarUser.classList.add('loaded');
+            }
+        }
+    }
+
+    function setButtonLoading(button, isLoading) {
+        if (isLoading) {
+            button.disabled = true;
+            button.classList.add('loading');
+        } else {
+            button.disabled = false;
+            button.classList.remove('loading');
+        }
+    }
+
+    function setGridLoading(gridId, isLoading) {
+        const container = document.getElementById(gridId);
+        if (!container) return;
+
+        const loadingElement = container.querySelector('.results-loading');
+        const gridElement = container.querySelector('.projetos-grid');
+
+        if (loadingElement && gridElement) {
+            if (isLoading) {
+                loadingElement.style.display = 'flex';
+                gridElement.style.display = 'none';
+            } else {
+                loadingElement.style.display = 'none';
+                gridElement.style.display = 'grid';
+            }
+        }
+    }
+
+    function updateSidebarUserInfo() {
+        const userInfoContainer = document.querySelector('.user-info');
+
+        if (window.currentUser) {
+            const sidebarName = document.getElementById('sidebar-user-name');
+            const sidebarTitle = document.getElementById('sidebar-user-title');
+            const sidebarImg = document.getElementById('sidebar-user-img');
+
+            // 1. Define a imagem padrão de forma robusta
+            // Tenta pegar a global, se falhar, tenta montar a URL do backend, se falhar, usa um placeholder online
+            const defaultImage = window.defaultAvatarUrl ||
+                (window.backendUrl ? `${window.backendUrl}/images/default-avatar.jpg` : '') ||
+                'https://via.placeholder.com/80?text=User';
+
+            if (sidebarName) {
+                sidebarName.textContent = window.currentUser.nome || "Usuário";
+            }
+
+            if (sidebarTitle) {
+                const role = window.currentUser.cargo ||
+                    window.currentUser.titulo ||
+                    window.currentUser.tipoUsuario ||
+                    'Membro da Comunidade';
+                sidebarTitle.textContent = role;
+            }
+
+            if (sidebarImg) {
+                const foto = window.currentUser.fotoPerfil || window.currentUser.urlFotoPerfil;
+
+                // 2. Configura o manipulador de erro ANTES de definir o src
+                // Isso garante que se a imagem quebrar (404), ele carrega a padrão
+                sidebarImg.onerror = function () {
+                    // Evita loop infinito: só troca se a atual não for a default
+                    if (this.src !== defaultImage) {
+                        this.src = defaultImage;
+                    }
+                };
+
+                // 3. Define a imagem
+                if (foto) {
+                    if (typeof window.getAvatarUrl === 'function') {
+                        sidebarImg.src = window.getAvatarUrl(foto);
+                    } else if (foto.startsWith('http')) {
+                        sidebarImg.src = foto;
+                    } else {
+                        // Garante que não duplique a barra
+                        const cleanPath = foto.startsWith('/') ? foto : `/${foto}`;
+                        sidebarImg.src = `${window.backendUrl}/api/arquivos${cleanPath}`;
+                    }
+                } else {
+                    // Se não tem foto no objeto do usuário, usa a default direto
+                    sidebarImg.src = defaultImage;
+                }
+            }
+
+            if (userInfoContainer) {
+                userInfoContainer.classList.add('loaded');
+            }
+        }
+    }
+
+    // Inicialmente mostrar loading nos perfis
+    setProfileLoading(true);
+
+    // --- CORREÇÃO MENU MOBILE ---
+    // --- CORREÇÃO DEFINITIVA MENU MOBILE (FECHAR AO CLICAR FORA) ---
+    function setupMobileMenu() {
+        const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+        const sidebar = document.getElementById("sidebar");
+        const mobileOverlay = document.getElementById("mobile-overlay");
+        const sidebarClose = document.getElementById("sidebar-close");
+
+        // Função única para ABRIR
+        function openMenu() {
+            if (sidebar) sidebar.classList.add('active');
+            if (mobileOverlay) mobileOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Trava a rolagem da página
+        }
+
+        // Função única para FECHAR
+        function closeMenu() {
+            if (sidebar) sidebar.classList.remove('active');
+            if (mobileOverlay) mobileOverlay.classList.remove('active');
+            document.body.style.overflow = ''; // Destrava a rolagem
+        }
+
+        // Função Toggle (Alternar)
+        function toggleMenu(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            const isActive = sidebar.classList.contains('active');
+            isActive ? closeMenu() : openMenu();
+        }
+
+        // 1. Botão Hamburger (Abrir/Fechar)
+        if (mobileMenuToggle) {
+            const newToggle = mobileMenuToggle.cloneNode(true);
+            mobileMenuToggle.parentNode.replaceChild(newToggle, mobileMenuToggle);
+            newToggle.addEventListener('click', toggleMenu);
+        }
+
+        // 2. Botão "X" (Apenas Fechar)
+        if (sidebarClose) {
+            const newClose = sidebarClose.cloneNode(true);
+            sidebarClose.parentNode.replaceChild(newClose, sidebarClose);
+            newClose.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                closeMenu();
+            });
+        }
+
+        // 3. OVERLAY / FUNDO ESCURO (AQUI ESTÁ O SEGREDO)
+        if (mobileOverlay) {
+            // Removemos qualquer evento anterior clonando o elemento
+            const newOverlay = mobileOverlay.cloneNode(true);
+            mobileOverlay.parentNode.replaceChild(newOverlay, mobileOverlay);
+
+            // Adicionamos o evento de clique especificamente para fechar
+            newOverlay.addEventListener('click', (e) => {
+                // e.target === newOverlay garante que só fecha se clicar no fundo, 
+                // e não em algo dentro dele (embora o overlay geralmente esteja vazio)
+                if (e.target === newOverlay) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeMenu();
+                }
+            });
+        }
+
+        // 4. (Opcional) Fechar ao clicar em um link do menu
+        // Isso melhora a UX: clicou no link, o menu fecha e navega.
+        const menuLinks = sidebar.querySelectorAll('.menu-item');
+        menuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                // Pequeno delay para dar tempo visual do clique
+                setTimeout(closeMenu, 150);
+            });
+        });
+    }
+
+    // Chama assim que o HTML estiver pronto
+    setupMobileMenu();
+
+    // --- RESTANTE DA LÓGICA DA PÁGINA ---
+    document.addEventListener("globalScriptsLoaded", (e) => {
+        const currentUser = window.currentUser;
+
+        const ProjetosPage = {
+            state: {
+                allProjects: [],
+                myProjects: [],
+                publicProjects: [],
+                privateProjects: [],
+                currentTab: 'meus-projetos'
+            },
+
+            elements: {
+                grid: document.getElementById("projetos-grid"),
+                publicGrid: document.getElementById("projetos-publicos-grid"),
+                privateGrid: document.getElementById("projetos-privados-grid"),
+                searchInput: document.getElementById("project-search-input"),
+                categoryFilter: document.getElementById("filter-category"),
+                tabButtons: document.querySelectorAll(".tab-btn"),
+
+                modalOverlay: document.getElementById("novo-projeto-modal"),
+                openModalBtn: document.getElementById("btn-new-project"),
+                closeModalBtn: document.querySelector("#novo-projeto-modal .close-modal-btn"),
+                form: document.getElementById("novo-projeto-form"),
+                projTituloInput: document.getElementById("proj-titulo"),
+                projDescricaoInput: document.getElementById("proj-descricao"),
+                projImagemInput: document.getElementById("proj-imagem"),
+                projCategoriaInput: document.getElementById("proj-categoria"),
+                projTecnologiasInput: document.getElementById("proj-tecnologias"),
+                projPrivacidadeInput: document.getElementById("proj-privacidade"),
+
+                connectionsCount: document.getElementById("connections-count"),
+                projectsCount: document.getElementById("projects-count"),
+                onlineFriendsList: document.getElementById("online-friends-list"),
+            },
+
+            async init() {
+                if (!currentUser) {
+                    console.error("Página de Projetos: Usuário não carregado.");
+                    return;
+                }
+
+                const projVideoInput = document.getElementById('proj-video');
+                const videoLabel = document.getElementById('video-file-name');
+
+                if (projVideoInput && videoLabel) {
+                    projVideoInput.addEventListener('change', function (e) {
+                        const file = e.target.files[0];
+                        if (file) {
+                            videoLabel.textContent = file.name;
+                            videoLabel.style.color = "var(--accent-primary)";
+                        } else {
+                            videoLabel.textContent = "Selecionar Vídeo";
+                            videoLabel.style.color = "inherit";
+                        }
+                    });
+                }
+
+                // Inicializar menu mobile
+                setupMobileMenu();
+                updateSidebarUserInfo();
+
+                if (this.elements.connectionsCount) {
+                    this.elements.connectionsCount.textContent =
+                        window.userFriends?.length || "0";
+                }
+
+                this.renderOnlineFriends();
+
+                // Mostrar loading inicial em todas as abas
+                setGridLoading('meus-projetos-container', true);
+                setGridLoading('projetos-publicos-container', true);
+                setGridLoading('projetos-privados-container', true);
+
+                await this.fetchMeusProjetos();
+                await this.fetchProjetosPublicos();
+                await this.fetchProjetosPrivados();
+
+                this.setupEventListeners();
+                this.setupTabs();
+
+                document.addEventListener("friendsListUpdated", () => {
+                    if (this.elements.connectionsCount) {
+                        this.elements.connectionsCount.textContent =
+                            window.userFriends?.length || "0";
+                    }
+                    this.renderOnlineFriends();
+                });
+
+                // Finalizar loading do perfil
+                setProfileLoading(false);
+            },
+
+            setupTabs() {
+                this.elements.tabButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.elements.tabButtons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+
+                        this.state.currentTab = btn.dataset.tab;
+                        this.switchTab(this.state.currentTab);
+                    });
+                });
+            },
+
+            switchTab(tabName) {
+                // Esconder todos os containers primeiro
+                document.getElementById('meus-projetos-container').style.display = 'none';
+                document.getElementById('projetos-publicos-container').style.display = 'none';
+                document.getElementById('projetos-privados-container').style.display = 'none';
+
+                if (tabName === 'meus-projetos') {
+                    document.getElementById('meus-projetos-container').style.display = 'block';
+                    this.applyFilters();
+                } else if (tabName === 'projetos-publicos') {
+                    document.getElementById('projetos-publicos-container').style.display = 'block';
+                    this.renderPublicProjects();
+                } else if (tabName === 'projetos-privados') {
+                    document.getElementById('projetos-privados-container').style.display = 'block';
+                    this.renderPrivateProjects();
+                }
+            },
+
+            async fetchMeusProjetos() {
+                try {
+                    const response = await window.axios.get(
+                        `${window.backendUrl}/projetos`
+                    );
+                    this.state.allProjects = response.data;
+                    this.applyFilters();
+                } catch (error) {
+                    console.error("Erro ao buscar projetos:", error);
+                    this.showErrorState('meus-projetos-container', "Não foi possível carregar os projetos.");
+                } finally {
+                    setGridLoading('meus-projetos-container', false);
+                }
+            },
+
+            async fetchProjetosPublicos() {
+                try {
+                    const response = await window.axios.get(
+                        `${window.backendUrl}/projetos/publicos`
+                    );
+                    this.state.publicProjects = response.data;
+                    this.renderPublicProjects();
+                } catch (error) {
+                    console.error("Erro ao buscar projetos públicos:", error);
+                    this.showErrorState('projetos-publicos-container', "Não foi possível carregar os projetos públicos.");
+                } finally {
+                    setGridLoading('projetos-publicos-container', false);
+                }
+            },
+
+            async fetchProjetosPrivados() {
+                try {
+                    const response = await window.axios.get(
+                        `${window.backendUrl}/projetos/privados`
+                    );
+                    this.state.privateProjects = response.data;
+                    this.renderPrivateProjects();
+                } catch (error) {
+                    console.error("Erro ao buscar projetos privados:", error);
+                    this.showErrorState('projetos-privados-container', "Não foi possível carregar os projetos privados.");
+                } finally {
+                    setGridLoading('projetos-privados-container', false);
+                }
+            },
+
+            showErrorState(containerId, message) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const grid = container.querySelector('.projetos-grid');
+                const loading = container.querySelector('.results-loading');
+
+                if (loading) loading.style.display = 'none';
+                if (grid) {
+                    grid.style.display = 'block';
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>${message}</p>
+                            <p class="empty-state-subtitle">Tente recarregar a página</p>
+                        </div>`;
+                }
+            },
+
+            renderPublicProjects() {
+                const grid = this.elements.publicGrid;
+                if (!grid) return;
+
+                grid.innerHTML = "";
+
+                if (this.state.publicProjects.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-globe-americas"></i>
+                            <p>Nenhum projeto público disponível no momento.</p>
+                        </div>`;
+                    return;
+                }
+
+                this.state.publicProjects.forEach((proj) => {
+                    const card = document.createElement("div");
+                    card.className = "projeto-card";
+
+                    const imageUrl = this.getProjectImageUrl(proj.imagemUrl);
+
+                    const membrosHtml = (proj.membros || [])
+                        .slice(0, 5)
+                        .map((membro) => {
+                            const avatarUrl = this.getMemberAvatarUrl(membro);
+                            return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
+                        })
+                        .join("");
+
+                    const remainingMembers = (proj.membros || []).length - 5;
+                    const moreMembersHtml = remainingMembers > 0
+                        ? `<div class="membro-avatar more-members">+${remainingMembers}</div>`
+                        : '';
+
+                    const tagsHtml = (proj.tecnologias || [])
+                        .slice(0, 3)
+                        .map(tag => `<span class="tech-tag">${tag}</span>`)
+                        .join("");
+
+                    const moreTags = (proj.tecnologias || []).length > 3
+                        ? `<span class="tech-tag more-tags">+${(proj.tecnologias || []).length - 3}</span>`
+                        : '';
+
+                    // Verificar se o usuário atual já é membro
+                    const isMember = proj.membros && proj.membros.some(membro => membro.usuarioId === currentUser.id);
+                    const isAuthor = proj.autorId === currentUser.id;
+
+                    let detailsButton = '';
+                    if (isMember || isAuthor) {
+                        detailsButton = `<a href="projeto-detalhe.html?id=${proj.id}" class="btn-ver-detalhes">Acessar Projeto</a>`;
+                    } else {
+                        detailsButton = `<button class="btn-ver-detalhes" onclick="ProjetosPage.showProjectPreview(${JSON.stringify(proj).replace(/"/g, '&quot;')})">Ver Detalhes</button>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
+                        <div class="projeto-conteudo">
+                            <div class="projeto-header">
+                                <h3>${proj.titulo}</h3>
+                                <span class="projeto-status ${proj.status?.toLowerCase() || 'planejamento'}">${proj.status || 'Em planejamento'}</span>
+                            </div>
+                            <p class="projeto-descricao">${proj.descricao || "Este projeto não possui uma descrição."}</p>
+                            
+                            <div class="projeto-meta">
+                                <div class="projeto-membros">
+                                    ${membrosHtml}${moreMembersHtml}
+                                    <span class="membros-count">${proj.totalMembros || proj.membros?.length || 0} membros</span>
+                                </div>
+                                <div class="projeto-categoria">${proj.categoria || 'Sem categoria'}</div>
+                            </div>
+                            
+                            <div class="projeto-footer">
+                                    <div class="projeto-tags">
+                                        ${tagsHtml}${moreTags}
+                                    </div>
+                                    <div class="projeto-actions">
+                                        ${isAuthor
+                            ? '<button class="btn-entrar disabled" disabled>Criador</button>'
+                            : isMember
+                                ? '<button class="btn-entrar disabled" disabled>Já é membro</button>'
+                                : `<button class="btn-entrar" onclick="ProjetosPage.entrarNoProjeto(${proj.id})">Entrar no Projeto</button>`
+                        }
+                                        ${detailsButton}
+                                    
+                                    </div>
+                            </div>
+                        </div>`;
+                    grid.appendChild(card);
+                });
+            },
+
+            renderPrivateProjects() {
+                const grid = this.elements.privateGrid;
+                if (!grid) return;
+
+                grid.innerHTML = "";
+
+                if (this.state.privateProjects.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-lock"></i>
+                            <p>Nenhum projeto privado disponível no momento.</p>
+                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Projetos privados exigem convite para participação.</p>
+                        </div>`;
+                    return;
+                }
+
+                this.state.privateProjects.forEach((proj) => {
+                    const card = document.createElement("div");
+                    card.className = "projeto-card";
+
+                    const imageUrl = this.getProjectImageUrl(proj.imagemUrl);
+
+                    const membrosHtml = (proj.membros || [])
+                        .slice(0, 5)
+                        .map((membro) => {
+                            const avatarUrl = this.getMemberAvatarUrl(membro);
+                            return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
+                        })
+                        .join("");
+
+                    const remainingMembers = (proj.membros || []).length - 5;
+                    const moreMembersHtml = remainingMembers > 0
+                        ? `<div class="membro-avatar more-members">+${remainingMembers}</div>`
+                        : '';
+
+                    const tagsHtml = (proj.tecnologias || [])
+                        .slice(0, 3)
+                        .map(tag => `<span class="tech-tag">${tag}</span>`)
+                        .join("");
+
+                    const moreTags = (proj.tecnologias || []).length > 3
+                        ? `<span class="tech-tag more-tags">+${(proj.tecnologias || []).length - 3}</span>`
+                        : '';
+
+                    // Verificar se o usuário atual já é membro
+                    const isMember = proj.membros && proj.membros.some(membro => membro.usuarioId === currentUser.id);
+                    const isAuthor = proj.autorId === currentUser.id;
+
+                    let actionButton = '';
+                    if (isAuthor) {
+                        actionButton = '<button class="btn-entrar disabled" disabled>Criador</button>';
+                    } else if (isMember) {
+                        actionButton = '<button class="btn-entrar disabled" disabled>Já é membro</button>';
+                    } else {
+                        actionButton = `<button class="btn-solicitar-entrada" onclick="ProjetosPage.solicitarEntradaProjeto(${proj.id})">Solicitar Entrada</button>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
+                        <div class="projeto-conteudo">
+                            <div class="projeto-header">
+                                <h3>${proj.titulo}</h3>
+                                <span class="projeto-status ${proj.status?.toLowerCase() || 'planejamento'}">${proj.status || 'Em planejamento'}</span>
+                            </div>
+                            <p class="projeto-descricao">${proj.descricao || "Este projeto não possui uma descrição."}</p>
+                            
+                            <div class="projeto-meta">
+                                <div class="projeto-membros">
+                                    ${membrosHtml}${moreMembersHtml}
+                                    <span class="membros-count">${proj.totalMembros || proj.membros?.length || 0} membros</span>
+                                </div>
+                                <div class="projeto-categoria">${proj.categoria || 'Sem categoria'}</div>
+                            </div>
+                            
+                            <div class="projeto-footer">
+                                    <div class="projeto-tags">
+                                        ${tagsHtml}${moreTags}
+                                    </div>
+                                    <div class="projeto-actions">
+                                        ${actionButton}
+                                        <button class="btn-ver-detalhes" onclick="ProjetosPage.showProjectPreview(${JSON.stringify(proj).replace(/"/g, '&quot;')})">Ver Detalhes</button>
+                                    </div>
+                            </div>
+                        </div>`;
+                    grid.appendChild(card);
+                });
+            },
+
+            getProjectImageUrl(imagemUrl) {
+                if (!imagemUrl) {
+                    return "https://placehold.co/600x400/161b22/ffffff?text=Projeto";
+                }
+
+                if (imagemUrl.startsWith("http")) {
+                    return imagemUrl;
+                }
+
+                if (imagemUrl.startsWith("/")) {
+                    return `${window.backendUrl}${imagemUrl}`;
+                }
+
+                return `${window.backendUrl}/api/arquivos/${imagemUrl}`;
+            },
+
+            getMemberAvatarUrl(member) {
+                if (!member) return window.defaultAvatarUrl;
+
+                const fotoUrl = member.usuarioFotoPerfil || member.fotoPerfil;
+
+                if (!fotoUrl) {
+                    return window.defaultAvatarUrl;
+                }
+
+                if (fotoUrl.startsWith('http')) {
+                    return fotoUrl;
+                }
+
+                if (fotoUrl.startsWith('/')) {
+                    return `${window.backendUrl}${fotoUrl}`;
+                }
+
+                return `${window.backendUrl}/api/arquivos/${fotoUrl}`;
+            },
+
+            async entrarNoProjeto(projetoId) {
+                const buttons = document.querySelectorAll(`[onclick="ProjetosPage.entrarNoProjeto(${projetoId})"]`);
+                buttons.forEach(btn => setButtonLoading(btn, true));
+
+                try {
+                    const response = await window.axios.post(`${window.backendUrl}/projetos/${projetoId}/entrar`, null, {
+                        params: {
+                            usuarioId: currentUser.id
+                        }
+                    });
+
+                    window.showNotification("Você entrou no projeto com sucesso!", "success");
+
+                    // Recarregar ambas as listas
+                    await this.fetchProjetosPublicos();
+                    await this.fetchMeusProjetos();
+
+                    // Se estiver na aba de projetos públicos, renderizar novamente
+                    if (this.state.currentTab === 'projetos-publicos') {
+                        this.renderPublicProjects();
+                    }
+
+                } catch (error) {
+                    let errorMessage = "Falha ao entrar no projeto.";
+                    if (error.response?.data) {
+                        errorMessage = typeof error.response.data === 'string'
+                            ? error.response.data
+                            : error.response.data.message || errorMessage;
+                    }
+                    window.showNotification(errorMessage, "error");
+                } finally {
+                    buttons.forEach(btn => setButtonLoading(btn, false));
+                }
+            },
+
+            async solicitarEntradaProjeto(projetoId) {
+                const buttons = document.querySelectorAll(`[onclick="ProjetosPage.solicitarEntradaProjeto(${projetoId})"]`);
+                buttons.forEach(btn => setButtonLoading(btn, true));
+
+                try {
+                    const response = await window.axios.post(`${window.backendUrl}/projetos/${projetoId}/solicitar-entrada`, null, {
+                        params: {
+                            usuarioId: currentUser.id
+                        }
+                    });
+
+                    window.showNotification("Solicitação de entrada enviada com sucesso!", "success");
+
+                    // Atualizar o botão
+                    buttons.forEach(btn => {
+                        btn.textContent = "Solicitação Enviada";
+                        btn.disabled = true;
+                        btn.classList.remove('btn-solicitar-entrada');
+                        btn.classList.add('btn-entrar', 'disabled');
+                    });
+
+                } catch (error) {
+                    let errorMessage = "Falha ao enviar solicitação de entrada.";
+                    if (error.response?.data) {
+                        errorMessage = typeof error.response.data === 'string'
+                            ? error.response.data
+                            : error.response.data.message || errorMessage;
+                    }
+                    window.showNotification(errorMessage, "error");
+                    buttons.forEach(btn => setButtonLoading(btn, false));
+                }
+            },
+
+            showProjectPreview(projeto) {
+                // Remove modal anterior se existir
+                const existingModal = document.getElementById('dynamic-project-modal');
+                if (existingModal) existingModal.remove();
+
+                // 1. Preparar Dados
+                const imageUrl = this.getProjectImageUrl(projeto.imagemUrl);
+                const statusClass = (projeto.status || '').toLowerCase().replace(/\s+/g, '');
+
+                // --- NOVO: Lógica do Vídeo ---
+                let videoHtml = '';
+                if (projeto.videoDescricaoUrl) {
+                    let videoUrl = projeto.videoDescricaoUrl;
+                    if (!videoUrl.startsWith('http')) {
+                        videoUrl = `${window.backendUrl}/api/arquivos/${videoUrl}`;
+                    }
+                    videoHtml = `
+                        <div class="pm-video-section" style="margin-bottom: 2rem;">
+                            <div class="pm-section-title">Vídeo de Apresentação</div>
+                            <video controls style="width: 100%; border-radius: 8px; background: #000; max-height: 320px; border: 1px solid var(--border-color); display: block;">
+                                <source src="${videoUrl}">
+                                Seu navegador não suporta a tag de vídeo.
+                            </video>
+                        </div>
+                    `;
+                }
+                // -----------------------------
+
+                // Mapear Tecnologias
+                const techsHtml = (projeto.tecnologias || [])
+                    .map(tech => `<span class="pm-tag">${tech}</span>`)
+                    .join('') || '<span class="pm-tag" style="font-style:italic; opacity:0.7">Nenhuma tecnologia listada</span>';
+
+                // Mapear Membros
+                const membrosHtml = (projeto.membros || [])
+                    .map(membro => {
+                        const avatarUrl = this.getMemberAvatarUrl(membro);
+                        return `
+                            <div class="pm-member">
+                                <img src="${avatarUrl}" onerror="this.src='${window.defaultAvatarUrl}'">
+                                <span>${membro.usuarioNome || membro.nome || 'Usuário'}</span>
+                            </div>
+                        `;
+                    }).join('') || '<span style="color:var(--text-secondary)">Sem membros visíveis</span>';
+
+                // Lógica dos Botões de Ação
+                const isMember = projeto.membros && projeto.membros.some(m => m.usuarioId === window.currentUser.id);
+                const isAuthor = projeto.autorId === window.currentUser.id;
+
+                let actionButtonHtml = '';
+
+                if (isAuthor) {
+                    actionButtonHtml = `<button class="pm-btn pm-btn-secondary" disabled>Você é o Criador</button>`;
+                } else if (isMember) {
+                    actionButtonHtml = `<button class="pm-btn pm-btn-secondary" disabled>Já é membro</button>`;
+                } else if (!projeto.grupoPrivado) {
+                    actionButtonHtml = `<button class="pm-btn" onclick="ProjetosPage.entrarNoProjeto(${projeto.id}); document.getElementById('dynamic-project-modal').remove()">Entrar no Projeto</button>`;
+                } else {
+                    actionButtonHtml = `<button class="pm-btn pm-btn-secondary" disabled><i class="fas fa-lock"></i> Projeto Privado</button>`;
+                }
+
+                // 2. Construir HTML Moderno
+                const modalHtml = `
+                    <div class="project-modal-overlay" id="dynamic-project-modal">
+                        <div class="project-modal-card">
+                            
+                            <div class="pm-hero" style="background-image: url('${imageUrl}');">
+                                <button class="pm-close-btn" onclick="document.getElementById('dynamic-project-modal').remove()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+
+                            <div class="pm-content">
+                                <div class="pm-header">
+                                    <span class="pm-status ${statusClass}">${projeto.status || 'Em Planejamento'}</span>
+                                    <h2 class="pm-title">${projeto.titulo}</h2>
+                                </div>
+
+                                <div class="pm-description">
+                                    ${projeto.descricao || "Este projeto não possui uma descrição detalhada."}
+                                </div>
+
+                                ${videoHtml} <div class="pm-grid">
+                                    <div class="pm-info-item">
+                                        <h4>Categoria</h4>
+                                        <span>${projeto.categoria || 'Geral'}</span>
+                                    </div>
+                                    <div class="pm-info-item">
+                                        <h4>Privacidade</h4>
+                                        <span>${projeto.grupoPrivado ? '<i class="fas fa-lock"></i> Privado' : '<i class="fas fa-globe"></i> Público'}</span>
+                                    </div>
+                                    <div class="pm-info-item">
+                                        <h4>Equipe</h4>
+                                        <span>${projeto.totalMembros || (projeto.membros?.length || 0)} Membros</span>
+                                    </div>
+                                </div>
+
+                                <div class="pm-section-title">Tecnologias Utilizadas</div>
+                                <div class="pm-tags">${techsHtml}</div>
+
+                                <div class="pm-section-title">Equipe do Projeto</div>
+                                <div class="pm-members">${membrosHtml}</div>
+                            </div>
+
+                            <div class="pm-footer">
+                                ${actionButtonHtml}
+                                <a href="projeto-detalhe.html?id=${projeto.id}" class="pm-btn pm-btn-secondary">
+                                    Ver Detalhes Completos <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                `;
+
+                // 3. Inserir no DOM
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+                // 4. Fechar ao clicar fora
+                setTimeout(() => {
+                    const modalOverlay = document.getElementById('dynamic-project-modal');
+                    if (modalOverlay) {
+                        modalOverlay.addEventListener('click', (e) => {
+                            if (e.target === modalOverlay) {
+                                modalOverlay.remove();
+                            }
+                        });
+                    }
+                }, 100);
+            },
+
+            // No arquivo projeto.js, atualize a função renderOnlineFriends para:
+            renderOnlineFriends() {
+                if (!this.elements.onlineFriendsList) return;
+
+                const onlineFriends = (window.userFriends || []).filter(friend =>
+                    (window.latestOnlineEmails || []).includes(friend.email)
+                );
+
+                this.elements.onlineFriendsList.innerHTML = "";
+
+                if (onlineFriends.length === 0) {
+                    this.elements.onlineFriendsList.innerHTML =
+                        '<p class="empty-state">Nenhum amigo online.</p>';
+                    return;
+                }
+
+                onlineFriends.forEach(friend => {
+                    const friendElement = this.createFriendElement(friend);
+                    this.elements.onlineFriendsList.appendChild(friendElement);
+                });
+            },
+
+            createFriendElement(friend) {
+                const friendElement = document.createElement("div");
+                friendElement.className = "friend-item";
+                const friendId = friend.idUsuario;
+                const friendAvatar = friend.fotoPerfil
+                    ? (friend.fotoPerfil.startsWith('http')
+                        ? friend.fotoPerfil
+                        : `${window.backendUrl}/api/arquivos/${friend.fotoPerfil}`)
+                    : window.defaultAvatarUrl;
+                friendElement.innerHTML = `
+                    <a href="perfil.html?id=${friendId}" class="friend-item-link">
+                        <div class="avatar"><img src="${friendAvatar}" alt="Avatar de ${friend.nome}" onerror="this.src='${window.defaultAvatarUrl}';"></div>
+                        <span class="friend-name">${friend.nome}</span>
+                    </a>
+                    <div class="status online"></div>
+                `;
+                return friendElement;
+            },
+
+            render() {
+                const grid = this.elements.grid;
+                if (!grid) return;
+                grid.innerHTML = "";
+                const projetosParaRenderizar = this.state.myProjects;
+
+                if (this.elements.projectsCount) {
+                    this.elements.projectsCount.textContent = projetosParaRenderizar.length;
+                }
+
+                if (projetosParaRenderizar.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>Nenhum projeto encontrado com esses filtros.</p>
+                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Experimente as outras abas para explorar mais projetos!</p>
+                        </div>`;
+                    return;
+                }
+
+                projetosParaRenderizar.forEach((proj) => {
+                    const card = document.createElement("a");
+                    card.className = "projeto-card";
+                    card.href = `projeto-detalhe.html?id=${proj.id}`;
+
+                    const imageUrl = this.getProjectImageUrl(proj.imagemUrl);
+
+                    const membrosHtml = (proj.membros || [])
+                        .slice(0, 5)
+                        .map((membro) => {
+                            const avatarUrl = this.getMemberAvatarUrl(membro);
+                            return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
+                        })
+                        .join("");
+
+                    const remainingMembers = (proj.membros || []).length - 5;
+                    const moreMembersHtml = remainingMembers > 0
+                        ? `<div class="membro-avatar more-members">+${remainingMembers}</div>`
+                        : '';
+
+                    const tagsHtml = (proj.tecnologias || [])
+                        .slice(0, 3)
+                        .map(tag => `<span class="tech-tag">${tag}</span>`)
+                        .join("");
+
+                    const moreTags = (proj.tecnologias || []).length > 3
+                        ? `<span class="tech-tag more-tags">+${(proj.tecnologias || []).length - 3}</span>`
+                        : '';
+
+                    card.innerHTML = `
+                        <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
+                        <div class="projeto-conteudo">
+                            <div class="projeto-header">
+                                <h3>${proj.titulo}</h3>
+                                <span class="projeto-status ${proj.status?.toLowerCase() || 'planejamento'}">${proj.status || 'Em planejamento'}</span>
+                            </div>
+                            <p class="projeto-descricao">${proj.descricao || "Este projeto não possui uma descrição."}</p>
+                            
+                            <div class="projeto-meta">
+                                <div class="projeto-membros">
+                                    ${membrosHtml}${moreMembersHtml}
+                                    <span class="membros-count">${proj.totalMembros || proj.membros?.length || 0} membros</span>
+                                </div>
+                                <div class="projeto-categoria">${proj.categoria || 'Sem categoria'}</div>
+                            </div>
+                            
+                            <div class="projeto-footer">
+                                <div class="projeto-tags">
+                                    ${tagsHtml}${moreTags}
+                                </div>
+                                <div class="projeto-privacy ${proj.grupoPrivado ? 'private' : 'public'}">
+                                    <i class="fas ${proj.grupoPrivado ? 'fa-lock' : 'fa-globe'}"></i>
+                                    ${proj.grupoPrivado ? 'Privado' : 'Público'}
+                                </div>
+                            </div>
+                        </div>`;
+                    grid.appendChild(card);
+                });
+            },
+
+            handlers: {
+                openModal() {
+                    // 1. Resetar Form e Imagens
+                    const form = document.getElementById('novo-projeto-form');
+                    if (form) form.reset();
+
+                    // 2. Controlar visibilidade da imagem vs placeholder
+                    const preview = document.getElementById('proj-image-preview');
+                    const defaultCover = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
+
+                    if (preview) {
+                        // Se a imagem default estiver quebrada ou não definida, esconde a tag img para mostrar o placeholder
+                        preview.src = "";
+                        preview.style.display = 'none';
+                    }
+
+                    // 3. Resetar texto do vídeo
+                    const videoLabel = document.getElementById('video-file-name');
+                    if (videoLabel) videoLabel.textContent = "Selecionar Vídeo";
+
+                    toggleModal('novo-projeto-modal', true);
+                },
+
+                closeModal() {
+                    toggleModal('novo-projeto-modal', false);
+
+                    const form = document.getElementById('novo-projeto-form');
+                    const preview = document.getElementById('proj-image-preview');
+                    const defaultImg = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
+
+                    if (form) form.reset();
+
+                    // Reseta para a imagem padrão ao fechar
+                    if (preview) {
+                        preview.src = defaultImg;
+                    }
+
+                    // Limpar o preview do vídeo
+                    const vidPreview = document.getElementById('proj-video-preview');
+                    const vidContainer = document.getElementById('video-preview-container');
+                    const vidName = document.getElementById('proj-video-name');
+
+                    if (vidPreview) vidPreview.src = "";
+                    if (vidContainer) vidContainer.style.display = 'none';
+                    if (vidName) vidName.textContent = "";
+                },
+
+                async handleFormSubmit(e) {
+                    e.preventDefault();
+
+                    const form = this.elements.form;
+                    const btn = form.querySelector(".btn-publish");
+
+                    // Trava de segurança
+                    if (btn.disabled || btn.dataset.processing === "true") return;
+
+                    // Ativa estado de carregamento
+                    btn.dataset.processing = "true";
+                    setButtonLoading(btn, true);
+
+                    const formData = new FormData();
+                    formData.append("titulo", this.elements.projTituloInput.value);
+                    formData.append("descricao", this.elements.projDescricaoInput.value);
+                    formData.append("autorId", currentUser.id);
+                    formData.append("maxMembros", 50);
+                    const MAX_SIZE = 100 * 1024 * 1024; // 100MB em bytes
+
+                    const videoInput = document.getElementById("proj-video");
+
+                    // VALIDAÇÃO DE TAMANHO
+                    if (videoInput && videoInput.files[0]) {
+                        if (videoInput.files[0].size > MAX_SIZE) {
+                            window.showNotification("O vídeo é muito grande. O limite é 100MB.", "error");
+                            setButtonLoading(btn, false);
+                            btn.dataset.processing = "false";
+                            return; // PARA A EXECUÇÃO AQUI
+                        }
+                        formData.append("videoDescricao", videoInput.files[0]);
+                    }
+
+                    // Tratamento booleano
+                    const isPrivate = this.elements.projPrivacidadeInput.value === 'true';
+                    formData.append("grupoPrivado", isPrivate);
+
+                    const categoria = this.elements.projCategoriaInput.value;
+                    if (categoria) formData.append("categoria", categoria);
+
+                    const techsString = this.elements.projTecnologiasInput.value;
+                    if (techsString) {
+                        const tecnologias = techsString.split(',').map(tech => tech.trim()).filter(t => t.length > 0);
+                        tecnologias.forEach(tech => formData.append("tecnologias", tech));
+                    }
+
+                    if (this.elements.projImagemInput.files[0]) {
+                        formData.append("foto", this.elements.projImagemInput.files[0]);
+                    }
+
+                    try {
+                        // 1. Envia para o Backend
+                        await window.axios.post(`${window.backendUrl}/projetos`, formData, {
+                            headers: { "Content-Type": "multipart/form-data" },
+                        });
+
+                        // 2. Fecha o modal (Agora sem dar erro de ReferenceError)
+                        this.handlers.closeModal.call(this);
+
+                        // 3. Notifica Sucesso
+                        window.showNotification("Projeto criado com sucesso!", "success");
+
+                        // 4. ATUALIZAÇÃO IMEDIATA
+                        setGridLoading('meus-projetos-container', true);
+
+                        if (this.elements.searchInput) this.elements.searchInput.value = "";
+                        if (this.elements.categoryFilter) this.elements.categoryFilter.value = "todos";
+
+                        // Busca dados novos
+                        await this.fetchMeusProjetos();
+
+                        // Muda aba
+                        this.elements.tabButtons.forEach(b => b.classList.remove('active'));
+                        const myTabBtn = document.querySelector('[data-tab="meus-projetos"]');
+                        if (myTabBtn) myTabBtn.classList.add('active');
+
+                        this.state.currentTab = 'meus-projetos';
+                        this.switchTab('meus-projetos');
+
+                    } catch (error) {
+                        console.error("Erro ao criar projeto:", error);
+                        let errorMessage = "Falha ao criar o projeto.";
+
+                        // Tratamento específico para erro 413
+                        if (error.response && error.response.status === 413) {
+                            errorMessage = "O arquivo é muito grande para ser enviado. Tente um vídeo menor.";
+                        }
+                        else if (error.response && error.response.data) {
+                            errorMessage = error.response.data.message || error.response.data;
+                        }
+
+                        window.showNotification(errorMessage, "error");
+                    } finally {
+                        setButtonLoading(btn, false);
+                        btn.dataset.processing = "false";
+                    }
+                }
+            },
+
+            applyFilters() {
+                const search = this.elements.searchInput.value.toLowerCase();
+                const category = this.elements.categoryFilter.value;
+                if (!currentUser) return;
+
+                this.state.myProjects = this.state.allProjects.filter((proj) => {
+                    const isMember = proj.membros && proj.membros.some(
+                        (membro) => membro.usuarioId === currentUser.id
+                    );
+                    const searchMatch = (proj.titulo || "")
+                        .toLowerCase()
+                        .includes(search) ||
+                        (proj.descricao || "").toLowerCase().includes(search) ||
+                        (proj.tecnologias || []).some(tech => tech.toLowerCase().includes(search));
+
+                    const categoryMatch = (category === "todos") ||
+                        (proj.categoria && proj.categoria.toLowerCase() === category);
+
+                    return isMember && searchMatch && categoryMatch;
+                });
+                this.render();
+            },
+
+            setupEventListeners() {
+                // 1. Preview da Imagem do Projeto
+                const projImageInput = document.getElementById('proj-imagem');
+                const projImagePreview = document.getElementById('proj-image-preview');
+                const defaultCover = window.defaultProjectUrl || `${window.backendUrl}/images/default-project.jpg`;
+                if (projImageInput && projImagePreview) {
+                    projImageInput.addEventListener('change', function (e) {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                projImagePreview.src = e.target.result;
+                            }
+                            reader.readAsDataURL(file);
+                        } else {
+                            projImagePreview.src = defaultCover;
+                        }
+                    });
+                }
+
+                // 2. Preview do Vídeo do Projeto
+                const projVideoInput = document.getElementById('proj-video');
+                const projVideoPreview = document.getElementById('proj-video-preview');
+                const videoPreviewContainer = document.getElementById('video-preview-container');
+                const projVideoName = document.getElementById('proj-video-name');
+
+                if (projVideoInput && projVideoPreview) {
+                    projVideoInput.addEventListener('change', function (e) {
+                        const file = e.target.files[0];
+
+                        if (file) {
+                            // Cria uma URL temporária para o arquivo selecionado
+                            const fileUrl = URL.createObjectURL(file);
+
+                            // Define no player e mostra
+                            projVideoPreview.src = fileUrl;
+                            videoPreviewContainer.style.display = 'block';
+                            projVideoName.textContent = file.name;
+
+                            // Carrega o vídeo para mostrar a "capa" (primeiro frame)
+                            projVideoPreview.load();
+                        } else {
+                            // Se cancelar, limpa tudo
+                            projVideoPreview.src = "";
+                            videoPreviewContainer.style.display = 'none';
+                            projVideoName.textContent = "";
+                        }
+                    });
+                }
+
+                // 3. Adicionar lógica de Cancelar botão secundário
+                const closeBtnAction = document.querySelector('.close-modal-btn-action');
+                if (closeBtnAction) {
+                    closeBtnAction.addEventListener('click', () => this.handlers.closeModal.call(this));
+                }
+
+                const { openModalBtn, closeModalBtn, modalOverlay, form, searchInput, categoryFilter } =
+                    this.elements;
+
+                // CORREÇÃO: Configurar o evento de clique para abrir o modal
+                if (openModalBtn) {
+                    openModalBtn.addEventListener("click", () => this.handlers.openModal());
+                }
+
+                if (closeModalBtn) {
+                    closeModalBtn.addEventListener("click", () => this.handlers.closeModal());
+                }
+
+                if (form) {
+                    form.addEventListener("submit", (e) => this.handlers.handleFormSubmit.call(this, e));
+                }
+
+                if (searchInput) {
+                    searchInput.addEventListener("input", this.applyFilters.bind(this));
+                }
+
+                if (categoryFilter) {
+                    categoryFilter.addEventListener("change", this.applyFilters.bind(this));
+                }
+
+                if (modalOverlay) {
+                    modalOverlay.addEventListener("click", (e) => {
+                        if (e.target === modalOverlay) this.handlers.closeModal.call(this);
+                    });
+                }
+
+                // Adicionar listener para busca em todas as abas
+                if (searchInput) {
+                    searchInput.addEventListener('input', () => {
+                        if (this.state.currentTab === 'projetos-publicos') {
+                            this.filterPublicProjects();
+                        } else if (this.state.currentTab === 'projetos-privados') {
+                            this.filterPrivateProjects();
+                        }
+                    });
+                }
+
+                if (categoryFilter) {
+                    categoryFilter.addEventListener('change', () => {
+                        if (this.state.currentTab === 'projetos-publicos') {
+                            this.filterPublicProjects();
+                        } else if (this.state.currentTab === 'projetos-privados') {
+                            this.filterPrivateProjects();
+                        }
+                    });
+                }
+            },
+
+            filterPublicProjects() {
+                const search = this.elements.searchInput.value.toLowerCase();
+                const category = this.elements.categoryFilter.value;
+
+                const filteredProjects = this.state.publicProjects.filter((proj) => {
+                    const searchMatch = (proj.titulo || "")
+                        .toLowerCase()
+                        .includes(search) ||
+                        (proj.descricao || "").toLowerCase().includes(search) ||
+                        (proj.tecnologias || []).some(tech => tech.toLowerCase().includes(search));
+
+                    const categoryMatch = (category === "todos") ||
+                        (proj.categoria && proj.categoria.toLowerCase() === category);
+
+                    return searchMatch && categoryMatch;
+                });
+
+                this.renderFilteredPublicProjects(filteredProjects);
+            },
+
+            filterPrivateProjects() {
+                const search = this.elements.searchInput.value.toLowerCase();
+                const category = this.elements.categoryFilter.value;
+
+                const filteredProjects = this.state.privateProjects.filter((proj) => {
+                    const searchMatch = (proj.titulo || "")
+                        .toLowerCase()
+                        .includes(search) ||
+                        (proj.descricao || "").toLowerCase().includes(search) ||
+                        (proj.tecnologias || []).some(tech => tech.toLowerCase().includes(search));
+
+                    const categoryMatch = (category === "todos") ||
+                        (proj.categoria && proj.categoria.toLowerCase() === category);
+
+                    return searchMatch && categoryMatch;
+                });
+
+                this.renderFilteredPrivateProjects(filteredProjects);
+            },
+
+            renderFilteredPublicProjects(filteredProjects) {
+                const grid = this.elements.publicGrid;
+                if (!grid) return;
+
+                grid.innerHTML = "";
+
+                if (filteredProjects.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <p>Nenhum projeto público encontrado com esses filtros.</p>
+                        </div>`;
+                    return;
+                }
+
+                filteredProjects.forEach((proj) => {
+                    const card = document.createElement("div");
+                    card.className = "projeto-card";
+
+                    const imageUrl = this.getProjectImageUrl(proj.imagemUrl);
+
+                    const membrosHtml = (proj.membros || [])
+                        .slice(0, 5)
+                        .map((membro) => {
+                            const avatarUrl = this.getMemberAvatarUrl(membro);
+                            return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
+                        })
+                        .join("");
+
+                    const remainingMembers = (proj.membros || []).length - 5;
+                    const moreMembersHtml = remainingMembers > 0
+                        ? `<div class="membro-avatar more-members">+${remainingMembers}</div>`
+                        : '';
+
+                    const tagsHtml = (proj.tecnologias || [])
+                        .slice(0, 3)
+                        .map(tag => `<span class="tech-tag">${tag}</span>`)
+                        .join("");
+
+                    const moreTags = (proj.tecnologias || []).length > 3
+                        ? `<span class="tech-tag more-tags">+${(proj.tecnologias || []).length - 3}</span>`
+                        : '';
+
+                    // Verificar se o usuário atual já é membro
+                    const isMember = proj.membros && proj.membros.some(membro => membro.usuarioId === currentUser.id);
+                    const isAuthor = proj.autorId === currentUser.id;
+
+                    let detailsButton = '';
+                    if (isAuthor || isMember) {
+                        detailsButton = `<a href="projeto-detalhe.html?id=${proj.id}" class="btn-ver-detalhes">Acessar Projeto</a>`;
+                    } else {
+                        detailsButton = `<button class="btn-ver-detalhes" onclick="ProjetosPage.showProjectPreview(${JSON.stringify(proj).replace(/"/g, '&quot;')})">Ver Detalhes</button>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
+                        <div class="projeto-conteudo">
+                            <div class="projeto-header">
+                                <h3>${proj.titulo}</h3>
+                                <span class="projeto-status ${proj.status?.toLowerCase() || 'planejamento'}">${proj.status || 'Em planejamento'}</span>
+                            </div>
+                            <p class="projeto-descricao">${proj.descricao || "Este projeto não possui uma descrição."}</p>
+                            
+                            <div class="projeto-meta">
+                                <div class="projeto-membros">
+                                    ${membrosHtml}${moreMembersHtml}
+                                    <span class="membros-count">${proj.totalMembros || proj.membros?.length || 0} membros</span>
+                                </div>
+                                <div class="projeto-categoria">${proj.categoria || 'Sem categoria'}</div>
+                            </div>
+                            
+                            <div class="projeto-footer">
+                                    <div class="projeto-tags">
+                                        ${tagsHtml}${moreTags}
+                                    </div>
+                                    <div class="projeto-actions">
+                                        ${isAuthor
+                            ? '<button class="btn-entrar disabled" disabled>Criador</button>'
+                            : isMember
+                                ? '<button class="btn-entrar disabled" disabled>Já é membro</button>'
+                                : `<button class="btn-entrar" onclick="ProjetosPage.entrarNoProjeto(${proj.id})">Entrar no Projeto</button>`
+                        }
+                                        ${detailsButton}
+                                    </div>
+                            </div>
+                        </div>`;
+                    grid.appendChild(card);
+                });
+            },
+
+            renderFilteredPrivateProjects(filteredProjects) {
+                const grid = this.elements.privateGrid;
+                if (!grid) return;
+
+                grid.innerHTML = "";
+
+                if (filteredProjects.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <p>Nenhum projeto privado encontrado com esses filtros.</p>
+                        </div>`;
+                    return;
+                }
+
+                filteredProjects.forEach((proj) => {
+                    const card = document.createElement("div");
+                    card.className = "projeto-card";
+
+                    const imageUrl = this.getProjectImageUrl(proj.imagemUrl);
+
+                    const membrosHtml = (proj.membros || [])
+                        .slice(0, 5)
+                        .map((membro) => {
+                            const avatarUrl = this.getMemberAvatarUrl(membro);
+                            return `<img class="membro-avatar" src="${avatarUrl}" title="${membro.usuarioNome}" onerror="this.src='${window.defaultAvatarUrl}'">`;
+                        })
+                        .join("");
+
+                    const remainingMembers = (proj.membros || []).length - 5;
+                    const moreMembersHtml = remainingMembers > 0
+                        ? `<div class="membro-avatar more-members">+${remainingMembers}</div>`
+                        : '';
+
+                    const tagsHtml = (proj.tecnologias || [])
+                        .slice(0, 3)
+                        .map(tag => `<span class="tech-tag">${tag}</span>`)
+                        .join("");
+
+                    const moreTags = (proj.tecnologias || []).length > 3
+                        ? `<span class="tech-tag more-tags">+${(proj.tecnologias || []).length - 3}</span>`
+                        : '';
+
+                    // Verificar se o usuário atual já é membro
+                    const isMember = proj.membros && proj.membros.some(membro => membro.usuarioId === currentUser.id);
+                    const isAuthor = proj.autorId === currentUser.id;
+
+                    let actionButton = '';
+                    if (isAuthor) {
+                        actionButton = '<button class="btn-entrar disabled" disabled>Criador</button>';
+                    } else if (isMember) {
+                        actionButton = '<button class="btn-entrar disabled" disabled>Já é membro</button>';
+                    } else {
+                        actionButton = `<button class="btn-solicitar-entrada" onclick="ProjetosPage.solicitarEntradaProjeto(${proj.id})">Solicitar Entrada</button>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="projeto-imagem" style="background-image: url('${imageUrl}')"></div>
+                        <div class="projeto-conteudo">
+                            <div class="projeto-header">
+                                <h3>${proj.titulo}</h3>
+                                <span class="projeto-status ${proj.status?.toLowerCase() || 'planejamento'}">${proj.status || 'Em planejamento'}</span>
+                            </div>
+                            <p class="projeto-descricao">${proj.descricao || "Este projeto não possui uma descrição."}</p>
+                            
+                            <div class="projeto-meta">
+                                <div class="projeto-membros">
+                                    ${membrosHtml}${moreMembersHtml}
+                                    <span class="membros-count">${proj.totalMembros || proj.membros?.length || 0} membros</span>
+                                </div>
+                                <div class="projeto-categoria">${proj.categoria || 'Sem categoria'}</div>
+                            </div>
+                            
+                            <div class="projeto-footer">
+                                    <div class="projeto-tags">
+                                        ${tagsHtml}${moreTags}
+                                    </div>
+                                    <div class="projeto-actions">
+                                        ${actionButton}
+                                        <button class="btn-ver-detalhes" onclick="ProjetosPage.showProjectPreview(${JSON.stringify(proj).replace(/"/g, '&quot;')})">Ver Detalhes</button>
+                                    </div>
+                            </div>
+                        </div>`;
+                    grid.appendChild(card);
+                });
+            }
+        };
+
+        ProjetosPage.init();
+        window.ProjetosPage = ProjetosPage;
+    });
 });

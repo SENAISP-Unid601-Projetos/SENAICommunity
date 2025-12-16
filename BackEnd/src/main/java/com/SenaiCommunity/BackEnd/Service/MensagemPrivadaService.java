@@ -9,6 +9,8 @@ import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.MensagemPrivadaRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,12 +85,22 @@ public class MensagemPrivadaService {
         Usuario destinatario = usuarioRepository.findById(dto.getDestinatarioId())
                 .orElseThrow(() -> new NoSuchElementException("Destinatário não encontrado"));
 
+
+        if (remetente.getBloqueados().contains(destinatario)) {
+            throw new SecurityException("Você bloqueou este usuário e não pode enviar mensagens.");
+        }
+        if (destinatario.getBloqueados().contains(remetente)) {
+            throw new SecurityException("Você foi bloqueado por este usuário.");
+        }
+
         MensagemPrivada novaMensagem = toEntity(dto, remetente, destinatario);
         MensagemPrivada mensagemSalva = mensagemPrivadaRepository.save(novaMensagem);
 
         notificacaoService.criarNotificacao(
                 destinatario,
-                "Você recebeu uma nova mensagem de " + remetente.getNome()
+                "Você recebeu uma nova mensagem de " + remetente.getNome(),
+                "MENSAGEM_PRIVADA",
+                remetente.getId()
         );
 
         notificarAtualizacaoContagemNaoLida(destinatario);
@@ -96,8 +108,10 @@ public class MensagemPrivadaService {
         return toDTO(mensagemSalva);
     }
 
+
     /**
-     * Busca um resumo de todas as conversas do usuário logado.
+     * Busca um resumo de todas as conversas do usuário logado,
+     * FILTRANDO usuários bloqueados.
      */
     @Transactional(readOnly = true)
     public List<ConversaResumoDTO> buscarResumoConversas(String usuarioLogadoUsername) {
@@ -108,8 +122,8 @@ public class MensagemPrivadaService {
         List<MensagemPrivada> ultimasMensagens = mensagemPrivadaRepository.findUltimasMensagensPorConversa(usuarioLogado.getId());
 
         return ultimasMensagens.stream()
-                .map(mensagem -> {
-
+                // --- FILTRAGEM DE BLOQUEIO (NOVO) ---
+                .filter(mensagem -> {
                     Usuario outroUsuario;
                     if (mensagem.getRemetente().getId().equals(usuarioLogado.getId())) {
                         outroUsuario = mensagem.getDestinatario();
@@ -117,9 +131,33 @@ public class MensagemPrivadaService {
                         outroUsuario = mensagem.getRemetente();
                     }
 
-                    String urlFoto = "/images/default-avatar.jpg"; // Padrão
-                    if (outroUsuario.getFotoPerfil() != null && !outroUsuario.getFotoPerfil().isBlank()) {
-                        urlFoto = "/api/arquivos/" + outroUsuario.getFotoPerfil();
+                    // Verifica se EU bloqueei ele
+                    boolean euBloqueei = usuarioLogado.getBloqueados().contains(outroUsuario);
+
+                    // Verifica se ELE me bloqueou (Opcional: se quiser esconder conversas de quem te bloqueou)
+                    boolean eleMeBloqueou = outroUsuario.getBloqueados().contains(usuarioLogado);
+
+                    // Só mostra se NINGUÉM bloqueou NINGUÉM
+                    return !euBloqueei && !eleMeBloqueou;
+                })
+                // --- FIM DA FILTRAGEM ---
+                .map(mensagem -> {
+                    Usuario outroUsuario;
+                    if (mensagem.getRemetente().getId().equals(usuarioLogado.getId())) {
+                        outroUsuario = mensagem.getDestinatario();
+                    } else {
+                        outroUsuario = mensagem.getRemetente();
+                    }
+
+                    String urlFoto = "/images/default-avatar.jpg";
+                    String fotoPerfilDB = outroUsuario.getFotoPerfil();
+
+                    if (fotoPerfilDB != null && !fotoPerfilDB.isBlank()) {
+                        if (fotoPerfilDB.startsWith("http://") || fotoPerfilDB.startsWith("https://")) {
+                            urlFoto = fotoPerfilDB;
+                        } else {
+                            urlFoto = "/api/arquivos/" + fotoPerfilDB;
+                        }
                     }
 
                     return ConversaResumoDTO.builder()
@@ -184,9 +222,79 @@ public class MensagemPrivadaService {
     }
 
     public List<MensagemPrivadaSaidaDTO> buscarMensagensPrivadas(Long user1, Long user2) {
-        List<MensagemPrivada> mensagens = mensagemPrivadaRepository.findMensagensEntreUsuarios(user1, user2);
+
+        var pageable = PageRequest.of(0, 50, Sort.by("dataEnvio").descending()); // Pega as 50 mais recentes
+
+        List<MensagemPrivada> mensagens = mensagemPrivadaRepository.findMensagensEntreUsuarios(user1, user2, pageable);
+
+        mensagens.sort((m1, m2) -> m1.getDataEnvio().compareTo(m2.getDataEnvio()));
+
         return mensagens.stream()
                 .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void bloquearUsuario(String emailBloqueador, Long idBloqueado) {
+        Usuario bloqueador = usuarioRepository.findByEmail(emailBloqueador)
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+        Usuario bloqueado = usuarioRepository.findById(idBloqueado)
+                .orElseThrow(() -> new NoSuchElementException("Usuário alvo não encontrado"));
+
+        if (bloqueador.getId().equals(bloqueado.getId())) {
+            throw new IllegalArgumentException("Você não pode bloquear a si mesmo.");
+        }
+
+        bloqueador.getBloqueados().add(bloqueado);
+        usuarioRepository.save(bloqueador);
+    }
+
+    @Transactional
+    public void desbloquearUsuario(String emailBloqueador, Long idBloqueado) {
+        Usuario bloqueador = usuarioRepository.findByEmail(emailBloqueador)
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+        Usuario bloqueado = usuarioRepository.findById(idBloqueado)
+                .orElseThrow(() -> new NoSuchElementException("Usuário alvo não encontrado"));
+
+        bloqueador.getBloqueados().remove(bloqueado);
+        usuarioRepository.save(bloqueador);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean verificarBloqueio(String emailUsuario, Long idOutroUsuario) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+        Usuario outro = usuarioRepository.findById(idOutroUsuario)
+                .orElseThrow(() -> new NoSuchElementException("Outro usuário não encontrado"));
+
+        // Retorna true se EU bloqueei ele
+        return usuario.getBloqueados().contains(outro);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean fuiBloqueado(String emailUsuario, Long idOutroUsuario) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuario).orElseThrow();
+        Usuario outro = usuarioRepository.findById(idOutroUsuario).orElseThrow();
+        // Retorna true se ELE me bloqueou
+        return outro.getBloqueados().contains(usuario);
+    }
+
+    @Transactional
+    public void excluirConversaInteira(String emailUsuario, Long idOutroUsuario) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+
+        // Deleta todas as mensagens onde (remetente=eu e dest=ele) OU (remetente=ele e dest=eu)
+        mensagemPrivadaRepository.deletarConversaEntreUsuarios(usuario.getId(), idOutroUsuario);
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO> listarBloqueados(String emailUsuario) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado"));
+
+        return usuario.getBloqueados().stream()
+                .map(bloqueado -> new com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO(bloqueado))
                 .collect(Collectors.toList());
     }
 }

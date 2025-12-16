@@ -42,10 +42,14 @@ public class FiltroProfanidadeService {
             "verme", "chifrudo", "chifrudinho", "chifrudão", "galinha", "piriguete", "vtnc",
             "vai tomar no cu", "tmnc", "tnc", "gorda", "gordo", "gordinha", "gordão",
             "gordinho", "rolha de poço", "negrinho", "neguinho", "xvideos", "xvideo", "pornhub",
-            "porno", "porn", "ass", "pussy"
+            "porno", "porn", "ass", "pussy", "bumbum"
+
+
     );
 
     private static final Pattern PADRAO_PROFANIDADE;
+
+
 
     static {
         Set<String> raizesNormalizadas = PALAVRAS_RAIZ.stream()
@@ -53,10 +57,13 @@ public class FiltroProfanidadeService {
                 .collect(Collectors.toSet());
 
         String regex = raizesNormalizadas.stream()
-                .map(raiz -> "\\b" + Pattern.quote(raiz)) // \b = Limite de Palavra
-                .collect(Collectors.joining("|")); // | = OU
+                // \b no início E no fim.
+                // O "(s)?" permite que o filtro pegue o plural automaticamente (ex: "cu" pega "cus", "puta" pega "putas")
+                .map(raiz -> "\\b" + Pattern.quote(raiz) + "(s)?\\b")
+                .collect(Collectors.joining("|"));
 
-        PADRAO_PROFANIDADE = Pattern.compile(regex);
+        // CASE_INSENSITIVE garante que pegue maiúsculas e minúsculas mesmo se a normalização falhar
+        PADRAO_PROFANIDADE = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     }
 
     /**

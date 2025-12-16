@@ -12,10 +12,17 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-// Garante que não existam duas solicitações iguais (mesmo remetente e destinatário)
-@Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"solicitante_id", "solicitado_id"})
-})
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"solicitante_id", "solicitado_id"})
+        },
+        // ADICIONE ISTO:
+        indexes = {
+                @Index(name = "idx_amizade_status", columnList = "status"),
+                @Index(name = "idx_amizade_solicitante", columnList = "solicitante_id"),
+                @Index(name = "idx_amizade_solicitado", columnList = "solicitado_id")
+        }
+)
 public class Amizade {
 
     @Id

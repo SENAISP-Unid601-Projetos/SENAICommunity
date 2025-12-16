@@ -3,12 +3,16 @@ package com.SenaiCommunity.BackEnd.Service;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioAtualizacaoDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioBuscaDTO;
 import com.SenaiCommunity.BackEnd.DTO.UsuarioSaidaDTO;
+import com.SenaiCommunity.BackEnd.Entity.Aluno;
 import com.SenaiCommunity.BackEnd.Entity.Amizade;
+import com.SenaiCommunity.BackEnd.Entity.Professor;
 import com.SenaiCommunity.BackEnd.Entity.Usuario;
 import com.SenaiCommunity.BackEnd.Exception.ConteudoImproprioException;
 import com.SenaiCommunity.BackEnd.Repository.AmizadeRepository;
+import com.SenaiCommunity.BackEnd.Repository.ProjetoMembroRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,11 +45,35 @@ public class UsuarioService {
     @Autowired
     private FiltroProfanidadeService filtroProfanidade;
 
+    @Autowired
+    private ProjetoMembroRepository projetoMembroRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    private UsuarioSaidaDTO criarDTOComContagem(Usuario usuario) {
+        UsuarioSaidaDTO dto = new UsuarioSaidaDTO(usuario);
+        long qtdProjetos = projetoMembroRepository.countByUsuarioId(usuario.getId());
+        dto.setTotalProjetos(qtdProjetos);
+        return dto;
+    }
+
+    public void notificarAtualizacaoPerfil(Usuario usuario) {
+        UsuarioSaidaDTO dto = criarDTOComContagem(usuario);
+        // Envia para o tópico específico deste usuário
+        messagingTemplate.convertAndSend("/topic/perfil/" + usuario.getId(), dto);
+    }
 
     public UsuarioSaidaDTO buscarUsuarioPorId(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o ID: " + id));
-        return new UsuarioSaidaDTO(usuario);
+        return criarDTOComContagem(usuario);
+    }
+
+    // Adicione este método na classe UsuarioService
+    public Usuario buscarEntidadePorId(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o ID: " + id));
     }
 
     /**
@@ -62,7 +90,7 @@ public class UsuarioService {
      */
     public UsuarioSaidaDTO buscarUsuarioLogado(Authentication authentication) {
         Usuario usuario = getUsuarioFromAuthentication(authentication);
-        return new UsuarioSaidaDTO(usuario);
+        return criarDTOComContagem(usuario);
     }
 
     /**
@@ -70,12 +98,15 @@ public class UsuarioService {
      */
     public UsuarioSaidaDTO atualizarUsuarioLogado(Authentication authentication, UsuarioAtualizacaoDTO dto) {
         if (filtroProfanidade.contemProfanidade(dto.getNome()) ||
-                filtroProfanidade.contemProfanidade(dto.getBio())) {
+                filtroProfanidade.contemProfanidade(dto.getBio()) ||
+                filtroProfanidade.contemProfanidade(dto.getCurso()) || // Validação extra
+                filtroProfanidade.contemProfanidade(dto.getFormacao())) {
             throw new ConteudoImproprioException("Seus dados de perfil contêm texto não permitido.");
         }
 
         Usuario usuario = getUsuarioFromAuthentication(authentication);
 
+        // Atualizações Comuns
         if (StringUtils.hasText(dto.getNome())) {
             usuario.setNome(dto.getNome());
         }
@@ -89,8 +120,22 @@ public class UsuarioService {
             usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
         }
 
+        // Se for ALUNO
+        if (usuario instanceof Aluno) {
+            Aluno aluno = (Aluno) usuario;
+            if (dto.getCurso() != null) aluno.setCurso(dto.getCurso());
+            if (dto.getPeriodo() != null) aluno.setPeriodo(dto.getPeriodo());
+        }
+        // Se for PROFESSOR
+        else if (usuario instanceof Professor) {
+            Professor professor = (Professor) usuario;
+            if (dto.getFormacao() != null) professor.setFormacao(dto.getFormacao());
+            // codigoSn geralmente não se altera pelo perfil, mas pode adicionar se quiser
+        }
+
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
-        return new UsuarioSaidaDTO(usuarioAtualizado);
+        notificarAtualizacaoPerfil(usuarioAtualizado);
+        return criarDTOComContagem(usuarioAtualizado);
     }
 
     public UsuarioSaidaDTO atualizarFotoPerfil(Authentication authentication, MultipartFile foto) throws IOException {
@@ -103,6 +148,41 @@ public class UsuarioService {
         usuario.setFotoPerfil(urlCloudinary);
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+        notificarAtualizacaoPerfil(usuarioAtualizado);
+        return criarDTOComContagem(usuarioAtualizado);
+
+    }
+
+    public UsuarioSaidaDTO atualizarFotoFundo(Authentication authentication, MultipartFile foto) throws IOException {
+        if (foto == null || foto.isEmpty()) {
+            throw new IllegalArgumentException("Arquivo de fundo não pode ser vazio.");
+        }
+
+        Usuario usuario = getUsuarioFromAuthentication(authentication); // Método padrão para buscar usuário pelo auth
+
+        // 1. Upload para o Cloudinary
+        String urlCloudinary = midiaService.upload(foto);
+
+        // 2. Deletar foto antiga do Cloudinary (se existir e não for a padrão local)
+        String oldFundo = usuario.getFotoFundo();
+        // Verifica se a URL antiga é do Cloudinary/externa para deletar
+        if (oldFundo != null && (oldFundo.contains("cloudinary") || oldFundo.startsWith("http"))) {
+            try {
+                midiaService.deletar(oldFundo);
+            } catch (Exception e) {
+                // Loga o erro, mas permite que o processo continue
+                System.err.println("AVISO: Falha ao deletar fundo antigo do Cloudinary: " + e.getMessage());
+            }
+        }
+
+        // 3. Salvar nova URL no banco de dados
+        usuario.setFotoFundo(urlCloudinary);
+
+        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+
+        notificarAtualizacaoPerfil(usuarioAtualizado);
+
+        // 4. Retornar DTO atualizado
         return new UsuarioSaidaDTO(usuarioAtualizado);
     }
 
@@ -133,11 +213,60 @@ public class UsuarioService {
     public List<UsuarioBuscaDTO> buscarUsuariosPorNome(String nome, String emailUsuarioLogado) {
         Usuario usuarioLogado = buscarPorEmail(emailUsuarioLogado);
 
+        // 1. Busca todas as relações do usuário logado DE UMA VEZ (em memória)
+        List<Amizade> minhasRelacoes = amizadeRepository.findAllRelacoesDoUsuario(usuarioLogado.getId());
+
+        // 2. Busca os usuários pelo nome
         List<Usuario> usuariosEncontrados = usuarioRepository.findByNomeContainingIgnoreCaseAndIdNot(nome, usuarioLogado.getId());
 
+        // 3. Cruza os dados em memória (muito mais rápido que ir no banco N vezes)
         return usuariosEncontrados.stream()
-                .map(usuario -> toBuscaDTO(usuario, usuarioLogado))
+                .map(usuario -> {
+                    // Procura na lista em memória se existe relação
+                    Optional<Amizade> relacao = minhasRelacoes.stream()
+                            .filter(a -> a.getSolicitante().getId().equals(usuario.getId()) || a.getSolicitado().getId().equals(usuario.getId()))
+                            .findFirst();
+
+                    return toBuscaDTOOtimizado(usuario, usuarioLogado, relacao);
+                })
                 .collect(Collectors.toList());
+    }
+
+    private UsuarioBuscaDTO toBuscaDTOOtimizado(Usuario usuario, Usuario usuarioLogado, java.util.Optional<Amizade> relacaoOpt) {
+        // 1. Status padrão é NENHUMA
+        UsuarioBuscaDTO.StatusAmizadeRelacao status = UsuarioBuscaDTO.StatusAmizadeRelacao.NENHUMA;
+
+        // 2. Se existe uma relação encontrada na lista pré-carregada
+        if (relacaoOpt.isPresent()) {
+            Amizade amizade = relacaoOpt.get();
+
+            if (amizade.getStatus() == com.SenaiCommunity.BackEnd.Enum.StatusAmizade.ACEITO) {
+                status = UsuarioBuscaDTO.StatusAmizadeRelacao.AMIGOS;
+            }
+            else if (amizade.getStatus() == com.SenaiCommunity.BackEnd.Enum.StatusAmizade.PENDENTE) {
+                // Verifica quem enviou a solicitação comparando IDs
+                if (amizade.getSolicitante().getId().equals(usuarioLogado.getId())) {
+                    status = UsuarioBuscaDTO.StatusAmizadeRelacao.SOLICITACAO_ENVIADA;
+                } else {
+                    status = UsuarioBuscaDTO.StatusAmizadeRelacao.SOLICITACAO_RECEBIDA;
+                }
+            }
+        }
+
+        // 3. Tratamento da Foto (igual ao método original)
+        String urlFoto = usuario.getFotoPerfil() != null && !usuario.getFotoPerfil().isBlank()
+                ? usuario.getFotoPerfil()
+                : "/images/default-avatar.jpg";
+
+        // 4. Retorna o DTO preenchido
+        return new UsuarioBuscaDTO(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail(),
+                urlFoto,
+                status,
+                userStatusService.isOnline(usuario.getEmail())
+        );
     }
 
     /**
@@ -148,7 +277,7 @@ public class UsuarioService {
 
         String urlFoto = usuario.getFotoPerfil() != null && !usuario.getFotoPerfil().isBlank()
                 ? usuario.getFotoPerfil()
-                : "/images/default-avatar.png";
+                : "/images/default-avatar.jpg";
 
         return new UsuarioBuscaDTO(
                 usuario.getId(),

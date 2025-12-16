@@ -1,51 +1,326 @@
-/* Estilos para a página de perfil (perfil.css) */
+/* =================================================================
+   ESTILO DE PERFIL (CORRIGIDO E UNIFICADO)
+   Layout: Dashboard (Header fixo, colunas com rolagem independente)
+================================================================= */
 
-.profile-page {
-    background-color: var(--bg-secondary);
-    border-radius: var(--card-radius);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow);
+:root {
+    --sidebar-width: 320px;
+    /* Ajuste este valor se o seu header for maior ou menor */
+    --header-height: 80px;
+    --container-max-width: 1600px;
+    --banner-height: 220px;
+    --avatar-size: 160px;
+    --avatar-size-mobile: 120px;
+}
+
+/* 1. TRAVA A PÁGINA INTEIRA (O navegador não rola, quem rola são as div internas) */
+html, body {
+    height: 100vh;
+    width: 100%;
     overflow: hidden;
+    /* Remove a barra de rolagem do navegador */
+    margin: 0;
 }
 
-/* Nova abordagem de layout para o cabeçalho */
-.profile-header {
-    display: flex;
-    flex-direction: column; /* Organiza banner e detalhes verticalmente */
+/* =================================================================
+   LAYOUT ESTRUTURAL (GRID / FLEX)
+================================================================= */
+
+/* Container Principal - Ocupa exatamente o espaço abaixo do header */
+.container {
+    display: grid !important;
+    grid-template-columns: 320px 1fr !important; /* 320px Sidebar + Resto da tela */
+    max-width: 100% !important;
+    padding-right: 2rem !important; /* Espaço de respiro na direita */
+    gap: 1.5rem !important;
 }
 
-.profile-banner {
-    width: 100%;
-    height: 220px;
-    /* REMOVIDO: background-color: var(--bg-quaternary); */
-    /* Se a imagem não carregar, esta área ficará transparente ou usará o background do body */
-}
+/* --- SIDEBAR ESQUERDA (Com Rolagem Própria) --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
 
-.profile-banner img {
-    width: 100%;
+    /* Removemos Sticky - Agora ela ocupa 100% do container pai */
+    position: relative;
     height: 100%;
-    object-fit: cover;
+
+    /* HABILITA ROLAGEM INDEPENDENTE AQUI */
+    overflow-y: auto;
+
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    padding-bottom: 20px;
+    /* Espaço extra no final */
 }
 
-.profile-details {
-    display: flex;
-    align-items: flex-end;
-    padding: 0 2rem;
-    /* Puxa toda a seção de detalhes para cima, sobrepondo o banner */
-    margin-top: -80px; 
-    z-index: 2; /* Garante que os detalhes fiquem sobre o banner */
+/* Estilização da barra de rolagem da sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background-color: var(--bg-quaternary);
+    border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* --- CONTEÚDO PRINCIPAL (Com Rolagem Própria) --- */
+.main-content {
+    flex: 1;
+    height: 100%;
+    
+    /* ALTERAÇÃO 1: Reduzi o padding de 2rem para 1rem nas laterais */
+    /* Isso aproxima o conteúdo do Menu Lateral */
+    padding: 1.5rem 1rem; 
+    
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Estilização da barra de rolagem do conteúdo */
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+    background-color: var(--bg-quaternary);
+    border-radius: 4px;
+    border: 2px solid var(--bg-primary);
+}
+
+.main-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* =================================================================
+   COMPONENTES INTERNOS
+================================================================= */
+
+/* --- Elementos da Sidebar --- */
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
     position: relative;
 }
 
+.sidebar-close {
+    display: none;
+}
+
+.sidebar-menu {
+    flex: 1;
+    padding: 1rem 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: 0.2s;
+    border-left: 3px solid transparent;
+    gap: 1rem;
+}
+
+.menu-item:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.menu-item.active {
+    background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.1) 0%, transparent 100%);
+    color: var(--accent-primary);
+    border-left-color: var(--accent-primary);
+}
+
+.menu-item i {
+    width: 24px;
+    margin-right: 12px;
+    font-size: 1.1rem;
+}
+
+/* Widget User Info na Sidebar */
+.sidebar .user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    position: relative;
+    gap: 0.75rem;
+    text-decoration: none;
+}
+
+.sidebar .avatar-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+}
+
+.sidebar .avatar-container img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--bg-tertiary);
+}
+
+.sidebar .avatar-container .status.online {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+    background-color: #238636;
+}
+
+.sidebar .user-identity {
+    text-align: center;
+}
+
+.sidebar .user-identity h2 {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.sidebar .user-role {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background-color: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.sidebar .user-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+    width: 100%;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.sidebar .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar .stat-item strong {
+    color: var(--accent-primary);
+    font-size: 1.1rem;
+}
+
+.sidebar-widget {
+    padding: 1.5rem;
+}
+
+
+.sidebar-widget .online-friends {
+    /* Usa as mesmas variáveis e espaçamentos do card padrão */
+    background-color: var(--bg-secondary);
+    border-radius: 8px; /* Padrão --card-radius */
+    border: 1px solid var(--border-color);
+    padding: 1.25rem; /* Padding idêntico ao principal.css */
+    box-shadow: none;
+    overflow: visible; /* Permite ver tooltips se houver */
+}
+
+.sidebar-widget .widget-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    
+    /* Removemos paddings e margens estranhas que estavam no perfil.css */
+    padding-left: 0;
+    padding-right: 0;
+    margin-top: 0;
+}
+
+.sidebar-widget .friend-list {
+    display: flex;
+    flex-direction: column;
+    /* Remove o padding interno extra que causava desalinhamento */
+    padding: 0; 
+    gap: 0.5rem; /* Espaçamento padrão entre itens */
+}
+
+/* Força os itens a se comportarem como na principal, caso algo esteja sobrescrevendo */
+.sidebar-widget .friend-item {
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.sidebar-widget .friend-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* --- CARD PRINCIPAL DO PERFIL --- */
+.profile-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+/* Banner */
+.profile-banner {
+    width: 100%;
+    height: var(--banner-height);
+    background-color: var(--bg-quaternary);
+    position: relative;
+    background-size: cover;
+    background-position: center;
+}
+
+.profile-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.4));
+}
+
+/* Detalhes do Perfil */
+.profile-details {
+    display: flex;
+    align-items: flex-end;
+    padding: 0 2rem 1.5rem 2rem;
+    margin-top: -60px;
+    position: relative;
+    z-index: 2;
+    flex-wrap: wrap;
+}
+
 .profile-picture-container {
-    width: 160px;
-    height: 160px;
+    width: var(--avatar-size);
+    height: var(--avatar-size);
     border-radius: 50%;
     border: 5px solid var(--bg-secondary);
-    overflow: hidden;
-    flex-shrink: 0; /* Impede que a imagem seja esmagada */
     background-color: var(--bg-secondary);
-    box-shadow: var(--shadow);
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .profile-picture-container img {
@@ -56,80 +331,922 @@
 
 .profile-info-actions {
     display: flex;
+    flex: 1;
     justify-content: space-between;
-    align-items: center;
-    flex-grow: 1; /* Ocupa o espaço restante na linha */
+    align-items: flex-end;
     margin-left: 1.5rem;
-    padding-bottom: 1.5rem; /* Ajusta a altura vertical em relação à foto */
+    padding-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .profile-info h1 {
     font-size: 1.8rem;
-    font-weight: 700;
     color: var(--text-primary);
     margin: 0;
+    line-height: 1.2;
 }
 
 .profile-info p {
     font-size: 1rem;
     color: var(--text-secondary);
-    margin: 0;
+    margin: 0.2rem 0 0 0;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 0.5rem;
 }
 
 .profile-actions .btn {
     padding: 0.6rem 1.2rem;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
-    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
 }
 
-.profile-body {
-    padding: 2rem;
+.profile-actions .btn-primary {
+    background: var(--accent-primary);
+    color: white;
 }
 
-.profile-body h3 {
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
+.profile-actions .btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+/* Corpo e Abas */
+.widget-card.info-card {
+    padding: 1.5rem 2rem;
     border-bottom: 1px solid var(--border-color);
-}
-
-.profile-body #profile-bio {
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
-    font-style: italic;
-    line-height: 1.6;
 }
 
 .profile-metadata {
     list-style: none;
     padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
 }
 
 .profile-metadata li {
     display: flex;
     align-items: center;
-    margin-bottom: 0.75rem;
     color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 .profile-metadata li i {
-    width: 20px;
-    text-align: center;
+    margin-right: 0.5rem;
     color: var(--text-tertiary);
-    margin-right: 1rem; 
 }
 
-.main-content {
-    grid-column: 2 / 4;
+.profile-nav-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    padding: 0 1rem;
+    overflow-x: auto;
 }
 
-.sidebar {
+.tab-btn {
+    padding: 1rem 1.5rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+}
+
+.tab-btn.active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+}
+
+.tab-count {
+    background-color: var(--bg-quaternary);
+    color: var(--text-primary);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+
+.tab-content {
+    padding: 1.5rem;
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Grids */
+.friends-grid, .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    padding: 1rem 0;
+}
+
+.profile-card-item {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+}
+
+.profile-card-item:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-primary);
+}
+
+.profile-card-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1.25rem;
+    border: 3px solid var(--bg-tertiary);
+}
+
+.profile-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.profile-card-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-top: auto;
+}
+
+/* Projetos Específicos */
+.project-card {
+    padding: 0;
+    overflow: hidden;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.project-card .profile-card-img {
+    width: 100%;
+    height: 160px;
+    border-radius: 0;
+    border: none;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.project-card .profile-card-title {
+    padding: 0 1.25rem;
+}
+
+.project-card .profile-card-subtitle {
+    margin: 0 1.25rem 0.5rem;
+    background: transparent;
+    padding: 0;
+    color: var(--accent-primary);
+}
+
+.project-card .profile-card-status {
+    margin: 0 1.25rem 1.25rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--success);
+    display: inline-block;
+}
+
+/* Loaders e Empty States */
+.loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(88, 166, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--accent-primary);
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+/* =================================================================
+   RESPONSIVIDADE MOBILE (MAX 768PX)
+   Aqui revertemos para o scroll nativo do navegador
+================================================================= */
+.mobile-only {
+    display: none !important;
+}
+
+.page-header-mobile {
+    display: none;
+}
+
+.mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 99;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+}
+
+.mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+@media (max-width: 768px) {
+
+    /* RESET DE ROLAGEM PARA MOBILE (Usa scroll da janela) */
+    html, body {
+        height: auto;
+        overflow: auto;
+        /* Devolve o scroll nativo */
+        overflow-x: hidden;
+    }
+
+    .container {
+        height: auto;
+        /* Remove altura fixa */
+        display: block !important;
+        /* Remove flex colunas */
+        overflow: visible;
+    }
+
+    .main-content {
+        height: auto;
+        overflow-y: visible;
+        /* Remove scroll interno */
+        padding: 1rem;
+        padding-bottom: 80px;
+    }
+
+    /* Sidebar vira Menu Gaveta */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 85%;
+        max-width: 320px;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+        z-index: 2000;
+        overflow-y: auto;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .sidebar-close {
+        display: block !important;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 1.5rem;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+    }
+
+    .mobile-only {
+        display: flex !important;
+    }
+
+    /* Header Mobile Específico */
+    .page-header-mobile {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .page-title-mobile {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    /* Ajustes visuais mobile */
+    .profile-details {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: -50px;
+        padding: 0 1rem 1rem;
+    }
+
+    .profile-picture-container {
+        width: var(--avatar-size-mobile);
+        height: var(--avatar-size-mobile);
+        margin-bottom: 1rem;
+    }
+
+    .profile-info-actions {
+        flex-direction: column;
+        align-items: center;
+        margin-left: 0;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .profile-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .profile-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .friends-grid, .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Modais de Upload e Projeto (Mantidos do original) */
+.cover-upload-wrapper {
+    display: block;
+    width: 100%;
+    height: 180px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    border: 2px dashed var(--border-color);
+    background-color: var(--bg-tertiary);
+}
+
+.cover-preview-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#bg-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cover-upload-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.profile-page {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    
+    /* ALTERAÇÃO 2: Removido 'margin: 0 auto' e 'max-width' */
+    /* Isso faz o perfil ocupar a largura total disponível e encostar na esquerda */
+    margin: 0; 
+    max-width: 100%;
+    width: 100%;
+}
+
+/* O Cabeçalho (Capa + Foto) agora é um card independente */
+.profile-header {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 1.5rem; /* Espaço entre o topo e o conteúdo */
+}
+
+/* Novo Container de Layout (Grid) */
+.profile-content-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr !important; 
+    gap: 2rem !important;
+    width: 100%;
+}
+/* Coluna da Esquerda (Onde fica o card Sobre) */
+.profile-left-column {
+    /* Faz o card acompanhar o scroll */
     position: sticky;
-    top: 80px;
-    height: calc(100vh - 100px); /* Define uma altura fixa */
-    overflow-y: auto; /* Adiciona a barra de rolagem interna */
+    top: 20px; /* Distância do topo ao rolar */
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
+/* Coluna da Direita (Onde ficam os posts e abas) */
+.profile-right-column {
+    margin-top: 1px;
+    width: 100%;
+    min-width: 0; /* Previne overflow */
+}
+
+/* Ajuste visual do Card Sobre para não ficar transparente */
+.widget-card.info-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    border-radius: 12px;
+    padding: 1.5rem;
+    z-index: 2; /* Garante que fique acima do fundo, mas abaixo de modais */
+}
+
+/* RESPONSIVIDADE: Se a tela for menor que 1100px, volta para uma coluna */
+@media (max-width: 1100px) {
+    .profile-content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-left-column {
+        position: static; /* Remove o sticky no mobile/tablet */
+        width: 100%;
+    }
+}
+
+/* --- NO ARQUIVO: FrontEnd/Principal/CSS/perfil.css --- */
+
+/* Correção da Lista de Amigos na Aba */
+#tab-friends {
+    padding: 0; /* Remove padding para ficar alinhado */
+}
+
+/* Garante que a lista ocupe a largura correta */
+.user-list {
+    width: 100%;
+}
+
+/* CORREÇÃO DO MENU MOBILE */
+@media (max-width: 768px) {
+    /* Menu Lateral (Gaveta) */
+    .sidebar {
+        position: fixed !important; /* Força fixed */
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 80%;
+        max-width: 300px;
+        background-color: var(--bg-secondary);
+        z-index: 9999 !important; /* Z-index altíssimo para ficar na frente de tudo */
+        
+        /* Estado inicial: escondido na esquerda */
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+        
+        display: flex !important; /* Garante que não esteja display:none */
+        flex-direction: column;
+    }
+
+    /* Classe que o JavaScript adiciona para abrir */
+    .sidebar.active {
+        transform: translateX(0) !important;
+    }
+
+    /* Fundo escuro quando o menu abre */
+    .mobile-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        z-index: 9998; /* Logo abaixo do menu */
+        
+        /* Controle de visibilidade */
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.3s;
+    }
+
+    .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* Garante que o botão de fechar apareça */
+    .sidebar-close {
+        display: block !important;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        cursor: pointer;
+        z-index: 10000;
+    }
+}
+
+.friends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    padding: 1rem 0;
+}
+
+.profile-friend-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    transition: transform 0.2s, border-color 0.2s;
+    color: var(--text-primary);
+}
+
+.profile-friend-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.friend-card-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--bg-tertiary);
+}
+
+.friend-card-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.friend-card-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+}
+
+.friend-card-status {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--text-tertiary); /* Cinza padrão */
+}
+.status-indicator.online {
+    background-color: var(--success);
+}
+
+/* =================================================================
+   ESTILO DO MODAL DE PROJETOS 
+   ================================================================= */
+.project-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px);
+    z-index: 3000;
+    display: flex; justify-content: center; align-items: center;
+    padding: 1rem;
+    animation: fadeInModal 0.3s forwards;
+}
+@keyframes fadeInModal { to { opacity: 1; } }
+
+.project-modal-card {
+    background: var(--bg-secondary);
+    width: 100%; max-width: 700px; max-height: 85vh;
+    border-radius: 16px; border: 1px solid var(--border-color);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
+    animation: slideUpModal 0.3s forwards;
+}
+@keyframes slideUpModal { to { transform: translateY(0); } }
+
+.pm-hero {
+    height: 200px; width: 100%;
+    background-color: var(--bg-tertiary);
+    background-size: cover; background-position: center;
+    position: relative; flex-shrink: 0;
+}
+.pm-close-btn {
+    position: absolute; top: 15px; right: 15px;
+    background: rgba(0, 0, 0, 0.6); color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    z-index: 20; transition: 0.2s;
+}
+.pm-close-btn:hover { background: rgba(255, 255, 255, 0.3); transform: rotate(90deg); }
+
+.pm-content {
+    flex: 1; overflow-y: auto; padding: 1.5rem 2rem;
+    display: flex; flex-direction: column;
+}
+.pm-header { margin-bottom: 1.5rem; }
+.pm-status {
+    display: inline-block; font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 6px;
+    margin-bottom: 0.5rem; background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+}
+.pm-title { font-size: 1.75rem; font-weight: 800; margin: 0; line-height: 1.2; color: var(--text-primary); }
+.pm-description { font-size: 1rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem; }
+
+.pm-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+    margin-bottom: 2rem; background: var(--bg-tertiary);
+    padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color);
+}
+.pm-info-item h4 { font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.3rem; }
+.pm-info-item span { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+
+.pm-section-title {
+    font-size: 0.85rem; text-transform: uppercase; font-weight: 700;
+    color: var(--text-secondary); margin-bottom: 1rem;
+    border-left: 3px solid var(--accent-primary); padding-left: 0.75rem;
+}
+.pm-tags, .pm-members { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+.pm-tag { background: var(--bg-tertiary); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; }
+.pm-member { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-tertiary); padding: 4px 12px 4px 4px; border-radius: 30px; border: 1px solid var(--border-color); }
+.pm-member img { width: 28px; height: 28px; border-radius: 50%; }
+
+.pm-footer {
+    padding: 1rem 2rem; border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary); display: flex; justify-content: flex-end;
+}
+.pm-btn {
+    background: var(--accent-primary); color: white; padding: 0.8rem 1.5rem;
+    border-radius: 8px; text-decoration: none; font-weight: 600;
+    display: flex; align-items: center; gap: 0.5rem; border: none; cursor: pointer;
+}
+.pm-btn:hover { background: var(--accent-secondary); }
+
+/* Responsividade Mobile do Modal */
+@media (max-width: 768px) {
+    .pm-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+    .pm-info-item { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+    .pm-info-item:last-child { border-bottom: none; }
+    .project-modal-card { height: 100%; border-radius: 0; }
+}
+
+/* 1. Limita a altura do container principal do modal */
+#edit-profile-modal .modal-content {
+    display: flex;              /* Ativa o Flexbox */
+    flex-direction: column;     /* Organiza itens em coluna (Header em cima, Form em baixo) */
+    max-height: 90vh;           /* Limita a altura a 90% da altura da tela */
+    overflow: hidden;           /* Esconde a barra de rolagem do container externo */
+    padding: 0;                 /* Remove padding externo para controlar internamente */
+    width: 100%;
+    max-width: 600px;           /* Garante uma largura boa no desktop */
+}
+
+/* 2. Mantém o Cabeçalho fixo no topo */
+#edit-profile-modal .modal-header {
+    flex-shrink: 0;             /* Impede que o cabeçalho encolha */
+    padding: 1.5rem;            /* Restaura o espaçamento interno */
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0;           /* Remove margem para colar no formulário */
+    background-color: var(--bg-secondary); /* Garante que o fundo não seja transparente */
+}
+
+/* 3. Faz o Formulário (corpo) rolar sozinho */
+#edit-profile-form {
+    overflow-y: auto;           /* CRUCIAL: Adiciona scroll vertical APENAS no formulário */
+    padding: 1.5rem;            /* Restaura o espaçamento interno dos inputs */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    
+    /* Estilização da barra de rolagem para ficar bonita */
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-quaternary) var(--bg-secondary);
+}
+
+/* Ajuste para Webkit (Chrome, Edge, Safari) - Barra de rolagem interna */
+#edit-profile-form::-webkit-scrollbar {
+    width: 8px;
+}
+#edit-profile-form::-webkit-scrollbar-thumb {
+    background-color: var(--bg-quaternary);
+    border-radius: 4px;
+}
+#edit-profile-form::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* 4. Opcional: Deixar o rodapé (botões) fixo no fundo ou visível ao rolar */
+/* Se quiser que os botões rolem junto com o formulário, não precisa mudar nada no footer. */
+/* Se quiser o footer fixo, adicione position sticky */
+#edit-profile-modal .modal-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-secondary); /* Garante fundo sólido se passar por cima de algo */
+}
+
+@media (max-width: 1200px) {
+    .container {
+        padding-right: 1rem !important;
+    }
+    
+    .profile-content-grid {
+        /* Se a tela for média, diminui a coluna da esquerda para dar espaço ao conteúdo */
+        grid-template-columns: 300px 1fr !important; 
+        gap: 1rem !important;
+    }
+}
+
+/* RESPONSIVIDADE: Mobile (Mantém o comportamento de empilhar) */
+@media (max-width: 900px) {
+    .container {
+        display: block !important;
+    }
+    
+    .profile-content-grid {
+        grid-template-columns: 1fr !important; /* Empilha tudo */
+    }
+
+    .profile-left-column {
+        position: static !important;
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* 1. Destrava a largura do conteúdo principal para ocupar a tela toda */
+.main-content {
+    max-width: none !important; /* Sobrescreve o limite do feed */
+    margin: 0 !important;       /* Remove margens automáticas de centralização */
+    width: 100% !important;
+    padding: 1.5rem 2rem !important; /* Espaçamento interno mais amplo */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 2. Ajusta o Grid do Container Principal para não deixar buracos */
+.container {
+    display: flex !important; /* Muda para Flex para garantir preenchimento */
+    align-items: stretch;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow: hidden;
+    padding: 0 !important;
+}
+
+/* Sidebar Fixa na Esquerda */
+.sidebar {
+    width: 320px !important;
+    min-width: 320px !important;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border-color);
+}
+
+/* 3. Estica o Header do Perfil (Capa + Foto) */
+.profile-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.profile-header {
+    width: 100%;
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+/* 4. Ajuste fino da Foto e Texto (Para não ficarem distantes) */
+.profile-details {
+    display: flex;
+    align-items: flex-end; /* Alinha texto com o fundo da foto */
+    padding: 0 2rem 1.5rem 2rem;
+    margin-top: -60px; /* Puxa para cima da capa */
+}
+
+.profile-picture-container {
+    width: 160px;
+    height: 160px;
+    border: 5px solid var(--bg-secondary); /* Borda grossa para separar da capa */
+    background-color: var(--bg-secondary);
+    border-radius: 50%;
+    flex-shrink: 0;
+    z-index: 3;
+}
+
+.profile-info-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end; /* Alinha botões com o texto */
+    margin-left: 1.5rem;
+    padding-bottom: 10px; /* Pequeno ajuste para alinhar com a base da foto */
+    flex: 1;
+}
+
+/* 5. Grid de Conteúdo (Sobre + Posts) */
+.profile-content-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr !important; 
+    gap: 1.5rem !important;
+    width: 100%;
+    align-items: start;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 1200px) {
+    .profile-content-grid {
+        grid-template-columns: 300px 1fr !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .profile-content-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .profile-details {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: -80px;
+    }
+
+    .profile-info-actions {
+        flex-direction: column;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 1rem;
+        gap: 1rem;
+    }
+}

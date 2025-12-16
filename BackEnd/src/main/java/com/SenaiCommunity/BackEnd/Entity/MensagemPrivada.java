@@ -1,10 +1,7 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +11,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 
+@Table(name = "mensagem_privada", indexes = {
+        @Index(name = "idx_msg_remetente", columnList = "remetente_id"),
+        @Index(name = "idx_msg_destinatario", columnList = "destinatario_id")
+})
 public class MensagemPrivada {
 
     @Id
@@ -21,11 +22,14 @@ public class MensagemPrivada {
     private Long id;
 
     @ManyToOne
+    @ToString.Exclude
     private Usuario remetente;
 
     @ManyToOne
+    @ToString.Exclude
     private Usuario destinatario;
 
+    @Lob
     private String conteudo;
 
     private LocalDateTime dataEnvio = LocalDateTime.now();

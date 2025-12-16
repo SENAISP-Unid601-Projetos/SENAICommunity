@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAI Community | Detalhes do Projeto</title>
+    <link rel="icon" href="img/LogoFavicon-removebg-preview.png2.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Projeto/CSS/projeto-detalhe.css">
+</head>
+
+<body>
+    <div class="notification-center"></div>
+
+    <header class="topbar">
+        <div class="header-left">
+            <div class="menu-toggle mobile-only">
+                <i class="fas fa-bars"></i>
+            </div>
+            <a href="/projeto.html" class="back-btn" data-tooltip="Voltar">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="logo"><span class="highlight">SENAI </span>Community</h1>
+        </div>
+
+        <div class="project-info">
+            <h2 id="project-name">Carregando...</h2>
+            <span class="project-status" id="project-status">Online</span>
+        </div>
+
+        <nav class="nav-icons">
+            <div class="nav-icon" data-tooltip="Informações do Projeto" id="project-info-btn">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="nav-icon" data-tooltip="Configurações" id="project-settings-btn">
+                <i class="fas fa-cog"></i>
+            </div>
+            <div class="theme-toggle" data-tooltip="Alternar tema">
+                <i class="fas fa-moon"></i>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Mobile Header (apenas para mobile) -->
+    <div class="mobile-header mobile-only">
+        <div class="mobile-project-info">
+            <h3 id="mobile-project-name">Carregando...</h3>
+            <span class="online-indicator">
+                <span class="status-dot"></span>
+                <span id="mobile-online-count">0 online</span>
+            </span>
+        </div>
+        <div class="mobile-chat-actions">
+            <button class="action-btn" id="mobile-attach-file-btn" data-tooltip="Anexar arquivo">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            <button class="action-btn" id="mobile-solicitacoes-btn" data-tooltip="Solicitações" style="display: none;">
+                <i class="fas fa-user-clock"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="project-container">
+        <!-- Overlay para mobile -->
+        <div class="mobile-overlay" id="mobile-overlay"></div>
+
+        <!-- Sidebar com membros do projeto -->
+        <aside class="members-sidebar" id="members-sidebar">
+            <div class="sidebar-header">
+                <h3>Membros do Projeto</h3>
+                <div class="sidebar-actions" style="display: flex; align-items: center; gap: 10px;">
+                    <button id="add-member-btn" class="action-icon-btn" style="display: none;" title="Adicionar Membro">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+
+                    <span class="members-count" id="members-count">0</span>
+
+                    <button class="sidebar-close mobile-only" id="sidebar-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-members" placeholder="Buscar membros...">
+            </div>
+
+            <div class="members-list" id="members-list">
+                <p class="empty-state">Carregando membros...</p>
+            </div>
+
+            <div class="project-details">
+                <h4>Detalhes do Projeto</h4>
+                <div class="project-description">
+                    <p id="project-description">Carregando descrição...</p>
+                </div>
+                <div class="project-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-users"></i>
+                        <span id="project-max-members">Máx: 0 membros</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-lock"></i>
+                        <span id="project-privacy">Privado</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-tag"></i>
+                        <span id="project-category">Categoria</span>
+                    </div>
+                </div>
+                <div class="project-technologies" id="project-technologies">
+                    <!-- Tecnologias serão inseridas aqui -->
+                </div>
+
+                <!-- Botões de ação do projeto -->
+                <div class="project-actions">
+                    <button class="btn btn-danger btn-full" id="leave-project-btn" style="display: none;">
+                        <i class="fas fa-sign-out-alt"></i> Sair do Projeto
+                    </button>
+                    <button class="btn btn-danger btn-full" id="delete-project-btn" style="display: none;">
+                        <i class="fas fa-trash"></i> Excluir Projeto
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Área principal de chat -->
+        <main class="chat-area">
+            <div class="chat-header desktop-only">
+                <div class="chat-info">
+                    <h3 id="chat-project-name">Carregando...</h3>
+                    <span class="online-indicator">
+                        <span class="status-dot"></span>
+                        <span id="online-count">0 membros online</span>
+                    </span>
+                </div>
+                <div class="chat-actions">
+                    <button class="action-btn" id="attach-file-btn" data-tooltip="Anexar arquivo">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <button class="action-btn" id="solicitacoes-btn" data-tooltip="Solicitações de entrada"
+                        style="display: none;">
+                        <i class="fas fa-user-clock"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messages-container">
+                <p class="empty-state">Carregando mensagens...</p>
+            </div>
+
+            <div class="message-input-area">
+                <div class="input-wrapper">
+                    <button class="emoji-btn" id="emoji-btn" data-tooltip="Emojis">
+                        <i class="fas fa-smile"></i>
+                    </button>
+                    <input type="text" id="message-input" placeholder="Digite sua mensagem...">
+                    <input type="file" id="file-input" style="display: none;"
+                        accept="image/*,video/*,audio/*,.pdf,.doc,.docx">
+                    <button class="send-btn" id="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div id="file-preview-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de informações do projeto -->
+    <div id="project-info-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Informações do Projeto</h3>
+                <button class="close-modal" id="close-project-info-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="project-info-details">
+                    <div class="project-image">
+                        <img id="project-image" src="" alt="Imagem do projeto" style="display: none;">
+                    </div>
+                    <div class="project-details-text">
+                        <h4 id="modal-project-name">Nome do Projeto</h4>
+                        <p id="modal-project-description">Descrição do projeto</p>
+                        <div id="project-video-container" style="display: none; margin-top: 15px; margin-bottom: 15px;">
+                            <h5 style="margin-bottom: 8px; color: var(--text-secondary); font-size: 0.9rem;">Vídeo de
+                                Apresentação</h5>
+                            <video id="project-video-player" controls
+                                style="width: 100%; border-radius: 8px; max-height: 300px; background: #000;">
+                                Seu navegador não suporta a tag de vídeo.
+                            </video>
+                        </div>
+                        <div class="project-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-users"></i>
+                                <span id="modal-members-count">0 membros</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-lock"></i>
+                                <span id="modal-project-privacy">Privado</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-user"></i>
+                                <span id="modal-project-leader">Líder: Carregando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-members-modal">
+                    <h4>Membros do Projeto</h4>
+                    <div class="members-list-modal" id="members-list-modal">
+                        <!-- Lista de membros para o modal -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de configurações do projeto (apenas para admin) -->
+    <div id="project-settings-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Configurações do Projeto</h3>
+                <button class="close-modal" id="close-project-settings-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="project-settings-form">
+                    <div class="form-group-file">
+                        <label>Foto do Projeto</label>
+                        <div class="file-input-wrapper">
+                            <div class="current-photo-preview">
+                                <img id="current-project-photo" src="" alt="Foto atual do projeto"
+                                    onerror="this.style.display='none'">
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="edit-project-photo" class="file-input-label">
+                                    <i class="fas fa-camera"></i> Alterar Foto
+                                </label>
+                                <input type="file" id="edit-project-photo" class="file-input" accept="image/*">
+                                <div class="file-name" id="file-name">Nenhum arquivo selecionado</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-project-name">Nome do Projeto</label>
+                        <input type="text" id="edit-project-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-project-description">Descrição</label>
+                        <textarea id="edit-project-description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Vídeo do Projeto</label>
+                        <div class="file-input-wrapper" style="flex-direction: column;">
+
+                            <div id="edit-video-preview-container"
+                                style="width: 100%; margin-bottom: 10px; display: none;">
+                                <video id="edit-video-preview" controls
+                                    style="width: 100%; border-radius: 8px; max-height: 200px; background: #000;">
+                                </video>
+                                <div
+                                    style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; text-align: center;">
+                                    <i class="fas fa-eye"></i> Pré-visualização
+                                </div>
+                            </div>
+
+                            <div style="width: 100%;">
+                                <label for="edit-project-video" class="file-input-label"
+                                    style="width: 100%; justify-content: center;">
+                                    <i class="fas fa-upload"></i> Alterar/Adicionar Vídeo
+                                </label>
+                                <input type="file" id="edit-project-video" class="file-input"
+                                    accept="video/mp4,video/webm,video/ogg">
+                                <div class="file-name" id="edit-video-name">Nenhum arquivo novo selecionado</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-project-max-members">Máximo de Membros</label>
+                        <input type="number" id="edit-project-max-members" min="1" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-project-privacy">Privacidade</label>
+                        <select id="edit-project-privacy">
+                            <option value="true">Privado</option>
+                            <option value="false">Público</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-project-status">Status do Projeto</label>
+                        <select id="edit-project-status" class="form-control">
+                            <option value="Em planejamento">Em Planejamento</option>
+                            <option value="Em progresso">Em progresso</option>
+                            <option value="Concluído">Concluído</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-project-category">Categoria</label>
+                        <input type="text" id="edit-project-category">
+                    </div>
+                    <div class="form-group">
+                        <label>Tecnologias (separadas por vírgula)</label>
+                        <input type="text" id="edit-project-technologies" placeholder="Java, Spring Boot, React...">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                            id="cancel-project-settings-btn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        <button type="button" class="btn btn-danger" id="delete-project-modal-btn"
+                            style="display: none;">
+                            <i class="fas fa-trash"></i> Excluir Projeto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmação para ações perigosas -->
+    <div id="confirmation-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmation-title">Confirmar Ação</h3>
+                <button class="close-modal" id="close-confirmation-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmation-message">Tem certeza que deseja realizar esta ação?</p>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-confirmation-btn">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirm-action-btn">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmação para exclusão de mensagem -->
+    <div id="delete-message-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Excluir Mensagem</h3>
+                <button class="close-modal" id="close-delete-message-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.</p>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-delete-message-btn">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-message-btn">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="Projeto/JS/projeto-detalhe.js"></script>
+</body>
+
+</html>

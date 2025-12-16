@@ -7,20 +7,27 @@ public class NormalizacaoUtils {
 
     private static final Pattern ACENTOS_PATTERN = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 
-    /**
-     * Remove acentos, pontuação e converte para minúsculas.
-     * Ex: "Olá, TUDO BEM?" -> "ola tudo bem"
-     */
     public static String normalizar(String texto) {
         if (texto == null) {
             return "";
         }
 
-        String textoNormalizado = Normalizer.normalize(texto, Normalizer.Form.NFD);
-        textoNormalizado = ACENTOS_PATTERN.matcher(textoNormalizado).replaceAll("");
+        // 1. Converter para minúsculas primeiro
+        String processado = texto.toLowerCase();
 
-        return textoNormalizado
-                .toLowerCase()
-                .replaceAll("[^a-z0-9\\s]", ""); // Remove tudo exceto letras, números e espaços
+        // 2. Substituição de Leet Speak (Trocar números por letras parecidas)
+        processado = processado
+                .replace("0", "o")
+                .replace("1", "i")
+                .replace("3", "e")
+                .replace("4", "a")
+                .replace("5", "s")
+                .replace("@", "a");
+
+        // 3. Remover acentos
+        processado = Normalizer.normalize(processado, Normalizer.Form.NFD);
+        processado = ACENTOS_PATTERN.matcher(processado).replaceAll("");
+
+        return processado.replaceAll("[^a-z\\s]", "");
     }
 }

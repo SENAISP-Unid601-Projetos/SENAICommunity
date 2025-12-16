@@ -1,13 +1,17 @@
 package com.SenaiCommunity.BackEnd.Controller;
 
+import com.SenaiCommunity.BackEnd.Service.ArquivoMidiaService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -15,15 +19,30 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/api/arquivos")
 @CrossOrigin(origins = "*") // Lembre-se de configurar o CORS
+@PreAuthorize("hasRole('ALUNO') or hasRole('PROFESSOR') or hasRole('ADMIN')")
 public class ArquivoController {
 
     // Injeta o valor da propriedade que definimos no application.properties
     @Value("${file.upload-dir}")
     private String uploadDir;
+
+    @Autowired
+    private ArquivoMidiaService arquivoMidiaService;
+
+    @PostMapping("/upload")
+    public ResponseEntity<Map<String, String>> uploadArquivo(@RequestParam("file") MultipartFile file) {
+        try {
+            String url = arquivoMidiaService.upload(file);
+            return ResponseEntity.ok(Map.of("url", url));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("erro", "Falha no upload"));
+        }
+    }
 
     @GetMapping("/{nomeArquivo:.+}") // O ':.+' é importante para não truncar a extensão do arquivo
     @ResponseBody

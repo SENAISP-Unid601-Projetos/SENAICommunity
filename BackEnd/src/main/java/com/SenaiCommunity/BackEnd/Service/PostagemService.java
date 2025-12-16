@@ -11,16 +11,15 @@ import com.SenaiCommunity.BackEnd.Repository.PostagemRepository;
 import com.SenaiCommunity.BackEnd.Repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*; // Import genérico para List, Set, HashSet, etc.
 import java.util.stream.Collectors;
 
 @Service
@@ -37,7 +36,9 @@ public class PostagemService {
 
     @Autowired
     private FiltroProfanidadeService filtroProfanidade;
+
     @Transactional
+    @CacheEvict(value = "feed-postagens", allEntries = true)
     public PostagemSaidaDTO criarPostagem(String autorUsername, PostagemEntradaDTO dto, List<MultipartFile> arquivos) {
         Usuario autor = usuarioRepository.findByEmail(autorUsername)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
@@ -46,19 +47,18 @@ public class PostagemService {
             throw new ConteudoImproprioException("Sua postagem contém texto não permitido.");
         }
 
-        // Lógica de conversão DTO -> Entidade
         Postagem novaPostagem = toEntity(dto, autor);
 
-        // Processa os arquivos de mídia, se existirem
         if (arquivos != null && !arquivos.isEmpty()) {
-            List<ArquivoMidia> midias = new ArrayList<>();
+            // ALTERAÇÃO: Usando Set para compatibilidade com a Entidade
+            Set<ArquivoMidia> midias = new HashSet<>();
             for (MultipartFile file : arquivos) {
                 try {
                     String url = midiaService.upload(file);
                     ArquivoMidia midia = ArquivoMidia.builder()
                             .url(url)
                             .tipo(midiaService.detectarTipoPelaUrl(url))
-                            .postagem(novaPostagem) // Associa a mídia à postagem
+                            .postagem(novaPostagem)
                             .build();
                     midias.add(midia);
                 } catch (IOException e) {
@@ -73,179 +73,136 @@ public class PostagemService {
     }
 
     @Transactional
+    @CacheEvict(value = "feed-postagens", allEntries = true)
     public PostagemSaidaDTO editarPostagem(Long id, String username, PostagemEntradaDTO dto, List<MultipartFile> novosArquivos) {
         Postagem postagem = buscarPorId(id);
-
         if (!postagem.getAutor().getEmail().equals(username)) {
             throw new SecurityException("Você não pode editar esta postagem.");
         }
-
         if (filtroProfanidade.contemProfanidade(dto.getConteudo())) {
             throw new ConteudoImproprioException("Sua edição contém texto não permitido.");
         }
-
-        // 1. Atualiza o conteúdo do texto
         postagem.setConteudo(dto.getConteudo());
 
-        // 2. Remove arquivos antigos, se solicitado
         if (dto.getUrlsParaRemover() != null && !dto.getUrlsParaRemover().isEmpty()) {
-            // Cria um Set com as URLs a serem removidas para uma busca mais rápida (O(1))
             Set<String> urlsParaRemover = Set.copyOf(dto.getUrlsParaRemover());
-
-            // Itera sobre a lista de arquivos da postagem
             postagem.getArquivos().removeIf(arquivo -> {
-                // Verifica se a URL do arquivo atual está na lista de remoção
                 if (urlsParaRemover.contains(arquivo.getUrl())) {
                     try {
-                        // Se estiver, deleta do serviço de nuvem (Cloudinary)
                         midiaService.deletar(arquivo.getUrl());
-                        return true; // Retorna true para que o removeIf remova este item da lista
-                    } catch (IOException e) {
-                        System.err.println("Erro ao deletar arquivo do Cloudinary: " + arquivo.getUrl());
-                        return false; // Não remove se falhou ao deletar da nuvem, para evitar inconsistência
-                    }
+                        return true;
+                    } catch (IOException e) { return false; }
                 }
-                return false; // Mantém o arquivo se a URL não estiver na lista de remoção
+                return false;
             });
         }
 
-        // 3. Adiciona novos arquivos, se enviados
         if (novosArquivos != null && !novosArquivos.isEmpty()) {
             for (MultipartFile file : novosArquivos) {
                 try {
                     String url = midiaService.upload(file);
                     ArquivoMidia midia = ArquivoMidia.builder()
-                            .url(url)
-                            .tipo(midiaService.detectarTipoPelaUrl(url))
-                            .postagem(postagem)
-                            .build();
+                            .url(url).tipo(midiaService.detectarTipoPelaUrl(url)).postagem(postagem).build();
                     postagem.getArquivos().add(midia);
                 } catch (IOException e) {
-                    throw new RuntimeException("Erro ao fazer upload do novo arquivo: " + file.getOriginalFilename(), e);
+                    throw new RuntimeException("Erro upload novo arquivo", e);
                 }
             }
         }
-
-        Postagem atualizada = postagemRepository.save(postagem);
-        return toDTO(atualizada);
+        return toDTO(postagemRepository.save(postagem));
     }
 
     @Transactional
+    @CacheEvict(value = "feed-postagens", allEntries = true)
     public void excluirPostagem(Long id, String username) {
         Postagem postagem = buscarPorId(id);
-
         if (!postagem.getAutor().getEmail().equals(username)) {
             throw new SecurityException("Você não pode excluir esta postagem.");
         }
-
-        // Deleta os arquivos associados no Cloudinary
-        if (postagem.getArquivos() != null && !postagem.getArquivos().isEmpty()) {
-            // Itera sobre uma cópia da lista para evitar problemas de modificação concorrente
-            for (ArquivoMidia midia : new ArrayList<>(postagem.getArquivos())) {
-                try {
-                    midiaService.deletar(midia.getUrl());
-                } catch (Exception e) {
-                    // Loga o erro mas continua o processo para não impedir a exclusão no banco
-                    System.err.println("AVISO: Falha ao deletar arquivo no Cloudinary: " + midia.getUrl() + ". Erro: " + e.getMessage());
-                }
-            }
+        if (postagem.getArquivos() != null) {
+            postagem.getArquivos().forEach(m -> {
+                try { midiaService.deletar(m.getUrl()); } catch (Exception e) {}
+            });
         }
-
-        // Deleta a postagem do banco de dados
         postagemRepository.deleteById(id);
     }
 
+    @Transactional(readOnly = true)
     public List<PostagemSaidaDTO> buscarPostagensPublicas() {
-        List<Postagem> posts = postagemRepository.findTop50ByOrderByDataPostagemDesc();
-
-        // Converte cada Postagem da lista para um PostagemSaidaDTO
-        return posts.stream()
-                .map(this::toDTO) // Usa o método de conversão que você já tem!
-                .collect(Collectors.toList());
+        List<Postagem> posts = postagemRepository.findTop10ByOrderByDataPostagemDesc();
+        return posts.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     public Postagem buscarPorId(Long id) {
-        return postagemRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Postagem não encontrada"));
+        return postagemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Postagem não encontrada"));
     }
 
     public PostagemSaidaDTO ordenarComentarios(PostagemSaidaDTO postagem) {
         if (postagem.getComentarios() != null && !postagem.getComentarios().isEmpty()) {
-            // Ordenar comentários: destacados primeiro, depois por data
-            List<ComentarioSaidaDTO> comentariosOrdenados = postagem.getComentarios().stream()
+            List<ComentarioSaidaDTO> sorted = postagem.getComentarios().stream()
                     .sorted((a, b) -> {
-                        if (a.isDestacado() != b.isDestacado()) {
-                            return Boolean.compare(b.isDestacado(), a.isDestacado()); // Destacados primeiro
-                        }
-                        return a.getDataCriacao().compareTo(b.getDataCriacao()); // Mais antigos primeiro
-                    })
-                    .collect(Collectors.toList());
-
-            postagem.setComentarios(comentariosOrdenados);
+                        if (a.isDestacado() != b.isDestacado()) return Boolean.compare(b.isDestacado(), a.isDestacado());
+                        return a.getDataCriacao().compareTo(b.getDataCriacao());
+                    }).collect(Collectors.toList());
+            postagem.setComentarios(sorted);
         }
         return postagem;
     }
 
-    //  MÉTODO PARA BUSCAR UMA POSTAGEM ESPECÍFICA COM COMENTÁRIOS
     public PostagemSaidaDTO buscarPostagemPorIdComComentarios(Long id) {
-        Postagem postagem = postagemRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Postagem não encontrada com o ID: " + id));
-        return toDTO(postagem); // A mágica acontece no método de conversão toDTO
+        return toDTO(buscarPorId(id));
     }
 
-    // Lógica de conversão Entidade -> DTO de Saída
-    // Em PostagemService.java
+    @Transactional(readOnly = true)
+    public List<PostagemSaidaDTO> buscarPostagensPorUsuario(Long usuarioId) {
+        return postagemRepository.findByAutorIdOrderByDataPostagemDesc(usuarioId)
+                .stream().map(this::toDTO).collect(Collectors.toList());
+    }
 
     private PostagemSaidaDTO toDTO(Postagem postagem) {
-        // Converte a lista de entidades ArquivoMidia para uma lista de Strings (URLs)
+        // Converte o Set de arquivos para List<String> para o DTO
         List<String> urls = postagem.getArquivos() != null
                 ? postagem.getArquivos().stream().map(ArquivoMidia::getUrl).collect(Collectors.toList())
                 : Collections.emptyList();
 
-        // Lógica para obter o ID do usuário logado (usado tanto para a postagem quanto para os comentários)
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        final Long usuarioLogadoId = usuarioRepository.findByEmail(username)
-                .map(Usuario::getId)
-                .orElse(null);
-
-        List<ComentarioSaidaDTO> comentariosDTO = postagem.getComentarios() != null
-                ? postagem.getComentarios().stream().map(comentario -> {
-
-            // 1. Calcular o total de curtidas para CADA comentário
-            int totalCurtidasComentario = comentario.getCurtidas() != null ? comentario.getCurtidas().size() : 0;
-
-            // 2. Verificar se o usuário logado curtiu CADA comentário
-            boolean curtidoPeloUsuarioComentario = false;
-            if (usuarioLogadoId != null && comentario.getCurtidas() != null) {
-                curtidoPeloUsuarioComentario = comentario.getCurtidas().stream()
-                        .anyMatch(curtida -> curtida.getUsuario().getId().equals(usuarioLogadoId));
+        Long usuarioLogadoId = null;
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+                usuarioLogadoId = usuarioRepository.findByEmail(auth.getName()).map(Usuario::getId).orElse(null);
             }
+        } catch (Exception e) {
+            System.err.println("Erro ao identificar usuário logado: " + e.getMessage());
+        }
 
-            // 3. Construir o DTO do comentário com todos os campos
+        final Long userId = usuarioLogadoId;
+
+        // Converte o Set de comentários para List<DTO>
+        List<ComentarioSaidaDTO> comentariosDTO = postagem.getComentarios() != null
+                ? postagem.getComentarios().stream().map(c -> {
+            boolean curtido = false;
+            if (userId != null && c.getCurtidas() != null) {
+                curtido = c.getCurtidas().stream().anyMatch(l -> l.getUsuario().getId().equals(userId));
+            }
             return ComentarioSaidaDTO.builder()
-                    .id(comentario.getId())
-                    .conteudo(comentario.getConteudo())
-                    .dataCriacao(comentario.getDataCriacao())
-                    .autorId(comentario.getAutor().getId())
-                    .nomeAutor(comentario.getAutor().getNome())
-                    .postagemId(comentario.getPostagem().getId())
-                    .parentId(comentario.getParent() != null ? comentario.getParent().getId() : null)
-                    .replyingToName(comentario.getParent() != null ? comentario.getParent().getAutor().getNome() : null)
-                    .destacado(comentario.isDestacado())
-                    .totalCurtidas(totalCurtidasComentario)
-                    .curtidoPeloUsuario(curtidoPeloUsuarioComentario)
-                    .urlFotoAutor(comentario.getAutor().getFotoPerfil())
+                    .id(c.getId())
+                    .conteudo(c.getConteudo())
+                    .dataCriacao(c.getDataCriacao())
+                    .autorId(c.getAutor().getId())
+                    .nomeAutor(c.getAutor().getNome())
+                    .postagemId(c.getPostagem().getId())
+                    .parentId(c.getParent() != null ? c.getParent().getId() : null)
+                    .replyingToName(c.getParent() != null ? c.getParent().getAutor().getNome() : null)
+                    .destacado(c.isDestacado())
+                    .totalCurtidas(c.getCurtidas() != null ? c.getCurtidas().size() : 0)
+                    .curtidoPeloUsuario(curtido)
+                    .urlFotoAutor(c.getAutor().getFotoPerfil())
                     .build();
+        }).collect(Collectors.toList()) : Collections.emptyList();
 
-        }).collect(Collectors.toList())
-                : Collections.emptyList();
-
-        // Lógica para as curtidas da POSTAGEM
-        int totalCurtidasPostagem = postagem.getCurtidas() != null ? postagem.getCurtidas().size() : 0;
-        boolean curtidoPeloUsuarioPostagem = false;
-        if (usuarioLogadoId != null && postagem.getCurtidas() != null) {
-            curtidoPeloUsuarioPostagem = postagem.getCurtidas().stream()
-                    .anyMatch(c -> c.getUsuario().getId().equals(usuarioLogadoId));
+        boolean curtidoPost = false;
+        if (userId != null && postagem.getCurtidas() != null) {
+            curtidoPost = postagem.getCurtidas().stream().anyMatch(l -> l.getUsuario().getId().equals(userId));
         }
 
         return PostagemSaidaDTO.builder()
@@ -256,18 +213,13 @@ public class PostagemService {
                 .nomeAutor(postagem.getAutor().getNome())
                 .urlsMidia(urls)
                 .comentarios(comentariosDTO)
-                .totalCurtidas(totalCurtidasPostagem)
+                .totalCurtidas(postagem.getCurtidas() != null ? postagem.getCurtidas().size() : 0)
                 .urlFotoAutor(postagem.getAutor().getFotoPerfil())
-                .curtidoPeloUsuario(curtidoPeloUsuarioPostagem)
+                .curtidoPeloUsuario(curtidoPost)
                 .build();
     }
 
-    // Lógica de conversão DTO de Entrada -> Entidade
     private Postagem toEntity(PostagemEntradaDTO dto, Usuario autor) {
-        return Postagem.builder()
-                .conteudo(dto.getConteudo())
-                .dataPostagem(LocalDateTime.now())
-                .autor(autor)
-                .build();
+        return Postagem.builder().conteudo(dto.getConteudo()).dataPostagem(LocalDateTime.now()).autor(autor).build();
     }
 }

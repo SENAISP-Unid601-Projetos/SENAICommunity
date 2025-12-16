@@ -72,6 +72,7 @@ public class AlunoService {
             dto.setFotoPerfil("/images/default-avatar.jpg");
         }
 
+
         dto.setProjetos(
                 aluno.getProjetos() != null
                         ? aluno.getProjetos().stream().map(Projeto::getId).collect(Collectors.toList())
@@ -89,6 +90,7 @@ public class AlunoService {
         }
 
         Aluno aluno = toEntity(dto);
+        aluno.setFotoFundo("/images/default-background.jpg");
         aluno.setDataCadastro(LocalDateTime.now());
         aluno.setTipoUsuario("ALUNO");
 
@@ -110,6 +112,8 @@ public class AlunoService {
         Aluno salvo = alunoRepository.save(aluno);
         return toDTO(salvo);
     }
+
+
 
 
     public List<AlunoSaidaDTO> listarTodos() {

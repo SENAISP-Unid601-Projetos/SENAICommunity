@@ -1,10 +1,8 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,21 +30,30 @@ public class Comentario {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "autor_id", nullable = false)
+    @ToString.Exclude
     private Usuario autor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postagem_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude // CORREÇÃO: Evita loop infinito com Postagem
     private Postagem postagem;
 
     //RELACIONAMENTO PARA RESPOSTAS (Self-referencing)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id") // Coluna que armazena o ID do comentário pai
+    @JoinColumn(name = "parent_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude // CORREÇÃO: Evita loop infinito com Pai
     private Comentario parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude // CORREÇÃO: Evita loop infinito com Filhos
     private List<Comentario> replies = new ArrayList<>();
 
     @OneToMany(mappedBy = "comentario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude // CORREÇÃO: Evita loop infinito com Curtidas
     private Set<Curtida> curtidas;
 
 }

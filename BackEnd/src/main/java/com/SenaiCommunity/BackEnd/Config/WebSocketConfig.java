@@ -26,9 +26,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                // "null" como origem permitida, que pode aparecer em testes locais com arquivos abertos diretamente no navegador
-                .setAllowedOrigins("http://127.0.0.1:5501", "http://localhost:5500", "http://localhost:3000", "null")
-                .setAllowedOrigins("http://127.0.0.1:5500", "http://127.0.0.1:5501", "http://localhost:3000", "null", "http://127.0.0.1:5502")
+                
+                .setAllowedOrigins(
+                        "http://127.0.0.1:5501", 
+                        "http://localhost:5500", 
+                        "http://localhost:3000", 
+                        "null", 
+                        "http://127.0.0.1:5502",
+                        "https://senaicommunity.up.railway.app",
+                        "https://senaicommunitydeploy-production.up.railway.app",
+                        "https://senai-community-front.vercel.app",
+                        "https://senaicommunitydeploy.up.railway.app", 
+                        "https://senaicommunityfront.vercel.app",
+                        "https://senaicommunityapp.up.railway.app"
+                )
                 .withSockJS();
     }
 

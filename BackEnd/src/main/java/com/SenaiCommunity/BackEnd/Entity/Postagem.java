@@ -1,14 +1,11 @@
 package com.SenaiCommunity.BackEnd.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
@@ -16,7 +13,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Postagem{
+public class Postagem {
 
     @Id
     @GeneratedValue
@@ -25,7 +22,7 @@ public class Postagem{
     @ManyToOne
     private Usuario autor;
 
-    @Lob // Para textos mais longos
+    @Lob
     private String conteudo;
 
     private LocalDateTime dataPostagem = LocalDateTime.now();
@@ -33,15 +30,23 @@ public class Postagem{
     @Transient
     private String autorUsername;
 
+    // ALTERAÇÃO: De List para Set (HashSet)
     @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<ArquivoMidia> arquivos = new ArrayList<>();
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @Builder.Default
+    private Set<ArquivoMidia> arquivos = new HashSet<>();
+
+    // ALTERAÇÃO: De List para Set (LinkedHashSet para manter a ordem do @OrderBy)
+    @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("dataCriacao ASC")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @Builder.Default
+    private Set<Comentario> comentarios = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("dataCriacao ASC") //para os comentários virem em ordem
-    private List<Comentario> comentarios = new ArrayList<>();
-
-    @OneToMany(mappedBy = "postagem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<Curtida> curtidas;
-
 }
-

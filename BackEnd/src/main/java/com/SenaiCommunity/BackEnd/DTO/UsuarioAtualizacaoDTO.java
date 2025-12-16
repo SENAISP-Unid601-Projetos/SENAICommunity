@@ -10,4 +10,7 @@ public class UsuarioAtualizacaoDTO {
     private String senha;
     private String bio;
     private LocalDate dataNascimento;
+    private String curso;
+    private String periodo;
+    private String formacao;
 }

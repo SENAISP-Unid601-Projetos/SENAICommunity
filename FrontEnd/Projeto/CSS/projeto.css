@@ -1,165 +1,2080 @@
-/* Estilos específicos para a página de projetos */
+/* =================================================================
+   BASEADO NA ESTRUTURA DE BUSCAR_AMIGOS.CSS (PADRONIZADO)
+================================================================= */
 
-/* Cabeçalho e Filtros */
+/* --- VARIÁVEIS E RESET IDÊNTICOS AO BUSCAR AMIGOS --- */
+:root {
+    --sidebar-width: 320px; /* Igual ao buscar amigos */
+    --header-height: 60px;
+    --container-max-width: 1100px;
+    --z-modal: 3000;
+    --z-sidebar: 1000;
+    --z-overlay: 999;
+}
+
+* { box-sizing: border-box; }
+
+/* =================================================================
+   LAYOUT ESTRUTURAL (IDÊNTICO AO BUSCAR AMIGOS)
+================================================================= */
+.container {
+    display: flex;
+    min-height: calc(100vh - var(--header-height));
+    position: relative;
+    background-color: var(--bg-primary);
+}
+
+/* =================================================================
+   SIDEBAR & USER CARD (Padronizado - Igual Amizades)
+================================================================= */
+
+/* --- ESTRUTURA DA SIDEBAR (Forçando alinhamento ao topo) --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start !important; /* Força itens no topo */
+    
+    position: sticky;
+    top: var(--header-height);
+    height: 100%; /* Ocupa altura total disponível */
+    min-height: calc(100vh - var(--header-height));
+    
+    overflow-y: auto;
+    flex-shrink: 0;
+    z-index: 100;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+}
+
+/* Botão de fechar (mobile) */
+.sidebar-close {
+    display: none;
+}
+
+/* --- USER CARD NA SIDEBAR --- */
+.sidebar-user-card { margin-bottom: 0.5rem; }
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    position: relative;
+    gap: 1rem;
+    text-decoration: none;
+}
+
+.user-info-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+/* Avatar */
+.avatar-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0.5rem;
+}
+
+.avatar-container img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--bg-tertiary);
+}
+
+.avatar-container .status {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+    background-color: var(--success, #22c55e); 
+}
+
+/* Identidade */
+.user-identity {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    text-align: center;
+}
+
+.user-identity h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.user-role {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Stats */
+.user-stats {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.4;
+}
+
+.stat-item strong {
+    color: var(--accent-primary);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.stat-item .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Loading Overlay do Perfil */
+.user-info-loading {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 12px;
+    transition: opacity 0.3s ease;
+}
+
+.user-info.loaded .user-info-loading {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* --- MENU DA SIDEBAR (Sem esticar) --- */
+.sidebar-menu {
+    flex: 0 0 auto !important; /* IMPORTANTE: Não deixa crescer */
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 0;
+    padding-top: 0;
+}
+
+.menu-item {
+    display: flex; 
+    align-items: center; 
+    gap: 1rem;
+    padding: 0.8rem 1.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.menu-item:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.menu-item.active {
+    background: linear-gradient(90deg, rgba(88, 166, 255, 0.1) 0%, transparent 100%);
+    color: var(--accent-primary);
+    border-left-color: var(--accent-primary);
+}
+
+.menu-item i { width: 24px; text-align: center; }
+
+/* --- WIDGET AMIGOS ONLINE --- */
+.sidebar-widget {
+    margin-top: 1.5rem; /* IMPORTANTE: Fica colado no menu */
+    flex: 0 0 auto;
+}
+
+.sidebar-widget .online-friends {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: none;
+}
+
+.sidebar-widget .widget-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    text-transform: none;
+}
+
+/* Correção visual para os itens de amigos online */
+.sidebar-widget .friend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0;
+    width: 100%;
+}
+
+.sidebar-widget .friend-item-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    flex-grow: 1;
+    min-width: 0;
+    color: inherit;
+}
+
+.sidebar-widget .friend-item .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.sidebar-widget .friend-item .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.sidebar-widget .friend-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.sidebar-widget .friend-item .status.online {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #22c55e;
+    border: none;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+/* RESPONSIVIDADE (Tablets e Mobile) */
+@media (max-width: 1024px) {
+    .container {
+        flex-direction: column; /* Empilha tudo no mobile */
+        padding: 0;
+        gap: 0;
+    }
+
+    .sidebar {
+        position: fixed; 
+        top: 0; 
+        left: 0;
+        height: 100vh;
+        width: 85%; 
+        max-width: 320px;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+        z-index: 1000;
+        border-right: none;
+    }
+    .sidebar.active { transform: translateX(0); }
+
+    .sidebar-close {
+        display: block; 
+        position: absolute; 
+        top: 15px; 
+        right: 15px;
+        background: none; 
+        border: none; 
+        color: var(--text-secondary);
+        font-size: 1.5rem; 
+        cursor: pointer;
+    }
+}
+
+/* =================================================================
+   MAIN CONTENT (CONTEÚDO PRINCIPAL)
+================================================================= */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Container Centralizado (Igual ao .connections-container) */
+.projetos-container {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* --- HEADER DA PÁGINA (Estilo Box Branco/Cinza) --- */
 .projetos-header {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background-color: var(--bg-secondary);
-    border-radius: var(--card-radius);
-    border: 1px solid var(--border-color);
-    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
-.projetos-header h1 { font-size: 1.5rem; color: var(--text-primary); }
-.projetos-header p { color: var(--text-secondary); }
+
+.header-text h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+.header-text p { color: var(--text-secondary); font-size: 0.95rem; }
 
 .btn-new-project {
-    background-color: var(--accent-primary);
-    color: #fff;
+    background-color: var(--accent-primary); color: #fff; border: none;
+    padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer;
+    font-weight: 600; display: flex; align-items: center; gap: 0.5rem;
+    transition: 0.2s;
+}
+.btn-new-project:hover { background-color: var(--accent-secondary); transform: translateY(-2px); }
+
+/* --- ABAS DE NAVEGAÇÃO --- */
+.projetos-tabs {
+    display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1px; overflow-x: auto;
+}
+.tab-btn {
+    background: none; border: none; padding: 0.8rem 1.2rem;
+    color: var(--text-secondary); cursor: pointer; font-weight: 500;
+    white-space: nowrap; border-bottom: 2px solid transparent;
+    transition: 0.2s;
+}
+.tab-btn:hover { color: var(--text-primary); background: var(--bg-tertiary); border-radius: 6px 6px 0 0; }
+.tab-btn.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+
+/* --- FILTROS --- */
+.projetos-filters select {
+    
+    /* 1. Remove o estilo padrão feio do navegador */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    /* 2. Tamanho e Espaçamento */
+    width: 100%;
+    min-width: 200px;
+    padding: 0.8rem 2.5rem 0.8rem 1.2rem; /* Espaço extra na direita para a seta */
+    
+    /* 3. Cores e Bordas */
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    
+    /* 4. Seta Customizada (SVG encoded) - Cor Cinza Claro */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+
+    /* 5. Transição Suave para Hover/Focus */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.05));
+}
+
+/* Efeito ao passar o mouse (Hover) */
+.projetos-filters select:hover {
+    border-color: var(--accent-primary);
+    background-color: var(--bg-tertiary);
+    transform: translateY(-2px); /* Leve subida */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2); /* Sombra mais forte */
+}
+
+/* Efeito ao clicar/focar (Focus) */
+.projetos-filters select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Glow azul ao redor */
+    
+    /* Gira a setinha quando aberto (funciona em alguns navegadores modernos) */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='18 15 12 9 6 15'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+/* Estilização das opções internas (Suporte limitado pelos navegadores) */
+.projetos-filters select option {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 10px;
+}
+.search-projetos { gap: 1.5rem;          /* Aumentado de 1rem para 1.5rem (Separa os itens) */
+    margin-bottom: 1.5rem; /* Aumentado para afastar dos cards abaixo */
+    flex-wrap: wrap; flex-grow: 1; position: relative; min-width: 250px; }
+.search-projetos input {
+    width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem;
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 8px; color: var(--text-primary);
+}
+.search-projetos i {
+    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+/* =================================================================
+   GRID DE PROJETOS (PADRÃO BUSCAR AMIGOS)
+================================================================= */
+.projetos-grid {
+    display: grid;
+    /* Mesma lógica do buscar_amigos.css: minmax(280px, 1fr) */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+}
+
+/* --- CARD DO PROJETO --- */
+/* =================================================================
+   CARD DO PROJETO (CORREÇÃO GERAL PARA TODOS OS TIPOS)
+================================================================= */
+
+/* Aplica o estilo para .projeto-card, independente se é <a> ou <div> */
+.projeto-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    height: 100%;
+    cursor: pointer; /* Mostra a mãozinha em todos os cards */
+    
+    /* -- RESET DE ESTILOS DE LINK -- */
+    text-decoration: none !important;
+    color: var(--text-primary);
+}
+
+/* Garante que elementos internos não tenham sublinhado */
+.projeto-card * {
+    text-decoration: none !important;
+}
+
+/* Efeito Hover (Borda Azul + Subida) para TODOS os cards */
+.projeto-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+/* Imagem do Card */
+.projeto-imagem {
+    height: 160px;
+    width: 100%;
+    background-color: var(--bg-tertiary);
+    background-size: cover;
+    background-position: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Conteúdo do Card */
+.projeto-conteudo {
+    padding: 1.2rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.projeto-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start;
+    margin-bottom: 0.5rem; 
+    gap: 0.5rem;
+}
+
+.projeto-header h3 {
+    font-size: 1.1rem; 
+    margin: 0; 
+    color: var(--text-primary); 
+    line-height: 1.3;
+    font-weight: 600;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* Badges de Status */
+.projeto-status {
+    font-size: 0.65rem; 
+    padding: 3px 8px; 
+    border-radius: 4px;
+    text-transform: uppercase; 
+    font-weight: 700; 
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+}
+.projeto-status.planejamento { 
+    background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); 
+}
+.projeto-status.andamento,
+.projeto-status.progresso { 
+    background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); 
+}
+.projeto-status.concluido { 
+    background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); 
+}
+
+.projeto-descricao {
+    font-size: 0.9rem; 
+    color: var(--text-secondary); 
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* Meta dados */
+.projeto-meta { 
+    margin-top: auto; 
+    margin-bottom: 1rem; 
+}
+
+.projeto-membros { 
+    display: flex; 
+    align-items: center; 
+    margin-bottom: 0.8rem; 
+}
+
+.membro-avatar {
+    width: 28px; 
+    height: 28px; 
+    border-radius: 50%; 
+    border: 2px solid var(--bg-secondary);
+    margin-left: -8px; 
+    object-fit: cover;
+}
+.membro-avatar:first-child { margin-left: 0; }
+.membro-avatar.more-members {
+    background: var(--bg-tertiary); 
+    color: var(--text-secondary);
+    font-size: 0.7rem; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+}
+.membros-count { 
+    font-size: 0.8rem; 
+    color: var(--text-secondary); 
+    margin-left: 8px; 
+}
+
+/* Correção da Categoria (que estava roxa) */
+.projeto-categoria {
+    color: var(--accent-primary); /* Azul do tema */
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+}
+
+/* =================================================================
+   FOOTER E BOTÕES DO CARD (CORREÇÃO DE TAMANHO)
+================================================================= */
+.projeto-footer {
+    margin-top: auto;
+    padding-top: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.projeto-tags { 
+    display: flex; 
+    gap: 0.5rem; 
+    flex-wrap: wrap; 
+    min-height: 24px; /* Garante altura mínima mesmo sem tags */
+}
+
+.tech-tag {
+    font-size: 0.7rem; 
+    background: var(--bg-tertiary); 
+    padding: 2px 8px;
+    border-radius: 4px; 
+    color: var(--text-secondary);
+}
+
+/* Container dos Botões */
+.projeto-actions { 
+    display: flex; 
+    gap: 0.6rem; 
+    width: 100%;
+}
+
+/* Estilo Geral dos Botões e Links do Card */
+.projeto-actions button, 
+.projeto-actions a {
+    flex: 1;                     /* Divide o espaço igualmente */
+    padding: 0.4rem 0.5rem;      /* PADDING REDUZIDO */
+    font-size: 0.8rem;           /* TEXTO MENOR */
+    height: 36px;                /* ALTURA FIXA (Resolve o problema de ficarem gigantes) */
+    border-radius: 6px;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-primary);
+    white-space: nowrap;         /* Impede que o texto quebre em duas linhas */
+}
+
+/* Botão de Ação Principal (Entrar/Acessar) */
+.projeto-actions .btn-entrar,
+.projeto-actions a.btn-ver-detalhes[href] { 
+    background: var(--accent-primary); 
+    border-color: var(--accent-primary);
+    color: #fff; 
+}
+
+.projeto-actions .btn-entrar:hover,
+.projeto-actions a.btn-ver-detalhes[href]:hover { 
+    background: var(--accent-secondary); 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.3);
+}
+
+/* Botão Secundário (Ver Detalhes / Disabled) */
+.projeto-actions button:not(.btn-entrar):hover {
+    background: var(--bg-tertiary);
+    border-color: var(--text-secondary);
+}
+
+/* Estado Desabilitado (Ex: "Criador", "Já é membro") */
+.projeto-actions .btn-entrar.disabled,
+.projeto-actions button[disabled] { 
+    background: var(--bg-tertiary); 
+    color: var(--text-tertiary); 
+    border-color: transparent;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Correção do ícone de privacidade (Cadeado/Globo) */
+.projeto-privacy {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.projeto-privacy i { font-size: 0.9rem; }
+.membro-avatar {
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg-secondary);
+    margin-left: -8px; object-fit: cover;
+}
+.membro-avatar:first-child { margin-left: 0; }
+.membro-avatar.more-members {
+    background: var(--bg-tertiary); color: var(--text-secondary);
+    font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
+}
+.membros-count { font-size: 0.8rem; color: var(--text-secondary); margin-left: 8px; }
+
+.projeto-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.tech-tag {
+    font-size: 0.75rem; background: var(--bg-tertiary); padding: 2px 8px;
+    border-radius: 4px; color: var(--text-secondary);
+}
+
+/* Footer do Card */
+.projeto-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+.projeto-actions button, .projeto-actions a {
+    flex: 1; padding: 0.6rem; text-align: center; border-radius: 6px;
+    border: 1px solid var(--border-color); background: transparent;
+    color: var(--text-primary); cursor: pointer; font-size: 0.85rem;
+    text-decoration: none; transition: 0.2s;
+}
+.projeto-actions button:hover { background: var(--bg-tertiary); }
+.projeto-actions .btn-entrar { background: var(--accent-primary); border: none; color: #fff; }
+.projeto-actions .btn-entrar:hover { background: var(--accent-secondary); }
+.projeto-actions .btn-entrar.disabled { background: var(--bg-tertiary); color: var(--text-tertiary); cursor: not-allowed; }
+
+/* =================================================================
+   MODAL (Mantido e Ajustado)
+================================================================= */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px);
+    z-index: var(--z-modal);
+    display: none; justify-content: center; align-items: center;
+    padding: 1rem; opacity: 0; transition: opacity 0.3s ease;
+}
+.modal-overlay.visible { display: flex; opacity: 1; }
+
+.modal-content {
+    background: var(--bg-secondary); width: 100%; max-width: 600px;
+    border-radius: 12px; border: 1px solid var(--border-color);
+    display: flex; flex-direction: column; max-height: 90vh;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.modal-header {
+    padding: 1.2rem; border-bottom: 1px solid var(--border-color);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.modal-body { padding: 1.5rem; overflow-y: auto; }
+.modal-footer { padding: 1.2rem; border-top: 1px solid var(--border-color); text-align: right; }
+.close-modal-btn { background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; }
+
+/* Inputs do Modal */
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%; padding: 0.8rem; background: var(--bg-tertiary);
+    border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary);
+}
+.btn-publish {
+    background: var(--accent-primary); color: white; border: none;
+    padding: 0.8rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+
+/* =================================================================
+   RESPONSIVIDADE (BASEADO NO BUSCAR AMIGOS)
+================================================================= */
+
+/* Mobile Overlay (Fundo escuro atrás da sidebar) */
+.mobile-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6); z-index: 999;
+    opacity: 0; visibility: hidden; transition: 0.3s;
+    backdrop-filter: blur(2px);
+}
+.mobile-overlay.active { opacity: 1; visibility: visible; }
+
+/* Header Mobile (Título apenas mobile) */
+.page-header-mobile { display: none; align-items: center; margin-bottom: 1rem; margin-bottom: 0; }
+.page-title-mobile { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); }
+
+/* MOBILE (Max 768px) */
+@media (max-width: 768px) {
+    /* Sidebar vira Gaveta */
+    .sidebar {
+        position: fixed; top: 0; left: 0; height: 100vh;
+        width: 85%; max-width: 320px;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+    .sidebar.active { transform: translateX(0); }
+    .sidebar-close { display: block !important; position: absolute; top: 15px; right: 15px; font-size: 1.5rem; color: var(--text-secondary); background: none; border: none; cursor: pointer; }
+
+    /* Ajustes de Conteúdo */
+    .main-content { padding: 1rem; width: 100%; }
+    .page-header-mobile { display: flex; margin-bottom: 0; }
+
+    /* Layout Projetos Mobile */
+    .projetos-header { flex-direction: column; align-items: stretch; text-align: center; padding: 1.5rem; }
+    .btn-new-project { justify-content: center; width: 100%; margin-top: 0.5rem; }
+    
+   .projetos-filters { 
+        flex-direction: column; 
+        gap: 1.2rem; /* Espaço vertical claro entre input e select no celular */
+    }
+    .search-projetos, .projetos-filters select { 
+        width: 100%; 
+    }
+    /* Grid vira 1 coluna */
+    .projetos-grid { grid-template-columns: 1fr; gap: 1rem; }
+}
+
+/* TABLET (769px até 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar { width: 240px; }
+    .projetos-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* =================================================================
+   CORREÇÃO DO STATUS "EM PROGRESSO"
+================================================================= */
+
+/* Adicione a classe .progresso para capturar o status "Em Progresso" */
+.projeto-status.andamento,
+.projeto-status.progresso { 
+    background: rgba(245, 158, 11, 0.2); /* Fundo Amarelo Transparente */
+    color: #fbbf24;                       /* Texto Amarelo */
+    border: 1px solid rgba(245, 158, 11, 0.3); /* Borda Amarela */
+}
+
+/* REGRAS EXISTENTES (Mantenha ou atualize para garantir consistência) */
+.projeto-status.planejamento { 
+    background: rgba(59, 130, 246, 0.2); 
+    color: #60a5fa; 
+    border: 1px solid rgba(59, 130, 246, 0.3); 
+}
+
+.projeto-status.concluido { 
+    background: rgba(16, 185, 129, 0.2); 
+    color: #34d399; 
+    border: 1px solid rgba(16, 185, 129, 0.3); 
+}
+
+/* =================================================================
+   CORREÇÃO DEFINITIVA DOS MODAIS NO MOBILE
+   (Adicione isto no FINAL do arquivo projeto.css)
+================================================================= */
+
+/* Estilo da área de edição de foto */
+.profile-pic-editor {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.profile-pic-editor img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--bg-tertiary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Sobreposição de "Alterar Foto" */
+.pic-editor-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: white;
+    font-size: 0.8rem;
+    pointer-events: none; /* Permite clicar na imagem */
+}
+
+.profile-pic-editor label:hover .pic-editor-overlay {
+    opacity: 1;
+}
+
+/* --- REGRAS ESPECÍFICAS PARA MOBILE (Max 768px) --- */
+@media (max-width: 768px) {
+    
+    /* Força o modal a caber na tela e ter scroll interno */
+    .modal-content {
+        width: 95% !important;      
+        max-width: 95% !important;
+        max-height: 85vh !important; /* Deixa espaço para margens */
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Impede que o container todo role */
+    }
+
+    /* Cabeçalho Fixo no topo */
+    .modal-header {
+        padding: 1rem;
+        flex-shrink: 0; 
+        position: sticky;
+        top: 0;
+        background: var(--bg-secondary);
+        z-index: 10;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    /* Corpo com Scroll (Onde estão os inputs) */
+    /* IMPORTANTE: Isso faz o formulário rolar dentro do modal */
+    #edit-profile-form, 
+    .modal-body {
+        padding: 1rem;
+        overflow-y: auto !important; 
+        flex-grow: 1;     
+        max-height: calc(85vh - 130px); /* Subtrai header e footer aprox */
+    }
+
+    /* Rodapé Fixo embaixo */
+    .modal-footer {
+        padding: 1rem;
+        flex-shrink: 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* Botão Grande para facilitar o toque */
+    .modal-footer button {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    /* Ajuste da foto no mobile */
+    .profile-pic-editor img {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* =================================================================
+   MELHORIA DO BOTÃO CANCELAR (MODAL)
+================================================================= */
+
+#cancel-edit-profile-btn {
+    background-color: transparent;      /* Remove o fundo cinza padrão */
+    border: 1px solid var(--border-color); /* Borda sutil */
+    color: var(--text-secondary);       /* Texto cinza claro */
+    padding: 0.4rem 1rem;               /* Espaçamento interno */
+    border-radius: 6px;                 /* Bordas arredondadas */
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    /* Garante alinhamento vertical do texto */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Efeito ao passar o mouse (fica mais claro) */
+#cancel-edit-profile-btn:hover {
+    color: var(--text-primary);        /* Texto fica branco */
+    border-color: var(--text-secondary); /* Borda fica mais visível */
+    background-color: rgba(255, 255, 255, 0.05); /* Fundo leve */
+}
+
+/* Ajuste específico para não ficar colado no mobile */
+@media (max-width: 768px) {
+    #cancel-edit-profile-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* =================================================================
+   EFEITOS DE CARREGAMENTO (SPINNER) - PADRÃO BUSCAR_AMIGOS
+================================================================= */
+
+/* Container para grids com loading */
+.projetos-grid-container {
+    position: relative;
+    min-height: 200px;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(88, 166, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--accent-primary);
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Estados de Carregamento */
+.results-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    z-index: 10;
+    text-align: center;
+    padding: 2rem;
+}
+
+.results-loading p {
+    color: var(--text-secondary);
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+
+/* Estados Vazios */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+    margin-top: 0.5rem;
+}
+
+/* Loading para botões */
+.btn.loading {
+    color: transparent !important;
+    position: relative;
+    pointer-events: none;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    border-top-color: currentColor;
+    animation: spin 1s ease infinite;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Loading para elementos de perfil */
+.user-info-loading, .topbar-user-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+    z-index: 5;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.user-info.loaded .user-info-loading,
+.user.loaded .topbar-user-loading {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* =================================================================
+   RESPONSIVIDADE PARA LOADING
+================================================================= */
+@media (max-width: 768px) {
+    .results-loading {
+        padding: 1.5rem;
+    }
+    
+    .loading-spinner {
+        width: 32px;
+        height: 32px;
+        border-width: 3px;
+    }
+    
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+    
+    .empty-state i {
+        font-size: 2.5rem;
+    }
+}
+
+/* =================================================================
+   ESTILO DO MODAL DE DETALHES (PREVIEW DO PROJETO)
+================================================================= */
+
+/* 1. Layout Geral do Preview */
+.project-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* 2. Imagem de Capa (Maior e mais destacada) */
+.preview-image {
+    width: 100%;
+    height: 220px !important; /* Força altura fixa elegante */
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    margin-bottom: 0.5rem !important;
+}
+
+/* 3. Cabeçalho (Título e Status) */
+.preview-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.preview-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin: 0;
+}
+
+/* Badge de Status maior */
+.preview-header .projeto-status {
+    align-self: flex-start;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+}
+
+/* 4. Seções de Texto (Descrição, Info, etc) */
+.preview-section h4 {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+    border-left: 3px solid var(--accent-primary); /* Detalhe visual na esquerda */
+    padding-left: 10px;
+}
+
+.preview-section p {
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+/* 5. Grid de Informações (Transforma a lista em caixinhas) */
+.preview-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 colunas */
+    gap: 1rem;
+}
+
+.info-item {
+    background: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.info-item strong {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.info-item span {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* 6. Tecnologias e Membros */
+.preview-tags, .preview-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.preview-tags .tech-tag {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.preview-members img {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--bg-secondary);
+}
+
+.no-tech, .no-members {
+    color: var(--text-tertiary);
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* --- AJUSTES MOBILE ESPECÍFICOS (Melhoria do Modal) --- */
+@media (max-width: 768px) {
+    /* Garante que o modal use bem a tela do celular */
+    .modal-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        max-height: 90vh !important;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+        overflow-y: auto; /* Scroll suave no conteúdo */
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        
+        /* Botões lado a lado */
+        display: flex;
+        gap: 1rem;
+    }
+
+    .modal-footer button {
+        flex: 1; /* Botões ocupam 50% cada */
+        height: 48px; /* Altura boa para toque */
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Botão Fechar mais discreto (Ghost Button) */
+    .modal-footer .btn-secondary {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+}
+
+/* 1. Correção do Spinner do Menu Superior (Estava deslocado) */
+.topbar-user-loading .loading-spinner {
+    width: 20px;       /* Menor para caber na bolinha */
+    height: 20px;
+    border-width: 2px; /* Borda mais fina */
+    margin-bottom: 0;  /* REMOVE A MARGEM que empurrava pra cima */
+}
+
+/* 2. Correção da Lista de Amigos (Estava "flutuando" errado) */
+.friend-list {
+    position: relative; /* Cria o contexto para o loader */
+    min-height: 120px;  /* Garante altura mínima para o loading caber */
+}
+
+/* Força o loader da lista de amigos a se comportar como bloco normal, não overlay absoluto */
+.friend-list .results-loading {
+    position: absolute !important; /* Fixa dentro do pai (.friend-list) */
+    inset: 0;                      /* Ocupa todo o espaço do pai */
+    background: var(--bg-secondary);
+    border: none;                  /* Remove borda extra se houver conflito */
+    padding: 1rem;
+    z-index: 5;
+    
+    /* Garante centralização */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ajusta o tamanho do spinner dentro da lista de amigos */
+.friend-list .loading-spinner {
+    width: 24px;
+    height: 24px;
+    border-width: 3px;
+    margin-bottom: 0.5rem; /* Margem menor que a padrão */
+}
+
+@media (max-width: 768px) {
+    
+    /* Esconde a barra de pesquisa do topo para dar espaço aos ícones */
+    .topbar .search {
+        display: none !important; 
+    }
+
+    /* Garante que o container de ícones tenha espaço e alinhamento */
+    .nav-icons {
+        display: flex !important;
+        gap: 10px;
+        margin-right: 5px;
+        margin-left: auto; /* Empurra para a direita */
+    }
+
+    /* Força o ícone de notificação a aparecer */
+    #notifications-icon {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        color: var(--text-primary);
+    }
+
+    /* Ajuste do Dropdown de Usuário para o toque */
+    .user-dropdown {
+        margin-left: 5px;
+        position: relative; /* Importante para o menu sair daqui */
+    }
+
+    /* Aumenta a área de toque da foto de perfil */
+    .user-dropdown .user {
+        padding: 5px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent; /* Remove flash azul no Android */
+    }
+
+    /* Posicionamento fixo e seguro do menu dropdown */
+    .dropdown-menu {
+        position: fixed; /* Fixado na tela */
+        top: 70px;       /* Abaixo do header */
+        right: 10px;     /* Canto direito */
+        width: 220px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        border-radius: 12px;
+        display: none; /* Começa escondido */
+        z-index: 9999;
+    }
+
+    /* Aumenta botões do menu para facilitar o toque */
+    .dropdown-menu a {
+        padding: 14px 16px;
+        font-size: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .dropdown-menu a:last-child { border-bottom: none; }
+}
+
+/* =================================================================
+   MODAL MODERNO DE DETALHES DO PROJETO (UNIFICADO COM PERFIL)
+================================================================= */
+
+/* Overlay */
+.project-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px);
+    z-index: 3000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    animation: fadeInModal 0.3s forwards;
+}
+
+@keyframes fadeInModal { to { opacity: 1; } }
+
+/* Card do Modal */
+.project-modal-card {
+    background: var(--bg-secondary);
+    width: 100%;
+    max-width: 700px;
+    max-height: 85vh;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    animation: slideUpModal 0.3s forwards;
+}
+
+@keyframes slideUpModal { to { transform: translateY(0); } }
+
+/* Área da Imagem (Hero) */
+.pm-hero {
+    height: 220px;
+    width: 100%;
+    background-color: var(--bg-tertiary);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.pm-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(to top, var(--bg-secondary), transparent);
+}
+
+/* Botão Fechar */
+.pm-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    transition: 0.2s;
+}
+
+.pm-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Conteúdo com Scroll */
+.pm-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 1.5rem 2rem 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.pm-content::-webkit-scrollbar { width: 8px; }
+.pm-content::-webkit-scrollbar-track { background: transparent; }
+.pm-content::-webkit-scrollbar-thumb { background-color: var(--bg-quaternary); border-radius: 4px; border: 2px solid var(--bg-secondary); }
+
+/* Cabeçalho */
+.pm-header {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 1.5rem;
+    margin-top: 0; 
+}
+
+/* Status */
+.pm-status {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-bottom: 0.8rem;
+    letter-spacing: 0.5px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+.pm-status.planejamento { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); }
+.pm-status.andamento, .pm-status.progresso { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
+.pm-status.concluido { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3); }
+
+.pm-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin: 0;
+}
+
+.pm-description {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+/* Grid de Informações */
+.pm-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+    background: var(--bg-tertiary);
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.pm-info-item h4 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+}
+
+.pm-info-item span {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Seções */
+.pm-section-title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+    border-left: 3px solid var(--accent-primary);
+    padding-left: 0.75rem;
+}
+
+.pm-tags, .pm-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+}
+
+.pm-tag {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.pm-member {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-tertiary);
+    padding: 6px 14px 6px 6px;
+    border-radius: 30px;
+    border: 1px solid var(--border-color);
+}
+
+.pm-member img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.pm-member span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* Footer */
+.pm-footer {
+    padding: 1.25rem 2rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.pm-btn {
+    background: var(--accent-primary);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.2s;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pm-btn:hover { background: var(--accent-secondary); transform: translateY(-2px); }
+.pm-btn-secondary { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
+.pm-btn-secondary:hover { background: var(--bg-tertiary); }
+.pm-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; background: var(--bg-quaternary); }
+
+/* Mobile */
+@media (max-width: 768px) {
+    .project-modal-card {
+        max-height: 90vh;
+        width: 100%;
+        border-radius: 16px 16px 0 0;
+        margin-top: auto;
+        margin-bottom: 0;
+        border-bottom: none;
+    }
+    .project-modal-overlay { align-items: flex-end; padding: 0; }
+    .pm-hero { height: 180px; }
+    .pm-content { padding: 1.5rem; }
+    .pm-title { font-size: 1.4rem; }
+    .pm-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .pm-info-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+    .pm-info-item:last-child { border-bottom: none; }
+    .pm-footer { padding: 1rem 1.5rem; flex-direction: column; }
+    .pm-btn { width: 100%; justify-content: center; }
+}
+
+/* =================================================================
+   ESTILO MODERNO: MODAL NOVO PROJETO
+================================================================= */
+
+/* =================================================================
+   ESTILO MODERNO: MODAL NOVO PROJETO (CORRIGIDO PARA FORM)
+================================================================= */
+
+/* 1. Container Principal do Modal */
+.new-project-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Impede que o container principal role */
+    max-height: 90vh; /* Limite no desktop */
+}
+
+/* 2. Cabeçalho (Fixo no topo) */
+.new-project-content .modal-header {
+    flex-shrink: 0;      /* Não deixa encolher */
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    z-index: 10;
+}
+
+/* 3. O FORMULÁRIO É A CHAVE (Ele vira o container flexível) */
+#novo-projeto-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;            /* Ocupa todo o espaço abaixo do header */
+    min-height: 0;      /* Crítico para o scroll funcionar dentro do Flexbox */
+    overflow: hidden;   /* Impede scroll no form geral */
+}
+
+/* 4. Capa do Projeto (Fixa no topo do form) */
+.project-cover-wrapper {
+    flex-shrink: 0; 
+}
+
+.project-cover-label {
+    width: 100%; height: 100%; display: block; cursor: pointer; position: relative;
+}
+.project-cover-label img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.cover-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.4);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: white; opacity: 0; transition: opacity 0.3s;
+}
+.project-cover-label:hover .cover-overlay { opacity: 1; }
+
+/* 5. Corpo com Inputs (ONDE O SCROLL ACONTECE) */
+.new-project-content .modal-body {
+    flex: 1;                /* Ocupa o espaço livre no meio */
+    overflow-y: auto;       /* Habilita o scroll AQUI */
+    overflow-x: hidden;
+    padding: 1.5rem;
+    
+    /* Scroll suave para iOS */
+    -webkit-overflow-scrolling: touch; 
+}
+
+/* Estilo dos inputs */
+.form-row { display: flex; gap: 1rem; }
+.form-group.half { flex: 1; }
+
+.new-project-content label {
+    font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.4rem; font-weight: 600;
+}
+.new-project-content input, 
+.new-project-content select, 
+.new-project-content textarea {
+    background: var(--bg-tertiary); border: 1px solid var(--border-color);
+    border-radius: 8px; padding: 0.75rem 1rem; color: var(--text-primary); width: 100%;
+}
+
+/* 6. Rodapé (Fixo no fundo do form) */
+.new-project-content .modal-footer {
+    flex-shrink: 0;         /* Não encolhe */
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    z-index: 10;
+}
+
+/* === AJUSTE MOBILE === */
+@media (max-width: 768px) {
+    
+    /* 1. Força o modal a preencher a tela inteira */
+    .new-project-content {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
+        max-height: 100dvh !important; /* dvh lida melhor com a barra do navegador */
+        border-radius: 0;
+        margin: 0;
+    }
+
+    /* 2. Ajuste do Cabeçalho */
+    .new-project-content .modal-header {
+        flex-shrink: 0;
+        padding: 1rem;
+    }
+
+    /* 3. Ajuste da Capa (Menor no mobile para sobrar espaço) */
+    .project-cover-wrapper {
+        height: 120px;
+    }
+
+    /* 4. Ajuste do Corpo (Área de Scroll) */
+    .new-project-content .modal-body {
+        padding: 1rem;
+        padding-bottom: 2rem; /* Espaço extra no final */
+    }
+
+    /* 5. Ajuste dos Inputs para Mobile */
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    /* 6. Ajuste do Rodapé (Botões empilhados e fixos) */
+    .new-project-content .modal-footer {
+        padding: 0.75rem 1rem;
+        flex-direction: column-reverse; /* Cancelar embaixo, Publicar em cima */
+        gap: 0.75rem;
+    }
+
+    .new-project-content .modal-footer button {
+        width: 100%;
+        margin: 0;
+        height: 48px; /* Altura boa para o dedo */
+        font-size: 1rem;
+    }
+
+    /* 7. Correção do Preview de Vídeo (Para não quebrar a largura) */
+    #video-preview-container video {
+        max-height: 180px;
+        width: 100%;
+        object-fit: contain;
+        background: black;
+    }
+}
+
+/* 1. Container Principal */
+.new-project-content {
+    width: 100%;
+    max-width: 600px;
+    height: 85vh; /* Altura fixa confortável */
+    max-height: 800px;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* 2. Header Fixo */
+.new-project-content .modal-header {
+    flex-shrink: 0;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.new-project-content .modal-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* 3. Área de Scroll (Contém Capa, Vídeo e Inputs) */
+.modal-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    background: var(--bg-primary); /* Fundo um pouco mais escuro para destaque */
+}
+
+/* Scrollbar estilizada */
+.modal-scroll-area::-webkit-scrollbar { width: 6px; }
+.modal-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.modal-scroll-area::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+
+/* 4. Capa do Projeto (Agora rola junto) */
+.project-cover-wrapper {
+    width: 100%;
+    height: 180px;
+    background-color: var(--bg-tertiary);
+    position: relative;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.project-cover-label {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.project-cover-label img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0; left: 0;
+    z-index: 1;
+}
+
+/* Placeholder quando não tem imagem */
+.cover-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    z-index: 0;
+}
+
+.cover-placeholder i { font-size: 2rem; opacity: 0.5; }
+
+/* Overlay de Edição */
+.cover-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 2;
+    backdrop-filter: blur(2px);
+}
+
+.project-cover-label:hover .cover-overlay { opacity: 1; }
+
+/* 5. Container dos Inputs */
+.form-inputs-container {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+/* Upload de Vídeo Customizado */
+.video-upload-box {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    transition: 0.2s;
+}
+
+.video-upload-box:hover {
+    border-color: var(--accent-primary);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.video-upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 1rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-weight: 500;
+    width: 100%;
+}
+
+.video-upload-label i { color: var(--accent-primary); }
+
+/* Estilo Inputs Modernos */
+.new-project-content label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.new-project-content input[type="text"],
+.new-project-content select,
+.new-project-content textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.new-project-content input:focus,
+.new-project-content select:focus,
+.new-project-content textarea:focus {
+    border-color: var(--accent-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Input com ícone */
+.input-with-icon { position: relative; }
+.input-with-icon i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+}
+.input-with-icon input { padding-left: 2.5rem !important; }
+
+/* 6. Footer Fixo */
+.new-project-content .modal-footer {
+    flex-shrink: 0;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+/* Botões Modernos */
+.btn-primary {
+    background: var(--accent-primary);
+    color: white;
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
+    transition: 0.2s;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    transition: var(--transition);
 }
-.btn-new-project:hover { background-color: var(--accent-secondary); }
+.btn-primary:hover { background: var(--accent-secondary); transform: translateY(-1px); }
 
-.projetos-filters {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-.search-projetos {
-    flex-grow: 1;
-    position: relative;
-}
-.search-projetos i {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
+.btn-ghost {
+    background: transparent;
     color: var(--text-secondary);
-}
-.search-projetos input, .projetos-filters select {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
     border-radius: 8px;
-    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
 }
-.search-projetos input { padding-left: 2.5rem; }
+.btn-ghost:hover { background: var(--bg-tertiary); color: var(--text-primary); }
 
-/* Grid de Projetos */
-.projetos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
+/* =================================================================
+   RESPONSIVIDADE (MOBILE)
+================================================================= */
+@media (max-width: 768px) {
+    .new-project-content {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        max-width: 100% !important;
+        border-radius: 0;
+        border: none;
+    }
 
-/* Card de Projeto */
-.projeto-card {
-    background-color: var(--bg-secondary);
-    border-radius: var(--card-radius);
-    border: 1px solid var(--border-color);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: var(--transition);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-.projeto-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--accent-primary);
-    box-shadow: 0 8px 24px rgba(88,166,255,0.15);
-}
-.projeto-imagem {
-    height: 180px;
-    background-size: cover;
-    background-position: center;
-}
-.projeto-conteudo {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-}
-.projeto-conteudo h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-.projeto-conteudo p {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    flex-grow: 1;
-    line-height: 1.5;
-    margin-bottom: 1rem;
-}
-.projeto-membros { display: flex; margin-bottom: 1rem; }
-.membro-avatar {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    border: 2px solid var(--bg-secondary);
-    margin-left: -10px;
-    object-fit: cover;
-}
-.membro-avatar:first-child { margin-left: 0; }
+    .project-cover-wrapper { height: 160px; }
 
-.projeto-footer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
-}
-.tech-tag {
-    background-color: var(--bg-tertiary);
-    color: var(--text-secondary);
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-}
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
 
-/* Sidebar Direita */
-.card-destaque {
-    background-color: var(--bg-secondary);
-    border-radius: var(--card-radius);
-    border: 1px solid var(--border-color);
-    padding: 1rem;
-}
-.card-destaque h3 { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
-.lista-colaboracao { list-style: none; }
-.lista-colaboracao li { margin-bottom: 0.75rem; }
-.lista-colaboracao a { text-decoration: none; color: var(--text-primary); }
-.lista-colaboracao span {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--accent-primary);
-    opacity: 0.8;
-}
+    .form-inputs-container { padding: 1.25rem; }
 
-/* Estilos do Modal */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-.modal-overlay.visible { opacity: 1; pointer-events: all; }
-.modal-content { background-color: var(--bg-secondary); width: 90%; max-width: 600px; border-radius: var(--card-radius); box-shadow: var(--shadow); display: flex; flex-direction: column; transform: scale(0.95); transition: transform 0.3s ease; border: 1px solid var(--border-color); }
-.modal-overlay.visible .modal-content { transform: scale(1); }
-.modal-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-.close-modal-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; }
-.modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-.form-group label { font-weight: 500; color: var(--text-secondary); }
-.form-group input, .form-group textarea, .form-group select {
-    width: 100%;
-    background-color: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 0.75rem;
-    color: var(--text-primary);
-    font-family: inherit;
-    font-size: 1rem;
+    .new-project-content .modal-footer {
+        flex-direction: column-reverse; /* Botão Publicar em cima do Cancelar */
+        gap: 0.75rem;
+    }
+    
+    .new-project-content .modal-footer button {
+        width: 100%;
+        justify-content: center;
+        padding: 1rem;
+    }
 }
-.modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); text-align: right; }
-.btn-publish { background-color: var(--accent-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-.btn-publish:hover { background-color: var(--accent-secondary); }

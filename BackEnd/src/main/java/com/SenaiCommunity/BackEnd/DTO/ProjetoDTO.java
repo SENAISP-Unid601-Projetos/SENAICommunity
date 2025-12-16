@@ -21,9 +21,12 @@ public class ProjetoDTO {
     private Integer maxMembros;
     private Boolean grupoPrivado;
     private Integer totalMembros;
+    private String categoria;
+    private List<String> tecnologias;
 
     private Long autorId;
     private String autorNome;
+    private String videoDescricaoUrl;
 
     // Manter compatibilidade
     private List<Long> professorIds;

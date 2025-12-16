@@ -1,0 +1,2699 @@
+/* =================================================================
+   VARIÁVEIS E RESET - MANTIDOS
+================================================================= */
+:root {
+  /* Dark Theme Default */
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-quaternary: #30363d;
+  --bg-hover: rgba(48, 54, 61, 0.5);
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+  --accent-primary: #58a6ff;
+  --accent-secondary: #1f6feb;
+  --highlight: #f78166;
+  --online: #3fb950;
+  --away: #d29922;
+  --danger: #f85149;
+  --success: #238636;
+  --warning: #d29922;
+  --border-color: #30363d;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --card-radius: 8px;
+  --transition: all 0.2s ease-in-out;
+}
+
+[data-theme="light"] {
+  /* Light Theme */
+  --bg-primary: #f5f7fa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f8f9fa;
+  --bg-quaternary: #e9ecef;
+  --bg-hover: rgba(0, 0, 0, 0.05);
+  --text-primary: #1a1a1a;
+  --text-secondary: #6c757d;
+  --text-tertiary: #8d949e;
+  --accent-primary: #1877f2;
+  --accent-secondary: #166fe5;
+  --highlight: #fa383e;
+  --online: #31a24c;
+  --away: #f7b928;
+  --danger: #dc3545;
+  --success: #28a745;
+  --warning: #ffc107;
+  --border-color: #dee2e6;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* =================================================================
+   UTILITÁRIOS DE RESPONSIVIDADE
+================================================================= */
+.mobile-only { display: none !important; }
+.desktop-only { display: block !important; }
+
+@media (max-width: 768px) {
+  .mobile-only { display: flex !important; }
+  .desktop-only { display: none !important; }
+}
+
+/* =================================================================
+   HEADER PRINCIPAL
+================================================================= */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.back-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.menu-toggle {
+  display: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-toggle:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.logo .highlight {
+  color: var(--danger);
+}
+
+.project-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+}
+
+.project-info h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.project-status {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.status-planning {
+  background-color: var(--away);
+  color: white;
+}
+
+.status-progress {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+.status-completed {
+  background-color: var(--success);
+  color: white;
+}
+
+.nav-icons {
+  display: flex;
+  align-items: last baseline;
+  gap: 0.25rem;
+}
+
+.nav-icon, .theme-toggle {
+  position: relative;
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--transition);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-icon:hover, .theme-toggle:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.nav-icon i, .theme-toggle i {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+/* =================================================================
+   HEADER MOBILE
+================================================================= */
+.mobile-header {
+  display: none;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 60px;
+  z-index: 999;
+}
+
+.mobile-project-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-project-info h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.25rem;
+}
+
+.mobile-chat-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* =================================================================
+   CONTAINER PRINCIPAL
+================================================================= */
+.project-container {
+  display: flex;
+  height: calc(100vh - 60px);
+  position: relative;
+}
+
+/* Overlay para mobile */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.mobile-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* =================================================================
+   SIDEBAR DE MEMBROS
+================================================================= */
+.members-sidebar {
+  width: 300px;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  position: relative;
+  z-index: 997;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.sidebar-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.members-count {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.sidebar-close {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.25rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-close:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.search-box {
+  position: relative;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.search-box i {
+  position: absolute;
+  left: 1.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  background-color: var(--bg-tertiary);
+  border: none;
+  border-radius: 20px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.search-box input:focus {
+  outline: none;
+  background-color: var(--bg-secondary);
+  box-shadow: 0 0 0 2px var(--accent-primary);
+}
+
+.members-list {
+  flex: 1;
+  padding: 0.5rem;
+  overflow-y: auto;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  margin-bottom: 0.25rem;
+}
+
+.member-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.member-avatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.member-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-status {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-secondary);
+  box-shadow: 0 0 3px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+
+.member-status.online {
+  background-color: var(--online);
+  animation: pulse 2s infinite;
+}
+
+.member-status.away {
+  background-color: var(--away);
+}
+
+.member-status.offline {
+  background-color: var(--text-tertiary);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(63, 185, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(63, 185, 80, 0);
+  }
+}
+
+.member-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.member-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.member-role {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.project-details {
+  padding: 1.25rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.project-details h4 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.project-description {
+  margin-bottom: 1rem;
+}
+
+.project-description p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.project-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.meta-item i {
+  width: 16px;
+  text-align: center;
+}
+
+.project-technologies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tech-tag {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.project-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.btn-full {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-full:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+/* =================================================================
+   ÁREA DE CHAT
+================================================================= */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  position: relative;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between; /* Garante que os itens se espalhem */
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.chat-info h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.online-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--online);
+  animation: pulse 2s infinite;
+}
+
+.chat-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto; /* Força o container de botões para a extrema direita */
+  align-items: center;
+}
+
+.chat-info {
+    flex-grow: 1; /* Ocupa o espaço disponível */
+    max-width: fit-content; /* Mas tenta manter a largura do conteúdo */
+}
+
+
+.chat-header {
+    display: flex !important;
+    flex-direction: row !important; /* Força direção horizontal */
+    justify-content: space-between !important; /* Separa os itens */
+    align-items: center !important; /* Centraliza verticalmente */
+    width: 100%;
+}
+
+/* O container de informações (Título e Online) ocupa o espaço sobrando */
+.chat-info {
+    flex: 1; 
+    display: flex;
+    flex-direction: column; /* Título em cima, status embaixo */
+    justify-content: center;
+}
+
+/* Os botões de ação são forçados para a direita */
+.chat-actions {
+    display: flex !important;
+    align-items: center;
+    gap: 0.75rem; /* Espaço entre os ícones */
+    margin-left: auto !important; /* O SEGREDO: Empurra tudo para a direita */
+}
+
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.action-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.messages-container {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 75%;
+  margin-bottom: 0.5rem;
+  align-items: flex-start;
+  position: relative;
+}
+
+.message.own {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.message-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  max-width: 100%;
+  min-width: 0;
+  position: relative;
+  align-items: flex-start; /* Importante para balões de terceiros */
+}
+
+.message.own .message-content {
+  align-items: flex-end; /* Importante para balões do usuário */
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.1rem;
+}
+
+.message-sender {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.message-time {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+}
+
+.message-bubble {
+  padding: 0.6rem 0.85rem; /* Padding ligeiramente mais justo */
+  border-radius: 18px;
+  border-top-left-radius: 4px; /* Ponta sutil para mensagens recebidas */
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.9rem; /* Leitura melhor */
+  line-height: 1.4;
+  
+  /* A MÁGICA PARA REMOVER ESPAÇO EXTRA: */
+  width: fit-content;      /* Ocupa apenas o espaço necessário */
+  max-width: 100%;         /* Não ultrapassa o container */
+  
+  word-wrap: break-word;
+  word-break: break-word;  /* Quebra palavras longas se necessário */
+  white-space: pre-wrap;   /* Mantém quebras de linha */
+  
+  display: flex;           /* Flex para alinhar texto e botão se necessário */
+  flex-direction: column;  /* Stack vertical dentro do balão */
+  gap: 0.5rem;
+  
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Sombra sutil */
+}
+
+[data-theme="light"] .message-bubble {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.message.own .message-bubble {
+  background-color: var(--accent-primary);
+  color: white;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 4px; /* Ponta sutil para mensagens enviadas */
+  border: none;
+}
+
+.message-input-area {
+  padding: 1rem 1.5rem;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--bg-tertiary);
+  border-radius: 24px;
+  padding: 0.5rem;
+}
+
+.emoji-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.emoji-btn:hover {
+  background-color: var(--bg-quaternary);
+  color: var(--text-primary);
+}
+
+#message-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  resize: none;
+  max-height: 120px;
+}
+
+#message-input:focus {
+  outline: none;
+}
+
+.send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--accent-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.send-btn:hover {
+  background-color: var(--accent-secondary);
+}
+
+.send-btn:disabled {
+  background-color: var(--bg-quaternary);
+  cursor: not-allowed;
+}
+
+/* =================================================================
+   MODAIS (RESPONSIVOS)
+================================================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(2px);
+  padding: 1rem;
+}
+
+.modal-content {
+  background-color: var(--bg-secondary);
+  padding: 1.5rem;
+  border-radius: var(--card-radius);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: var(--transition);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-modal:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+/* =================================================================
+   ESTILOS PARA MODAL DE INFORMAÇÕES DO PROJETO
+================================================================= */
+.project-info-details {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.project-image {
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  background-color: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.project-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.project-details-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.project-details-text h4 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.project-details-text p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.project-members-modal {
+  margin-top: 1.5rem;
+}
+
+.project-members-modal h4 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.members-list-modal {
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: var(--card-radius);
+  background-color: var(--bg-tertiary);
+  padding: 0.5rem;
+}
+
+.member-item-modal {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--card-radius);
+  transition: var(--transition);
+  margin-bottom: 0.25rem;
+  background-color: var(--bg-secondary);
+}
+
+.member-item-modal:hover {
+  background-color: var(--bg-hover);
+}
+
+.member-avatar-modal {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.member-avatar-modal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-info-modal {
+  flex: 1;
+  min-width: 0;
+}
+
+.member-name-modal {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.member-role-modal {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.member-actions-modal {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.member-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  color: var(--text-secondary);
+}
+
+.member-action-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.btn-danger {
+  color: var(--danger);
+}
+
+.btn-secondary {
+  color: var(--text-secondary);
+}
+
+/* =================================================================
+   ESTILOS PARA MODAL DE CONFIGURAÇÕES DO PROJETO
+================================================================= */
+#project-settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 0.75rem;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-group-file {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.file-input-wrapper {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.current-photo-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  background-color: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.current-photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.file-input-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.file-input-label:hover {
+  background-color: var(--bg-quaternary);
+}
+
+.file-input {
+  display: none;
+}
+
+.file-name {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.role-descriptions {
+  background-color: var(--bg-tertiary);
+  padding: 1rem;
+  border-radius: var(--card-radius);
+  margin-top: 0.5rem;
+}
+
+.role-info {
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.role-info:last-child {
+  margin-bottom: 0;
+}
+
+.role-info strong {
+  color: var(--text-primary);
+}
+
+/* =================================================================
+   SELEÇÃO DE EMOJIS
+================================================================= */
+.emoji-picker {
+  position: fixed;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  display: none;
+  width: 280px;
+  max-height: 250px;
+  overflow: hidden;
+  animation: slideIn 0.2s ease;
+}
+
+.emoji-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+}
+
+.emoji-picker-header span {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.close-emoji-picker {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.close-emoji-picker:hover {
+  background-color: var(--bg-quaternary);
+  color: var(--text-primary);
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.25rem;
+  padding: 0.75rem;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.emoji-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 1.2rem;
+  user-select: none;
+}
+
+.emoji-option:hover {
+  background-color: var(--bg-tertiary);
+  transform: scale(1.1);
+}
+
+/* =================================================================
+   MODAL DE SOLICITAÇÕES
+================================================================= */
+.solicitacoes-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.solicitacao-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-radius: var(--card-radius);
+  background-color: var(--bg-tertiary);
+  margin-bottom: 0.75rem;
+  transition: var(--transition);
+}
+
+.solicitacao-item:hover {
+  background-color: var(--bg-hover);
+}
+
+.solicitacao-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.solicitacao-user img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.solicitacao-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.solicitacao-user-name {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.solicitacao-user-email {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.solicitacao-data {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.solicitacao-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* =================================================================
+   RESPONSIVIDADE MOBILE
+================================================================= */
+@media (max-width: 768px) {
+  body {
+    overflow: auto;
+  }
+
+  .topbar {
+    padding: 0.5rem 1rem;
+    height: 60px;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+  }
+
+  .project-info h2 {
+    font-size: 0.95rem;
+    max-width: 150px;
+  }
+
+  .project-status {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+  }
+
+  .nav-icon, .theme-toggle {
+    width: 32px;
+    height: 32px;
+    padding: 0.4rem;
+  }
+
+  .nav-icon i, .theme-toggle i {
+    font-size: 1rem;
+  }
+
+  .menu-toggle {
+    display: flex;
+  }
+
+  .mobile-header {
+    display: flex;
+  }
+
+  .project-container {
+    height: calc(100vh - 120px);
+    flex-direction: column;
+  }
+
+  .mobile-overlay {
+    display: block;
+  }
+
+  .members-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 85%;
+    max-width: 300px;
+    height: 100vh;
+    z-index: 999;
+    transform: translateX(-100%);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+  }
+
+  .members-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-close {
+    display: flex;
+  }
+
+  .chat-area {
+    width: 100%;
+  }
+
+  .messages-container {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .message {
+    max-width: 90%;
+    margin-bottom: 0.4rem;
+  }
+
+  .message-bubble {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .message-input-area {
+    padding: 0.75rem 1rem;
+  }
+
+  .input-wrapper {
+    padding: 0.4rem;
+  }
+
+  #message-input {
+    font-size: 0.85rem;
+    padding: 0.4rem;
+  }
+
+  .emoji-btn, .send-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .modal-content {
+    padding: 1rem;
+    margin: 0.5rem;
+    width: calc(100% - 1rem);
+  }
+
+  .modal-header {
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
+
+  /* Ajustes específicos para modais de projeto */
+  .project-info-details {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .project-image {
+    align-self: center;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+  }
+
+  /* Ajustes para modal de solicitações no mobile */
+  .solicitacao-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .solicitacao-actions {
+    justify-content: stretch;
+  }
+
+  .solicitacao-actions .btn {
+    flex: 1;
+  }
+
+  /* Ajustes para modal de configurações no mobile */
+  .file-input-wrapper {
+    flex-direction: column;
+  }
+
+  .current-photo-preview {
+    align-self: center;
+  }
+
+  /* Correção para tooltips no mobile */
+  [data-tooltip]:hover::after {
+    display: none;
+  }
+
+  /* Ajustes para o seletor de emojis no mobile */
+  .emoji-picker {
+    width: 90%;
+    max-width: 280px;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .emoji-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* =================================================================
+   AJUSTES PARA TELAS MUITO PEQUENAS
+================================================================= */
+@media (max-width: 480px) {
+  .topbar {
+    padding: 0.5rem;
+  }
+
+  .header-left {
+    gap: 0.5rem;
+  }
+
+  .logo {
+    font-size: 1rem;
+  }
+
+  .project-info h2 {
+    font-size: 0.9rem;
+    max-width: 120px;
+  }
+
+  .mobile-header {
+    padding: 0.5rem;
+  }
+
+  .mobile-project-info h3 {
+    font-size: 0.9rem;
+  }
+
+  .members-sidebar {
+    width: 90%;
+  }
+
+  .sidebar-header {
+    padding: 1rem;
+  }
+
+  .search-box {
+    padding: 0.75rem;
+  }
+
+  .project-details {
+    padding: 1rem;
+  }
+
+  .messages-container {
+    padding: 0.5rem;
+  }
+
+  .message {
+    max-width: 95%;
+  }
+
+  .message-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .message-bubble {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .message-input-area {
+    padding: 0.5rem;
+  }
+
+  .emoji-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* =================================================================
+   SCROLLBAR PERSONALIZADA
+================================================================= */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-quaternary) var(--bg-secondary);
+}
+
+html::-webkit-scrollbar,
+.members-sidebar::-webkit-scrollbar,
+.messages-container::-webkit-scrollbar,
+.members-list-modal::-webkit-scrollbar,
+.solicitacoes-list::-webkit-scrollbar,
+.emoji-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+html::-webkit-scrollbar-track,
+.members-sidebar::-webkit-scrollbar-track,
+.messages-container::-webkit-scrollbar-track,
+.members-list-modal::-webkit-scrollbar-track,
+.solicitacoes-list::-webkit-scrollbar-track,
+.emoji-grid::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+html::-webkit-scrollbar-thumb,
+.members-sidebar::-webkit-scrollbar-thumb,
+.messages-container::-webkit-scrollbar-thumb,
+.members-list-modal::-webkit-scrollbar-thumb,
+.solicitacoes-list::-webkit-scrollbar-thumb,
+.emoji-grid::-webkit-scrollbar-thumb {
+  background-color: var(--bg-quaternary);
+  border-radius: 3px;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+.members-sidebar::-webkit-scrollbar-thumb:hover,
+.messages-container::-webkit-scrollbar-thumb:hover,
+.members-list-modal::-webkit-scrollbar-thumb:hover,
+.solicitacoes-list::-webkit-scrollbar-thumb:hover,
+.emoji-grid::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-secondary);
+}
+
+/* =================================================================
+   ESTILOS RESTANTES (MANTIDOS DO ORIGINAL)
+================================================================= */
+
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 2rem;
+  font-style: italic;
+}
+
+.btn {
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.btn-primary {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--bg-quaternary);
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: white;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.notification-center {
+  position: fixed;
+  top: 80px;
+  right: 1rem;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notification {
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow);
+  transform: translateX(120%);
+  opacity: 0;
+  transition: all 0.3s ease-in-out;
+  font-size: 0.875rem;
+}
+
+.notification.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.notification.success {
+  border-left: 4px solid var(--success);
+}
+
+.notification.info {
+  border-left: 4px solid var(--accent-primary);
+}
+
+.notification.error {
+  border-left: 4px solid var(--danger);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* =================================================================
+   CORREÇÃO: BOTÕES DE AÇÃO DA MENSAGEM (EDITAR/EXCLUIR)
+================================================================= */
+
+/* Container dos botões flutuando sobre a mensagem */
+.message-actions {
+    position: absolute;
+    top: -15px; /* Sobe um pouco para fora do balão */
+    right: 10px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 2px 4px;
+    display: none; /* O JS controla o display flex no hover, mas isso garante o padrão */
+    gap: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 10;
+    align-items: center;
+}
+
+/* Força o display flex quando o JS ativar (ou via CSS hover se preferir) */
+.message:hover .message-actions {
+    display: flex !important;
+    animation: fadeIn 0.2s ease;
+}
+
+/* Estilo dos botões individuais */
+.message-action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+/* Hover: Editar fica azul */
+.message-action-btn:first-child:hover {
+    background-color: rgba(88, 166, 255, 0.15); /* Azul translúcido */
+    color: var(--accent-primary);
+}
+
+/* Hover: Excluir fica vermelho */
+.message-action-btn:last-child:hover {
+    background-color: rgba(248, 81, 73, 0.15); /* Vermelho translúcido */
+    color: var(--danger);
+}
+
+/* Ajuste para mensagens do próprio usuário (balão à direita) */
+.message.own .message-actions {
+    right: auto;
+    left: 10px; /* Inverte o lado para não sair da tela */
+}
+
+/* =================================================================
+   CORREÇÃO: BOTÕES DO MODAL DE CONFIGURAÇÃO DO PROJETO
+================================================================= */
+
+/* Container do rodapé do modal */
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Alinha Cancelar/Salvar à direita */
+    gap: 12px;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Botões gerais do modal */
+.modal-footer .btn {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 100px; /* Largura mínima para ficarem uniformes */
+}
+
+/* Botão Cancelar (Secundário) */
+.modal-footer .btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.modal-footer .btn-secondary:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+
+/* Botão Salvar (Primário) */
+.modal-footer .btn-primary {
+    background-color: var(--accent-primary);
+    border: 1px solid transparent;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.modal-footer .btn-primary:hover {
+    background-color: var(--accent-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+/* Botão Excluir Projeto (Perigo) */
+/* Vamos empurrá-lo para a esquerda para evitar cliques acidentais */
+#delete-project-modal-btn {
+    margin-right: auto; /* Empurra os outros botões para a direita */
+    background-color: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+#delete-project-modal-btn:hover {
+    background-color: var(--danger);
+    color: white;
+    box-shadow: 0 2px 8px rgba(248, 81, 73, 0.4);
+}
+
+/* Ícones dentro dos botões */
+.modal-footer .btn i {
+    font-size: 0.95em;
+}
+
+/* --- RESPONSIVIDADE PARA O MODAL (Mobile) --- */
+@media (max-width: 768px) {
+    .modal-footer {
+        flex-direction: column-reverse; /* Salvar no topo, Cancelar no meio, Excluir em baixo */
+        gap: 10px;
+    }
+
+    .modal-footer .btn {
+        width: 100%; /* Botões ocupam toda a largura */
+        min-height: 44px; /* Altura boa para toque */
+    }
+
+    #delete-project-modal-btn {
+        margin-right: 0;
+        margin-top: 10px; /* Separação extra para o botão de excluir */
+        border-color: transparent; /* Mais sutil no mobile até o hover/click */
+        color: var(--text-tertiary); 
+    }
+    
+    #delete-project-modal-btn:hover {
+        background-color: rgba(248, 81, 73, 0.1);
+        color: var(--danger);
+    }
+}
+
+/* =================================================================
+   ESTILOS PARA PREVIEW DE ARQUIVOS
+================================================================= */
+#file-preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.file-preview-item {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    background-color: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.file-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.file-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.file-icon i {
+    font-size: 1.5rem;
+}
+
+.file-icon span {
+    font-size: 0.7rem;
+    text-align: center;
+    word-break: break-all;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.remove-file-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--danger);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    transition: var(--transition);
+}
+
+.remove-file-btn:hover {
+    transform: scale(1.1);
+}
+
+/* =================================================================
+   ESTILOS PARA MENSAGENS COM ANEXOS
+================================================================= */
+.message-file {
+    margin-top: 6px;
+    max-width: 100%;
+}
+
+.message-file img,
+.message-file video {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.message-file img {
+    opacity: 0;
+}
+
+.message-file img[src]:not([src=""]) {
+    opacity: 1;
+}
+
+.message-file-document {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--card-radius);
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition);
+    border: 1px solid var(--border-color);
+}
+
+.message-file-document:hover {
+    background-color: var(--bg-quaternary);
+    transform: translateY(-1px);
+}
+
+.message-file-document i {
+    font-size: 1.5rem;
+    color: var(--accent-primary);
+}
+
+.message-file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.message-file-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.message-file-size {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* =================================================================
+   ESTILOS PARA MENSAGENS TRUNCADAS
+================================================================= */
+.message-truncated {
+    position: relative;
+}
+
+.full-content {
+    display: none;
+}
+
+.show-more-btn {
+  background-color: rgba(0, 0, 0, 0.2); /* Fundo translúcido escuro */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: inherit; /* Herda a cor do texto do balão */
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px; /* Formato de pílula */
+  margin-top: 4px;
+  align-self: flex-start; /* Alinha à esquerda dentro do balão */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.show-more-btn:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Ajuste específico para o botão dentro das mensagens do PRÓPRIO usuário */
+.message.own .show-more-btn {
+  background-color: rgba(255, 255, 255, 0.2); /* Fundo translúcido branco */
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.message.own .show-more-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Ícone dentro do botão */
+.show-more-btn i {
+  font-size: 0.7rem;
+  transition: transform 0.3s ease;
+}
+
+/* Classe para girar o ícone quando expandido (via JS) */
+.show-more-btn.expanded i {
+  transform: rotate(180deg);
+}
+
+/* Efeito de texto cortado (Opcional: gradiente sutil) */
+.truncated-content {
+  display: block;
+  mask-image: linear-gradient(180deg, black 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, black 60%, transparent 100%);
+}
+
+/* =================================================================
+   LOADING E ESTADOS DE CARREGAMENTO
+================================================================= */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(13, 17, 23, 0.8);
+    z-index: 4000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--bg-tertiary);
+    border-left: 4px solid var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-left: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* =================================================================
+   TOOLTIPS
+================================================================= */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    z-index: 1000;
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    bottom: calc(100% + 5px);
+}
+
+/* =================================================================
+   MEDIA MODAL (PARA IMAGENS/VIDEOS EM TELA CHEIA)
+================================================================= */
+.media-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+    cursor: zoom-out;
+}
+
+.media-modal-content {
+    max-width: 90%;
+    max-height: 90%;
+    position: relative;
+    background: transparent;
+}
+
+.media-modal-content img,
+.media-modal-content video {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* =================================================================
+   ANIMAÇÕES ADICIONAIS
+================================================================= */
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* =================================================================
+   ESTILOS PARA BOTÃO ADICIONAR MEMBRO
+================================================================= */
+.add-member-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--accent-primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.add-member-btn:hover {
+    background-color: var(--accent-secondary);
+    transform: scale(1.1);
+}
+
+/* =================================================================
+   ESTILOS PARA PESQUISA DE USUÁRIOS
+================================================================= */
+.users-search-results {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 1rem;
+}
+
+.user-search-result {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: var(--card-radius);
+    background-color: var(--bg-tertiary);
+    margin-bottom: 0.5rem;
+    transition: var(--transition);
+}
+
+.user-search-result:hover {
+    background-color: var(--bg-hover);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.user-email {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.add-user-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+/* =================================================================
+   CORREÇÕES DE RESPONSIVIDADE MOBILE 
+================================================================= */
+
+@media (max-width: 768px) {
+
+  
+    /* Garante que o fundo escuro centralize o conteúdo */
+    .modal-overlay {
+        align-items: center !important; /* Centraliza Verticalmente */
+        justify-content: center !important; /* Centraliza Horizontalmente */
+        padding: 1rem; /* Margem de segurança nas bordas da tela */
+    }
+
+    /* A caixa do modal em si */
+    .modal-content {
+        margin: 0 !important; /* Remove margens que empurram para o topo */
+        width: 100% !important; 
+        max-width: 380px !important; /* Largura ideal para leitura no mobile */
+        max-height: 85vh !important; /* Altura máxima de 85% da tela */
+        
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        border-radius: 12px; /* Bordas um pouco mais arredondadas */
+    }
+
+    /* Garante que o conteúdo interno tenha scroll se for muito grande */
+    .modal-body {
+        overflow-y: auto;
+        padding-right: 5px; /* Espaço para não cobrir o scroll */
+        max-height: calc(85vh - 60px); /* Subtrai o tamanho do header do modal */
+    }
+
+    /* Ajuste específico para o modal de solicitações não ficar 'magro' demais */
+    #solicitacoes-modal .modal-content {
+        width: 95% !important;
+    }
+
+    /* --- 1. CABEÇALHO (TOPBAR) --- */
+    
+    /* Esconde a info central do projeto no header (já aparece na mobile-header) */
+    .topbar .project-info {
+        display: none !important;
+    }
+
+    /* Ajusta a Logo para não quebrar */
+    .logo {
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 160px; /* Limita largura para não bater nos ícones */
+    }
+
+    /* Ajusta espaçamento dos ícones */
+    .nav-icons {
+        gap: 0.25rem;
+    }
+    
+    .nav-icon, .theme-toggle {
+        padding: 0.4rem;
+        width: 32px;
+        height: 32px;
+    }
+
+    /* --- 2. MODAIS (Configuração, Info e Solicitações) --- */
+    
+    /* Centraliza e ajusta tamanho do container do modal */
+    .modal-content {
+        width: 95% !important; /* Ocupa quase toda largura */
+        max-width: none !important;
+        margin: 10px auto;
+        max-height: 85vh; /* Altura máxima de 85% da tela */
+        display: flex;
+        flex-direction: column;
+        padding: 1rem !important;
+    }
+
+    /* Permite scroll dentro do corpo do modal se for muito grande */
+    .modal-body {
+        overflow-y: auto;
+        padding-right: 5px; /* Espaço para scrollbar */
+    }
+
+    /* Ajuste específico para o Modal de Configurações */
+    .file-input-wrapper {
+        flex-direction: column; /* Foto em cima, botão embaixo */
+        align-items: center;
+        text-align: center;
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse; /* Botões empilhados */
+        gap: 10px;
+    }
+
+    .modal-footer .btn {
+        width: 100%; /* Botão largura total */
+        margin: 0;
+    }
+
+    /* --- 3. MODAL DE SOLICITAÇÕES (Que não aparecia ou quebrava) --- */
+    
+    .solicitacao-item {
+        flex-direction: column; /* Stack vertical */
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .solicitacao-user {
+        width: 100%;
+    }
+
+    .solicitacao-actions {
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 5px;
+    }
+
+    .solicitacao-actions .btn {
+        flex: 1; /* Botões dividem o espaço igualmente */
+    }
+
+    /* --- 4. EMOJI PICKER (Fugindo da tela) --- */
+    
+    .emoji-picker {
+        position: fixed !important;
+        /* Centraliza na tela */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        bottom: 80px !important; /* Acima do input */
+        width: 90% !important; /* Largura responsiva */
+        max-width: 320px;
+        top: auto !important; /* Ignora cálculo de Top do JS */
+        z-index: 3000;
+    }
+
+    .emoji-grid {
+        grid-template-columns: repeat(6, 1fr); /* Menos colunas no mobile */
+        max-height: 200px;
+    }
+}
+
+/* Regras para Celular (Tela pequena) */
+@media (max-width: 768px) {
+    /* Esconde o Header do Desktop com força total */
+    .chat-header, 
+    .desktop-only {
+        display: none !important;
+    }
+
+    /* Garante que o Header Mobile apareça corretamente */
+    .mobile-header {
+        display: flex !important;
+        width: 100%;
+        position: sticky;
+        top: 60px; /* Ajuste conforme a altura da sua topbar */
+        z-index: 990;
+    }
+}
+
+/* Regras para PC/Desktop (Tela grande) */
+@media (min-width: 769px) {
+    /* Esconde o Header Mobile com força total */
+    .mobile-header,
+    .mobile-only {
+        display: none !important;
+    }
+    
+    /* Garante que o Header Desktop apareça */
+    .chat-header {
+        display: flex !important;
+    }
+}
+
+@media (max-width: 768px) {
+  
+    /* 1. CONFIGURAÇÃO DO OVERLAY (FUNDO ESCURO) */
+    .modal-overlay {
+        /* REMOVIDO: display: flex !important; (Isso causava o bug) */
+        /* O JavaScript já define display: flex ao abrir. Nós só alinhamos: */
+        
+        align-items: center !important;     /* Centraliza Verticalmente */
+        justify-content: center !important; /* Centraliza Horizontalmente */
+        padding: 1rem !important;           /* Espaço de respiro nas bordas */
+        z-index: 9999 !important;           /* Garante que fique acima de tudo */
+    }
+
+    /* 2. A CAIXA BRANCA DO MODAL */
+    .modal-content {
+        margin: 0 !important;          /* Remove margens antigas */
+        position: relative !important; /* Reseta posicionamentos fixos */
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+        
+        width: 100% !important;        /* Ocupa a largura disponível */
+        max-width: 380px !important;   /* Tamanho ideal para celular */
+        max-height: 85vh !important;   /* Altura máxima segura */
+        
+        display: flex !important;
+        flex-direction: column !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+    }
+
+    /* 3. SCROLL INTERNO (CASO O CONTEÚDO SEJA GRANDE) */
+    .modal-body {
+        overflow-y: auto !important;
+        max-height: calc(85vh - 130px) !important; 
+        padding-right: 5px; 
+    }
+
+    /* 4. AJUSTE PARA O MODAL DE SOLICITAÇÕES */
+    #solicitacoes-modal .modal-content,
+    #project-settings-modal .modal-content {
+        width: 100% !important;
+    }
+
+    /* 5. FIX PARA O TEXTAREA DE EDIÇÃO */
+    #edit-message-content {
+        min-height: 100px;
+        max-height: 200px;
+    }
+    
+    /* 6. EMOJI PICKER CENTRALIZADO NO MOBILE */
+    .emoji-picker {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        bottom: auto !important;
+        width: 90% !important;
+        max-width: 300px !important;
+        z-index: 10000 !important;
+    }
+}
+
+/* Estilo para o botão de adicionar membro na sidebar */
+.action-icon-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--accent-primary); /* Azul destaque */
+    width: 30px;
+    height: 30px;
+    border-radius: 50%; /* Redondo */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+}
+
+.action-icon-btn:hover {
+    background-color: var(--accent-primary);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 8px rgba(88, 166, 255, 0.4);
+}
+
+@media (max-width: 768px) {
+
+    /* 1. O Container Principal da Sidebar */
+    .members-sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important; /* Ocupa altura total da tela */
+        width: 85% !important;
+        max-width: 320px !important;
+        
+        /* Z-INDEX ALTÍSSIMO: Para ficar ACIMA da barra azul do topo */
+        z-index: 5000 !important; 
+        
+        background-color: var(--bg-secondary) !important;
+        
+        /* Lógica de layout para permitir scroll */
+        display: flex !important;
+        flex-direction: column !important;
+        
+        /* Habilita o scroll no container principal */
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        
+        /* Animação de entrada */
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    }
+
+    /* Quando a classe .mobile-open é adicionada pelo JS */
+    .members-sidebar.mobile-open {
+        transform: translateX(0) !important;
+    }
+
+    /* 2. O Cabeçalho da Sidebar (Onde estão os botões +, Contador e X) */
+    .sidebar-header {
+        flex-shrink: 0 !important; /* Impede que o header encolha ao rolar */
+        position: relative !important; /* Remove sticky para evitar bugs de scroll */
+        background-color: var(--bg-secondary);
+        padding: 1rem !important;
+        border-bottom: 1px solid var(--border-color);
+        
+        /* Garante visibilidade dos itens */
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    /* 3. Ajuste dos botões dentro do header para garantir que apareçam */
+    .sidebar-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 15px !important;
+    }
+
+    /* Força o botão de adicionar membro a aparecer (se o usuário for admin/moderador) */
+    #add-member-btn {
+        display: flex !important; 
+        position: relative;
+        z-index: 10;
+    }
+
+    /* 4. A Lista de Membros (Removemos o scroll interno dela) */
+    .members-list {
+        flex: none !important; /* Deixa a lista crescer o quanto precisar */
+        height: auto !important;
+        overflow: visible !important; /* O scroll será feito pelo pai (.members-sidebar) */
+        padding-bottom: 20px;
+    }
+
+    /* 5. Área de Detalhes do Projeto (Final do menu) */
+    .project-details {
+        flex: none !important;
+        height: auto !important;
+        padding-bottom: 40px; /* Espaço extra no final */
+    }
+}
+
+/* =================================================================
+   CORREÇÃO VISUAL: CABEÇALHO DA SIDEBAR (DESGRUDAR ELEMENTOS)
+================================================================= */
+.sidebar-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 1.25rem 1rem !important; /* Mais espaço vertical e horizontal */
+}
+
+/* 1. Título: Dá espaço à direita para não encostar nos ícones */
+.sidebar-header h3 {
+    margin: 0 !important;
+    font-size: 1.1rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: auto !important; /* Garante que ele fique na esquerda */
+    padding-right: 15px !important; /* Barreira invisível entre texto e botões */
+}
+
+/* 2. Container dos Ícones: Aumenta o espaço entre eles */
+.sidebar-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important; /* AQUI ESTÁ A MÁGICA: Aumentei o espaço entre os itens */
+    flex-shrink: 0 !important; /* Garante que os ícones nunca encolham/quebrem */
+}
+
+/* 3. Botão de Adicionar (Círculo Azul) */
+#add-member-btn {
+    width: 34px !important; /* Levemente maior para facilitar o toque */
+    height: 34px !important;
+    margin: 0 !important; /* Remove margens antigas, usa o gap do pai */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 4. Contador de Membros (Badge cinza) */
+.members-count {
+    font-size: 0.85rem !important;
+    padding: 4px 10px !important; /* Mais "gordinho" */
+    min-width: 30px;
+    text-align: center;
+    background-color: var(--bg-tertiary); /* Garante contraste */
+    border: 1px solid var(--border-color);
+}
+
+/* 5. Botão Fechar (X) */
+.sidebar-close {
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    margin-left: 5px !important; /* Um respiro extra apenas para o X */
+}

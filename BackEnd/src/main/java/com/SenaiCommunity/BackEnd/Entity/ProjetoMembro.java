@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -20,10 +21,12 @@ public class ProjetoMembro {
 
     @ManyToOne
     @JoinColumn(name = "projeto_id")
+    @ToString.Exclude
     private Projeto projeto;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
+    @ToString.Exclude
     private Usuario usuario;
 
     @Enumerated(EnumType.STRING)

@@ -10,7 +10,8 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-import java.security.Principal; // Importar Principal
+
+import java.security.Principal;
 
 @Component
 public class WebSocketEventListener {
@@ -28,12 +29,14 @@ public class WebSocketEventListener {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         Principal userPrincipal = headerAccessor.getUser();
 
-        if (userPrincipal != null && userPrincipal.getName() != null) {
-            String username = userPrincipal.getName();
-            logger.info("Usuário conectado: {}", username);
-            userStatusService.addUser(username);
+        if (userPrincipal != null) {
+            String email = userPrincipal.getName();
+            logger.info("Usuário conectado: {}", email);
 
-            // 1. Notifica TODOS os clientes (incluindo o novo) sobre a lista atualizada
+            // 1. Adiciona o usuário na lista de online
+            userStatusService.addUser(email);
+
+            // 2. Envia a lista ATUALIZADA para TODOS os inscritos no tópico /topic/status
             messagingTemplate.convertAndSend("/topic/status", userStatusService.getOnlineUsers());
         }
     }
@@ -43,12 +46,14 @@ public class WebSocketEventListener {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         Principal userPrincipal = headerAccessor.getUser();
 
-        if (userPrincipal != null && userPrincipal.getName() != null) {
-            String username = userPrincipal.getName();
-            logger.info("Usuário desconectado: {}", username);
-            userStatusService.removeUser(username);
+        if (userPrincipal != null) {
+            String email = userPrincipal.getName();
+            logger.info("Usuário desconectado: {}", email);
 
-            // Notifica todos os clientes restantes sobre a mudança na lista
+            // 1. Remove o usuário
+            userStatusService.removeUser(email);
+
+            // 2. Envia a lista ATUALIZADA para TODOS
             messagingTemplate.convertAndSend("/topic/status", userStatusService.getOnlineUsers());
         }
     }

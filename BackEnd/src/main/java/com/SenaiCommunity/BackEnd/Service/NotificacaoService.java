@@ -9,11 +9,13 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional; // Importante adicionar este import
 import java.util.stream.Collectors;
 
 @Service
@@ -29,8 +31,7 @@ public class NotificacaoService {
     private SimpMessagingTemplate messagingTemplate;
 
     /**
-     * MÉTODO DE CONVERSÃO MODIFICADO E MAIS SEGURO.
-     * Ele agora verifica se os campos são nulos antes de usá-los.
+     * MÉTODO DE CONVERSÃO.
      */
     private NotificacaoSaidaDTO toDTO(Notificacao notificacao) {
         return NotificacaoSaidaDTO.builder()
@@ -38,37 +39,55 @@ public class NotificacaoService {
                 .mensagem(notificacao.getMensagem())
                 .dataCriacao(notificacao.getDataCriacao())
                 .lida(notificacao.isLida())
-                // Verifica se o tipo é nulo, se for, define como "GERAL" por padrão.
                 .tipo(notificacao.getTipo() != null ? notificacao.getTipo() : "GERAL")
-                .idReferencia(notificacao.getIdReferencia()) // Long pode ser nulo, então não há problema aqui.
+                .idReferencia(notificacao.getIdReferencia())
                 .idReferenciaSecundaria(notificacao.getIdReferenciaSecundaria())
                 .build();
     }
 
     @Transactional
     public void criarNotificacao(Usuario destinatario, String mensagem, String tipo, Long idReferencia) {
-        // Agora chama o método de 5 parâmetros com 'null'
         criarNotificacao(destinatario, mensagem, tipo, idReferencia, null);
     }
 
+    @Async
     @Transactional
     public void criarNotificacao(Usuario destinatario, String mensagem, String tipo, Long idReferencia, Long idReferenciaSecundaria) {
-        Notificacao notificacao = Notificacao.builder()
-                .destinatario(destinatario)
-                .mensagem(mensagem)
-                .dataCriacao(LocalDateTime.now())
-                .tipo(tipo)
-                .idReferencia(idReferencia) // Ex: PostID
-                .idReferenciaSecundaria(idReferenciaSecundaria) // Ex: CommentID
-                .build();
 
-        Notificacao notificacaoSalva = notificacaoRepository.save(notificacao);
-        NotificacaoSaidaDTO dto = toDTO(notificacaoSalva);
+        Optional<Notificacao> existente = notificacaoRepository
+                .findTopByDestinatarioAndTipoAndIdReferenciaAndIdReferenciaSecundariaAndLidaFalse(
+                        destinatario, tipo, idReferencia, idReferenciaSecundaria
+                );
+
+        Notificacao notificacaoFinal;
+
+        if (existente.isPresent()) {
+            notificacaoFinal = existente.get();
+            notificacaoFinal.setDataCriacao(LocalDateTime.now());
+            notificacaoFinal.setMensagem(mensagem);
+
+            notificacaoFinal = notificacaoRepository.save(notificacaoFinal);
+        } else {
+            // Se não existe (ou a anterior já foi lida), criamos uma nova
+            Notificacao novaNotificacao = Notificacao.builder()
+                    .destinatario(destinatario)
+                    .mensagem(mensagem)
+                    .dataCriacao(LocalDateTime.now())
+                    .tipo(tipo)
+                    .idReferencia(idReferencia)
+                    .idReferenciaSecundaria(idReferenciaSecundaria)
+                    .lida(false)
+                    .build();
+            notificacaoFinal = notificacaoRepository.save(novaNotificacao);
+        }
+
+        // Envia via WebSocket (atualiza a UI do usuário em tempo real)
+        NotificacaoSaidaDTO dto = toDTO(notificacaoFinal);
         String destination = "/user/" + destinatario.getEmail() + "/queue/notifications";
         messagingTemplate.convertAndSend(destination, dto);
     }
 
-    // Sobrecarga para notificações gerais, que não quebrarão mais.
+    // Sobrecarga para notificações gerais
     public void criarNotificacao(Usuario destinatario, String mensagem) {
         criarNotificacao(destinatario, mensagem, "GERAL", null);
     }
@@ -102,12 +121,11 @@ public class NotificacaoService {
         Usuario destinatario = usuarioRepository.findByEmail(emailUsuarioLogado)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o email: " + emailUsuarioLogado));
 
-        // Usa o novo método do repositório
         List<Notificacao> notificacoesNaoLidas = notificacaoRepository.findByDestinatarioAndLidaIsFalse(destinatario);
 
         if (!notificacoesNaoLidas.isEmpty()) {
             for (Notificacao notificacao : notificacoesNaoLidas) {
-                notificacao.setLida(true); // O campo 'lida' existe na sua entidade
+                notificacao.setLida(true);
             }
             notificacaoRepository.saveAll(notificacoesNaoLidas);
         }

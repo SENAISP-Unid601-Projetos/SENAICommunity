@@ -1,136 +1,220 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta
+      name="google-signin-client_id"
+      content="1055449517512-gq7f7doogo5e8vmaq84vgrabsk1q5f5k.apps.googleusercontent.com"
+    />
     <title>Cadastro | Senai Community</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="CadastroLogin/CSS/cadastro.css">
-    <link rel="stylesheet" href="CadastroLogin/CSS/login.css">
+    <link
+      rel="icon"
+      href="img/LogoFavicon-removebg-preview.png2.png"
+      type="image/png"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="CadastroLogin/CSS/cadastro.css" />
+    <link rel="stylesheet" href="CadastroLogin/CSS/login.css" />
     <style>
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
     </style>
-</head>
-<body>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body>
     <div class="tech-background"></div>
-    
+
     <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <div class="logo">
-                    <i class="fas fa-code"></i>
-                    <span>Senai<span class="highlight">Community</span></span>
-                </div>
-                <h1>Crie sua conta</h1>
-                <p class="subtext">Preencha seus dados para começar</p>
-            </div>
-            
-            <form id="registerForm" class="auth-form">
-                <div class="input-group">
-                    <label for="nome" class="sr-only">Nome completo</label>
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="nome" name="nome" placeholder="Nome completo" required>
-                </div>
-                
-                <div class="input-group">
-                    <label for="email" class="sr-only">Email</label>
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="email" name="email" placeholder="Email" required>
-                </div>
-                
-                <div class="input-group">
-                    <label for="registerPassword" class="sr-only">Senha</label>
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="registerPassword" name="senha" placeholder="Senha" required>
-                    <button type="button" class="toggle-password" aria-label="Mostrar ou esconder a senha">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-
-                <div class="password-strength">
-                    <div class="strength-meter">
-                        <div class="strength-bar" data-strength="0"></div>
-                    </div>
-                    <span id="strength-text" class="strength-text"></span>
-                </div>
-                
-                <div class="input-group">
-                    <label for="confirmarSenha" class="sr-only">Confirmar senha</label>
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="confirmarSenha" name="confirmarSenha" placeholder="Confirmar senha" required>
-                </div>
-
-                <div class="input-group">
-                    <label for="curso" class="sr-only">Curso</label>
-                    <i class="fas fa-graduation-cap"></i>
-                    <input type="text" id="curso" name="curso" placeholder="Curso" required>
-                </div>
-
-                <div class="input-group">
-                    <label for="periodo" class="sr-only">Período</label>
-                    <i class="fas fa-clock"></i>
-                    <select id="periodo" name="periodo" required>
-                        <option value="" disabled selected>Selecione seu período</option>
-                        <option value="Manhã">Manhã</option>
-                        <option value="Tarde">Tarde</option>
-                        <option value="Noite">Noite</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label for="dataNascimento" class="sr-only">Data de Nascimento</label>
-                    <i class="fas fa-birthday-cake"></i>
-                    <input type="text" id="dataNascimento" name="dataNascimento" placeholder="Data de Nascimento (DD/MM/AAAA)" required>
-                </div>
-
-                <div class="file-upload-wrapper">
-                    <img id="image-preview" src="#" alt="Pré-visualização da imagem" class="image-preview-hidden">
-                    <label for="foto" id="drop-zone" class="file-upload-label">
-                        <div id="upload-instructions">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p><strong>Arraste uma foto</strong> ou clique para selecionar</p>
-                            <span id="file-name">Nenhum arquivo selecionado</span>
-                        </div>
-                        <input type="file" id="foto" name="foto" accept="image/*" style="display: none;">
-                    </label>
-                </div>
-                
-                <label class="checkbox terms">
-                    <input type="checkbox" id="terms" name="terms" required>
-                    <span class="checkmark"></span>
-                    Eu concordo com os <a href="#" class="text-link">Termos</a> e <a href="#" class="text-link">Política</a>
-                </label>
-                
-                <button type="submit" class="btn btn-primary">
-                    <span class="btn-text">Cadastrar</span>
-                    <span class="spinner"></span>
-                </button>
-                
-                <div class="auth-footer">
-                    <p>Já tem uma conta? <a href="login.html" class="text-link">Faça login</a></p>
-                </div>
-            </form>
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="logo">
+            <i class="fas fa-code"></i>
+            <span>Senai<span class="highlight">Community</span></span>
+          </div>
+          <h1>Crie sua conta</h1>
+          <p class="subtext">Preencha seus dados para começar</p>
         </div>
+
+        <form id="registerForm" class="auth-form">
+          <div class="input-group">
+            <label for="nome" class="sr-only">Nome completo</label>
+            <i class="fas fa-user"></i>
+            <input
+              type="text"
+              id="nome"
+              name="nome"
+              placeholder="Nome completo"
+              required
+              maxlength="27"
+            />
+          </div>
+
+          <div class="input-group">
+            <label for="email" class="sr-only">Email</label>
+            <i class="fas fa-envelope"></i>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Email"
+              required
+              maxlength="35"
+            />
+          </div>
+
+          <div class="input-group">
+            <label for="registerPassword" class="sr-only">Senha</label>
+            <i class="fas fa-lock"></i>
+            <input
+              type="password"
+              id="registerPassword"
+              name="senha"
+              placeholder="Senha"
+              required
+              maxlength="50"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              id="btnToggleBoth"
+              aria-label="Mostrar senhas"
+            >
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+
+          <div class="password-strength">
+            <div class="strength-meter">
+              <div class="strength-bar" data-strength="0"></div>
+            </div>
+            <span id="strength-text" class="strength-text"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="confirmarSenha" class="sr-only">Confirmar senha</label>
+            <i class="fas fa-lock"></i>
+            <input
+              type="password"
+              id="confirmarSenha"
+              name="confirmarSenha"
+              placeholder="Confirmar senha"
+              required
+              maxlength="50"
+            />
+          </div>
+
+          <div class="input-group">
+            <label for="curso" class="sr-only">Curso</label>
+            <i class="fas fa-graduation-cap"></i>
+            <input
+              type="text"
+              id="curso"
+              name="curso"
+              placeholder="Curso"
+              required
+              maxlength="35"
+            />
+          </div>
+
+          <div class="input-group">
+            <label for="periodo" class="sr-only">Período</label>
+            <i class="fas fa-clock"></i>
+            <select id="periodo" name="periodo" required>
+              <option value="" disabled selected>Selecione seu período</option>
+              <option value="Manhã">Manhã</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Noite">Noite</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="dataNascimento" class="sr-only"
+              >Data de Nascimento</label
+            >
+            <i class="fas fa-birthday-cake"></i>
+            <input
+              type="text"
+              id="dataNascimento"
+              name="dataNascimento"
+              placeholder="Data de Nascimento (DD/MM/AAAA)"
+              required
+              inputmode="numeric"
+            />
+          </div>
+
+          <div class="file-upload-wrapper">
+            <img
+              id="image-preview"
+              src="#"
+              alt="Pré-visualização da imagem"
+              class="image-preview-hidden"
+            />
+            <label for="foto" id="drop-zone" class="file-upload-label">
+              <div id="upload-instructions">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>
+                  <strong>Arraste uma foto</strong> ou clique para selecionar
+                </p>
+                <span id="file-name">Nenhum arquivo selecionado</span>
+              </div>
+              <input
+                type="file"
+                id="foto"
+                name="foto"
+                accept="image/*"
+                style="display: none"
+              />
+            </label>
+          </div>
+
+          <label class="checkbox terms">
+            <input type="checkbox" id="terms" name="terms" required />
+            <span class="checkmark"></span>
+            Aceito os<a href="#" class="text-link">Termos</a> e
+            <a href="#" class="text-link">Política</a>
+          </label>
+
+          <button type="submit" class="btn btn-primary">
+            <span class="btn-text">Cadastrar</span>
+            <span class="spinner"></span>
+          </button>
+
+          <div id="google-signin-button"></div>
+          <div class="auth-footer">
+            <p>
+              Já tem uma conta?
+              <a href="login.html" class="text-link">Faça login</a>
+            </p>
+          </div>
+        </form>
+      </div>
     </div>
 
     <div class="theme-toggle">
-        <i class="fas fa-moon"></i>
+      <i class="fas fa-moon"></i>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://unpkg.com/imask"></script> <script src="CadastroLogin/JS/background.js" defer></script>
+    <script src="https://unpkg.com/imask"></script>
+    <script src="CadastroLogin/JS/background.js" defer></script>
     <script src="CadastroLogin/JS/cadastro.js" defer></script>
     <script src="CadastroLogin/JS/utils.js" defer></script>
-</body>
+  </body>
 </html>

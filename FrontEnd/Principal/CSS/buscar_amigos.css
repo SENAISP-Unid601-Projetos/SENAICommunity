@@ -1,0 +1,1262 @@
+/* =================================================================
+   VARIÁVEIS E RESET BÁSICO
+================================================================= */
+:root {
+  --sidebar-width: 320px;
+  --header-height: 60px;
+  --container-max-width: 1100px;
+}
+
+/* =================================================================
+   LAYOUT ESTRUTURAL
+================================================================= */
+.container {
+    display: flex;
+    min-height: calc(100vh - var(--header-height));
+    position: relative;
+    background-color: var(--bg-primary);
+}
+
+/* =================================================================
+   SIDEBAR & USER CARD (Copiado de amizades.css)
+================================================================= */
+
+/* --- ESTRUTURA DA SIDEBAR --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    
+    /* Fixa a sidebar enquanto rola a página */
+    position: sticky;
+    top: var(--header-height);
+    height: 100%;
+    
+    overflow-y: auto;
+    flex-shrink: 0;
+    z-index: 100;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sidebar-widget {
+    margin-top: 1.5rem;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+}
+
+/* Botão de fechar (apenas mobile) */
+.sidebar-close {
+    display: none;
+}
+
+/* --- USER CARD NA SIDEBAR --- */
+.sidebar-user-card { 
+    margin-bottom: 0.5rem; 
+    
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column; /* Empilha verticalmente */
+    align-items: center;    /* Centraliza horizontalmente */
+    justify-content: center;
+    padding: 2rem 1.5rem;   /* Mais espaço interno */
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    position: relative;
+    gap: 1rem;
+    text-decoration: none;
+    
+}
+
+/* Link que envolve o card */
+.user-info-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+/* --- AVATAR --- */
+.avatar-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0.5rem;
+    
+}
+
+.avatar-container img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--bg-tertiary);
+    
+}
+
+/* Status Online */
+.avatar-container .status {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+    background-color: var(--success, #22c55e); 
+}
+
+/* --- IDENTIDADE (Nome + Cargo) --- */
+.user-identity {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    text-align: center;
+}
+
+.user-identity h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.user-role {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* --- ESTATÍSTICAS --- */
+.user-stats {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.4;
+}
+
+.stat-item strong {
+    color: var(--accent-primary);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.stat-item .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Loading Overlay */
+.user-info-loading {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 12px;
+    transition: opacity 0.3s ease;
+}
+
+.user-info.loaded .user-info-loading {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* --- MENU DA SIDEBAR --- */
+.sidebar-menu {
+    
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 0;
+    padding-top: 0;
+}
+
+.menu-item {
+    display: flex; 
+    align-items: center; 
+    gap: 1rem;
+    padding: 0.8rem 1.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.menu-item:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.menu-item.active {
+    background: linear-gradient(90deg, rgba(88, 166, 255, 0.1) 0%, transparent 100%);
+    color: var(--accent-primary);
+    border-left-color: var(--accent-primary);
+}
+
+.menu-item i { width: 24px; text-align: center; }
+
+/* --- WIDGET AMIGOS ONLINE --- */
+.sidebar-widget .online-friends {
+    background: var(--bg-secondary);
+    
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: none;
+}
+
+.sidebar-widget .widget-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    text-transform: none;
+     display: flex; 
+    align-items:  start; 
+}
+
+
+/* RESPONSIVIDADE (Tablets e Mobile) */
+@media (max-width: 1024px) {
+    .sidebar {
+        position: fixed; 
+        top: 0; 
+        left: 0;
+        height: 100vh;
+        width: 85%; 
+        max-width: 320px;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+    .sidebar.active { transform: translateX(0); }
+
+    .sidebar-close {
+        display: block; 
+        position: absolute; 
+        top: 15px; 
+        right: 15px;
+        background: none; 
+        border: none; 
+        color: var(--text-secondary);
+        font-size: 1.5rem; 
+        cursor: pointer;
+    }
+}
+
+/* --- MAIN CONTENT --- */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Container centralizado */
+.connections-container {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* =================================================================
+   COMPONENTES DA PÁGINA
+================================================================= */
+
+/* --- HEADER DA BUSCA --- */
+.search-header-card {
+    background: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.search-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.search-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.search-box-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* --- CAIXA DE PESQUISA --- */
+.search-box {
+    position: relative;
+    width: 100%;
+}
+
+.search-box i {
+    position: absolute;
+    left: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    background-color: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 50px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    background-color: var(--bg-secondary);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+
+.search-box input::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* --- CONTAINER DE RESULTADOS --- */
+.search-results-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* --- CARD DE USUÁRIO --- */
+.user-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+    align-items: stretch !important; 
+    text-align: left !important; /* Garante que o texto não centralize */
+    
+}
+
+.user-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    border-color: var(--accent-primary);
+}
+
+/* Header do Card (Avatar + Info) */
+.card-header-info {
+    /* Garante que o container da foto e nome comece sempre da esquerda */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start !important; 
+    width: 100%;
+}
+
+.user-card-avatar {
+    position: relative;
+    width: 50px; 
+    height: 50px;
+    min-width: 50px;
+    min-height: 50px;
+    flex-shrink: 0; 
+    border-radius: 50%;
+    background-color: var(--bg-tertiary); /* Fundo caso a imagem não carregue */
+    
+}
+
+.user-card-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--bg-tertiary);
+    image-rendering: -webkit-optimize-contrast;
+    transform: translateZ(0); /* Ativa aceleração de hardware */
+    backface-visibility: hidden;
+    /* Um contorno transparente ajuda a suavizar o corte redondo */
+    outline: 1px solid transparent; 
+    border-radius: 50%;
+}
+
+/* Status Online */
+.status {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+}
+.status.online { background-color: #22c55e; }
+.status.offline { background-color: #94a3b8; }
+
+.user-card-info {
+    /* O texto ocupa o espaço restante, empurrando tudo para a esquerda */
+    flex: 1;
+    min-width: 0; /* Importante para o corte do texto funcionar */
+}
+
+.user-card-info h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-card-info p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 2px 0 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Botões do Card */
+.user-card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: auto;
+}
+
+/* Botões Gerais */
+.btn {
+    border: none;
+    padding: 0.6rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    width: 100%;
+}
+
+.btn-primary { background: var(--accent-primary); color: white; }
+.btn-primary:hover { background: var(--accent-secondary); }
+
+.btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); }
+.btn-secondary:hover { background: var(--bg-quaternary); }
+
+.btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid transparent; }
+.btn-danger:hover { background: #ef4444; color: white; }
+
+.btn-message {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    padding: 0.7rem;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-message:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+}
+
+/* Link do Perfil */
+.user-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.user-card-link:hover h4 {
+    color: var(--accent-primary);
+    text-decoration: underline;
+}
+
+/* =================================================================
+   ESTADOS DE CARREGAMENTO E VAZIO
+================================================================= */
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(88, 166, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--accent-primary);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.results-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.results-loading i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--accent-primary);
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+}
+
+/* =================================================================
+   RESPONSIVIDADE (MOBILE & TABLET)
+================================================================= */
+
+/* Overlay Escuro para o Mobile */
+.mobile-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 99;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+    backdrop-filter: blur(2px);
+}
+
+.mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Header Mobile (Só aparece no mobile) */
+.page-header-mobile {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.page-title-mobile {
+    font-size: 1.25rem;
+    font-weight: 1000;
+    color: var(--text-primary);
+}
+
+.mobile-menu-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* MOBILE (Max 768px) */
+@media (max-width: 768px) {
+    
+    /* Sidebar vira Gaveta */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 85%;
+        max-width: 320px;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    /* Botão de fechar sidebar (só no mobile) */
+    .sidebar-close {
+        display: block !important;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 1.5rem;
+        color: var(--text-secondary);
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    /* Conteúdo Principal */
+    .main-content {
+        padding: 1rem;
+        width: 100%;
+    }
+
+    .page-header-mobile {
+        display: flex;
+    }
+
+    /* Header da busca */
+    .search-header-card {
+        padding: 1.5rem;
+        margin: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .search-title {
+        font-size: 1.3rem;
+    }
+
+    /* Grid vira 1 coluna em celulares */
+    .search-results-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 0;
+    }
+
+    /* Ajuste nos cards */
+    .user-card {
+        padding: 1rem;
+    }
+
+    .card-header-info {
+        flex-direction: row;
+    }
+    
+    /* Ajuste nos botões */
+    .user-card-actions {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .btn-message {
+        margin-top: 0;
+    }
+}
+
+/* TABLET (769px até 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 240px;
+    }
+    
+    .search-results-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* =================================================================
+   UTILITÁRIOS
+================================================================= */
+
+/* Por padrão, esconde elementos mobile-only no Desktop */
+.mobile-only {
+    display: none !important;
+}
+
+.menu-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 0.5rem 1.5rem;
+    opacity: 0.5;
+}
+
+.dangerous-action {
+    color: #ef4444 !important;
+}
+
+.dangerous-action:hover {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+/* --- REGRAS APENAS PARA MOBILE (Max 768px) --- */
+@media (max-width: 768px) {
+    .menu-item.mobile-only, 
+    .menu-divider.mobile-only {
+        display: flex !important;
+    }
+
+    .user-dropdown {
+        display: none; 
+    }
+}
+
+/* Estados de loading para botões */
+.btn.loading {
+    color: transparent !important;
+    position: relative;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    border-top-color: currentColor;
+    animation: spin 1s ease infinite;
+}
+
+/* Loading states para elementos de perfil */
+.user-info-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--card-radius);
+    z-index: 5;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.user-info.loaded .user-info-loading {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.topbar-user-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-secondary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.user.loaded .topbar-user-loading {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* =================================================================
+   CORREÇÃO: Ícones de Topo e Notificações (Mobile)
+================================================================= */
+
+@media (max-width: 768px) {
+    /* 1. Ajuste do container de ícones no topo */
+    .nav-icons {
+        display: flex !important; /* Força a exibição no mobile */
+        align-items: center;
+        gap: 0.5rem;
+        margin-right: 0.5rem;
+    }
+
+    /* Garante tamanho de toque adequado */
+    .nav-icon, .theme-toggle {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* 2. Correção do Painel de Notificações (Centralizado na tela) */
+    .notifications-panel {
+        position: fixed !important;
+        top: 70px !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        width: 90% !important;
+        max-width: 350px !important;
+        max-height: 70vh;
+        z-index: 9999 !important;
+        box-shadow: 0 0 0 100vmax rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.5) !important;
+        border-radius: 12px;
+    }
+
+    /* Esconde a setinha do painel se houver */
+    .notifications-panel::before,
+    .notifications-panel::after {
+        display: none !important;
+    }
+}
+
+/* =================================================================
+   CORREÇÃO: Header e Menu Dropdown no Mobile
+================================================================= */
+
+/* Estilo do botão de perigo (Excluir Conta) no dropdown */
+.dropdown-menu a.danger {
+    color: #ef4444; /* Vermelho */
+}
+
+.dropdown-menu a.danger:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+@media (max-width: 768px) {
+    
+    /* 1. Container de ícones (Sino, Tema) */
+    .nav-icons {
+        display: flex !important;
+        align-items: center;
+        gap: 0.2rem; /* Menos espaço entre ícones */
+    }
+
+    #notifications-icon, .theme-toggle {
+        display: flex !important;
+        width: 36px;
+        height: 36px;
+    }
+
+    /* 2. Área do Usuário (Dropdown) - AGORA VISÍVEL */
+    .user-dropdown {
+        display: block !important; /* Força a exibição */
+        margin-left: 0.5rem;
+    }
+
+    .user {
+        padding: 0.25rem;
+        background: transparent; /* Remove fundo cinza no mobile se preferir */
+    }
+
+    /* Esconde o nome e a seta para caber na tela, mostra só a foto */
+    .user span, 
+    .user i.fa-chevron-down {
+        display: none !important; 
+    }
+
+    .profile-pic {
+        width: 36px;
+        height: 36px;
+        border: 2px solid var(--border-color);
+    }
+
+    /* 3. Posicionamento do Menu Dropdown Aberto */
+    .dropdown-menu {
+        position: fixed; /* Fixado na tela para não quebrar layout */
+        top: 70px;
+        right: 10px;
+        width: 200px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        border-radius: 12px;
+        z-index: 1002;
+    }
+
+    /* Aumenta a área de toque dos links no mobile */
+    .dropdown-menu a {
+        padding: 1rem; 
+        font-size: 1rem;
+    }
+
+    /* 4. Notificações Centralizadas */
+    .notifications-panel {
+        position: fixed !important;
+        top: 75px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 90% !important;
+        max-width: 350px !important;
+        max-height: 70vh;
+        z-index: 9999 !important;
+        right: auto !important;
+    }
+}
+
+/* =================================================================
+   CORREÇÃO: CARD DE PERFIL DA SIDEBAR
+   (Adicione ao final do arquivo buscar_amigos.css)
+================================================================= */
+
+.sidebar-user-card { 
+    margin-bottom: 0.5rem; 
+}
+
+/* Container do Card */
+.sidebar .user-info {
+    display: flex;
+    flex-direction: column; /* Empilha: Foto -> Texto -> Stats */
+    align-items: center;    /* Centraliza tudo horizontalmente */
+    justify-content: center;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    position: relative;
+    gap: 0.75rem;
+    text-decoration: none;
+    min-height: auto; /* Reseta altura mínima se houver conflito */
+}
+
+/* 1. Foto de Perfil (Avatar) */
+.sidebar .avatar-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0.25rem;
+    flex-shrink: 0;
+}
+
+.sidebar .avatar-container img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--bg-tertiary);
+}
+
+/* Status Online (Bolinha Verde) */
+.sidebar .avatar-container .status {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+    background-color: #238636; /* Verde */
+}
+
+/* 2. Identidade (Nome e Cargo) */
+.sidebar .user-identity {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.25rem;
+}
+
+.sidebar .user-identity h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.sidebar .user-role {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+/* 3. Estatísticas (Lado a Lado) */
+.sidebar .user-stats {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem; /* Espaço entre os números */
+    margin-top: 0.5rem;
+    width: 100%;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.sidebar .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+}
+
+.sidebar .stat-item strong {
+    color: var(--accent-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.sidebar .stat-item .stat-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* Loading Overlay do Perfil */
+.sidebar .user-info-loading {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 12px;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar .user-info.loaded .user-info-loading {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* =================================================================
+   CORREÇÃO DEFINITIVA DOS MODAIS NO MOBILE
+   (Adicione isto no FINAL do arquivo projeto.css)
+================================================================= */
+
+/* Estilo da área de edição de foto */
+.profile-pic-editor {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.profile-pic-editor img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--bg-tertiary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Sobreposição de "Alterar Foto" */
+.pic-editor-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: white;
+    font-size: 0.8rem;
+    pointer-events: none; /* Permite clicar na imagem */
+}
+
+.profile-pic-editor label:hover .pic-editor-overlay {
+    opacity: 1;
+}
+
+/* --- REGRAS ESPECÍFICAS PARA MOBILE (Max 768px) --- */
+@media (max-width: 768px) {
+    
+    /* Força o modal a caber na tela e ter scroll interno */
+    .modal-content {
+        width: 95% !important;      
+        max-width: 95% !important;
+        max-height: 85vh !important; /* Deixa espaço para margens */
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Impede que o container todo role */
+    }
+
+    /* Cabeçalho Fixo no topo */
+    .modal-header {
+        padding: 1rem;
+        flex-shrink: 0; 
+        position: sticky;
+        top: 0;
+        background: var(--bg-secondary);
+        z-index: 10;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    /* Corpo com Scroll (Onde estão os inputs) */
+    /* IMPORTANTE: Isso faz o formulário rolar dentro do modal */
+    #edit-profile-form, 
+    .modal-body {
+        padding: 1rem;
+        overflow-y: auto !important; 
+        flex-grow: 1;     
+        max-height: calc(85vh - 130px); /* Subtrai header e footer aprox */
+    }
+
+    /* Rodapé Fixo embaixo */
+    .modal-footer {
+        padding: 1rem;
+        flex-shrink: 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* Botão Grande para facilitar o toque */
+    .modal-footer button {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    /* Ajuste da foto no mobile */
+    .profile-pic-editor img {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* =================================================================
+   MELHORIA DO BOTÃO CANCELAR (MODAL)
+================================================================= */
+
+#cancel-edit-profile-btn {
+    background-color: transparent;      /* Remove o fundo cinza padrão */
+    border: 1px solid var(--border-color); /* Borda sutil */
+    color: var(--text-secondary);       /* Texto cinza claro */
+    padding: 0.4rem 1rem;               /* Espaçamento interno */
+    border-radius: 6px;                 /* Bordas arredondadas */
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    /* Garante alinhamento vertical do texto */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Efeito ao passar o mouse (fica mais claro) */
+#cancel-edit-profile-btn:hover {
+    color: var(--text-primary);        /* Texto fica branco */
+    border-color: var(--text-secondary); /* Borda fica mais visível */
+    background-color: rgba(255, 255, 255, 0.05); /* Fundo leve */
+}
+
+/* Ajuste específico para não ficar colado no mobile */
+@media (max-width: 768px) {
+    #cancel-edit-profile-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* --- CORREÇÃO DE Z-INDEX E MENU MOBILE --- */
+
+@media (max-width: 768px) {
+    .sidebar {
+        /* Garante que o menu fique acima do overlay e do conteúdo */
+        z-index: 2000 !important;
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        /* Garante transição suave */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* O Overlay deve ficar logo abaixo do menu, mas acima do conteúdo */
+    .mobile-overlay {
+        z-index: 1999 !important;
+    }
+
+    /* Garante que o botão de fechar dentro do menu seja visível */
+    .sidebar-close {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        z-index: 2001;
+    }
+}
+
+.card-header-info {
+    display: flex;
+    align-items: center;
+    /* Garante espaçamento entre o avatar e o texto */
+    gap: 15px; 
+}
+
+/* Define o tamanho fixo do container do avatar */
+.user-card-avatar {
+    position: relative;
+    /* Define larguras e alturas fixas para não colapsar */
+    width: 50px; 
+    height: 50px;
+    min-width: 50px; /* Importante para flexbox não esmagar */
+    min-height: 50px; /* Importante para flexbox não esmagar */
+    /* Impede que o flexbox diminua este elemento se faltar espaço */
+    flex-shrink: 0; 
+    border-radius: 50%;
+    background-color: #f0f2f5; /* Cor de fundo caso a imagem demore ou falhe */
+}
+
+/* Garante que a imagem ocupe 100% do container fixo acima */
+.user-card-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover; /* Garante que a imagem não distorça */
+    display: block; /* Remove espaços extras abaixo da imagem */
+}
