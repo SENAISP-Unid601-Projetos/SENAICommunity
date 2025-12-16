@@ -103,7 +103,7 @@ Abaixo, a stack completa utilizada no desenvolvimento do **Senai Community**:
 
 ### 1. Clonar o Repositório
 ```bash
-git clone [https://github.com/seu-usuario/SenaiCommunity.git](https://github.com/seu-usuario/SenaiCommunity.git)
+git clone https://github.com/SENAISP-Unid601-Projetos/SENAICommunity
 cd SenaiCommunity
 ```
 
