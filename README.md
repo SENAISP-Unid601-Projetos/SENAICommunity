@@ -149,7 +149,7 @@ Com o Back-end rodando, você pode acessar a documentação interativa (Swagger 
 
 ## 🤝 Contribuição
 
-Contribuições são o que fazem a comunidade open source um lugar incrível para aprender, inspirar e criar. Qualquer contribuição que você fizer será **muito apreciada**.
+Contribuições são o que fazem a comunidade open source um ótimo lugar para aprender, inspirar e criar. Qualquer contribuição que você fizer será **Bem-vinda!**.
 
 1.  Faça um **Fork** do projeto
 2.  Crie uma para sua Feature (`git checkout -b feature/minha-feature`)
