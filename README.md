@@ -165,7 +165,7 @@ Contribuições são o que fazem a comunidade open source um lugar incrível par
   <tr>
     <td align="center">
       <a href="https://github.com/GabrielPiscke">
-        <img src="https://avatars.githubusercontent.com/u/108602414?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Gabriel Piscke"/><br>
+        <img src="https://avatars.githubusercontent.com/u/185540777?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Gabriel Piscke"/><br>
         <sub>
           <b>Gabriel Piscke</b>
         </sub>
@@ -173,7 +173,7 @@ Contribuições são o que fazem a comunidade open source um lugar incrível par
     </td>
     <td align="center">
       <a href="https://github.com/YuriSantxz07">
-        <img src="https://avatars.githubusercontent.com/u/108602379?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Yuri Santos"/><br>
+        <img src="https://avatars.githubusercontent.com/u/185539590?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Yuri Santos"/><br>
         <sub>
           <b>Yuri Santos</b>
         </sub>
@@ -181,7 +181,7 @@ Contribuições são o que fazem a comunidade open source um lugar incrível par
     </td>
     <td align="center">
       <a href="https://github.com/ViniciusDev00">
-        <img src="https://avatars.githubusercontent.com/u/108602422?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Vinicius Biancolini"/><br>
+        <img src="https://avatars.githubusercontent.com/u/185539340?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Vinicius Biancolini"/><br>
         <sub>
           <b>Vinicius Biancolini</b>
         </sub>
@@ -189,7 +189,7 @@ Contribuições são o que fazem a comunidade open source um lugar incrível par
     </td>
     <td align="center">
       <a href="https://github.com/Matheusslb">
-        <img src="https://avatars.githubusercontent.com/u/108602434?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Matheus Brito"/><br>
+        <img src="https://avatars.githubusercontent.com/u/185539094?v=4" width="100px;" style="border-radius: 50%;" alt="Foto do Matheus Brito"/><br>
         <sub>
           <b>Matheus Brito</b>
         </sub>
