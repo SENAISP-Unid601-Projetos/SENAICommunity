@@ -158,7 +158,7 @@ Contribuições são o que fazem a comunidade open source um lugar incrível par
 5.  Abra um **Pull Request**
 
 ---
-<h2>👥 Autores</h2>
+<h2>👥 Desenvolvedores</h2>
 
 <table border="0">
   <tr>
