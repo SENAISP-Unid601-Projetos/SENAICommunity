@@ -81,3 +81,68 @@ O sistema é modular e abrange diversas áreas de interação:
 ```bash
 git clone [https://github.com/seu-usuario/SenaiCommunity.git](https://github.com/seu-usuario/SenaiCommunity.git)
 cd SenaiCommunity
+```
+
+### 2. Configurar Variáveis de Ambiente
+Por segurança, o projeto não contém credenciais no código. Crie um arquivo `.env` na raiz ou configure as variáveis no seu sistema operacional baseando-se na tabela abaixo:
+
+| Variável | Descrição | Exemplo |
+| :--- | :--- | :--- |
+| `MYSQLHOST` | Endereço do Banco | `localhost` |
+| `MYSQLPORT` | Porta do Banco | `3306` |
+| `MYSQLDATABASE` | Nome do Schema | `senaicommunity_db` |
+| `MYSQLUSER` | Usuário do Banco | `root` |
+| `MYSQLPASSWORD` | Senha do Banco | `sua_senha` |
+| `JWT_SECRET` | Chave de assinatura JWT | `uma_chave_super_secreta_256bit` |
+| `CLOUDINARY_CLOUD_NAME` | Cloud Name | `minha_nuvem` |
+| `CLOUDINARY_API_KEY` | API Key | `123456789` |
+| `CLOUDINARY_API_SECRET` | API Secret | `abc-123-xyz` |
+| `GOOGLE_CLIENT_ID` | Client ID (Google) | `....apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | Client Secret (Google) | `GOCSPX-....` |
+| `PORT` | Porta da Aplicação | `8080` |
+
+### 3. Executando o Back-end
+
+#### Opção A: Via Docker (Recomendado 🐳)
+```bash
+cd BackEnd
+
+# Construir a imagem
+docker build -t senaicommunity-backend .
+
+# Rodar o container (com variáveis de ambiente)
+docker run -p 8080:8080 --env-file .env senaicommunity-backend
+```
+---
+
+## 📖 Documentação da API
+
+Com o Back-end rodando, você pode acessar a documentação interativa (Swagger UI). Lá você consegue visualizar todos os endpoints, modelos de dados (schemas) e testar as requisições em tempo real.
+
+🔗 **Acesse:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+---
+
+## 🤝 Contribuição
+
+Contribuições são o que fazem a comunidade open source um lugar incrível para aprender, inspirar e criar. Qualquer contribuição que você fizer será **muito apreciada**.
+
+1.  Faça um **Fork** do projeto
+2.  Crie uma para sua Feature (`git checkout -b feature/minha-feature`)
+3.  Faça o Commit das suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4.  Faça o Push para a Branch (`git push origin feature/minha-feature`)
+5.  Abra um **Pull Request**
+
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais informações.
+
+<div align="center">
+  <br>
+  <sub>Desenvolvido por <a href="https://github.com/seu-usuario">Seu Nome</a></sub>
+</div>
+
+
+
