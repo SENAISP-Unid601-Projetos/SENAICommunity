@@ -2,15 +2,30 @@
 
 <div align="center">
 
-![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge)
-![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
-![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
-![MySQL](https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)
-![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Badge Concluído](http://img.shields.io/static/v1?label=STATUS&message=CONCLUÍDO&color=BLUE&style=for-the-badge)
+<br><br>
 
-**Conectando alunos, professores e o mercado de trabalho em um único ecossistema.**
+<img src="https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java" />
+<img src="https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white" alt="Spring" />
+<img src="https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL" />
+<img src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+<img src="https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E" alt="JavaScript" />
+<br>
+<img src="https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" />
+<img src="https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" />
+<img src="https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white" alt="Cloudinary" />
+<img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=Swagger&logoColor=white" alt="Swagger" />
 
-[Funcionalidades](#-funcionalidades) • [Tecnologias](#-tecnologias) • [Instalação](#-como-rodar-o-projeto) • [API](#-documentação-da-api)
+<br>
+
+<h3>Conectando alunos, professores e o mercado de trabalho em um único ecossistema.</h3>
+
+[Sobre](#-sobre-o-projeto) •
+[Funcionalidades](#-funcionalidades) •
+[Tecnologias](#-tecnologias) •
+[Instalação](#-como-rodar-o-projeto) •
+[API](#-documentação-da-api) •
+[Equipe](#-autores)
 
 </div>
 
@@ -18,54 +33,63 @@
 
 ## 📄 Sobre o Projeto
 
-O **Senai Community** é uma plataforma full-stack desenvolvida para facilitar a interação acadêmica e profissional dentro do ambiente SENAI. O sistema combina elementos de redes sociais com ferramentas de gestão de carreira e projetos, criando um ambiente onde alunos podem expor seus portfólios, encontrar vagas de estágio e colaborar em tempo real.
+O **Senai Community** é uma plataforma full-stack desenvolvida para revolucionar a interação acadêmica e profissional dentro do ambiente SENAI. O sistema combina a dinâmica de redes sociais com ferramentas robustas de gestão de carreira e projetos, criando um ambiente fértil onde alunos podem expor seus portfólios, encontrar vagas de estágio e colaborar em tempo real com professores e colegas.
 
 ---
 
 ## 🚀 Funcionalidades
 
-O sistema é modular e abrange diversas áreas de interação:
+O sistema é modular, escalável e abrange diversas áreas de interação:
 
 ### 💬 Social & Comunicação (Real-Time)
-* **Chat em Tempo Real:** Sistema de mensagens privadas e em grupo utilizando **WebSocket (STOMP)** para comunicação instantânea.
-* **Feed Interativo:** Postagens ricas com suporte a uploads de mídia (imagens), curtidas e comentários.
-* **Networking:** Sistema de amizades (solicitação, aceitação e listagem de amigos).
-* **Moderação Automática:** Implementação de um **Filtro de Profanidade** que monitora e bloqueia conteúdo impróprio em textos e comentários.
+* **Chat em Tempo Real:** Mensageria instantânea (privada e grupos) via **WebSocket (STOMP)**.
+* **Feed Interativo:** Postagens ricas com suporte a mídia, curtidas e comentários.
+* **Networking:** Sistema completo de solicitação e aceitação de amizades.
+* **Moderação Automática:** Filtro de profanidade integrado para bloquear conteúdo impróprio.
 
 ### 🎓 Acadêmico & Projetos
-* **Vitrine de Projetos:** Alunos podem cadastrar projetos, detalhar tecnologias usadas e buscar membros para formar equipes.
-* **Gestão de Eventos:** Calendário de eventos acadêmicos e workshops com agendamento.
-* **Perfis Distintos:** Funcionalidades separadas e especializadas para **Alunos** e **Professores**.
+* **Vitrine de Projetos:** Portfólio digital para alunos detalharem tecnologias e buscarem equipes.
+* **Gestão de Eventos:** Calendário interativo de workshops e eventos acadêmicos.
+* **Perfis Personalizados:** Experiência adaptada para **Alunos** e **Professores**.
 
 ### 💼 Carreira & Mercado
-* **Portal de Vagas:** Mural exclusivo para divulgação de vagas de estágio e emprego.
-* **Alertas Inteligentes:** Sistema de notificação (`AlertaVaga`) que avisa usuários sobre novas oportunidades compatíveis.
+* **Portal de Vagas:** Mural exclusivo para estágios e empregos.
+* **AlertaVaga:** Sistema inteligente de notificações para oportunidades compatíveis.
 
 ### 🔒 Segurança & Integrações
-* **Login Social:** Integração com **Google OAuth2** para autenticação rápida e segura.
-* **JWT (JSON Web Token):** Proteção stateless das rotas da API.
-* **Upload na Nuvem:** Integração com **Cloudinary** para armazenamento otimizado de fotos de perfil e capas de projetos.
+* **Login Social:** Autenticação via **Google OAuth2**.
+* **JWT (Stateless):** Segurança robusta nas rotas da API.
+* **Cloudinary:** Armazenamento otimizado de mídias na nuvem.
 
 ---
 
 ## 🛠️ Tecnologias
 
-### Back-end (Java 21 + Spring Boot 3.4.5)
-* **Spring Web:** Criação da API RESTful.
-* **Spring Security + OAuth2 Client:** Autenticação e controle de acesso.
-* **Spring Data JPA:** Abstração e persistência de dados.
-* **Spring WebSocket:** Protocolo para comunicação bidirecional (Chat).
-* **Bean Validation:** Validação de dados de entrada.
-* **OpenAPI (Swagger UI):** Documentação automática da API.
-* **Lombok:** Redução de verbosidade do código Java.
+Abaixo, a stack completa utilizada no desenvolvimento do **Senai Community**:
+
+### Back-end (Java Ecosystem)
+| Tecnologia | Função |
+| :--- | :--- |
+| **Java 21** | Linguagem base moderna e performática. |
+| **Spring Boot 3.4.5** | Framework principal. |
+| **Spring Security + OAuth2** | Gestão de autenticação e acesso. |
+| **Spring WebSocket** | Comunicação bidirecional para o Chat. |
+| **Spring Data JPA** | Camada de persistência. |
+| **Lombok** | Produtividade e redução de código boilerplate. |
+| **OpenAPI (Swagger)** | Documentação viva da API. |
 
 ### Infraestrutura & Dados
-* **MySQL:** Banco de dados relacional.
-* **Docker:** Containerização da aplicação para fácil deploy.
-* **Maven:** Gerenciamento de dependências e build.
+| Tecnologia | Função |
+| :--- | :--- |
+| **MySQL** | Banco de dados relacional. |
+| **Docker** | Containerização da aplicação. |
+| **Maven** | Gerenciamento de dependências. |
+| **Cloudinary** | Gestão de assets (imagens) na nuvem. |
 
 ### Front-end
-* **HTML5 / CSS3 / JavaScript (Vanilla):** Interface leve, desacoplada e responsiva.
+* **HTML5 / CSS3**
+* **JavaScript (Vanilla)**
+* **Design Responsivo**
 
 ---
 
@@ -75,7 +99,7 @@ O sistema é modular e abrange diversas áreas de interação:
 * Java JDK 21
 * Maven
 * MySQL Server
-* Contas de Desenvolvedor: Google Cloud (OAuth) e Cloudinary.
+* Docker (Opcional, mas recomendado)
 
 ### 1. Clonar o Repositório
 ```bash
@@ -135,15 +159,18 @@ Contribuições são o que fazem a comunidade open source um lugar incrível par
 
 ---
 
-<div align="center">
-  <br>
-  <sub>Desenvolvido por <a href="https://github.com/GabrielPiscke">Gabriel Piscke</a>
-  <a href="https://github.com/YuriSantxz07">Yuri Santos</a>
-  <a href="https://github.com/ViniciusDev00">Vinicius Biancolini</a>
-  <a href="https://github.com/Matheusslb">Matheus Brito</a>
-  <a href="https://github.com/MiguelGallo1227">Miguel Gallo</a>
-  </sub>
-</div>
+👥 Autores
+<table> <tr> <td align="center"> <a href="https://github.com/GabrielPiscke"> <img src="https://www.google.com/search?q=https://github.com/GabrielPiscke.png" width="100px;" alt="Foto do Gabriel Piscke"/>
+
+<sub> <b>Gabriel Piscke</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/YuriSantxz07"> <img src="https://www.google.com/search?q=https://github.com/YuriSantxz07.png" width="100px;" alt="Foto do Yuri Santos"/>
+
+<sub> <b>Yuri Santos</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/ViniciusDev00"> <img src="https://www.google.com/search?q=https://github.com/ViniciusDev00.png" width="100px;" alt="Foto do Vinicius Biancolini"/>
+
+<sub> <b>Vinicius Biancolini</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/Matheusslb"> <img src="https://www.google.com/search?q=https://github.com/Matheusslb.png" width="100px;" alt="Foto do Matheus Brito"/>
+
+<sub> <b>Matheus Brito</b> </sub> </a> </td> <td align="center"> <a href="https://github.com/MiguelGallo1227"> <img src="https://www.google.com/search?q=https://github.com/MiguelGallo1227.png" width="100px;" alt="Foto do Miguel Gallo"/>
+
+<sub> <b>Miguel Gallo</b> </sub> </a> </td> </tr> </table>
 
 
 
