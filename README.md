@@ -33,8 +33,6 @@
 
 ## 👾 Acessar na Web : https://senai-community-deploy2.vercel.app
 
-<br>
-
 ---
 
 ## 📄 Sobre o Projeto
