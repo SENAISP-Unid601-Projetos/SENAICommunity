@@ -92,7 +92,7 @@ function initResponsiveFeatures() {
 
 // --- FUNÇÃO PRINCIPAL DE EVENTOS ---
 async function initEventos() {
-  const backendUrl = window.backendUrl || "https://senaicommunityapp.up.railway.app";
+  const backendUrl = window.backendUrl || "https://senaicommunitydeploy2-production.up.railway.app";
   // Define a URL padrão apontando para o backend, caso a string venha vazia
   const defaultEventUrl = `${backendUrl}/images/default-event.png`;
 

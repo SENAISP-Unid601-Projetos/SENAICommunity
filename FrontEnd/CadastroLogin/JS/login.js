@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    const backendUrl = 'https://senaicommunityapp.up.railway.app';
+    const backendUrl = 'https://senaicommunitydeploy2-production.up.railway.app';
     // ATENÇÃO: Verifique se este é o seu Client ID correto
     const googleClientId = '1055449517512-gq7f7doogo5e8vmaq84vgrabsk1q5f5k.apps.googleusercontent.com';
     
