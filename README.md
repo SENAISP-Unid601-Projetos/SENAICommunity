@@ -29,6 +29,10 @@
 
 </div>
 
+--- 
+
+## 👾 Acesse na Web : https://senai-community-deploy2.vercel.app
+
 ---
 
 ## 📄 Sobre o Projeto
