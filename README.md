@@ -31,7 +31,7 @@
 
 --- 
 
-## 👾 Acessar na Web : https://senai-community-deploy2.vercel.app
+## 👾 Acesse na Web : https://senai-community-deploy2.vercel.app
 
 ---
 
