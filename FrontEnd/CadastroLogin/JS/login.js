@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     const backendUrl = 'https://senaicommunitydeploy2-production.up.railway.app';
     // ATENÇÃO: Verifique se este é o seu Client ID correto
-    const googleClientId = '1055449517512-gq7f7doogo5e8vmaq84vgrabsk1q5f5k.apps.googleusercontent.com';
+    const googleClientId = '651184493540-2nubt9i4ppu0aej8aj43i6r4lmj5lmhh.apps.googleusercontent.com';
     
     // 1. Inicializa o Google Sign-In
     

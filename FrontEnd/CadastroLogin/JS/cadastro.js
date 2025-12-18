@@ -294,7 +294,7 @@ window.onload = function () {
   if (window.google && google.accounts) {
     google.accounts.id.initialize({
       client_id:
-        "1055449517512-gq7f7doogo5e8vmaq84vgrabsk1q5f5k.apps.googleusercontent.com",
+        "651184493540-2nubt9i4ppu0aej8aj43i6r4lmj5lmhh.apps.googleusercontent.com",
       callback: handleCredentialResponse,
     });
 
