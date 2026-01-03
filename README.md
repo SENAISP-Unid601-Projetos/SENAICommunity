@@ -32,6 +32,7 @@
 --- 
 
 ## 👾 Acesse na Web : https://senai-community-deploy2.vercel.app
+**Obs:** O servidor onde o projeto esta hospedado, fica em Stand by quando esta ocioso por muito tempo, assim pode ter um atraso nas primeiras consultas ao servidor no dia.
 
 ---
 
