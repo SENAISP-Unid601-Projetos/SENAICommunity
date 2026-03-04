@@ -50,7 +50,7 @@ O sistema é modular, escalável e abrange diversas áreas de interação:
 * **Chat em Tempo Real:** Mensagem instantânea (privada e grupos) via **WebSocket (STOMP)**.
 * **Feed Interativo:** Postagens ricas com suporte a mídia, curtidas e comentários.
 * **Networking:** Sistema completo de solicitação e aceitação de amizades.
-* **Moderação Automática:** Filtro de profanidade integrado para bloquear conteúdo impróprio.
+* **Moderação Automática:** Filtro de palavrão integrado para bloquear conteúdo impróprio.
 
 ### 🎓 Acadêmico & Projetos
 * **Vitrine de Projetos:** Portfólio digital para alunos detalharem tecnologias e buscarem equipes.
