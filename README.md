@@ -47,7 +47,7 @@ O **Senai Community** é uma plataforma full-stack desenvolvida para revoluciona
 O sistema é modular, escalável e abrange diversas áreas de interação:
 
 ### 💬 Social & Comunicação (Real-Time)
-* **Chat em Tempo Real:** Mensageria instantânea (privada e grupos) via **WebSocket (STOMP)**.
+* **Chat em Tempo Real:** Mensagem instantânea (privada e grupos) via **WebSocket (STOMP)**.
 * **Feed Interativo:** Postagens ricas com suporte a mídia, curtidas e comentários.
 * **Networking:** Sistema completo de solicitação e aceitação de amizades.
 * **Moderação Automática:** Filtro de profanidade integrado para bloquear conteúdo impróprio.
